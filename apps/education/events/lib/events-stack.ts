@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
-import { Construct } from 'constructs';
 
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
@@ -9,7 +8,7 @@ import { resourceNameTitle } from '../../../../dist/local/@curioushuman/cdk-util
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 export class UeEventsStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     /**

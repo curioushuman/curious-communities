@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import { Construct } from 'constructs';
 
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
@@ -18,7 +17,7 @@ import {
  * - [ ] move the GitHub OpenId identity provider to a construct in the cdk-utils package
  */
 export class UeCiCdStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     /**

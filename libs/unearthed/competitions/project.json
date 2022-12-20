@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/layers/ue-competitions-service/nodejs/node_modules/@curioushuman/ue-competitions-service",
+        "tsConfig": "libs/unearthed/competitions/tsconfig.lib.json",
+        "packageJson": "libs/unearthed/competitions/package.json",
+        "main": "libs/unearthed/competitions/src/index.ts",
+        "assets": ["libs/unearthed/competitions/*.md"]
+      }
+    },
+    "publish": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "command": "node tools/scripts/publish.mjs ue-competitions-service {args.ver} {args.tag}"
+      },
+      "dependsOn": [
+        {
+          "projects": "self",
+          "target": "build"
+        }
+      ]
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/unearthed/competitions/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/unearthed/competitions"],
+      "options": {
+        "jestConfig": "libs/unearthed/competitions/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": ["scope:layers"]
+}

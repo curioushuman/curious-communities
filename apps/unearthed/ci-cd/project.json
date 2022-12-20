@@ -1,0 +1,156 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/unearthed/ci-cd/**/*.ts"]
+      }
+    },
+    "list": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/unearthed/ci-cd",
+        "command": "list",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      },
+      "outputs": ["{options.outputPath}"]
+    },
+    "build": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/unearthed/ci-cd",
+        "command": "synth",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      },
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": [{
+        "target": "build",
+        "projects": "dependencies"
+      }]
+    },
+    "synth": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/unearthed/ci-cd",
+        "command": "synth",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      },
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": [{
+        "target": "build",
+        "projects": "dependencies"
+      }]
+    },
+    "deploy": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/unearthed/ci-cd",
+        "command": "deploy",
+        "parameters": [
+          "--all",
+          " --require-approval=never",
+          "--outputs-file ../../../dist/apps/unearthed/ci-cd/cdk-outputs.json",
+          "--profile=$AWS_PROFILE"
+        ]
+      },
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": [{
+        "target": "build",
+        "projects": "dependencies"
+      }]
+    },
+    "destroy": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/unearthed/ci-cd",
+        "command": "destroy",
+        "parameters": [
+          "--all",
+          "--force",
+          "--profile=$AWS_PROFILE"
+        ]
+      }
+    },
+    "diff": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/unearthed/ci-cd",
+        "command": "diff",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      },
+      "dependsOn": [{
+        "target": "build",
+        "projects": "dependencies"
+      }]
+    },
+    "metadata": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/unearthed/ci-cd",
+        "command": "metadata",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      }
+    },
+    "context": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/unearthed/ci-cd",
+        "command": "context",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      }
+    },
+    "docs": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/unearthed/ci-cd",
+        "command": "docs",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      }
+    },
+    "doctor": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/unearthed/ci-cd",
+        "command": "doctor",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/unearthed/ci-cd"],
+      "options": {
+        "jestConfig": "apps/unearthed/ci-cd/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": [],
+  "implicitDependencies": ["cdk-utils"]
+}

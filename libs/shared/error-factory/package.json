@@ -1,0 +1,11 @@
+{
+  "name": "@curioushuman/error-factory",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "dependencies": {
+    "@nestjs/common": "^8.0.0",
+    "fp-ts": "^2.11.10",
+    "runtypes": "^6.5.1"
+  }
+}

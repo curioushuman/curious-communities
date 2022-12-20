@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["es2021"],
+    "moduleResolution": "node",
+    "types": ["node"]
+  },
+  "exclude": [
+    "jest.config.ts",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.builder.ts"
+  ],
+  "include": ["**/*.ts"]
+}

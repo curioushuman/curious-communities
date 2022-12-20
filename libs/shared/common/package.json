@@ -1,0 +1,13 @@
+{
+  "name": "@curioushuman/common",
+  "version": "0.0.1",
+  "main": "src/index.js",
+  "dependencies": {
+    "runtypes": "^6.5.1",
+    "slug": "^5.3.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/slug": "^5.0.3"
+  }
+}

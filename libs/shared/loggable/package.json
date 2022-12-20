@@ -1,0 +1,9 @@
+{
+  "name": "@curioushuman/loggable",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "dependencies": {
+    "@nestjs/common": "^8.0.0"
+  }
+}

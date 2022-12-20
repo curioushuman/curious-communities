@@ -1,0 +1,13 @@
+{
+  "name": "@curioushuman/ue-competitions",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "dependencies": {
+    "@curioushuman/ue-competitions-service": "^0.0.1",
+    "@curioushuman/loggable": "^0.0.1",
+    "@curioushuman/error-factory": "^0.0.1",
+    "@nestjs/common": "^8.0.0",
+    "@nestjs/core": "^8.0.0"
+  }
+}

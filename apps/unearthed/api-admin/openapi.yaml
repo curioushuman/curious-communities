@@ -1,0 +1,13 @@
+openapi: "3.0.3"
+info:
+  version: 1.0.0
+  title: Curious Outcomes admin API
+  description: These are the admin API endpoints for the Curious Outcomes system.
+servers:
+  - url: http://to.be.defined/v1
+
+paths:
+
+  # Competitions
+  /ue-competitions/hook/{eventType}/{externalId}:
+    $ref: "./src/competitions/hook/hook.path.yaml"

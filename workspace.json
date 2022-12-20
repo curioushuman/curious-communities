@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/nx/schemas/workspace-schema.json",
+  "version": 2,
+  "projects": {
+    "cdk-utils": "libs/local/cdk-utils",
+    "common": "libs/shared/common",
+    "error-factory": "libs/shared/error-factory",
+    "fp-ts-utils": "libs/shared/fp-ts-utils",
+    "layers": "apps/layers",
+    "loggable": "libs/shared/loggable",
+    "ue-ci-cd": "apps/unearthed/ci-cd",
+    "ue-events": "apps/unearthed/events",
+    "ue-layers": "apps/unearthed/layers",
+    "ue-api-admin": "apps/unearthed/api-admin",
+    "ue-competitions": "apps/unearthed/competitions",
+    "ue-competitions-service": "libs/unearthed/competitions"
+  }
+}

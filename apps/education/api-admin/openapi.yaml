@@ -8,6 +8,6 @@ servers:
 
 paths:
 
-  # Competitions
-  /ue-competitions/hook/{eventType}/{externalId}:
-    $ref: "./src/competitions/hook/hook.path.yaml"
+  # Courses
+  /ue-courses/hook/{eventType}/{externalId}:
+    $ref: "./src/courses/hook/hook.path.yaml"

@@ -1,3 +1,0 @@
-# ue-competitions-service
-
-TBD

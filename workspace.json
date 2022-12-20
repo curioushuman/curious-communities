@@ -12,7 +12,7 @@
     "ue-events": "apps/education/events",
     "ue-layers": "apps/education/layers",
     "ue-api-admin": "apps/education/api-admin",
-    "ue-competitions": "apps/education/competitions",
-    "ue-competitions-service": "libs/education/competitions"
+    "ue-courses": "apps/education/courses",
+    "ue-courses-service": "libs/education/courses"
   }
 }

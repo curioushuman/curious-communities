@@ -13,6 +13,6 @@ export class UeLayersStack extends cdk.Stack {
 
     const fileLocation = '../../../dist/layers';
 
-    new ChLayer(this, 'ue-competitions-service', { fileLocation });
+    new ChLayer(this, 'ue-courses-service', { fileLocation });
   }
 }

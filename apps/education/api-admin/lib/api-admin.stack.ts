@@ -11,10 +11,7 @@ import {
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import {
-  HookConstruct,
-  HookProps,
-} from '../src/competitions/hook/hook.construct';
+import { HookConstruct, HookProps } from '../src/courses/hook/hook.construct';
 
 export class ApiAdminStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -51,14 +48,14 @@ export class ApiAdminStack extends cdk.Stack {
      */
 
     /**
-     * Competition
+     * Course
      *
      * TODO
      * - [ ] can we move this to a schema dir or similar
      * - [ ] we also need to align with the openapi schema yaml
      */
     // was removed as we don't have a find anymore
-    // apiAdmin.addResponseModel('competition-response-dto', {
+    // apiAdmin.addResponseModel('course-response-dto', {
     //   properties: {
     //     id: { type: apigateway.JsonSchemaType.STRING },
     //     externalId: { type: apigateway.JsonSchemaType.STRING },
@@ -68,22 +65,18 @@ export class ApiAdminStack extends cdk.Stack {
     // });
 
     /**
-     * Competitions
+     * Courses
      */
-    const competitions = apiAdmin.api.root.addResource('competitions');
+    const courses = apiAdmin.api.root.addResource('courses');
 
     /**
      * Hook for external events
-     * GET /competitions/{eventType}/{externalId}?{updatedStatus?}
+     * GET /courses/{eventType}/{externalId}?{updatedStatus?}
      */
-    const competitionsHookConstruct = new HookConstruct(
-      this,
-      'competitions-hook',
-      {
-        apiConstruct: apiAdmin,
-        rootResource: competitions.addResource('hook'),
-        eventBus: externalEventsEventBus,
-      } as HookProps
-    );
+    const coursesHookConstruct = new HookConstruct(this, 'courses-hook', {
+      apiConstruct: apiAdmin,
+      rootResource: courses.addResource('hook'),
+      eventBus: externalEventsEventBus,
+    } as HookProps);
   }
 }

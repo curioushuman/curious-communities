@@ -1,0 +1,20 @@
+{
+  "name": "@curioushuman/ue-courses-service",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "dependencies": {
+    "@curioushuman/common": "^0.0.1",
+    "@curioushuman/error-factory": "^0.0.1",
+    "@curioushuman/fp-ts-utils": "^0.0.1",
+    "@curioushuman/loggable": "^0.0.1",
+    "@nestjs/common": "^8.0.0",
+    "@nestjs/core": "^8.0.0",
+    "@nestjs/cqrs": "^8.0.5",
+    "fp-ts": "^2.12.1",
+    "runtypes": "^6.5.1"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^8.0.0"
+  }
+}

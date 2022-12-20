@@ -44,7 +44,7 @@ export class ApiAdminTestStack extends cdk.Stack {
     /**
      * Rule: Subscribe the SQS queue to everything coming out of the EventBus
      */
-    const [ruleName, ruleTitle] = testResourceNameTitle('competition', 'Rule');
+    const [ruleName, ruleTitle] = testResourceNameTitle('course', 'Rule');
     const testSqsRule = new events.Rule(this, ruleTitle, {
       ruleName,
       eventBus: externalEventsEventBus,

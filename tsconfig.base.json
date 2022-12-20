@@ -36,7 +36,7 @@
       "@curioushuman/fp-ts-utils": ["libs/shared/fp-ts-utils/src/index.ts"],
       "@curioushuman/loggable": ["libs/shared/loggable/src/index.ts"],
       "@curioushuman/ue-competitions-service": [
-        "libs/unearthed/competitions/src/index.ts"
+        "libs/education/competitions/src/index.ts"
       ]
     }
   },

@@ -12,5 +12,5 @@ export default {
     '^.+\\.[tj]s$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../../coverage/libs/unearthed/competitions',
+  coverageDirectory: '../../../coverage/libs/education/competitions',
 };

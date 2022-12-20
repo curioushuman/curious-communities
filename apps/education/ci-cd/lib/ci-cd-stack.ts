@@ -31,7 +31,7 @@ export class UeCiCdStack extends cdk.Stack {
      * Repositories we're granting access to
      */
     const repositories = [
-      { owner: 'curioushuman', repo: 'abc-audio-api', filter: 'main' },
+      { owner: 'curioushuman', repo: 'curious-communities', filter: 'main' },
     ];
 
     /**

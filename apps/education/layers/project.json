@@ -6,13 +6,13 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/unearthed/layers/**/*.ts"]
+        "lintFilePatterns": ["apps/education/layers/**/*.ts"]
       }
     },
     "list": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "list",
         "parameters": [
           "--all",
@@ -24,7 +24,7 @@
     "build": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "synth",
         "parameters": [
           "--all",
@@ -40,7 +40,7 @@
     "synth": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "synth",
         "parameters": [
           "--all",
@@ -56,7 +56,7 @@
     "bootstrap": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "bootstrap",
         "parameters": [
           "--all",
@@ -67,12 +67,12 @@
     "deploy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "deploy",
         "parameters": [
           "--all",
           " --require-approval=never",
-          "--outputs-file ../../../dist/apps/unearthed/layers/cdk-outputs.json",
+          "--outputs-file ../../../dist/apps/education/layers/cdk-outputs.json",
           "--profile=$AWS_PROFILE"
         ]
       },
@@ -85,7 +85,7 @@
     "destroy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "destroy",
         "parameters": [
           "--all",
@@ -97,7 +97,7 @@
     "diff": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "diff",
         "parameters": [
           "--all",
@@ -112,7 +112,7 @@
     "metadata": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "metadata",
         "parameters": [
           "--all",
@@ -123,7 +123,7 @@
     "context": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "context",
         "parameters": [
           "--all",
@@ -134,7 +134,7 @@
     "docs": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "docs",
         "parameters": [
           "--all",
@@ -145,7 +145,7 @@
     "doctor": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/layers",
+        "outputPath": "dist/apps/education/layers",
         "command": "doctor",
         "parameters": [
           "--all",
@@ -155,9 +155,9 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/unearthed/layers"],
+      "outputs": ["coverage/apps/education/layers"],
       "options": {
-        "jestConfig": "apps/unearthed/layers/jest.config.ts",
+        "jestConfig": "apps/education/layers/jest.config.ts",
         "passWithNoTests": true
       }
     },
@@ -177,7 +177,7 @@
         "commands": [
           "aws lambda remove-layer-version-permission --layer-name AudioUeCompetitionsServiceLayer --version-number 1 --statement-id AudioUeCompetitionsServiceLayerLocalStack"
         ],
-        "cwd": "apps/unearthed/layers",
+        "cwd": "apps/education/layers",
         "parallel": true
       }
     },
@@ -185,10 +185,10 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "../../../node_modules/.bin/rimraf ../../../dist/apps/unearthed/layers",
-          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/unearthed/layers"
+          "../../../node_modules/.bin/rimraf ../../../dist/apps/education/layers",
+          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/education/layers"
         ],
-        "cwd": "apps/unearthed/layers",
+        "cwd": "apps/education/layers",
         "parallel": false
       },
       "dependsOn": [{
@@ -199,8 +199,8 @@
     "destroy-local": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/unearthed/layers",
-        "cwd": "apps/unearthed/layers",
+        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/education/layers",
+        "cwd": "apps/education/layers",
         "parallel": false
       }
     }

@@ -8,11 +8,11 @@
     "fp-ts-utils": "libs/shared/fp-ts-utils",
     "layers": "apps/layers",
     "loggable": "libs/shared/loggable",
-    "ue-ci-cd": "apps/unearthed/ci-cd",
-    "ue-events": "apps/unearthed/events",
-    "ue-layers": "apps/unearthed/layers",
-    "ue-api-admin": "apps/unearthed/api-admin",
-    "ue-competitions": "apps/unearthed/competitions",
-    "ue-competitions-service": "libs/unearthed/competitions"
+    "ue-ci-cd": "apps/education/ci-cd",
+    "ue-events": "apps/education/events",
+    "ue-layers": "apps/education/layers",
+    "ue-api-admin": "apps/education/api-admin",
+    "ue-competitions": "apps/education/competitions",
+    "ue-competitions-service": "libs/education/competitions"
   }
 }

@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'layers',
+  displayName: 'ue-competitions',
   preset: '../../../jest.preset.js',
   globals: {
     'ts-jest': {
@@ -12,5 +12,5 @@ export default {
     '^.+\\.[tj]s$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../../coverage/apps/unearthed/layers',
+  coverageDirectory: '../../../coverage/apps/education/competitions',
 };

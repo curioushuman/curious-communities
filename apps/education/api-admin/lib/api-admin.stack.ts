@@ -24,7 +24,7 @@ export class ApiAdminStack extends cdk.Stack {
      * API Gateway
      */
     const apiAdmin = new CoApiConstruct(this, 'ue-api-admin', {
-      description: 'Unearthed Admin API',
+      description: 'Education Admin API',
       stageName: 'dev',
     });
 

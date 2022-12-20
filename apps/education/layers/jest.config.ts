@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'ue-events',
+  displayName: 'layers',
   preset: '../../../jest.preset.js',
   globals: {
     'ts-jest': {
@@ -12,5 +12,5 @@ export default {
     '^.+\\.[tj]s$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../../coverage/apps/unearthed/events',
+  coverageDirectory: '../../../coverage/apps/education/layers',
 };

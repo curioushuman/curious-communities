@@ -6,16 +6,15 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/unearthed/competitions/**/*.ts"]
+        "lintFilePatterns": ["apps/education/api-admin/**/*.ts"]
       }
     },
     "list": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/competitions",
+        "outputPath": "dist/apps/education/api-admin",
         "command": "list",
         "parameters": [
-          "--all",
           "--profile=$AWS_PROFILE"
         ]
       },
@@ -24,10 +23,9 @@
     "build": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/competitions",
+        "outputPath": "dist/apps/education/api-admin",
         "command": "synth",
         "parameters": [
-          "--all",
           "--profile=$AWS_PROFILE"
         ]
       },
@@ -35,15 +33,18 @@
       "dependsOn": [{
         "target": "build",
         "projects": "dependencies"
+      },
+      {
+        "target": "openapi",
+        "projects": "self"
       }]
     },
     "synth": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/competitions",
+        "outputPath": "dist/apps/education/api-admin",
         "command": "synth",
         "parameters": [
-          "--all",
           "--profile=$AWS_PROFILE"
         ]
       },
@@ -51,42 +52,50 @@
       "dependsOn": [{
         "target": "build",
         "projects": "dependencies"
+      },
+      {
+        "target": "openapi",
+        "projects": "self"
       }]
     },
     "deploy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/competitions",
-        "command": "deploy",
         "parameters": [
           "--all",
           " --require-approval=never",
-          "--outputs-file ../../../dist/apps/unearthed/competitions/cdk-outputs.json",
+          "--outputs-file ../../../dist/apps/education/api-admin/cdk-outputs.json",
           "--profile=$AWS_PROFILE"
-        ]
+        ],
+        "outputPath": "dist/apps/education/api-admin",
+        "command": "deploy"
       },
       "outputs": ["{options.outputPath}"],
       "dependsOn": [{
         "target": "deploy",
         "projects": "dependencies"
+      },
+      {
+        "target": "openapi",
+        "projects": "self"
       }]
     },
     "destroy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/competitions",
-        "command": "destroy",
         "parameters": [
           "--all",
           "--force",
           "--profile=$AWS_PROFILE"
-        ]
+        ],
+        "outputPath": "dist/apps/education/api-admin",
+        "command": "destroy"
       }
     },
     "diff": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/competitions",
+        "outputPath": "dist/apps/education/api-admin",
         "command": "diff",
         "parameters": [
           "--all",
@@ -96,12 +105,16 @@
       "dependsOn": [{
         "target": "build",
         "projects": "dependencies"
+      },
+      {
+        "target": "openapi",
+        "projects": "self"
       }]
     },
     "metadata": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/competitions",
+        "outputPath": "dist/apps/education/api-admin",
         "command": "metadata",
         "parameters": [
           "--all",
@@ -112,7 +125,7 @@
     "context": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/competitions",
+        "outputPath": "dist/apps/education/api-admin",
         "command": "context",
         "parameters": [
           "--all",
@@ -123,18 +136,22 @@
     "docs": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/competitions",
+        "outputPath": "dist/apps/education/api-admin",
         "command": "docs",
         "parameters": [
           "--all",
           "--profile=$AWS_PROFILE"
         ]
-      }
+      },
+      "dependsOn": [{
+        "target": "openapi",
+        "projects": "self"
+      }]
     },
     "doctor": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/competitions",
+        "outputPath": "dist/apps/education/api-admin",
         "command": "doctor",
         "parameters": [
           "--all",
@@ -144,32 +161,51 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/unearthed/competitions"],
+      "outputs": ["coverage/apps/education/api-admin"],
       "options": {
-        "jestConfig": "apps/unearthed/competitions/jest.config.ts",
+        "jestConfig": "apps/education/api-admin/jest.config.ts",
         "passWithNoTests": true
+      }
+    },
+    "test-infra": {
+      "executor": "@nrwl/jest:jest",
+      "options": {
+        "jestConfig": "apps/education/api-admin/jest.config.infra.ts",
+        "passWithNoTests": true,
+        "cwd": "apps/education/api-admin"
+      }
+    },
+    "openapi": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "../../../node_modules/.bin/swagger-cli bundle openapi.yaml --outfile ../../../dist/apps/education/api-admin/openapi.yaml --type yaml"
+          }
+        ],
+        "cwd": "apps/education/api-admin"
       }
     },
     "deploy-local": {
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "../../../node_modules/.bin/rimraf ../../../dist/apps/unearthed/competitions",
-          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/unearthed/competitions"
+          "../../../node_modules/.bin/rimraf ../../../dist/apps/education/api-admin",
+          "../../../node_modules/.bin/cdklocal deploy --all --require-approval=never --output ../../../dist/apps/education/api-admin --outputs-file ../../../dist/apps/education/api-admin/cdk-outputs.json"
         ],
-        "cwd": "apps/unearthed/competitions",
+        "cwd": "apps/education/api-admin",
         "parallel": false
       }
     },
     "destroy-local": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/unearthed/competitions",
-        "cwd": "apps/unearthed/competitions",
+        "command": "../../../node_modules/.bin/cdklocal destroy --all --force --output ../../../dist/apps/education/api-admin",
+        "cwd": "apps/education/api-admin",
         "parallel": false
       }
     }
   },
   "tags": [],
-  "implicitDependencies": ["layers", "ue-layers", "ue-events"]
+  "implicitDependencies": ["cdk-utils", "ue-competitions"]
 }

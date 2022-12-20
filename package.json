@@ -1,8 +1,8 @@
 {
-  "name": "abc-audio-api",
+  "name": "curious-communities",
   "version": "0.0.1",
-  "description": "Monorepo for ABC Audio Apis",
-  "productName": "ABC Audio APIs",
+  "description": "Monorepo for Curious Communities",
+  "productName": "Curious Communities APIs",
   "author": "Mike Kelly",
   "license": "MIT",
   "scripts": {

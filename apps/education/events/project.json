@@ -6,13 +6,13 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/unearthed/events/**/*.ts"]
+        "lintFilePatterns": ["apps/education/events/**/*.ts"]
       }
     },
     "list": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/events",
+        "outputPath": "dist/apps/education/events",
         "command": "list",
         "parameters": [
           "--all",
@@ -24,7 +24,7 @@
     "build": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/events",
+        "outputPath": "dist/apps/education/events",
         "command": "synth",
         "parameters": [
           "--all",
@@ -40,7 +40,7 @@
     "synth": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/events",
+        "outputPath": "dist/apps/education/events",
         "command": "synth",
         "parameters": [
           "--all",
@@ -56,12 +56,12 @@
     "deploy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/events",
+        "outputPath": "dist/apps/education/events",
         "command": "deploy",
         "parameters": [
           "--all",
           " --require-approval=never",
-          "--outputs-file ../../../dist/apps/unearthed/events/cdk-outputs.json",
+          "--outputs-file ../../../dist/apps/education/events/cdk-outputs.json",
           "--profile=$AWS_PROFILE"
         ]
       },
@@ -74,7 +74,7 @@
     "destroy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/events",
+        "outputPath": "dist/apps/education/events",
         "command": "destroy",
         "parameters": [
           "--all",
@@ -86,7 +86,7 @@
     "diff": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/events",
+        "outputPath": "dist/apps/education/events",
         "command": "diff",
         "parameters": [
           "--all",
@@ -101,7 +101,7 @@
     "metadata": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/events",
+        "outputPath": "dist/apps/education/events",
         "command": "metadata",
         "parameters": [
           "--all",
@@ -112,7 +112,7 @@
     "context": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/events",
+        "outputPath": "dist/apps/education/events",
         "command": "context",
         "parameters": [
           "--all",
@@ -123,7 +123,7 @@
     "docs": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/events",
+        "outputPath": "dist/apps/education/events",
         "command": "docs",
         "parameters": [
           "--all",
@@ -134,7 +134,7 @@
     "doctor": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/unearthed/events",
+        "outputPath": "dist/apps/education/events",
         "command": "doctor",
         "parameters": [
           "--all",
@@ -144,9 +144,9 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/unearthed/events"],
+      "outputs": ["coverage/apps/education/events"],
       "options": {
-        "jestConfig": "apps/unearthed/events/jest.config.ts",
+        "jestConfig": "apps/education/events/jest.config.ts",
         "passWithNoTests": true
       }
     },
@@ -154,10 +154,10 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "../../../node_modules/.bin/rimraf ../../../dist/apps/unearthed/events",
-          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/unearthed/events"
+          "../../../node_modules/.bin/rimraf ../../../dist/apps/education/events",
+          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/education/events"
         ],
-        "cwd": "apps/unearthed/events",
+        "cwd": "apps/education/events",
         "parallel": false
       },
       "dependsOn": [{
@@ -168,8 +168,8 @@
     "destroy-local": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/unearthed/events",
-        "cwd": "apps/unearthed/events",
+        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/education/events",
+        "cwd": "apps/education/events",
         "parallel": false
       }
     }

@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'ue-ci-cd',
+  displayName: 'ue-api-admin',
   preset: '../../../jest.preset.js',
   globals: {
     'ts-jest': {
@@ -12,5 +12,5 @@ export default {
     '^.+\\.[tj]s$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../../coverage/apps/unearthed/ci-cd',
+  coverageDirectory: '../../../coverage/apps/education/api-admin',
 };

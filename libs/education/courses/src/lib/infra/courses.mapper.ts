@@ -9,20 +9,13 @@ export class CoursesMapper {
   public static toResponseDto(course: Course): CourseResponseDto {
     return {
       id: course.id,
-      name: course.name,
+      status: course.status,
       slug: course.slug,
-      details: course.details,
-      dateTrackMinimum: course.dateTrackMinimum,
+      supportType: course.supportType,
+      name: course.name,
       dateOpen: course.dateOpen,
       dateClosed: course.dateClosed,
       yearMonthOpen: course.yearMonthOpen,
-      countEntries: course.countEntries,
-      countEntriesUnmoderated: course.countEntriesUnmoderated,
-      countEntriesModerated: course.countEntriesModerated,
-      countResultsLongList: course.countResultsLongList,
-      countResultsShortList: course.countResultsShortList,
-      countResultsFinalists: course.countResultsFinalists,
-      countResultsWinners: course.countResultsWinners,
     } as CourseResponseDto;
   }
 }

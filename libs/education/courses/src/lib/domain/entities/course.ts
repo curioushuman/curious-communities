@@ -1,18 +1,13 @@
-import { Optional, Record, Static } from 'runtypes';
+import { Record, Static } from 'runtypes';
 
-import {
-  createSlug,
-  createYearMonth,
-  PositiveInteger,
-  Slug,
-  Timestamp,
-  YearMonth,
-} from '@curioushuman/common';
+import { Timestamp, YearMonth } from '@curioushuman/common';
 
 import { CourseName } from '../value-objects/course-name';
-import { CourseDetails } from '../value-objects/course-details';
 import { CourseId } from '../value-objects/course-id';
-import { CourseSource } from './course-source';
+import { CourseStatus } from '../value-objects/course-status';
+import { CourseSupportType } from '../value-objects/course-support-type';
+import { AccountSlug } from '../value-objects/account-slug';
+import { CourseSlug } from '../value-objects/course-slug';
 
 /**
  * Runtypes constant for the (internal) Course entity
@@ -20,31 +15,21 @@ import { CourseSource } from './course-source';
  */
 export const Course = Record({
   id: CourseId,
-  slug: Slug,
+  slug: CourseSlug,
+  status: CourseStatus,
+  supportType: CourseSupportType,
   name: CourseName,
-  details: Optional(CourseDetails),
-  dateTrackMinimum: Timestamp,
   dateOpen: Timestamp,
   dateClosed: Timestamp,
   yearMonthOpen: YearMonth,
-  countEntries: PositiveInteger,
-  countEntriesUnmoderated: PositiveInteger,
-  countEntriesModerated: PositiveInteger,
-  countResultsLongList: PositiveInteger,
-  countResultsShortList: PositiveInteger,
-  countResultsFinalists: PositiveInteger,
-  countResultsWinners: PositiveInteger,
+  // e.g. APF being the account that owns this course
+  accountOwner: AccountSlug,
 });
 
 /**
  * Type for the (internal) course entity
  */
 export type Course = Static<typeof Course>;
-
-export const createCourseSlug = (source: CourseSource): Slug => {
-  const yearMonthOpen = createYearMonth(source.dateOpen);
-  return createSlug(`${yearMonthOpen}-${source.name}`);
-};
 
 /**
  * Type that defines all the possible identifiers for a course
@@ -53,6 +38,6 @@ export const createCourseSlug = (source: CourseSource): Slug => {
  */
 export type CourseIdentifiers = {
   id: CourseId;
-  slug: Slug;
+  slug: CourseSlug;
 };
 export type CourseIdentifier = keyof CourseIdentifiers;

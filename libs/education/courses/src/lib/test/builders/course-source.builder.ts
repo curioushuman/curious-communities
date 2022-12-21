@@ -1,6 +1,7 @@
 import { ExternalId } from '@curioushuman/common';
 
 import { CourseSource } from '../../domain/entities/course-source';
+import { CourseSourceStatus } from '../../domain/value-objects/course-source-status';
 
 /**
  * A builder for Course Sources to play with in testing.
@@ -35,19 +36,15 @@ export const CourseSourceBuilder = () => {
    */
   const defaultProperties: CourseSourceLooseMimic = {
     id: '5008s1234519CjIAAU',
+    status: 'open' as CourseSourceStatus,
     name: 'Learn to be a dancer',
-    status: 'ready',
-    specificCriteria: 'Be a dancer',
-    dateTrackMinimum: timestamps[3],
     dateOpen: timestamps[2],
     dateClosed: timestamps[0],
   };
   const overrides: CourseSourceLooseMimic = {
     id: defaultProperties.id,
-    name: defaultProperties.name,
     status: defaultProperties.status,
-    specificCriteria: defaultProperties.specificCriteria,
-    dateTrackMinimum: defaultProperties.dateTrackMinimum,
+    name: defaultProperties.name,
     dateOpen: defaultProperties.dateOpen,
     dateClosed: defaultProperties.dateClosed,
   };
@@ -76,7 +73,7 @@ export const CourseSourceBuilder = () => {
 
     invalidStatus() {
       overrides.name = 'Pending course';
-      overrides.status = 'pending';
+      overrides.status = 'this is invalid';
       return this;
     },
 

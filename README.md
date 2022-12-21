@@ -387,3 +387,10 @@ The answers
   - Whenever one of these errors occur i.e.
     - It is passed to the controller
     - Which will either `return` or `throw`
+
+## Testing
+
+* pnpm test
+  * For all tests
+* pnpm nx run cc-courses-service:test
+  * For a particular service

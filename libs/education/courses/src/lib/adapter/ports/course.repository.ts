@@ -1,9 +1,8 @@
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
-import { Slug } from '@curioushuman/common';
-
 import { Course, CourseIdentifier } from '../../domain/entities/course';
 import { CourseId } from '../../domain/value-objects/course-id';
+import { CourseSlug } from '../../domain/value-objects/course-slug';
 
 /**
  * Literal list of finders for a course
@@ -29,7 +28,7 @@ export const identifierFinder = (
 
 export abstract class CourseRepository {
   abstract findById(id: CourseId): TaskEither<Error, Course>;
-  abstract findBySlug(slug: Slug): TaskEither<Error, Course>;
+  abstract findBySlug(slug: CourseSlug): TaskEither<Error, Course>;
 
   abstract save(course: Course): TaskEither<Error, void>;
 }

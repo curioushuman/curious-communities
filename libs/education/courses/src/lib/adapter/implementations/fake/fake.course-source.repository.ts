@@ -19,7 +19,9 @@ export class FakeCourseSourceRepository implements CourseSourceRepository {
     );
     this.courseSources.push(CourseSourceBuilder().alpha().build());
     this.courseSources.push(CourseSourceBuilder().beta().build());
-    this.courseSources.push(CourseSourceBuilder().invalidStatus().build());
+    this.courseSources.push(
+      CourseSourceBuilder().invalidStatus().buildNoCheck()
+    );
   }
 
   findOne = (dto: FindCourseSourceDto): TE.TaskEither<Error, CourseSource> => {

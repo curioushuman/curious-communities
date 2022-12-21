@@ -8,19 +8,10 @@
 export class CourseResponseDto {
   id!: string;
   slug!: string;
+  status!: string;
+  supportType!: string;
   name!: string;
-  details?: {
-    specificCriteria?: string;
-  };
-  dateTrackMinimum!: number;
   dateOpen!: number;
   dateClosed!: number;
   yearMonthOpen!: string;
-  countEntries!: number;
-  countEntriesUnmoderated!: number;
-  countEntriesModerated!: number;
-  countResultsLongList!: number;
-  countResultsShortList!: number;
-  countResultsFinalists!: number;
-  countResultsWinners!: number;
 }

@@ -1,11 +1,14 @@
 import { createYearMonth, Timestamp } from '@curioushuman/common';
 
-import { Course, createCourseSlug } from '../../domain/entities/course';
+import { Course } from '../../domain/entities/course';
 import { CourseSource } from '../../domain/entities/course-source';
 import { CourseResponseDto } from '../../infra/dto/course.response.dto';
-import { CreateCourseRequestDto } from '../../infra/dto/create-course.request.dto';
+import { CreateCourseRequestDto } from '../../infra/create-course/dto/create-course.request.dto';
 import { CreateCourseDto } from '../../application/commands/create-course/create-course.dto';
 import { CourseSourceBuilder } from './course-source.builder';
+import config from '../../static/config';
+import { createCourseSlug } from '../../domain/value-objects/course-slug';
+import { CourseStatus } from '../../domain/value-objects/course-status';
 
 /**
  * A builder for Courses to play with in testing.
@@ -41,39 +44,25 @@ export const CourseBuilder = () => {
    */
   const defaultProperties: CourseLooseMimic = {
     id: '5008s1234519CjIAAU',
-    slug: 'learn-to-be-a-dancer',
+    status: 'open' as CourseStatus,
+    slug: 'learn_to_be_a_dancer',
+    supportType: config.defaults.courseSupportType,
     name: 'Learn to be a dancer',
-    details: {
-      specificCriteria: 'Be a dancer',
-    },
-    dateTrackMinimum: timestamps[3],
     dateOpen: timestamps[2],
     dateClosed: timestamps[0],
     yearMonthOpen: createYearMonth(timestamps[2] as Timestamp),
-    countEntries: 0,
-    countEntriesUnmoderated: 0,
-    countEntriesModerated: 0,
-    countResultsLongList: 0,
-    countResultsShortList: 0,
-    countResultsFinalists: 0,
-    countResultsWinners: 0,
+    accountOwner: config.defaults.accountOwner,
   };
   const overrides: CourseLooseMimic = {
     id: defaultProperties.id,
+    status: defaultProperties.status,
     slug: defaultProperties.slug,
+    supportType: defaultProperties.supportType,
     name: defaultProperties.name,
-    details: defaultProperties.details,
-    dateTrackMinimum: defaultProperties.dateTrackMinimum,
     dateOpen: defaultProperties.dateOpen,
     dateClosed: defaultProperties.dateClosed,
     yearMonthOpen: defaultProperties.yearMonthOpen,
-    countEntries: defaultProperties.countEntries,
-    countEntriesUnmoderated: defaultProperties.countEntriesUnmoderated,
-    countEntriesModerated: defaultProperties.countEntriesModerated,
-    countResultsLongList: defaultProperties.countResultsLongList,
-    countResultsShortList: defaultProperties.countResultsShortList,
-    countResultsFinalists: defaultProperties.countResultsFinalists,
-    countResultsWinners: defaultProperties.countResultsWinners,
+    accountOwner: defaultProperties.accountOwner,
   };
 
   return {
@@ -95,7 +84,7 @@ export const CourseBuilder = () => {
 
     beta() {
       // ID DOES NOT EXIST IN SOURCE REPO/DB
-      const source = CourseSourceBuilder().alpha().buildNoCheck();
+      const source = CourseSourceBuilder().beta().buildNoCheck();
       overrides.id = source.id;
       overrides.name = source.name;
       overrides.slug = createCourseSlug(source);
@@ -103,12 +92,16 @@ export const CourseBuilder = () => {
     },
 
     invalidSource() {
-      overrides.id = CourseSourceBuilder().invalidSource().buildNoCheck().id;
+      const source = CourseSourceBuilder().invalidSource().buildNoCheck();
+      overrides.id = source.id;
+      overrides.slug = createCourseSlug(source);
       return this;
     },
 
     invalidStatus() {
-      overrides.id = CourseSourceBuilder().invalidStatus().buildNoCheck().id;
+      const source = CourseSourceBuilder().invalidStatus().buildNoCheck();
+      overrides.id = source.id;
+      overrides.slug = createCourseSlug(source);
       return this;
     },
 
@@ -155,6 +148,10 @@ export const CourseBuilder = () => {
     },
 
     build(): Course {
+      console.log({
+        ...defaultProperties,
+        ...overrides,
+      });
       return Course.check({
         ...defaultProperties,
         ...overrides,

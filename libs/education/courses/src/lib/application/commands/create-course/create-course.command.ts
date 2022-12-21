@@ -18,7 +18,7 @@ import { CourseRepository } from '../../../adapter/ports/course.repository';
 import { CreateCourseDto } from './create-course.dto';
 import { CreateCourseMapper } from './create-course.mapper';
 import { CourseSourceRepository } from '../../../adapter/ports/course-source.repository';
-import { CourseSourceForCreate } from '../../../domain/entities/course-source';
+import { CourseSource } from '../../../domain/entities/course-source';
 
 export class CreateCourseCommand implements ICommand {
   constructor(public readonly createCourseDto: CreateCourseDto) {}
@@ -70,7 +70,7 @@ export class CreateCourseHandler
       TE.chain((courseSource) =>
         sequenceT(TE.ApplySeq)(
           parseActionData(
-            CourseSourceForCreate.check,
+            CourseSource.check,
             this.logger,
             'SourceInvalidError'
           )(courseSource),

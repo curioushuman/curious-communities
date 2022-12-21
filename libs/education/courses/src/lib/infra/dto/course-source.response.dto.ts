@@ -7,10 +7,8 @@
  */
 export class CourseSourceResponseDto {
   id!: string;
-  name!: string;
   status!: string;
-  specificCriteria?: string;
-  dateTrackMinimum!: number;
+  name!: string;
   dateOpen!: number;
   dateClosed!: number;
 }

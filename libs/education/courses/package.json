@@ -4,17 +4,17 @@
   "type": "commonjs",
   "main": "src/index.js",
   "dependencies": {
-    "@curioushuman/common": "^0.0.1",
-    "@curioushuman/error-factory": "^0.0.1",
-    "@curioushuman/fp-ts-utils": "^0.0.1",
-    "@curioushuman/loggable": "^0.0.1",
-    "@nestjs/common": "^8.0.0",
-    "@nestjs/core": "^8.0.0",
+    "@curioushuman/common": "workspace:^0.0.1",
+    "@curioushuman/error-factory": "workspace:^0.0.1",
+    "@curioushuman/fp-ts-utils": "workspace:^0.0.1",
+    "@curioushuman/loggable": "workspace:^0.0.1",
+    "@nestjs/common": "^8.4.7",
+    "@nestjs/core": "^8.4.7",
     "@nestjs/cqrs": "^8.0.5",
-    "fp-ts": "^2.12.1",
-    "runtypes": "^6.5.1"
+    "fp-ts": "^2.13.1",
+    "runtypes": "^6.6.0"
   },
   "devDependencies": {
-    "@nestjs/testing": "^8.0.0"
+    "@nestjs/testing": "^8.4.7"
   }
 }

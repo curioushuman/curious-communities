@@ -95,7 +95,7 @@
     "aws-lambda": "^1.0.7",
     "babel-jest": "27.5.1",
     "cdkp": "^0.7.0",
-    "constructs": "^10.1.195",
+    "constructs": "^10.1.196",
     "dotenv": "^16.0.3",
     "esbuild": "^0.14.54",
     "eslint": "~8.15.0",

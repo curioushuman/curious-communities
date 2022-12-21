@@ -4,8 +4,8 @@
   "type": "commonjs",
   "main": "src/index.js",
   "dependencies": {
-    "@nestjs/common": "^8.0.0",
-    "fp-ts": "^2.11.10",
-    "runtypes": "^6.5.1"
+    "@nestjs/common": "^8.4.7",
+    "fp-ts": "^2.13.1",
+    "runtypes": "^6.6.0"
   }
 }

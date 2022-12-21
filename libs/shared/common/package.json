@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "src/index.js",
   "dependencies": {
-    "runtypes": "^6.5.1",
+    "runtypes": "^6.6.0",
     "slug": "^5.3.0",
     "uuid": "^8.3.2"
   },

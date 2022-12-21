@@ -7,10 +7,10 @@
     "@curioushuman/error-factory": "file:../../../dist/layers/shared/nodejs/node_modules/@curioushuman/error-factory/src/index.js"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.30.0",
-    "constructs": "^10.1.43",
-    "dotenv": "^16.0.1",
-    "runtypes": "^6.5.1",
-    "tslib": "^2.3.0"
+    "aws-cdk-lib": "^2.55.1",
+    "constructs": "^10.1.196",
+    "dotenv": "^16.0.3",
+    "runtypes": "^6.6.0",
+    "tslib": "^2.4.1"
   }
 }

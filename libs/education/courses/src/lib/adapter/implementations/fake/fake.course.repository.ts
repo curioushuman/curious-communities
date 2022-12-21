@@ -67,7 +67,14 @@ export class FakeCourseRepository implements CourseRepository {
   save = (course: Course): TE.TaskEither<Error, void> => {
     return TE.tryCatch(
       async () => {
-        this.courses.push(course);
+        const courseExists = this.courses.find((cs) => cs.id === course.id);
+        if (courseExists) {
+          this.courses = this.courses.map((cs) =>
+            cs.id === course.id ? course : cs
+          );
+        } else {
+          this.courses.push(course);
+        }
       },
       (reason: unknown) => reason as Error
     );

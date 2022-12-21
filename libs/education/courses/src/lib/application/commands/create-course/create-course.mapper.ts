@@ -1,13 +1,8 @@
-import { createYearMonth } from '@curioushuman/common';
-
 import { CreateCourseDto } from './create-course.dto';
 import { CreateCourseRequestDto } from '../../../infra/create-course/dto/create-course.request.dto';
 import { FindCourseSourceDto } from '../../queries/find-course-source/find-course-source.dto';
 import { CourseSource } from '../../../domain/entities/course-source';
-import { Course } from '../../../domain/entities/course';
 import { FindCourseDto } from '../../queries/find-course/find-course.dto';
-import config from '../../../static/config';
-import { createCourseSlug } from '../../../domain/value-objects/course-slug';
 
 /**
  * TODO
@@ -25,24 +20,6 @@ export class CreateCourseMapper {
   ): FindCourseSourceDto {
     return FindCourseSourceDto.check({
       id: dto.id,
-    });
-  }
-
-  /**
-   * TODO
-   * - [ ] move this to a better home
-   */
-  public static fromSourceToCourse(source: CourseSource): Course {
-    return Course.check({
-      id: source.id,
-      slug: createCourseSlug(source),
-      status: source.status,
-      supportType: config.defaults.courseSupportType,
-      name: source.name,
-      dateOpen: source.dateOpen,
-      dateClosed: source.dateClosed,
-      yearMonthOpen: createYearMonth(source.dateOpen),
-      accountOwner: config.defaults.accountOwner,
     });
   }
 

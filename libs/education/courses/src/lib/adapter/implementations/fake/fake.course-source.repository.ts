@@ -49,4 +49,22 @@ export class FakeCourseSourceRepository implements CourseSourceRepository {
       (reason: unknown) => reason as Error
     );
   };
+
+  save = (courseSource: CourseSource): TE.TaskEither<Error, void> => {
+    return TE.tryCatch(
+      async () => {
+        const courseExists = this.courseSources.find(
+          (cs) => cs.id === courseSource.id
+        );
+        if (courseExists) {
+          this.courseSources = this.courseSources.map((cs) =>
+            cs.id === courseSource.id ? courseSource : cs
+          );
+        } else {
+          this.courseSources.push(courseSource);
+        }
+      },
+      (reason: unknown) => reason as Error
+    );
+  };
 }

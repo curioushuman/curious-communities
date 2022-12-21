@@ -9,6 +9,8 @@ import { CourseSourceBuilder } from './course-source.builder';
 import config from '../../static/config';
 import { createCourseSlug } from '../../domain/value-objects/course-slug';
 import { CourseStatus } from '../../domain/value-objects/course-status';
+import { UpdateCourseRequestDto } from '../../infra/update-course/dto/update-course.request.dto';
+import { UpdateCourseDto } from '../../application/commands/update-course/update-course.dto';
 
 /**
  * A builder for Courses to play with in testing.
@@ -119,7 +121,9 @@ export const CourseBuilder = () => {
     },
 
     exists() {
-      overrides.id = CourseSourceBuilder().exists().build().id;
+      const source = CourseSourceBuilder().exists().build();
+      overrides.id = source.id;
+      overrides.slug = createCourseSlug(source);
       return this;
     },
 
@@ -148,10 +152,6 @@ export const CourseBuilder = () => {
     },
 
     build(): Course {
-      console.log({
-        ...defaultProperties,
-        ...overrides,
-      });
       return Course.check({
         ...defaultProperties,
         ...overrides,
@@ -175,6 +175,18 @@ export const CourseBuilder = () => {
       return {
         id: this.buildNoCheck().id,
       } as CreateCourseRequestDto;
+    },
+
+    buildUpdateCourseDto(): UpdateCourseDto {
+      return {
+        id: this.build().id,
+      } as UpdateCourseDto;
+    },
+
+    buildUpdateCourseRequestDto(): UpdateCourseRequestDto {
+      return {
+        id: this.buildNoCheck().id,
+      } as UpdateCourseRequestDto;
     },
 
     buildCourseResponseDto(): CourseResponseDto {

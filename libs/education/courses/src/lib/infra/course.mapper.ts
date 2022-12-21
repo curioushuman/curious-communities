@@ -5,7 +5,7 @@ import { Course } from '../domain/entities/course';
  * TODO
  * - Should we do more checking of CourseResponseDto?
  */
-export class CoursesMapper {
+export class CourseMapper {
   public static toResponseDto(course: Course): CourseResponseDto {
     return {
       id: course.id,

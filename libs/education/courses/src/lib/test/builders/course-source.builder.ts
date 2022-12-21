@@ -87,6 +87,12 @@ export const CourseSourceBuilder = () => {
       return this;
     },
 
+    updated() {
+      overrides.id = ExternalId.check('ThisSourceExists');
+      overrides.name = 'Updated course';
+      return this;
+    },
+
     build(): CourseSource {
       return CourseSource.check({
         ...defaultProperties,

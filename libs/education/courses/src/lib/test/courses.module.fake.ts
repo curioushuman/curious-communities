@@ -13,14 +13,16 @@ import { CourseSourceRepository } from '../adapter/ports/course-source.repositor
 import { FakeCourseSourceRepository } from '../adapter/implementations/fake/fake.course-source.repository';
 import { CreateCourseController } from '../infra/create-course/create-course.controller';
 import { CreateCourseHandler } from '../application/commands/create-course/create-course.command';
+import { UpdateCourseController } from '../infra/update-course/update-course.controller';
+import { UpdateCourseHandler } from '../application/commands/update-course/update-course.command';
 // import { ParticipantRepository } from '../adapter/ports/participant.repository';
 // import { FakeParticipantRepository } from '../adapter/implementations/fake/fake.participant.repository';
 // import { ParticipantSourceRepository } from '../adapter/ports/participant-source.repository';
 // import { FakeParticipantSourceRepository } from '../adapter/implementations/fake/fake.participant-source.repository';
 
-const controllers = [CreateCourseController];
+const controllers = [CreateCourseController, UpdateCourseController];
 
-const handlers = [CreateCourseHandler];
+const handlers = [CreateCourseHandler, UpdateCourseHandler];
 
 const repositories = [
   {

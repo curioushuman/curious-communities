@@ -26,10 +26,6 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     /**
      * Courses table
-     *
-     * * NOTES
-     * * pk = COMP#Comp_id#TrackUploadYearMonth
-     * * sk = #ModeratedStatus#TrackUploadDay
      */
     const [tableName, tableTitle] = resourceNameTitle(id, 'DynamoDbTable');
     this.table = new dynamodb.Table(this, tableTitle, {
@@ -47,51 +43,16 @@ export class CoursesDynamoDbConstruct extends Construct {
     // allow root to read
     this.table.grantReadData(new iam.AccountRootPrincipal());
 
-    // Local secondary index - STATE
-    // * sk = #State#ModeratedStatus#TrackUploadDay
+    // Local secondary index - EMAIL
     this.table.addLocalSecondaryIndex({
-      indexName: transformIdToResourceTitle('courses-by-state', 'DynamoDbLSI'),
+      indexName: transformIdToResourceTitle('pax-by-email', 'DynamoDbLSI'),
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
-    // Local secondary index - AURORA REGION
-    // * sk = #AuroraRegion#ModeratedStatus#TrackUploadDay
+    // Local secondary index - LAST NAME
     this.table.addLocalSecondaryIndex({
-      indexName: transformIdToResourceTitle('courses-by-aurora', 'DynamoDbLSI'),
-      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
-      projectionType: dynamodb.ProjectionType.ALL,
-    });
-
-    // Global secondary index - SUB GROUP
-    // * pk = COMP#Comp_id#SubGroup
-    // * sk = #TrackUploadDate
-    this.table.addGlobalSecondaryIndex({
-      indexName: transformIdToResourceTitle(
-        'courses-by-subgroup',
-        'DynamoDbGSI'
-      ),
-      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
-      projectionType: dynamodb.ProjectionType.ALL,
-    });
-
-    // Global secondary index - RESULTS i.e. long list, short list, finalist, winner
-    // * pk = COMP#Comp_id
-    // * sk = #ResultStatus#TrackUploadDate
-    this.table.addGlobalSecondaryIndex({
-      indexName: transformIdToResourceTitle('courses-by-result', 'DynamoDbGSI'),
-      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
-      projectionType: dynamodb.ProjectionType.ALL,
-    });
-
-    // Global secondary index - BY ARTIST NAME
-    // * pk = COMP#Comp_id#ArtistNameFirstLetter
-    // * sk = #ArtistName
-    this.table.addGlobalSecondaryIndex({
-      indexName: transformIdToResourceTitle('courses-by-artist', 'DynamoDbGSI'),
-      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+      indexName: transformIdToResourceTitle('pax-by-lastname', 'DynamoDbLSI'),
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
     });

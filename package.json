@@ -45,7 +45,7 @@
     "destroy-apps": "nx run-many --parallel=1 --target=$NX_DESTROY_TARGET --projects=cc-courses,cc-api-admin",
     "destroy-in-order": "pnpm destroy-apps && pnpm destroy-support",
     "--LOCALSTACK": "SCRIPTS--",
-    "build-localstack": "pnpm start-localstack && pnpm bootstrap-localstack",
+    "build-localstack": "pnpm start-localstack",
     "start-localstack": "docker-compose up &",
     "bootstrap-localstack": "sleep 10 && node_modules/.bin/cdklocal bootstrap aws://000000000000/ap-southeast-2",
     "stop-localstack": "pkill docker-compose up",

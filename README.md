@@ -4,6 +4,12 @@ This will be the home for all things ABC Audio APIs.
 
 **Please note** this README is a garbled mess. Working towards a deadline, and still experimenting with infrastructure, then I will come back and tidy this up.
 
+## Get started
+
+1. pnpm i
+2. pnpm deploy-local
+3. pnpm bootstrap-local
+
 ## Things that need to be outlined
 
 - Using PNPM

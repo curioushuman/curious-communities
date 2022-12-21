@@ -21,11 +21,17 @@ import { FakeCourseRepository } from '../../../adapter/implementations/fake/fake
 import { CourseRepository } from '../../../adapter/ports/course.repository';
 
 /**
- * UNIT TEST
- * SUT = the command & command handler
+ * INTEGRATION TEST
+ * SUT = the controller, the command handler
+ *
+ * NOTES:
+ * - the controller does so little, so rather than create a separate unit test
+ *  for it, we'll just test it here
+ *
+ * TODO
+ * - [ ] need to mock an error for internal error testing
  *
  * Out of scope
- * - request validation
  * - repository authorisation
  * - repository access issues
  */

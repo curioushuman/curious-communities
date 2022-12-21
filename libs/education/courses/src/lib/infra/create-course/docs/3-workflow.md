@@ -62,14 +62,8 @@ Else
 
 #### Output: Fail
 
-- RepositoryServerUnavailableError
-  - Extends ServiceUnavailableException
-- RepositoryAuthenticationError
-  - Extends UnauthorizedException
-- RepositoryItemNotFoundError
-  - Extends NotFoundException
-- RepositoryServerError
-  - Extends InternalServerException
+- Various internal errors
+  - See application docs for more info
 
 #### Steps (pseudocode)
 
@@ -77,7 +71,7 @@ Else
 Try to create course
   catch + return Error
 Else
-  return CourseSource
+  return Course
 ```
 
 ### Step 4A. Return success

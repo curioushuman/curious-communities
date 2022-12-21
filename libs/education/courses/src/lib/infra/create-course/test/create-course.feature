@@ -13,29 +13,10 @@ Scenario: Fail; Invalid request
   Then I should receive a RequestInvalidError
   And no result is returned
 
-# Unnecessary
-# Scenario: Fail; Unable to connect to source repository
-
-# Unnecessary
-# Scenario: Fail; Unable to authenticate with source repository
-
-# Unnecessary
-# Scenario: Fail; Source not found for ID provided
-
-# TODO
-# Scenario: Fail; Problems accessing source repository
+# TODO - needs to be implemented
+# Scenario: Fail; internal error occurred
 #   Given the request is valid
-#   And I am authorised to access the source
-#   And I have an issue accessing the source repository
+#   And an internal error occurs during course creation
 #   When I attempt to create a course
-#   Then I should receive a RepositoryServerError
+#   Then I should receive an error
 #   And no result is returned
-
-# Unnecessary
-# Scenario: Fail; Source does not translate into a valid Course
-
-# Unnecessary
-# Scenario: Fail; Source is already associated with a Course
-
-# Unnecessary
-# Scenario: Fail; Source already exists in our DB

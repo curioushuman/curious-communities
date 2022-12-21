@@ -23,13 +23,8 @@
 
 ### Failure (1+):
 
-- RequestInvalidError
-- RepositoryAuthenticationError
-- RepositoryItemNotFoundError
-- RepositoryServerError
-- RepositoryServerUnavailableError
-- SourceInvalidError
-- RepositoryItemConflictError
+- Various internal errors
+  - See Application for more info
 
 ## 3. Behaviour
 
@@ -40,7 +35,6 @@
 ### Side-effects
 
 - Course created
-- External record updated with course ID
 
 ## 4. Decisions
 

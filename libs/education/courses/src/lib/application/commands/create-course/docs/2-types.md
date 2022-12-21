@@ -19,14 +19,14 @@ Assume everything is AND unless specified by OR and ()
 - id
 - name
 - slug
-- courseId
+- (See entity for full spec)
 
 ### Course
 
 - id
 - name
 - slug
-- externalId
+- (See entity for full spec)
 
 ## Errors
 

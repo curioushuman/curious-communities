@@ -20,7 +20,7 @@ export class ApiAdminTestStack extends cdk.Stack {
     /**
      * (SUT) External events eventBus
      */
-    const externalEventsEventBusId = 'ue-external-events';
+    const externalEventsEventBusId = 'cc-external-events';
     const [externalEventsEventBusName, externalEventsEventBusTitle] =
       resourceNameTitle(externalEventsEventBusId, 'EventBus');
     const externalEventsEventBus = events.EventBus.fromEventBusArn(
@@ -48,7 +48,7 @@ export class ApiAdminTestStack extends cdk.Stack {
     const testSqsRule = new events.Rule(this, ruleTitle, {
       ruleName,
       eventBus: externalEventsEventBus,
-      description: 'Listen for all events from ue-external-events event bus.',
+      description: 'Listen for all events from cc-external-events event bus.',
       eventPattern: {
         detailType: ['putEvent'],
       },

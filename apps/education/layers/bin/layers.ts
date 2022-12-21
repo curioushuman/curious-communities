@@ -10,13 +10,13 @@ import {
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import { UeLayersStack } from '../lib/layers-stack';
+import { CcLayersStack } from '../lib/layers-stack';
 
 const [account, region] = getAccountAndRegion();
 
 // creating an app in cloud or local
 const app = new cdk.App();
-new UeLayersStack(app, transformIdToResourceTitle('ue-layers', 'Stack'), {
+new CcLayersStack(app, transformIdToResourceTitle('cc-layers', 'Stack'), {
   env: {
     account,
     region,

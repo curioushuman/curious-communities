@@ -160,29 +160,29 @@ Some notes about this series of testing:
 
 Or something like that...
 
-An example is GET/ue-courses
+An example is GET/cc-courses
 
-Admin will want /ue-courses/{externalId}
-Public will want /ue-courses/{slug}
-RESTapi should be /ue-courses/{id}
+Admin will want /cc-courses/{externalId}
+Public will want /cc-courses/{slug}
+RESTapi should be /cc-courses/{id}
 
 Then there is the service layer...
 
 One way
 
-- ue-api-admin
-  - /ue-courses/{externalId}
+- cc-api-admin
+  - /cc-courses/{externalId}
   - handler
     - return FindCourseController.find({externalId})
   - controller
-    - Findue-coursesQuery({externalId})
+    - Findcc-coursesQuery({externalId})
     - return first
   - query/service
     - Repository.find({externalId})
   - repository
     - Varies
 - api-public
-  - /ue-courses/{id}
+  - /cc-courses/{id}
   - handler
     - return FindCourseController.find({id})
   - controller
@@ -192,14 +192,14 @@ One way
   - repository
     - Varies
 - api-public
-  - /ue-courses/{id?}?{slug?}
+  - /cc-courses/{id?}?{slug?}
   - handler
     - return FindCourseController.find({id, slug})
   - controller
     - if ID
       - return FindCourseQuery({id})
     - else
-      - Findue-coursesQuery({externalId})
+      - Findcc-coursesQuery({externalId})
       - return first
   - query/service
     - Repository.findOne({externalId})
@@ -304,7 +304,7 @@ The answers
   - Nest.logger.Error (lambda level) validation error
   - OR
   - AWS.logger.Warn {function.action} failed
-    - e.g. ue-courses.findOne failed
+    - e.g. cc-courses.findOne failed
 - For client errors
   - logger.Log {function.action} incomplete due to client error
   - (All other, more detailed, info will have already been logged)

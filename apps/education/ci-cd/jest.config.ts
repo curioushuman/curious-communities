@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'ue-ci-cd',
+  displayName: 'cc-ci-cd',
   preset: '../../../jest.preset.js',
   globals: {
     'ts-jest': {

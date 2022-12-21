@@ -171,5 +171,5 @@
     }
   },
   "tags": [],
-  "implicitDependencies": ["layers", "ue-layers", "ue-events"]
+  "implicitDependencies": ["layers", "cc-layers", "cc-events"]
 }

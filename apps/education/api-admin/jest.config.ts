@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'ue-api-admin',
+  displayName: 'cc-api-admin',
   preset: '../../../jest.preset.js',
   globals: {
     'ts-jest': {

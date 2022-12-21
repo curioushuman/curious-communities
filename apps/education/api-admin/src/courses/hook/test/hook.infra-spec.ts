@@ -36,7 +36,7 @@ const region = process.env.AWS_REGION || 'ap-southeast-2';
  * TODO
  * - [ ] move this to a helper
  */
-const apiId = 'ue-api-admin';
+const apiId = 'cc-api-admin';
 const stackTitle = transformIdToResourceTitle(apiId, 'Stack');
 // TODO - move this to Jest utils at some point
 const apiUrl = process.env[`${stackTitle}_ApiUrl`];
@@ -45,7 +45,7 @@ defineFeature(feature, (test) => {
   // let [queueArn, subscriptionArn, queueUrl] = ['', '', ''];
 
   beforeAll(async () => {
-    // const queueId = 'ue-external-events';
+    // const queueId = 'cc-external-events';
     // const queueName = transformIdToTestResourceName(queueId, 'Queue');
     // queueArn = `arn:aws:sqs:${region}:${account}:${queueName}`;
     // console.log(queueArn);

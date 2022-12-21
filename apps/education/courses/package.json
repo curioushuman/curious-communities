@@ -1,10 +1,10 @@
 {
-  "name": "@curioushuman/ue-courses",
+  "name": "@curioushuman/cc-courses",
   "version": "0.0.1",
   "type": "commonjs",
   "main": "src/index.js",
   "dependencies": {
-    "@curioushuman/ue-courses-service": "^0.0.1",
+    "@curioushuman/cc-courses-service": "^0.0.1",
     "@curioushuman/loggable": "^0.0.1",
     "@curioushuman/error-factory": "^0.0.1",
     "@nestjs/common": "^8.0.0",

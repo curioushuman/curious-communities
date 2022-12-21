@@ -1,3 +1,3 @@
-# ue-courses-service
+# cc-courses-service
 
 TBD

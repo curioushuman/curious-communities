@@ -46,11 +46,11 @@ describe('ApiAdminStack : hook', () => {
 
   describe('/courses/{eventType}/{externalId}?{updatedStatus?}', () => {
     const resourceParentRegex =
-      'ueapiadminRestApicourseshookeventType[A-Z0-9]+';
+      'ccapiadminRestApicourseshookeventType[A-Z0-9]+';
     const resourceIdRegex =
-      'ueapiadminRestApicourseshookeventTypeexternalId[A-Z0-9]+';
+      'ccapiadminRestApicourseshookeventTypeexternalId[A-Z0-9]+';
     const responseMethodSuccessModelRegex =
-      'ueapiadminRestApiHookEventSuccessResponseModel[A-Z0-9]+';
+      'ccapiadminRestApiHookEventSuccessResponseModel[A-Z0-9]+';
 
     it('Should exist', () => {
       template.hasResourceProperties('AWS::ApiGateway::Resource', {

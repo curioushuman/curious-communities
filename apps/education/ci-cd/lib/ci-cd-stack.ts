@@ -16,7 +16,7 @@ import {
  * TODO
  * - [ ] move the GitHub OpenId identity provider to a construct in the cdk-utils package
  */
-export class UeCiCdStack extends cdk.Stack {
+export class CcCiCdStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -36,7 +36,7 @@ export class UeCiCdStack extends cdk.Stack {
     /**
      * OpenId identity provider for GitHub
      */
-    const providerTitle = transformIdToResourceTitle('ue-ci-cd', 'Stack');
+    const providerTitle = transformIdToResourceTitle('cc-ci-cd', 'Stack');
     const githubProvider = new iam.OpenIdConnectProvider(this, providerTitle, {
       url: `https://${githubDomain}`,
       clientIds: [githubClientId],
@@ -57,7 +57,7 @@ export class UeCiCdStack extends cdk.Stack {
     /**
      * Role for GitHub OpenId identity provider
      */
-    const [roleName, roleTitle] = resourceNameTitle('ue-ci-cd', 'Role');
+    const [roleName, roleTitle] = resourceNameTitle('cc-ci-cd', 'Role');
     new iam.Role(this, roleTitle, {
       roleName,
       assumedBy: new iam.WebIdentityPrincipal(

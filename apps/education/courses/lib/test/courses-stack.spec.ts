@@ -25,7 +25,7 @@ describe('CoursesStack', () => {
 
     it('Should exist', () => {
       template.hasResourceProperties('AWS::Lambda::Function', {
-        FunctionName: 'AudioUeCreateCourseLambda',
+        FunctionName: 'AudioCcCreateCourseLambda',
         Layers: layers,
       });
     });

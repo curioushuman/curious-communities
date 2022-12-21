@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'ue-events',
+  displayName: 'cc-events',
   preset: '../../../jest.preset.js',
   globals: {
     'ts-jest': {

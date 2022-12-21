@@ -10,13 +10,13 @@ import {
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import { UeEventsStack } from '../lib/events-stack';
+import { CcEventsStack } from '../lib/events-stack';
 
 const [account, region] = getAccountAndRegion();
 
 // creating an app in cloud or local
 const app = new cdk.App();
-new UeEventsStack(app, transformIdToResourceTitle('ue-events', 'Stack'), {
+new CcEventsStack(app, transformIdToResourceTitle('cc-events', 'Stack'), {
   env: {
     account,
     region,

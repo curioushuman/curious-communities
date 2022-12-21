@@ -9,5 +9,5 @@ servers:
 paths:
 
   # Courses
-  /ue-courses/hook/{eventType}/{externalId}:
+  /cc-courses/hook/{eventType}/{externalId}:
     $ref: "./src/courses/hook/hook.path.yaml"

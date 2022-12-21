@@ -35,7 +35,7 @@
       "@curioushuman/error-factory": ["libs/shared/error-factory/src/index.ts"],
       "@curioushuman/fp-ts-utils": ["libs/shared/fp-ts-utils/src/index.ts"],
       "@curioushuman/loggable": ["libs/shared/loggable/src/index.ts"],
-      "@curioushuman/ue-courses-service": [
+      "@curioushuman/cc-courses-service": [
         "libs/education/courses/src/index.ts"
       ]
     }

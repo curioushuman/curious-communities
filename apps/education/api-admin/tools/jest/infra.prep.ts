@@ -9,7 +9,7 @@ import { JestPrepProps } from 'tools/jest/infra.types';
  * If you move to ES2022 or similar you can define a root level await
  */
 const prep = async function () {
-  const stackTitle = transformIdToResourceTitle('ue-api-admin', 'Stack');
+  const stackTitle = transformIdToResourceTitle('cc-api-admin', 'Stack');
   const prepProps: JestPrepProps = {
     localStackPath: 'apps/education/api-admin',
   };

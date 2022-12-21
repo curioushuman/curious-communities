@@ -8,11 +8,11 @@
     "fp-ts-utils": "libs/shared/fp-ts-utils",
     "layers": "apps/layers",
     "loggable": "libs/shared/loggable",
-    "ue-ci-cd": "apps/education/ci-cd",
-    "ue-events": "apps/education/events",
-    "ue-layers": "apps/education/layers",
-    "ue-api-admin": "apps/education/api-admin",
-    "ue-courses": "apps/education/courses",
-    "ue-courses-service": "libs/education/courses"
+    "cc-ci-cd": "apps/education/ci-cd",
+    "cc-events": "apps/education/events",
+    "cc-layers": "apps/education/layers",
+    "cc-api-admin": "apps/education/api-admin",
+    "cc-courses": "apps/education/courses",
+    "cc-courses-service": "libs/education/courses"
   }
 }

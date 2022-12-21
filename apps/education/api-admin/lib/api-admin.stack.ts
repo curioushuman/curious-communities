@@ -19,7 +19,7 @@ export class ApiAdminStack extends cdk.Stack {
     /**
      * API Gateway
      */
-    const apiAdmin = new CoApiConstruct(this, 'ue-api-admin', {
+    const apiAdmin = new CoApiConstruct(this, 'cc-api-admin', {
       description: 'Education Admin API',
       stageName: 'dev',
     });
@@ -31,7 +31,7 @@ export class ApiAdminStack extends cdk.Stack {
     /**
      * External events eventBus
      */
-    const externalEventsEventBusId = 'ue-external-events';
+    const externalEventsEventBusId = 'cc-external-events';
     const [externalEventsEventBusName, externalEventsEventBusTitle] =
       resourceNameTitle(externalEventsEventBusId, 'EventBus');
     const externalEventsEventBus = events.EventBus.fromEventBusArn(

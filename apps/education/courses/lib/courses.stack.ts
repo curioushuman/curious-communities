@@ -29,7 +29,7 @@ const lambdaProps = {
     sourceMap: true,
     externalModules: [
       'aws-sdk',
-      '@curioushuman/ue-courses-service',
+      '@curioushuman/cc-courses-service',
       '@curioushuman/loggable',
       '@nestjs/common',
       '@nestjs/core',
@@ -72,7 +72,7 @@ export class CoursesStack extends cdk.Stack {
     /**
      * External events eventBus
      */
-    const externalEventsEventBusId = 'ue-external-events';
+    const externalEventsEventBusId = 'cc-external-events';
     const [externalEventsEventBusName, externalEventsEventBusTitle] =
       resourceNameTitle(externalEventsEventBusId, 'EventBus');
     const externalEventsEventBus = events.EventBus.fromEventBusArn(
@@ -84,7 +84,7 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Required layers
      */
-    const chLayerCourses = new ChLayerFrom(this, 'ue-courses-service');
+    const chLayerCourses = new ChLayerFrom(this, 'cc-courses-service');
     const chLayerNodeModules = new ChLayerFrom(this, 'node-modules');
     const chLayerShared = new ChLayerFrom(this, 'shared');
     const lambdaLayers = [
@@ -104,7 +104,7 @@ export class CoursesStack extends cdk.Stack {
      *       https://aws.amazon.com/premiumsupport/knowledge-center/lambda-function-idempotent/
      * - [ ] configure retry attempts (upon failure)
      */
-    const [ccfName, ccfTitle] = resourceNameTitle('ue-create-course', 'Lambda');
+    const [ccfName, ccfTitle] = resourceNameTitle('cc-create-course', 'Lambda');
     const createCourseFunction = new NodejsFunction(this, ccfTitle, {
       functionName: ccfName,
       entry: pathResolve(__dirname, '../src/infra/create-course/main.ts'),

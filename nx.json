@@ -26,5 +26,5 @@
       "dependsOn": ["^build"]
     }
   },
-  "defaultProject": "ue-api-admin"
+  "defaultProject": "cc-api-admin"
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@curioushuman/ue-events",
+  "name": "@curioushuman/cc-events",
   "version": "0.0.1",
   "type": "commonjs",
   "main": "src/index.js",

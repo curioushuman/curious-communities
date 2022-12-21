@@ -1,5 +1,5 @@
 {
-  "name": "@curioushuman/ue-ci-cd",
+  "name": "@curioushuman/cc-ci-cd",
   "version": "0.0.1",
   "type": "commonjs",
   "main": "src/index.js",

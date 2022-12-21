@@ -5,7 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import {
   CreateCourseModule,
   CreateCourseController,
-} from '@curioushuman/ue-courses-service';
+} from '@curioushuman/cc-courses-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 

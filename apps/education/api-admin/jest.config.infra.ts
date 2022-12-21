@@ -2,7 +2,7 @@
 const esModules = ['aws-testing-library', 'filter-obj'].join('|');
 
 export default {
-  displayName: 'ue-api-admin:infra',
+  displayName: 'cc-api-admin:infra',
   preset: '../../../jest.preset.js',
   collectCoverage: false,
   globals: {

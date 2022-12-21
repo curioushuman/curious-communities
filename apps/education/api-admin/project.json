@@ -207,5 +207,5 @@
     }
   },
   "tags": [],
-  "implicitDependencies": ["cdk-utils", "ue-courses"]
+  "implicitDependencies": ["cdk-utils", "cc-courses"]
 }

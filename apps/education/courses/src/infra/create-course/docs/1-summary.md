@@ -44,7 +44,7 @@
 
 ## 4. Decisions
 
-- We only support (creation of ue-courses in) external systems for now
+- We only support (creation of cc-courses in) external systems for now
   - In the future we might expand to allow them to use our own
 - External record info not updatable from custom admin
 - NO extra data administer-able from our admin

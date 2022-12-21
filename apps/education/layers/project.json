@@ -165,7 +165,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "aws lambda add-layer-version-permission --layer-name AudioUeCoursesServiceLayer --version-number 1 --statement-id AudioUeCoursesServiceLayerLocalStack --principal 886468871268 --action lambda:GetLayerVersion | ./non-zero-success.sh"
+          "aws lambda add-layer-version-permission --layer-name AudioCcCoursesServiceLayer --version-number 1 --statement-id AudioCcCoursesServiceLayerLocalStack --principal 886468871268 --action lambda:GetLayerVersion | ./non-zero-success.sh"
         ],
         "cwd": "tools/scripts",
         "parallel": true
@@ -175,7 +175,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "aws lambda remove-layer-version-permission --layer-name AudioUeCoursesServiceLayer --version-number 1 --statement-id AudioUeCoursesServiceLayerLocalStack"
+          "aws lambda remove-layer-version-permission --layer-name AudioCcCoursesServiceLayer --version-number 1 --statement-id AudioCcCoursesServiceLayerLocalStack"
         ],
         "cwd": "apps/education/layers",
         "parallel": true
@@ -206,5 +206,5 @@
     }
   },
   "tags": ["scope:layers"],
-  "implicitDependencies": ["ue-courses-service"]
+  "implicitDependencies": ["cc-courses-service"]
 }

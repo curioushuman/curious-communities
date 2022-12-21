@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "debug:nx-test:ue-api-admin",
+      "name": "debug:nx-test:cc-api-admin",
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}",
@@ -11,13 +11,13 @@
       // "preLaunchTask": "cdk-debug:on",
       // "postDebugTask": "cdk-debug:off",
       "program": "${workspaceFolder}/node_modules/nx/bin/nx.js",
-      "args": ["test", "ue-api-admin", "--codeCoverage=false"],
+      "args": ["test", "cc-api-admin", "--codeCoverage=false"],
       "env": {
         "CDK_DEBUG": "true"
       }
     },
     {
-      "name": "debug:nx-test-infra:ue-api-admin",
+      "name": "debug:nx-test-infra:cc-api-admin",
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}",
@@ -26,7 +26,7 @@
       // "preLaunchTask": "cdk-debug:on",
       // "postDebugTask": "cdk-debug:off",
       "program": "${workspaceFolder}/node_modules/nx/bin/nx.js",
-      "args": ["test-infra", "ue-api-admin", "--codeCoverage=false"],
+      "args": ["test-infra", "cc-api-admin", "--codeCoverage=false"],
       "env": {
         "CDK_DEBUG": "true"
       }

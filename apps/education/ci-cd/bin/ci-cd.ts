@@ -13,13 +13,13 @@ import {
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import { UeCiCdStack } from '../lib/ci-cd-stack';
+import { CcCiCdStack } from '../lib/ci-cd-stack';
 
 const [account, region] = getAccountAndRegion();
 
 // creating an app in cloud or local
 const app = new cdk.App();
-new UeCiCdStack(app, transformIdToResourceTitle('ue-ci-cd', 'Stack'), {
+new CcCiCdStack(app, transformIdToResourceTitle('cc-ci-cd', 'Stack'), {
   env: {
     account,
     region,

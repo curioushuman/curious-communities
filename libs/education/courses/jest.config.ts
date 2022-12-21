@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'ue-courses-service',
+  displayName: 'cc-courses-service',
   preset: '../../../jest.preset.js',
   globals: {
     'ts-jest': {

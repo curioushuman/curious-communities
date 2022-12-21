@@ -7,14 +7,14 @@ import { resourceNameTitle } from '../../../../dist/local/@curioushuman/cdk-util
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-export class UeEventsStack extends cdk.Stack {
+export class CcEventsStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     /**
      * Event Bus to handle all external events
      */
-    const eventBusId = 'ue-external-events';
+    const eventBusId = 'cc-external-events';
     const [eventBusName, eventBusTitle] = resourceNameTitle(
       eventBusId,
       'EventBus'

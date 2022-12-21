@@ -13,6 +13,7 @@
     "--ADMIN": "SCRIPTS--",
     "lint": "nx run-many --all --target=lint --parallel --if-present",
     "test": "nx run-many --all --target=test --parallel --if-present",
+    "test-infra": "nx run-many --all --target=test-infra --parallel --if-present",
     "--BOOTSTRAP": "SCRIPTS--",
     "bootstrap-test": "./tools/scripts/set-stage.sh test && source ./tools/scripts/export-env.sh && cdk bootstrap \"aws://$AWS_ACCOUNT/ap-southeast-2\"",
     "bootstrap-prod": "./tools/scripts/set-stage.sh prod && source ./tools/scripts/export-env.sh && cdk bootstrap \"aws://$AWS_ACCOUNT/ap-southeast-2\"",

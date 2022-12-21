@@ -392,5 +392,12 @@ The answers
 
 * pnpm test
   * For all tests
+* pnpm test-infra
+  * For integration tests that involve AWS infrastructure
+  * Only available for apps, but the --if-present is present in the call so all OK
 * pnpm nx run cc-courses-service:test
   * For a particular service
+* pnpm nx run cc-courses-service:test --watch
+  * For watch mode
+* * pnpm nx run cc-api-admin:test-infra
+  * Similar to previous but for integration tests involving infrastructure

@@ -1,6 +1,6 @@
-# ABC Audio APIs Monorepo
+# Curious Communities Monorepo
 
-This will be the home for all things ABC Audio APIs.
+This will be the home for all things Curious Communities.
 
 **Please note** this README is a garbled mess. Working towards a deadline, and still experimenting with infrastructure, then I will come back and tidy this up.
 
@@ -395,6 +395,7 @@ The answers
 * pnpm test-infra
   * For integration tests that involve AWS infrastructure
   * Only available for apps, but the --if-present is present in the call so all OK
+  * **NOTE:** I think this is where I got up to, and got stalled i.e. WIP
 * pnpm nx run cc-courses-service:test
   * For a particular service
 * pnpm nx run cc-courses-service:test --watch

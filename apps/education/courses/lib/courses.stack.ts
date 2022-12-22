@@ -1,9 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
-import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as logs from 'aws-cdk-lib/aws-logs';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { resolve as pathResolve } from 'path';
 
 // Importing utilities for use in infrastructure processes
@@ -11,41 +9,12 @@ import { resolve as pathResolve } from 'path';
 import {
   ChLayerFrom,
   resourceNameTitle,
+  LambdaEventSubscription,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 import { CoursesDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/courses.construct';
-import { CreateConstruct } from '../src/infra/create-course/create.construct';
-import { UpdateConstruct } from '../src/infra/update-course/update.construct';
-
-/**
- * Most functions will share the same basic props
- * Variations can ben handled below in the stack definition
- */
-const lambdaProps = {
-  architecture: lambda.Architecture.X86_64,
-  bundling: {
-    minify: true,
-    sourceMap: true,
-    externalModules: [
-      'aws-sdk',
-      '@curioushuman/cc-courses-service',
-      '@curioushuman/loggable',
-      '@nestjs/common',
-      '@nestjs/core',
-    ],
-  },
-  environment: {
-    NODE_OPTIONS: '--enable-source-maps',
-  },
-  logRetention: logs.RetentionDays.ONE_DAY,
-  runtime: lambda.Runtime.NODEJS_16_X,
-  memorySize: 128,
-  handler: 'handler',
-  layers: [] as lambda.ILayerVersion[],
-  // timeout: cdk.Duration.minutes(1),
-};
 
 /**
  * These are the components required for the courses stack
@@ -55,6 +24,13 @@ const lambdaProps = {
  * - [*] -abstract the dynamodb table into Construct classes-
  */
 export class CoursesStack extends cdk.Stack {
+  private lambdaProps: NodejsFunctionProps = {
+    bundling: {
+      externalModules: ['@curioushuman/cc-courses-service'],
+    },
+    layers: [] as lambda.ILayerVersion[],
+  };
+
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -84,34 +60,70 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
-     * Required layers
+     * Required layers, additional to normal defaults
      */
     const chLayerCourses = new ChLayerFrom(this, 'cc-courses-service');
-    const chLayerNodeModules = new ChLayerFrom(this, 'node-modules');
-    const chLayerShared = new ChLayerFrom(this, 'shared');
-    lambdaProps.layers = [
-      chLayerCourses.layer,
-      chLayerNodeModules.layer,
-      chLayerShared.layer,
-    ];
+    this.lambdaProps.layers?.push(chLayerCourses.layer);
 
     /**
      * Function: Create Course
      */
-    const createConstruct = new CreateConstruct(this, 'cc-courses-create', {
-      eventBus: externalEventsEventBus,
-      table: coursesTableConstruct.table,
-      lambdaProps,
-    });
+    const createCoursesFunction = new LambdaEventSubscription(
+      this,
+      'cc-courses-create',
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/create-course/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+        eventBus: externalEventsEventBus,
+        ruleDetails: {
+          object: ['participant'],
+          type: ['status-updated'],
+          status: ['created'],
+        },
+        ruleDescription: 'Create internal, to match the external',
+      }
+    );
+
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      createCoursesFunction.lambdaFunction
+    );
+    coursesTableConstruct.table.grantWriteData(
+      createCoursesFunction.lambdaFunction
+    );
 
     /**
      * Function: Update Course
      */
-    const updateConstruct = new UpdateConstruct(this, 'cc-courses-update', {
-      eventBus: externalEventsEventBus,
-      table: coursesTableConstruct.table,
-      lambdaProps,
-    });
+    const updateCoursesFunction = new LambdaEventSubscription(
+      this,
+      'cc-courses-update',
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/update-course/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+        eventBus: externalEventsEventBus,
+        ruleDetails: {
+          object: ['participant'],
+          type: ['status-updated'],
+          status: ['updated'],
+        },
+        ruleDescription: 'Update internal, to match the external',
+      }
+    );
+
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      updateCoursesFunction.lambdaFunction
+    );
+    coursesTableConstruct.table.grantWriteData(
+      updateCoursesFunction.lambdaFunction
+    );
 
     /**
      * Outputs

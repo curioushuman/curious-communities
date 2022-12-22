@@ -25,7 +25,7 @@ describe('CoursesStack', () => {
 
     it('Should exist', () => {
       template.hasResourceProperties('AWS::Lambda::Function', {
-        FunctionName: 'CcCoursesCreateLambda',
+        FunctionName: 'CcCoursesCourseCreateLambda',
         Layers: layers,
       });
     });
@@ -42,7 +42,41 @@ describe('CoursesStack', () => {
 
     it('Should exist', () => {
       template.hasResourceProperties('AWS::Lambda::Function', {
-        FunctionName: 'CcCoursesUpdateLambda',
+        FunctionName: 'CcCoursesCourseUpdateLambda',
+        Layers: layers,
+      });
+    });
+
+    it('Should have 3 layers attached', () => {
+      expect(layers.asArray()).toHaveLength(3);
+    });
+
+    // TODO: additional tests for the lambda
+  });
+
+  describe('Should contain a lambda for creating participants', () => {
+    const layers = new Capture();
+
+    it('Should exist', () => {
+      template.hasResourceProperties('AWS::Lambda::Function', {
+        FunctionName: 'CcCoursesParticipantCreateLambda',
+        Layers: layers,
+      });
+    });
+
+    it('Should have 3 layers attached', () => {
+      expect(layers.asArray()).toHaveLength(3);
+    });
+
+    // TODO: additional tests for the lambda
+  });
+
+  describe('Should contain a lambda for updating participants', () => {
+    const layers = new Capture();
+
+    it('Should exist', () => {
+      template.hasResourceProperties('AWS::Lambda::Function', {
+        FunctionName: 'CcCoursesParticipantUpdateLambda',
         Layers: layers,
       });
     });

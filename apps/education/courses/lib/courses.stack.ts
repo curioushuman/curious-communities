@@ -68,9 +68,9 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Function: Create Course
      */
-    const createCoursesFunction = new LambdaEventSubscription(
+    const createCourseFunction = new LambdaEventSubscription(
       this,
-      'cc-courses-create',
+      'cc-courses-course-create',
       {
         lambdaEntry: pathResolve(
           __dirname,
@@ -89,18 +89,18 @@ export class CoursesStack extends cdk.Stack {
 
     // allow the lambda access to the table
     coursesTableConstruct.table.grantReadData(
-      createCoursesFunction.lambdaFunction
+      createCourseFunction.lambdaFunction
     );
     coursesTableConstruct.table.grantWriteData(
-      createCoursesFunction.lambdaFunction
+      createCourseFunction.lambdaFunction
     );
 
     /**
      * Function: Update Course
      */
-    const updateCoursesFunction = new LambdaEventSubscription(
+    const updateCourseFunction = new LambdaEventSubscription(
       this,
-      'cc-courses-update',
+      'cc-courses-course-update',
       {
         lambdaEntry: pathResolve(
           __dirname,
@@ -119,10 +119,70 @@ export class CoursesStack extends cdk.Stack {
 
     // allow the lambda access to the table
     coursesTableConstruct.table.grantReadData(
-      updateCoursesFunction.lambdaFunction
+      updateCourseFunction.lambdaFunction
     );
     coursesTableConstruct.table.grantWriteData(
-      updateCoursesFunction.lambdaFunction
+      updateCourseFunction.lambdaFunction
+    );
+
+    /**
+     * Function: Create Participant
+     */
+    const createParticipantFunction = new LambdaEventSubscription(
+      this,
+      'cc-courses-participant-create',
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/create-participant/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+        eventBus: externalEventsEventBus,
+        ruleDetails: {
+          object: ['participant'],
+          type: ['status-updated'],
+          status: ['created'],
+        },
+        ruleDescription: 'Create internal, to match the external',
+      }
+    );
+
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      createParticipantFunction.lambdaFunction
+    );
+    coursesTableConstruct.table.grantWriteData(
+      createParticipantFunction.lambdaFunction
+    );
+
+    /**
+     * Function: Update Participant
+     */
+    const updateParticipantFunction = new LambdaEventSubscription(
+      this,
+      'cc-courses-participant-update',
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/update-participant/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+        eventBus: externalEventsEventBus,
+        ruleDetails: {
+          object: ['participant'],
+          type: ['status-updated'],
+          status: ['updated'],
+        },
+        ruleDescription: 'Update internal, to match the external',
+      }
+    );
+
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      updateParticipantFunction.lambdaFunction
+    );
+    coursesTableConstruct.table.grantWriteData(
+      updateParticipantFunction.lambdaFunction
     );
 
     /**

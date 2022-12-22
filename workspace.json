@@ -13,6 +13,8 @@
     "cc-layers": "apps/education/layers",
     "cc-api-admin": "apps/education/api-admin",
     "cc-courses": "apps/education/courses",
-    "cc-courses-service": "libs/education/courses"
+    "cc-courses-service": "libs/education/courses",
+    "cc-groups": "apps/education/groups",
+    "cc-groups-service": "libs/education/groups"
   }
 }

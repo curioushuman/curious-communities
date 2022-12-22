@@ -35,6 +35,7 @@ describe('CoursesStack', () => {
     });
 
     // TODO: additional tests for the lambda
+    // TODO: test RE subscribed to event with the correct rule details
   });
 
   describe('Should contain a lambda for updating courses', () => {
@@ -52,6 +53,7 @@ describe('CoursesStack', () => {
     });
 
     // TODO: additional tests for the lambda
+    // TODO: test RE subscribed to event with the correct rule details
   });
 
   describe('Should contain a lambda for creating participants', () => {
@@ -69,6 +71,7 @@ describe('CoursesStack', () => {
     });
 
     // TODO: additional tests for the lambda
+    // TODO: test RE subscribed to event with the correct rule details
   });
 
   describe('Should contain a lambda for updating participants', () => {
@@ -86,5 +89,6 @@ describe('CoursesStack', () => {
     });
 
     // TODO: additional tests for the lambda
+    // TODO: test RE subscribed to event with the correct rule details
   });
 });

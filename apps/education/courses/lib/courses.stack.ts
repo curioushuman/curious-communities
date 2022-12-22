@@ -79,7 +79,7 @@ export class CoursesStack extends cdk.Stack {
         lambdaProps: this.lambdaProps,
         eventBus: externalEventsEventBus,
         ruleDetails: {
-          object: ['participant'],
+          object: ['course'],
           type: ['status-updated'],
           status: ['created'],
         },
@@ -109,7 +109,7 @@ export class CoursesStack extends cdk.Stack {
         lambdaProps: this.lambdaProps,
         eventBus: externalEventsEventBus,
         ruleDetails: {
-          object: ['participant'],
+          object: ['course'],
           type: ['status-updated'],
           status: ['updated'],
         },

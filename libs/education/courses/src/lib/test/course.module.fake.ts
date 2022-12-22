@@ -15,10 +15,6 @@ import { CreateCourseController } from '../infra/create-course/create-course.con
 import { CreateCourseHandler } from '../application/commands/create-course/create-course.command';
 import { UpdateCourseController } from '../infra/update-course/update-course.controller';
 import { UpdateCourseHandler } from '../application/commands/update-course/update-course.command';
-import { ParticipantRepository } from '../adapter/ports/participant.repository';
-import { FakeParticipantRepository } from '../adapter/implementations/fake/fake.participant.repository';
-import { ParticipantSourceRepository } from '../adapter/ports/participant-source.repository';
-import { FakeParticipantSourceRepository } from '../adapter/implementations/fake/fake.participant-source.repository';
 
 const controllers = [CreateCourseController, UpdateCourseController];
 
@@ -32,11 +28,6 @@ const repositories = [
   {
     provide: CourseSourceRepository,
     useClass: FakeCourseSourceRepository,
-  },
-  { provide: ParticipantRepository, useClass: FakeParticipantRepository },
-  {
-    provide: ParticipantSourceRepository,
-    useClass: FakeParticipantSourceRepository,
   },
 ];
 

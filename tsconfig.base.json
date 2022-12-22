@@ -37,7 +37,8 @@
       "@curioushuman/loggable": ["libs/shared/loggable/src/index.ts"],
       "@curioushuman/cc-courses-service": [
         "libs/education/courses/src/index.ts"
-      ]
+      ],
+      "@curioushuman/cc-groups-service": ["libs/education/groups/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

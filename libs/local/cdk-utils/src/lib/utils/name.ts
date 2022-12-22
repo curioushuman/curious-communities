@@ -10,13 +10,13 @@ import {
 
 /**
  * A resource name needs to be unique across AWS, so is prefixed with the API name,
- * name prefix AND Audio
+ * name prefix AND Cc
  */
 export const transformIdToResourceName = (
   resourceId: ResourceId,
   resourceType: SupportedResourceType
 ): string => {
-  const prefix = process.env.AWS_NAME_PREFIX || 'Audio';
+  const prefix = process.env.AWS_NAME_PREFIX || '';
   return `${prefix}${transformIdToResourceTitle(resourceId, resourceType)}`;
 };
 export const transformIdToTestResourceName = (

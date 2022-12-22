@@ -166,8 +166,8 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "aws lambda add-layer-version-permission --layer-name AudioNodeModulesLayer --version-number 1 --statement-id AudioNodeModulesLayerLocalStack --principal 886468871268 --action lambda:GetLayerVersion | ./non-zero-success.sh",
-          "aws lambda add-layer-version-permission --layer-name AudioSharedLayer --version-number 7 --statement-id AudioSharedLayerLocalStack --principal 886468871268 --action lambda:GetLayerVersion | ./non-zero-success.sh"
+          "aws lambda add-layer-version-permission --layer-name NodeModulesLayer --version-number 1 --statement-id NodeModulesLayerLocalStack --principal 886468871268 --action lambda:GetLayerVersion | ./non-zero-success.sh",
+          "aws lambda add-layer-version-permission --layer-name SharedLayer --version-number 7 --statement-id SharedLayerLocalStack --principal 886468871268 --action lambda:GetLayerVersion | ./non-zero-success.sh"
         ],
         "cwd": "tools/scripts",
         "parallel": true
@@ -177,8 +177,8 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "aws lambda remove-layer-version-permission --layer-name AudioNodeModulesLayer --version-number 1 --statement-id AudioNodeModulesLayerLocalStack",
-          "aws lambda remove-layer-version-permission --layer-name AudioSharedLayer --version-number 7 --statement-id AudioSharedLayerLocalStack"
+          "aws lambda remove-layer-version-permission --layer-name NodeModulesLayer --version-number 1 --statement-id NodeModulesLayerLocalStack",
+          "aws lambda remove-layer-version-permission --layer-name SharedLayer --version-number 7 --statement-id SharedLayerLocalStack"
         ],
         "cwd": "apps/layers",
         "parallel": true

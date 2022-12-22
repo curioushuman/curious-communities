@@ -11,14 +11,14 @@ import {
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
-import { CourseModule } from '../../../test/course.module.fake';
-import { CreateCourseModule } from '../../../create-course.module';
-import { CreateCourseRequestDto } from '../dto/create-course.request.dto';
-import { Course } from '../../../domain/entities/course';
-import { CourseBuilder } from '../../../test/builders/course.builder';
-import { CreateCourseController } from '../../../infra/create-course/create-course.controller';
-import { FakeCourseRepository } from '../../../adapter/implementations/fake/fake.course.repository';
-import { CourseRepository } from '../../../adapter/ports/course.repository';
+import { ParticipantModule } from '../../../test/participant.module.fake';
+import { CreateParticipantModule } from '../../../create-participant.module';
+import { CreateParticipantRequestDto } from '../dto/create-participant.request.dto';
+import { Participant } from '../../../domain/entities/participant';
+import { ParticipantBuilder } from '../../../test/builders/participant.builder';
+import { CreateParticipantController } from '../../../infra/create-participant/create-participant.controller';
+import { FakeParticipantRepository } from '../../../adapter/implementations/fake/fake.participant.repository';
+import { ParticipantRepository } from '../../../adapter/ports/participant.repository';
 
 /**
  * INTEGRATION TEST
@@ -36,56 +36,60 @@ import { CourseRepository } from '../../../adapter/ports/course.repository';
  * - repository access issues
  */
 
-const feature = loadFeature('./create-course.feature', {
+const feature = loadFeature('./create-participant.feature', {
   loadRelativePath: true,
 });
 
 defineFeature(feature, (test) => {
   let app: INestApplication;
-  let repository: FakeCourseRepository;
-  let controller: CreateCourseController;
+  let repository: FakeParticipantRepository;
+  let controller: CreateParticipantController;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [CourseModule],
+      imports: [ParticipantModule],
     }).compile();
 
     app = moduleRef.createNestApplication();
 
     await app.init();
-    CreateCourseModule.applyDefaults(app);
-    repository = moduleRef.get<CourseRepository>(
-      CourseRepository
-    ) as FakeCourseRepository;
-    controller = moduleRef.get<CreateCourseController>(CreateCourseController);
+    CreateParticipantModule.applyDefaults(app);
+    repository = moduleRef.get<ParticipantRepository>(
+      ParticipantRepository
+    ) as FakeParticipantRepository;
+    controller = moduleRef.get<CreateParticipantController>(
+      CreateParticipantController
+    );
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  test('Successfully creating a course', ({ given, and, when, then }) => {
-    let courses: Course[];
-    let coursesBefore: number;
+  test('Successfully creating a participant', ({ given, and, when, then }) => {
+    let participants: Participant[];
+    let participantsBefore: number;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
-    let createCourseDto: CreateCourseRequestDto;
+    let createParticipantDto: CreateParticipantRequestDto;
     let error: Error;
 
     given('the request is valid', () => {
       // we know this to exist in our fake repo
-      createCourseDto = CourseBuilder().beta().buildCreateCourseRequestDto();
+      createParticipantDto = ParticipantBuilder()
+        .beta()
+        .buildCreateParticipantRequestDto();
     });
 
     and('a matching record is found at the source', async () => {
-      courses = await executeTask(repository.all());
-      coursesBefore = courses.length;
+      participants = await executeTask(repository.all());
+      participantsBefore = participants.length;
     });
 
-    when('I attempt to create a course', async () => {
+    when('I attempt to create a participant', async () => {
       try {
-        result = await controller.create(createCourseDto);
+        result = await controller.create(createParticipantDto);
       } catch (err) {
         error = err as Error;
         expect(error).toBeUndefined();
@@ -95,8 +99,8 @@ defineFeature(feature, (test) => {
     then(
       'a new record should have been created in the repository',
       async () => {
-        courses = await executeTask(repository.all());
-        expect(courses.length).toEqual(coursesBefore + 1);
+        participants = await executeTask(repository.all());
+        expect(participants.length).toEqual(participantsBefore + 1);
       }
     );
 
@@ -109,17 +113,19 @@ defineFeature(feature, (test) => {
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
-    let createCourseDto: CreateCourseRequestDto;
+    let createParticipantDto: CreateParticipantRequestDto;
     let error: Error;
 
     given('the request contains invalid data', () => {
       // we know this to exist in our fake repo
-      createCourseDto = CourseBuilder().invalid().buildCreateCourseRequestDto();
+      createParticipantDto = ParticipantBuilder()
+        .invalid()
+        .buildCreateParticipantRequestDto();
     });
 
-    when('I attempt to create a course', async () => {
+    when('I attempt to create a participant', async () => {
       try {
-        result = await controller.create(createCourseDto);
+        result = await controller.create(createParticipantDto);
       } catch (err) {
         error = err as Error;
       }

@@ -49,6 +49,5 @@ export abstract class CourseRepository {
   /**
    * Create/update a course
    */
-  abstract checkById(id: CourseId): TaskEither<Error, boolean>;
   abstract save(course: Course): TaskEither<Error, void>;
 }

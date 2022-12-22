@@ -1,14 +1,14 @@
-# Feature Summary: Create Course
+# Feature Summary: Create Participant
 
 ## 1. Details
 
 - **Subdomain**: Learning design
-- **Aggregate root**: Courses
+- **Aggregate root**: Participants
 
 ## 2. Data
 ### Input data:
 
-- CreateCourseDto
+- CreateParticipantDto
 
 ### Dependencies (from other services/sources)
 
@@ -40,7 +40,7 @@
 
 ### Side-effects
 
-- Course created
+- Participant created
 
 ## 4. Decisions
 

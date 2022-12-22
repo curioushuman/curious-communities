@@ -11,7 +11,7 @@ import {
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
-import { CoursesModule } from '../../../test/courses.module.fake';
+import { CourseModule } from '../../../test/course.module.fake';
 import { UpdateCourseModule } from '../../../update-course.module';
 import { UpdateCourseRequestDto } from '../dto/update-course.request.dto';
 import { CourseBuilder } from '../../../test/builders/course.builder';
@@ -51,7 +51,7 @@ defineFeature(feature, (test) => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [CoursesModule],
+      imports: [CourseModule],
     }).compile();
 
     app = moduleRef.createNestApplication();

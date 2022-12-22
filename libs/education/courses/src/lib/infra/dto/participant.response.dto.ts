@@ -5,10 +5,12 @@
  * - Add swagger ApiProperty to all
  * - later, if/when necessary, add underlying interface
  */
-export class CourseSourceResponseDto {
+export class ParticipantResponseDto {
   id!: string;
+  memberId!: string;
+  courseId!: string;
   status!: string;
-  name!: string;
-  dateOpen!: number;
-  dateClosed!: number;
+  memberName!: string;
+  memberEmail!: string;
+  memberOrganisationName!: string;
 }

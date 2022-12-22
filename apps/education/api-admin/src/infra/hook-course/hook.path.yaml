@@ -41,11 +41,11 @@ get:
       content:
         application/json:
           schema:
-            $ref: "../../schema/error.yaml"
+            $ref: "../../domain/entities/error.yaml"
 
     '500':
       description: Internal server error
       content:
         application/json:
           schema:
-            $ref: "../../schema/error.yaml"
+            $ref: "../../domain/entities/error.yaml"

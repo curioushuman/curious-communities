@@ -10,7 +10,10 @@ import {
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import { HookConstruct, HookProps } from '../src/courses/hook/hook.construct';
+import {
+  HookConstruct,
+  HookProps,
+} from '../src/infra/hook-course/hook.construct';
 
 export class ApiAdminStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {

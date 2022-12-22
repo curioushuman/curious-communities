@@ -4,7 +4,6 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-
 import { resolve as pathResolve } from 'path';
 
 // Importing utilities for use in infrastructure processes
@@ -17,6 +16,8 @@ import {
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 import { CoursesDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/courses.construct';
+import { CreateConstruct } from '../src/infra/create-course/create.construct';
+import { UpdateConstruct } from '../src/infra/update-course/update.construct';
 
 /**
  * Most functions will share the same basic props
@@ -42,6 +43,7 @@ const lambdaProps = {
   runtime: lambda.Runtime.NODEJS_16_X,
   memorySize: 128,
   handler: 'handler',
+  layers: [] as lambda.ILayerVersion[],
   // timeout: cdk.Duration.minutes(1),
 };
 
@@ -87,7 +89,7 @@ export class CoursesStack extends cdk.Stack {
     const chLayerCourses = new ChLayerFrom(this, 'cc-courses-service');
     const chLayerNodeModules = new ChLayerFrom(this, 'node-modules');
     const chLayerShared = new ChLayerFrom(this, 'shared');
-    const lambdaLayers = [
+    lambdaProps.layers = [
       chLayerCourses.layer,
       chLayerNodeModules.layer,
       chLayerShared.layer,
@@ -95,53 +97,21 @@ export class CoursesStack extends cdk.Stack {
 
     /**
      * Function: Create Course
-     *
-     * NOTES:
-     * - functionName required for importing into other stacks
-     *
-     * TODO:
-     * - [ ] idempotency
-     *       https://aws.amazon.com/premiumsupport/knowledge-center/lambda-function-idempotent/
-     * - [ ] configure retry attempts (upon failure)
      */
-    const [ccfName, ccfTitle] = resourceNameTitle('cc-create-course', 'Lambda');
-    const createCourseFunction = new NodejsFunction(this, ccfTitle, {
-      functionName: ccfName,
-      entry: pathResolve(__dirname, '../src/infra/create-course/main.ts'),
-      layers: lambdaLayers,
-      ...lambdaProps,
+    const createConstruct = new CreateConstruct(this, 'cc-courses-create', {
+      eventBus: externalEventsEventBus,
+      table: coursesTableConstruct.table,
+      lambdaProps,
     });
-    // ALWAYS ADD TAGS
-    // TODO - add better tags
-    cdk.Tags.of(createCourseFunction).add('identifier', ccfTitle);
-
-    // allow create to read and write
-    coursesTableConstruct.table.grantReadData(createCourseFunction);
-    coursesTableConstruct.table.grantWriteData(createCourseFunction);
 
     /**
-     * Rule: Create Course when course source is opened
+     * Function: Update Course
      */
-    const [ruleName, ruleTitle] = resourceNameTitle(
-      'course-status-updated-open',
-      'Rule'
-    );
-    const createCourseRule = new events.Rule(this, ruleTitle, {
-      ruleName,
+    const updateConstruct = new UpdateConstruct(this, 'cc-courses-update', {
       eventBus: externalEventsEventBus,
-      description: 'When a course source is opened, create a course internally',
-      eventPattern: {
-        detailType: ['putEvent'],
-        detail: {
-          object: ['course'],
-          type: ['status-updated'],
-          status: ['open'],
-        },
-      },
+      table: coursesTableConstruct.table,
+      lambdaProps,
     });
-    createCourseRule.addTarget(
-      new targets.LambdaFunction(createCourseFunction)
-    );
 
     /**
      * Outputs

@@ -25,7 +25,24 @@ describe('CoursesStack', () => {
 
     it('Should exist', () => {
       template.hasResourceProperties('AWS::Lambda::Function', {
-        FunctionName: 'AudioCcCreateCourseLambda',
+        FunctionName: 'CcCoursesCreateLambda',
+        Layers: layers,
+      });
+    });
+
+    it('Should have 3 layers attached', () => {
+      expect(layers.asArray()).toHaveLength(3);
+    });
+
+    // TODO: additional tests for the lambda
+  });
+
+  describe('Should contain a lambda for updating courses', () => {
+    const layers = new Capture();
+
+    it('Should exist', () => {
+      template.hasResourceProperties('AWS::Lambda::Function', {
+        FunctionName: 'CcCoursesUpdateLambda',
         Layers: layers,
       });
     });

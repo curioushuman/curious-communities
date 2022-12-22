@@ -27,8 +27,28 @@ export const identifierFinder = (
 };
 
 export abstract class CourseRepository {
+  /**
+   * Find a course by the given ID
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
   abstract findById(id: CourseId): TaskEither<Error, Course>;
+
+  /**
+   * Find a course by the given ID
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
   abstract findBySlug(slug: CourseSlug): TaskEither<Error, Course>;
 
+  /**
+   * Check for existence of course by given ID
+   */
+  abstract checkById(id: CourseId): TaskEither<Error, boolean>;
+
+  /**
+   * Create/update a course
+   */
+  abstract checkById(id: CourseId): TaskEither<Error, boolean>;
   abstract save(course: Course): TaskEither<Error, void>;
 }

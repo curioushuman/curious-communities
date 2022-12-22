@@ -64,6 +64,27 @@ export class FakeCourseRepository implements CourseRepository {
     );
   };
 
+  checkById = (id: CourseId): TE.TaskEither<Error, boolean> => {
+    return TE.tryCatch(
+      async () => {
+        const course = this.courses.find((cs) => cs.id === id);
+        return pipe(
+          course,
+          O.fromNullable,
+          O.fold(
+            () => false,
+            // this mimics the fact that all non-fake adapters
+            // will come with a mapper, which will perform a check
+            // prior to return
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            (_) => true
+          )
+        );
+      },
+      (reason: unknown) => reason as Error
+    );
+  };
+
   save = (course: Course): TE.TaskEither<Error, void> => {
     return TE.tryCatch(
       async () => {

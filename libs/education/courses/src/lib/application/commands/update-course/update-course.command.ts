@@ -75,7 +75,7 @@ export class UpdateCourseHandler
           ),
           performAction(
             findCourseDto.value,
-            this.courseRepository.findById,
+            this.courseRepository.checkById,
             this.errorFactory,
             this.logger,
             `find course: ${findCourseDto.value}`
@@ -84,13 +84,13 @@ export class UpdateCourseHandler
       ),
 
       // #3. validate + transform; courses exists, source is valid, source to course
-      TE.chain(([courseSource, course]) => {
+      TE.chain(([courseSource, courseExists]) => {
         if (!courseSource) {
           throw new RepositoryItemNotFoundError(
             `Course source id: ${updateCourseDto.id}`
           );
         }
-        if (!course) {
+        if (courseExists === false) {
           throw new RepositoryItemNotFoundError(
             `Course id: ${updateCourseDto.id}`
           );

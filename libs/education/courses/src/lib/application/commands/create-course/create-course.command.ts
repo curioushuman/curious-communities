@@ -6,6 +6,7 @@ import { sequenceT } from 'fp-ts/lib/Apply';
 import {
   ErrorFactory,
   RepositoryItemConflictError,
+  RepositoryItemNotFoundError,
 } from '@curioushuman/error-factory';
 import {
   executeTask,
@@ -49,63 +50,70 @@ export class CreateCourseHandler
 
     const task = pipe(
       // #1. parse the dto
-      createCourseDto,
-      parseActionData(
-        CreateCourseMapper.toFindCourseSourceDto,
-        this.logger,
-        'RequestInvalidError'
+      // we want two DTOs 1. to find source, and 2. find course
+      sequenceT(TE.ApplySeq)(
+        parseActionData(
+          CreateCourseMapper.toFindCourseSourceDto,
+          this.logger,
+          'RequestInvalidError'
+        )(createCourseDto),
+        parseActionData(
+          CreateCourseMapper.toFindCourseDto,
+          this.logger,
+          'RequestInvalidError'
+        )(createCourseDto)
       ),
 
-      // #2. find the source
-      TE.chain((findSourceDto) =>
-        performAction(
-          findSourceDto,
-          this.courseSourceRepository.findOne,
-          this.errorFactory,
-          this.logger,
-          'find course source'
+      // #2. Find the source, and the course (to be updated)
+      TE.chain(([findCourseSourceDto, findCourseDto]) =>
+        sequenceT(TE.ApplySeq)(
+          performAction(
+            findCourseSourceDto,
+            this.courseSourceRepository.findOne,
+            this.errorFactory,
+            this.logger,
+            `find course source: ${findCourseSourceDto.id}`
+          ),
+          performAction(
+            findCourseDto.value,
+            this.courseRepository.checkById,
+            this.errorFactory,
+            this.logger,
+            `check for existing course: ${findCourseDto.value}`
+          )
         )
       ),
 
-      // #3. parse the source
-      TE.chain((courseSource) =>
-        sequenceT(TE.ApplySeq)(
+      // #3. validate + transform; courses exists, source is valid, source to course
+      TE.chain(([courseSource, courseExists]) => {
+        if (!courseSource) {
+          throw new RepositoryItemNotFoundError(
+            `Course source id: ${createCourseDto.id}`
+          );
+        }
+        if (courseExists === true) {
+          throw new RepositoryItemConflictError(
+            `Course id: ${createCourseDto.id}`
+          );
+        }
+        return pipe(
+          courseSource,
           parseActionData(
             CourseSource.check,
             this.logger,
             'SourceInvalidError'
-          )(courseSource),
-          parseActionData(
-            CreateCourseMapper.fromSourceToFindCourseDto,
-            this.logger,
-            'SourceInvalidError'
-          )(courseSource),
-          parseActionData(
-            CourseMapper.fromSourceToCourse,
-            this.logger,
-            'SourceInvalidError'
-          )(courseSource)
-        )
-      ),
-
-      // #4. check for conflict
-      TE.chain(([source, findCourseDto, courseFromSource]) =>
-        pipe(
-          performAction(
-            findCourseDto.value,
-            this.courseRepository.findById,
-            this.errorFactory,
-            this.logger,
-            `check course exists for source: ${source.id}`
           ),
-          TE.chain((existingCourse) => {
-            throw new RepositoryItemConflictError(existingCourse.name);
-          }),
-          TE.alt(() => TE.right(courseFromSource))
-        )
-      ),
+          TE.chain((courseSourceChecked) =>
+            parseActionData(
+              CourseMapper.fromSourceToCourse,
+              this.logger,
+              'SourceInvalidError'
+            )(courseSourceChecked)
+          )
+        );
+      }),
 
-      // #5. create the course, from the source
+      // #5. update the course, from the source
       TE.chain((course) =>
         performAction(
           course,

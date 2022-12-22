@@ -105,32 +105,32 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; Invalid request', ({ given, and, when, then }) => {
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
-    let createCourseDto: CreateCourseRequestDto;
-    let error: Error;
+  // test('Fail; Invalid request', ({ given, and, when, then }) => {
+  //   // disabling no-explicit-any for testing purposes
+  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   let result: any;
+  //   let createCourseDto: CreateCourseRequestDto;
+  //   let error: Error;
 
-    given('the request contains invalid data', () => {
-      // we know this to exist in our fake repo
-      createCourseDto = CourseBuilder().invalid().buildCreateCourseRequestDto();
-    });
+  //   given('the request contains invalid data', () => {
+  //     // we know this to exist in our fake repo
+  //     createCourseDto = CourseBuilder().invalid().buildCreateCourseRequestDto();
+  //   });
 
-    when('I attempt to create a course', async () => {
-      try {
-        result = await controller.create(createCourseDto);
-      } catch (err) {
-        error = err as Error;
-      }
-    });
+  //   when('I attempt to create a course', async () => {
+  //     try {
+  //       result = await controller.create(createCourseDto);
+  //     } catch (err) {
+  //       error = err as Error;
+  //     }
+  //   });
 
-    then('I should receive a RequestInvalidError', () => {
-      expect(error).toBeInstanceOf(RequestInvalidError);
-    });
+  //   then('I should receive a RequestInvalidError', () => {
+  //     expect(error).toBeInstanceOf(RequestInvalidError);
+  //   });
 
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
-    });
-  });
+  //   and('no result is returned', () => {
+  //     expect(result).toEqual(undefined);
+  //   });
+  // });
 });

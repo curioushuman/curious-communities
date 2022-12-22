@@ -1,7 +1,6 @@
 import { CreateCourseDto } from './create-course.dto';
 import { CreateCourseRequestDto } from '../../../infra/create-course/dto/create-course.request.dto';
 import { FindCourseSourceDto } from '../../queries/find-course-source/find-course-source.dto';
-import { CourseSource } from '../../../domain/entities/course-source';
 import { FindCourseDto } from '../../queries/find-course/find-course.dto';
 
 /**
@@ -23,10 +22,10 @@ export class CreateCourseMapper {
     });
   }
 
-  public static fromSourceToFindCourseDto(source: CourseSource): FindCourseDto {
+  public static toFindCourseDto(dto: CreateCourseDto): FindCourseDto {
     return {
       identifier: 'id',
-      value: source.id,
+      value: dto.id,
     } as FindCourseDto;
   }
 }

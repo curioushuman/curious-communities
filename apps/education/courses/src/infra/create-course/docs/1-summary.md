@@ -13,7 +13,7 @@
 
 ### Dependencies (from other services/sources)
 
-- CoCourses/Layer
+- /libs/education/courses
 
 ### Output (results, events, errors)
 
@@ -23,24 +23,18 @@
 
 ### Failure (1+):
 
-- RequestInvalidError
-- RepositoryAuthenticationError
-- RepositoryItemNotFoundError
-- RepositoryServerError
-- RepositoryServerUnavailableError
-- SourceInvalidError
-- RepositoryItemConflictError
+- Various internal errors
+  - See ~/libs/education/courses/src/lib/application docs for more info
 
 ## 3. Behaviour
 
 ### Triggered by
 
-- SNS subscription
+- Eventbridge subscription
 
 ### Side-effects
 
 - Course created
-- External record updated with course ID
 
 ## 4. Decisions
 

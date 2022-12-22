@@ -37,12 +37,8 @@
 
 #### Output: Fail
 
-- RepositoryServerUnavailableError
-  - Extends ServiceUnavailableException
-- RepositoryAuthenticationError
-  - Extends UnauthorizedException
-- RepositoryServerError
-  - Extends InternalServerException
+- Various internal errors
+  - See ~/libs/education/courses/src/lib/application docs for more info
 
 #### Steps (pseudocode)
 

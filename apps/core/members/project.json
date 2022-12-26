@@ -1,0 +1,174 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/core/members/**/*.ts"]
+      }
+    },
+    "list": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/core/members",
+        "command": "list",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      },
+      "outputs": ["{options.outputPath}"]
+    },
+    "build": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/core/members",
+        "command": "synth",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      },
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": [{
+        "target": "build",
+        "projects": "dependencies"
+      }]
+    },
+    "synth": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/core/members",
+        "command": "synth",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      },
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": [{
+        "target": "build",
+        "projects": "dependencies"
+      }]
+    },
+    "deploy": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/core/members",
+        "command": "deploy",
+        "parameters": [
+          "--all",
+          " --require-approval=never",
+          "--outputs-file ../../../dist/apps/core/members/cdk-outputs.json",
+          "--profile=$AWS_PROFILE"
+        ]
+      },
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": [{
+        "target": "deploy",
+        "projects": "dependencies"
+      }]
+    },
+    "destroy": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/core/members",
+        "command": "destroy",
+        "parameters": [
+          "--all",
+          "--force",
+          "--profile=$AWS_PROFILE"
+        ]
+      }
+    },
+    "diff": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/core/members",
+        "command": "diff",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      },
+      "dependsOn": [{
+        "target": "build",
+        "projects": "dependencies"
+      }]
+    },
+    "metadata": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/core/members",
+        "command": "metadata",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      }
+    },
+    "context": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/core/members",
+        "command": "context",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      }
+    },
+    "docs": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/core/members",
+        "command": "docs",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      }
+    },
+    "doctor": {
+      "executor": "@otterdev/nx-cdk:run",
+      "options": {
+        "outputPath": "dist/apps/core/members",
+        "command": "doctor",
+        "parameters": [
+          "--all",
+          "--profile=$AWS_PROFILE"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/core/members"],
+      "options": {
+        "jestConfig": "apps/core/members/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "deploy-local": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "../../../node_modules/.bin/rimraf ../../../dist/apps/core/members",
+          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/core/members"
+        ],
+        "cwd": "apps/core/members",
+        "parallel": false
+      }
+    },
+    "destroy-local": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/core/members",
+        "cwd": "apps/core/members",
+        "parallel": false
+      }
+    }
+  },
+  "tags": []
+}

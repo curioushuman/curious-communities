@@ -38,7 +38,8 @@
       "@curioushuman/cc-courses-service": [
         "libs/education/courses/src/index.ts"
       ],
-      "@curioushuman/cc-groups-service": ["libs/education/groups/src/index.ts"]
+      "@curioushuman/cc-groups-service": ["libs/education/groups/src/index.ts"],
+      "@curioushuman/cc-members-service": ["libs/core/members/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -68,16 +68,12 @@ export class ChLayer extends Construct {
       parameterName,
       stringValue: this.layer.layerVersionArn,
       description: `The latest ARN of ${layerVersionName}`,
-      type: ssm.ParameterType.STRING,
       tier: ssm.ParameterTier.STANDARD,
     });
 
     /**
      * Outputs
      */
-    new cdk.CfnOutput(this, layerVersionName, {
-      value: this.layer.layerVersionArn,
-    });
   }
 
   public static layerParameterId(layerId: ResourceId): ResourceId {

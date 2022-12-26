@@ -1,4 +1,4 @@
-# Data types: Create Group
+# Data types: Update Group
 
 ## Notes
 
@@ -6,14 +6,14 @@ Assume everything is AND unless specified by OR and ()
 
 ## Types
 
-### CreateGroupRequestDto
+### UpdateGroupRequestDto
 
 - ExternalId
 
 ## Errors
 
 - Various internal errors
-  - See ~/libs/education/groups/src/lib/application docs for more info
+  - See ~/libs/core/groups/src/lib/application docs for more info
 
 ## Events
 

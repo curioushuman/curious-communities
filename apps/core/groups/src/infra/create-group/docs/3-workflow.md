@@ -38,7 +38,7 @@
 #### Output: Fail
 
 - Various internal errors
-  - See ~/libs/education/groups/src/lib/application docs for more info
+  - See ~/libs/core/groups/src/lib/application docs for more info
 
 #### Steps (pseudocode)
 

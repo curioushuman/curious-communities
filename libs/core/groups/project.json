@@ -7,10 +7,10 @@
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/layers/cc-groups-service/nodejs/node_modules/@curioushuman/cc-groups-service",
-        "tsConfig": "libs/education/groups/tsconfig.lib.json",
-        "packageJson": "libs/education/groups/package.json",
-        "main": "libs/education/groups/src/index.ts",
-        "assets": ["libs/education/groups/*.md"]
+        "tsConfig": "libs/core/groups/tsconfig.lib.json",
+        "packageJson": "libs/core/groups/package.json",
+        "main": "libs/core/groups/src/index.ts",
+        "assets": ["libs/core/groups/*.md"]
       }
     },
     "publish": {
@@ -29,14 +29,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/education/groups/**/*.ts"]
+        "lintFilePatterns": ["libs/core/groups/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/education/groups"],
+      "outputs": ["coverage/libs/core/groups"],
       "options": {
-        "jestConfig": "libs/education/groups/jest.config.ts",
+        "jestConfig": "libs/core/groups/jest.config.ts",
         "passWithNoTests": true
       }
     }

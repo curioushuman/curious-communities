@@ -6,13 +6,13 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/education/groups/**/*.ts"]
+        "lintFilePatterns": ["apps/core/groups/**/*.ts"]
       }
     },
     "list": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/groups",
+        "outputPath": "dist/apps/core/groups",
         "command": "list",
         "parameters": [
           "--all",
@@ -24,7 +24,7 @@
     "build": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/groups",
+        "outputPath": "dist/apps/core/groups",
         "command": "synth",
         "parameters": [
           "--all",
@@ -40,7 +40,7 @@
     "synth": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/groups",
+        "outputPath": "dist/apps/core/groups",
         "command": "synth",
         "parameters": [
           "--all",
@@ -56,12 +56,12 @@
     "deploy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/groups",
+        "outputPath": "dist/apps/core/groups",
         "command": "deploy",
         "parameters": [
           "--all",
           " --require-approval=never",
-          "--outputs-file ../../../dist/apps/education/groups/cdk-outputs.json",
+          "--outputs-file ../../../dist/apps/core/groups/cdk-outputs.json",
           "--profile=$AWS_PROFILE"
         ]
       },
@@ -74,7 +74,7 @@
     "destroy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/groups",
+        "outputPath": "dist/apps/core/groups",
         "command": "destroy",
         "parameters": [
           "--all",
@@ -86,7 +86,7 @@
     "diff": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/groups",
+        "outputPath": "dist/apps/core/groups",
         "command": "diff",
         "parameters": [
           "--all",
@@ -101,7 +101,7 @@
     "metadata": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/groups",
+        "outputPath": "dist/apps/core/groups",
         "command": "metadata",
         "parameters": [
           "--all",
@@ -112,7 +112,7 @@
     "context": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/groups",
+        "outputPath": "dist/apps/core/groups",
         "command": "context",
         "parameters": [
           "--all",
@@ -123,7 +123,7 @@
     "docs": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/groups",
+        "outputPath": "dist/apps/core/groups",
         "command": "docs",
         "parameters": [
           "--all",
@@ -134,7 +134,7 @@
     "doctor": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/groups",
+        "outputPath": "dist/apps/core/groups",
         "command": "doctor",
         "parameters": [
           "--all",
@@ -144,9 +144,9 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/education/groups"],
+      "outputs": ["coverage/apps/core/groups"],
       "options": {
-        "jestConfig": "apps/education/groups/jest.config.ts",
+        "jestConfig": "apps/core/groups/jest.config.ts",
         "passWithNoTests": true
       }
     },
@@ -154,18 +154,18 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "../../../node_modules/.bin/rimraf ../../../dist/apps/education/groups",
-          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/education/groups"
+          "../../../node_modules/.bin/rimraf ../../../dist/apps/core/groups",
+          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/core/groups"
         ],
-        "cwd": "apps/education/groups",
+        "cwd": "apps/core/groups",
         "parallel": false
       }
     },
     "destroy-local": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/education/groups",
-        "cwd": "apps/education/groups",
+        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/core/groups",
+        "cwd": "apps/core/groups",
         "parallel": false
       }
     }

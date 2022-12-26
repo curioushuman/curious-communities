@@ -16,7 +16,7 @@
     "cc-members-service": "libs/core/members",
     "cc-courses": "apps/education/courses",
     "cc-courses-service": "libs/education/courses",
-    "cc-groups": "apps/education/groups",
-    "cc-groups-service": "libs/education/groups"
+    "cc-groups": "apps/core/groups",
+    "cc-groups-service": "libs/core/groups"
   }
 }

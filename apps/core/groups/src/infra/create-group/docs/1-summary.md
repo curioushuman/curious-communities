@@ -13,7 +13,7 @@
 
 ### Dependencies (from other services/sources)
 
-- /libs/education/groups
+- /libs/core/groups
 
 ### Output (results, events, errors)
 
@@ -24,7 +24,7 @@
 ### Failure (1+):
 
 - Various internal errors
-  - See ~/libs/education/groups/src/lib/application docs for more info
+  - See ~/libs/core/groups/src/lib/application docs for more info
 
 ## 3. Behaviour
 

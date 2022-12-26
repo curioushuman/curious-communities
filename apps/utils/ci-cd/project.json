@@ -6,13 +6,13 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/education/ci-cd/**/*.ts"]
+        "lintFilePatterns": ["apps/utils/ci-cd/**/*.ts"]
       }
     },
     "list": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/ci-cd",
+        "outputPath": "dist/apps/utils/ci-cd",
         "command": "list",
         "parameters": [
           "--all",
@@ -24,7 +24,7 @@
     "build": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/ci-cd",
+        "outputPath": "dist/apps/utils/ci-cd",
         "command": "synth",
         "parameters": [
           "--all",
@@ -40,7 +40,7 @@
     "synth": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/ci-cd",
+        "outputPath": "dist/apps/utils/ci-cd",
         "command": "synth",
         "parameters": [
           "--all",
@@ -56,12 +56,12 @@
     "deploy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/ci-cd",
+        "outputPath": "dist/apps/utils/ci-cd",
         "command": "deploy",
         "parameters": [
           "--all",
           " --require-approval=never",
-          "--outputs-file ../../../dist/apps/education/ci-cd/cdk-outputs.json",
+          "--outputs-file ../../../dist/apps/utils/ci-cd/cdk-outputs.json",
           "--profile=$AWS_PROFILE"
         ]
       },
@@ -74,7 +74,7 @@
     "destroy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/ci-cd",
+        "outputPath": "dist/apps/utils/ci-cd",
         "command": "destroy",
         "parameters": [
           "--all",
@@ -86,7 +86,7 @@
     "diff": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/ci-cd",
+        "outputPath": "dist/apps/utils/ci-cd",
         "command": "diff",
         "parameters": [
           "--all",
@@ -101,7 +101,7 @@
     "metadata": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/ci-cd",
+        "outputPath": "dist/apps/utils/ci-cd",
         "command": "metadata",
         "parameters": [
           "--all",
@@ -112,7 +112,7 @@
     "context": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/ci-cd",
+        "outputPath": "dist/apps/utils/ci-cd",
         "command": "context",
         "parameters": [
           "--all",
@@ -123,7 +123,7 @@
     "docs": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/ci-cd",
+        "outputPath": "dist/apps/utils/ci-cd",
         "command": "docs",
         "parameters": [
           "--all",
@@ -134,7 +134,7 @@
     "doctor": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/ci-cd",
+        "outputPath": "dist/apps/utils/ci-cd",
         "command": "doctor",
         "parameters": [
           "--all",
@@ -144,9 +144,9 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/education/ci-cd"],
+      "outputs": ["coverage/apps/utils/ci-cd"],
       "options": {
-        "jestConfig": "apps/education/ci-cd/jest.config.ts",
+        "jestConfig": "apps/utils/ci-cd/jest.config.ts",
         "passWithNoTests": true
       }
     }

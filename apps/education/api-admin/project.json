@@ -206,6 +206,5 @@
       }
     }
   },
-  "tags": [],
-  "implicitDependencies": ["cdk-utils", "cc-courses"]
+  "tags": []
 }

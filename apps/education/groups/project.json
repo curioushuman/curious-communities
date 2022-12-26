@@ -170,6 +170,5 @@
       }
     }
   },
-  "tags": [],
-  "implicitDependencies": ["layers", "cc-layers", "cc-events"]
+  "tags": []
 }

@@ -151,6 +151,5 @@
       }
     }
   },
-  "tags": [],
-  "implicitDependencies": ["cdk-utils"]
+  "tags": []
 }

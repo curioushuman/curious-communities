@@ -205,6 +205,5 @@
       }
     }
   },
-  "tags": ["scope:layers"],
-  "implicitDependencies": ["cc-courses-service"]
+  "tags": ["scope:layers"]
 }

@@ -6,13 +6,13 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/education/api-admin/**/*.ts"]
+        "lintFilePatterns": ["apps/api/admin/**/*.ts"]
       }
     },
     "list": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/api-admin",
+        "outputPath": "dist/apps/api/admin",
         "command": "list",
         "parameters": [
           "--profile=$AWS_PROFILE"
@@ -23,7 +23,7 @@
     "build": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/api-admin",
+        "outputPath": "dist/apps/api/admin",
         "command": "synth",
         "parameters": [
           "--profile=$AWS_PROFILE"
@@ -42,7 +42,7 @@
     "synth": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/api-admin",
+        "outputPath": "dist/apps/api/admin",
         "command": "synth",
         "parameters": [
           "--profile=$AWS_PROFILE"
@@ -64,10 +64,10 @@
         "parameters": [
           "--all",
           " --require-approval=never",
-          "--outputs-file ../../../dist/apps/education/api-admin/cdk-outputs.json",
+          "--outputs-file ../../../dist/apps/api/admin/cdk-outputs.json",
           "--profile=$AWS_PROFILE"
         ],
-        "outputPath": "dist/apps/education/api-admin",
+        "outputPath": "dist/apps/api/admin",
         "command": "deploy"
       },
       "outputs": ["{options.outputPath}"],
@@ -88,14 +88,14 @@
           "--force",
           "--profile=$AWS_PROFILE"
         ],
-        "outputPath": "dist/apps/education/api-admin",
+        "outputPath": "dist/apps/api/admin",
         "command": "destroy"
       }
     },
     "diff": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/api-admin",
+        "outputPath": "dist/apps/api/admin",
         "command": "diff",
         "parameters": [
           "--all",
@@ -114,7 +114,7 @@
     "metadata": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/api-admin",
+        "outputPath": "dist/apps/api/admin",
         "command": "metadata",
         "parameters": [
           "--all",
@@ -125,7 +125,7 @@
     "context": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/api-admin",
+        "outputPath": "dist/apps/api/admin",
         "command": "context",
         "parameters": [
           "--all",
@@ -136,7 +136,7 @@
     "docs": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/api-admin",
+        "outputPath": "dist/apps/api/admin",
         "command": "docs",
         "parameters": [
           "--all",
@@ -151,7 +151,7 @@
     "doctor": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/education/api-admin",
+        "outputPath": "dist/apps/api/admin",
         "command": "doctor",
         "parameters": [
           "--all",
@@ -161,18 +161,18 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/education/api-admin"],
+      "outputs": ["coverage/apps/api/admin"],
       "options": {
-        "jestConfig": "apps/education/api-admin/jest.config.ts",
+        "jestConfig": "apps/api/admin/jest.config.ts",
         "passWithNoTests": true
       }
     },
     "test-infra": {
       "executor": "@nrwl/jest:jest",
       "options": {
-        "jestConfig": "apps/education/api-admin/jest.config.infra.ts",
+        "jestConfig": "apps/api/admin/jest.config.infra.ts",
         "passWithNoTests": true,
-        "cwd": "apps/education/api-admin"
+        "cwd": "apps/api/admin"
       }
     },
     "openapi": {
@@ -180,28 +180,28 @@
       "options": {
         "commands": [
           {
-            "command": "../../../node_modules/.bin/swagger-cli bundle openapi.yaml --outfile ../../../dist/apps/education/api-admin/openapi.yaml --type yaml"
+            "command": "../../../node_modules/.bin/swagger-cli bundle openapi.yaml --outfile ../../../dist/apps/api/admin/openapi.yaml --type yaml"
           }
         ],
-        "cwd": "apps/education/api-admin"
+        "cwd": "apps/api/admin"
       }
     },
     "deploy-local": {
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "../../../node_modules/.bin/rimraf ../../../dist/apps/education/api-admin",
-          "../../../node_modules/.bin/cdklocal deploy --all --require-approval=never --output ../../../dist/apps/education/api-admin --outputs-file ../../../dist/apps/education/api-admin/cdk-outputs.json"
+          "../../../node_modules/.bin/rimraf ../../../dist/apps/api/admin",
+          "../../../node_modules/.bin/cdklocal deploy --all --require-approval=never --output ../../../dist/apps/api/admin --outputs-file ../../../dist/apps/api/admin/cdk-outputs.json"
         ],
-        "cwd": "apps/education/api-admin",
+        "cwd": "apps/api/admin",
         "parallel": false
       }
     },
     "destroy-local": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "../../../node_modules/.bin/cdklocal destroy --all --force --output ../../../dist/apps/education/api-admin",
-        "cwd": "apps/education/api-admin",
+        "command": "../../../node_modules/.bin/cdklocal destroy --all --force --output ../../../dist/apps/api/admin",
+        "cwd": "apps/api/admin",
         "parallel": false
       }
     }

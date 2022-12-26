@@ -127,7 +127,7 @@ importers:
       webpack-merge: 5.8.0
       webpack-node-externals: 3.0.0
 
-  apps/education/api-admin:
+  apps/api/admin:
     specifiers:
       aws-cdk-lib: ^2.55.1
       constructs: ^10.1.196
@@ -137,7 +137,7 @@ importers:
       constructs: 10.1.196
       tslib: 2.4.1
 
-  apps/education/ci-cd:
+  apps/utils/ci-cd:
     specifiers:
       aws-cdk-lib: ^2.55.1
       constructs: ^10.1.196

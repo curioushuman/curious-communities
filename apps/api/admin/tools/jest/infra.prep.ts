@@ -11,7 +11,7 @@ import { JestPrepProps } from 'tools/jest/infra.types';
 const prep = async function () {
   const stackTitle = transformIdToResourceTitle('cc-api-admin', 'Stack');
   const prepProps: JestPrepProps = {
-    localStackPath: 'apps/education/api-admin',
+    localStackPath: 'apps/api/admin',
   };
   await prepApi(stackTitle, prepProps);
 };

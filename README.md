@@ -4,6 +4,31 @@ This will be the home for all things Curious Communities.
 
 **Please note** this README is a garbled mess. Working towards a deadline, and still experimenting with infrastructure, then I will come back and tidy this up.
 
+## Required .env file
+
+```bash
+NODE_ENV=local
+CDK_LIVE_ACCOUNT={live cdk account id}
+CDK_DEPLOY_ACCOUNT=000000000000
+CDK_DEPLOY_REGION=ap-southeast-2
+LOCALSTACK_API_KEY={localstack api key}
+AWS_ACCOUNT_TEST={test account id}
+AWS_ACCOUNT_PROD={prod account id}
+AWS_PROFILE_PROD={prod profile name}
+AWS_PROFILE_TEST={test profile name}
+
+# DYNAMICALLY UPDATED
+AWS_ACCOUNT=000000000000
+AWS_PROFILE=
+NX_DEPLOY_TARGET=deploy-local
+NX_DESTROY_TARGET=destroy-local
+```
+
+### Notes
+
+* ./tools/scripts/set-stage.sh updates the dynamic values automatically
+* all of this scripted in package.json
+
 ## Get started
 
 1. pnpm i
@@ -105,6 +130,10 @@ This will be the home for all things Curious Communities.
 
 ## Decisions
 
+- ids as external ids
+  - The naming of the key identifier field will also reflect this
+    - e.g. Member.externalId: MemberIdExternal
+  - The reason being that at any point down the line we could swan in and add an internal identifier without hassle
 - libs/services
   - Will use a single module, and a single controller
     - As these are going to be imported by the handlers as a separate package

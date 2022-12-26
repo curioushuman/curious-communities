@@ -161,7 +161,7 @@ importers:
       '@nestjs/common': 8.4.7_mnr6j2del53muneqly5h4y27ai
       '@nestjs/core': 8.4.7_q6tehokzwy3z4akuawpn6kiwbe
 
-  apps/education/events:
+  apps/utils/events:
     specifiers:
       aws-cdk-lib: ^2.55.1
       constructs: ^10.1.196
@@ -181,7 +181,7 @@ importers:
       constructs: 10.1.196
       tslib: 2.4.1
 
-  apps/layers:
+  apps/utils/layers:
     specifiers:
       aws-cdk-lib: ^2.55.1
       constructs: ^10.1.196

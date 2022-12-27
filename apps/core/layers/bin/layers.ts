@@ -10,15 +10,15 @@ import {
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import { CcEducationLayersStack } from '../lib/layers-stack';
+import { CcCoreLayersStack } from '../lib/layers-stack';
 
 const [account, region] = getAccountAndRegion();
 
 // creating an app in cloud or local
 const app = new cdk.App();
-new CcEducationLayersStack(
+new CcCoreLayersStack(
   app,
-  transformIdToResourceTitle('cc-education-layers', 'Stack'),
+  transformIdToResourceTitle('cc-core-layers', 'Stack'),
   {
     env: {
       account,

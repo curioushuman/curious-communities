@@ -1,5 +1,5 @@
 {
-  "name": "@curioushuman/cc-education-layers",
+  "name": "@curioushuman/cc-core-layers",
   "version": "0.0.1",
   "type": "commonjs",
   "main": "src/index.js",

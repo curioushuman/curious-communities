@@ -1,13 +1,17 @@
-import { Record, Static } from 'runtypes';
+import { Array, Record, Static } from 'runtypes';
 
-import { Timestamp, YearMonth } from '@curioushuman/common';
+import { Timestamp, ValueOf, YearMonth } from '@curioushuman/common';
 
 import { CourseName } from '../value-objects/course-name';
-import { CourseId } from '../value-objects/course-id';
 import { CourseStatus } from '../value-objects/course-status';
 import { CourseSupportType } from '../value-objects/course-support-type';
 import { AccountSlug } from '../value-objects/account-slug';
 import { CourseSlug } from '../value-objects/course-slug';
+import { CourseId } from '../value-objects/course-id';
+import {
+  CourseSourceIdSource,
+  CourseSourceIdSourceValue,
+} from '../value-objects/course-source-id-source';
 
 /**
  * Runtypes constant for the (internal) Course entity
@@ -17,6 +21,9 @@ export const Course = Record({
   id: CourseId,
   slug: CourseSlug,
   status: CourseStatus,
+
+  sourceIds: Array(CourseSourceIdSource),
+
   supportType: CourseSupportType,
   name: CourseName,
   dateOpen: Timestamp,
@@ -38,6 +45,8 @@ export type Course = Static<typeof Course>;
  */
 export type CourseIdentifiers = {
   id: CourseId;
+  idSource: CourseSourceIdSourceValue;
   slug: CourseSlug;
 };
 export type CourseIdentifier = keyof CourseIdentifiers;
+export type CourseIdentifierValue = ValueOf<CourseIdentifier>;

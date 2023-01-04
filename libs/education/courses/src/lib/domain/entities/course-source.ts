@@ -3,11 +3,11 @@ import { Record, Static } from 'runtypes';
 import { Timestamp } from '@curioushuman/common';
 
 import { CourseSourceStatus } from '../value-objects/course-source-status';
-import { CourseId } from '../value-objects/course-id';
+import { CourseSourceId } from '../value-objects/course-source-id';
 import { CourseSourceName } from '../value-objects/course-source-name';
 
 export const CourseSource = Record({
-  id: CourseId,
+  id: CourseSourceId,
   status: CourseSourceStatus,
   name: CourseSourceName,
   dateOpen: Timestamp,

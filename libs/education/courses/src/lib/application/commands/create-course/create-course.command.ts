@@ -76,7 +76,7 @@ export class CreateCourseHandler
           ),
           performAction(
             findCourseDto.value,
-            this.courseRepository.checkById,
+            this.courseRepository.check(findCourseDto.identifier),
             this.errorFactory,
             this.logger,
             `check for existing course: ${findCourseDto.value}`

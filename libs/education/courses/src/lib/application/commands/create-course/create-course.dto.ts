@@ -1,13 +1,15 @@
-import { Record, Static } from 'runtypes';
+import { Static } from 'runtypes';
 
-import { CourseId } from '../../../domain/value-objects/course-id';
+import { CourseSourceIdSource } from '../../../domain/value-objects/course-source-id-source';
 
 /**
  * This is the form of data our repository will expect for the command
+ *
+ * It happens to re-use the CourseSourceIdSource type, but this is not
+ * required. It is just a convenience.
  */
 
-export const CreateCourseDto = Record({
-  id: CourseId,
-});
+export const CreateCourseDto =
+  CourseSourceIdSource.withBrand('CreateCourseDto');
 
 export type CreateCourseDto = Static<typeof CreateCourseDto>;

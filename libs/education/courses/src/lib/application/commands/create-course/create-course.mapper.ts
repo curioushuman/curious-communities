@@ -2,6 +2,12 @@ import { CreateCourseDto } from './create-course.dto';
 import { CreateCourseRequestDto } from '../../../infra/create-course/dto/create-course.request.dto';
 import { FindCourseSourceDto } from '../../queries/find-course-source/find-course-source.dto';
 import { FindCourseDto } from '../../queries/find-course/find-course.dto';
+import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
+import { Source } from '../../../domain/value-objects/source';
+import {
+  prepareExternalIdSource,
+  prepareExternalIdSourceValue,
+} from '@curioushuman/common';
 
 /**
  * TODO
@@ -9,9 +15,12 @@ import { FindCourseDto } from '../../queries/find-course/find-course.dto';
  */
 export class CreateCourseMapper {
   public static fromRequestDto(dto: CreateCourseRequestDto): CreateCourseDto {
-    return CreateCourseDto.check({
-      id: dto.id,
-    });
+    const parsedDto = prepareExternalIdSource(
+      dto.idSource,
+      CourseSourceId,
+      Source
+    );
+    return CreateCourseDto.check(parsedDto);
   }
 
   public static toFindCourseSourceDto(
@@ -24,8 +33,8 @@ export class CreateCourseMapper {
 
   public static toFindCourseDto(dto: CreateCourseDto): FindCourseDto {
     return {
-      identifier: 'id',
-      value: dto.id,
+      identifier: 'idSource',
+      value: prepareExternalIdSourceValue(dto.id, dto.source),
     } as FindCourseDto;
   }
 }

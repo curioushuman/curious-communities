@@ -1,50 +1,99 @@
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
-import { Course, CourseIdentifier } from '../../domain/entities/course';
-import { CourseId } from '../../domain/value-objects/course-id';
+import {
+  Course,
+  CourseIdentifier,
+  CourseIdentifierValue,
+} from '../../domain/entities/course';
+import { CourseSourceId } from '../../domain/value-objects/course-source-id';
 import { CourseSlug } from '../../domain/value-objects/course-slug';
+import { CourseSourceIdSourceValue } from '../../domain/value-objects/course-source-id-source';
+import { CourseId } from '../../domain/value-objects/course-id';
 
 /**
- * Literal list of finders for a course
+ * Type for the findOne method interface within repository
  */
-export type CourseFinder = 'findById' | 'findBySlug';
+export type CourseFindMethod = (
+  value: CourseIdentifierValue
+) => TaskEither<Error, Course>;
 
 /**
- * Returns the correct finder for the given identifier
- *
- * Note: obviously this is a hacky way to do this, but it works.
- * If we need to move beyond this un-name restriction of identifier
- * and finder name we can at any point (by using object literal or similar).
+ * Type for the check method interface within repository
  */
-export const identifierFinder = (
-  identifier: CourseIdentifier
-): CourseFinder => {
-  let identifierString: string = identifier as string;
-  identifierString =
-    identifierString.charAt(0).toUpperCase() + identifierString.slice(1);
-
-  return `findBy${identifierString}` as CourseFinder;
-};
+export type CourseCheckMethod = (
+  value: CourseIdentifierValue
+) => TaskEither<Error, boolean>;
 
 export abstract class CourseRepository {
   /**
-   * Find a course by the given ID
+   * Object lookup for findMethods
+   */
+  abstract findOneBy: Record<CourseIdentifier, CourseFindMethod>;
+
+  /**
+   * Find a course
+   *
+   * This method will accept a course identifier and value
+   * and then determine which finder method to use.
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findById(id: CourseId): TaskEither<Error, Course>;
+  abstract findOne(identifier: CourseIdentifier): CourseFindMethod;
 
   /**
    * Find a course by the given ID
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findBySlug(slug: CourseSlug): TaskEither<Error, Course>;
+  abstract findOneById(id: CourseSourceId): TaskEither<Error, Course>;
+
+  /**
+   * Find a course by the given ID and source value
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
+  abstract findOneByIdSource(
+    value: CourseSourceIdSourceValue
+  ): TaskEither<Error, Course>;
+
+  /**
+   * Find a course by the given ID
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
+  abstract findOneBySlug(slug: CourseSlug): TaskEither<Error, Course>;
+
+  /**
+   * Object lookup for checkMethods
+   */
+  abstract checkBy: Record<CourseIdentifier, CourseCheckMethod>;
+
+  /**
+   * Find a course
+   *
+   * This method will accept a course identifier and value
+   * and then determine which checker method to use.
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
+  abstract check(identifier: CourseIdentifier): CourseCheckMethod;
 
   /**
    * Check for existence of course by given ID
    */
   abstract checkById(id: CourseId): TaskEither<Error, boolean>;
+
+  /**
+   * Check for existence of course by given ID and source value
+   */
+  abstract checkByIdSource(
+    value: CourseSourceIdSourceValue
+  ): TaskEither<Error, boolean>;
+
+  /**
+   * Check for existence of course by slug
+   */
+  abstract checkBySlug(slug: CourseSlug): TaskEither<Error, boolean>;
 
   /**
    * Create/update a course

@@ -1,7 +1,7 @@
 import { Static } from 'runtypes';
 
-import { ExternalId } from '@curioushuman/common';
+import { InternalId } from '@curioushuman/common';
 
-export const CourseId = ExternalId.withBrand('CourseId');
+export const CourseId = InternalId.withBrand('CourseId');
 
 export type CourseId = Static<typeof CourseId>;

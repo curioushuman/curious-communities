@@ -1,4 +1,4 @@
-import { Record, Static, String } from 'runtypes';
+import { Optional, Record, Static, String } from 'runtypes';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -8,9 +8,15 @@ import { Record, Static, String } from 'runtypes';
  * at some point they may diverge; which is also OK. Hence the need for two
  * DTOs, for two different purposes.
  */
+const MemberData = Record({
+  id: String,
+  email: String,
+});
 
 export const CreateParticipantRequestDto = Record({
-  id: String,
+  courseIdSource: String,
+  participantIdSource: String,
+  member: Optional(MemberData),
 });
 
 export type CreateParticipantRequestDto = Static<

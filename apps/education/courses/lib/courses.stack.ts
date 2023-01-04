@@ -18,10 +18,6 @@ import { CoursesDynamoDbConstruct } from '../src/adapter/implementations/dynamod
 
 /**
  * These are the components required for the courses stack
- *
- * TODO
- * - [ ] abstract the lambdas into Construct classes
- * - [*] -abstract the dynamodb table into Construct classes-
  */
 export class CoursesStack extends cdk.Stack {
   private lambdaProps: NodejsFunctionProps = {
@@ -56,7 +52,7 @@ export class CoursesStack extends cdk.Stack {
     const externalEventsEventBus = events.EventBus.fromEventBusArn(
       this,
       externalEventsEventBusTitle,
-      `arn:aws:lambda:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:function:${externalEventsEventBusName}`
+      `arn:aws:events:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:event-bus:${externalEventsEventBusName}`
     );
 
     /**
@@ -80,8 +76,7 @@ export class CoursesStack extends cdk.Stack {
         eventBus: externalEventsEventBus,
         ruleDetails: {
           object: ['course'],
-          type: ['status-updated'],
-          status: ['created'],
+          type: ['created'],
         },
         ruleDescription: 'Create internal, to match the external',
       }
@@ -110,8 +105,7 @@ export class CoursesStack extends cdk.Stack {
         eventBus: externalEventsEventBus,
         ruleDetails: {
           object: ['course'],
-          type: ['status-updated'],
-          status: ['updated'],
+          type: ['updated'],
         },
         ruleDescription: 'Update internal, to match the external',
       }
@@ -124,6 +118,16 @@ export class CoursesStack extends cdk.Stack {
     coursesTableConstruct.table.grantWriteData(
       updateCourseFunction.lambdaFunction
     );
+
+    /**
+     * Function: Open Course
+     *
+     * ruleDetails: {
+      object: ['course'],
+      type: ['status-updated'],
+      status: ['open'],
+    },
+     */
 
     /**
      * Function: Create Participant
@@ -158,32 +162,32 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Function: Update Participant
      */
-    const updateParticipantFunction = new LambdaEventSubscription(
-      this,
-      'cc-courses-participant-update',
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/update-participant/main.ts'
-        ),
-        lambdaProps: this.lambdaProps,
-        eventBus: externalEventsEventBus,
-        ruleDetails: {
-          object: ['participant'],
-          type: ['status-updated'],
-          status: ['updated'],
-        },
-        ruleDescription: 'Update internal, to match the external',
-      }
-    );
+    // const updateParticipantFunction = new LambdaEventSubscription(
+    //   this,
+    //   'cc-courses-participant-update',
+    //   {
+    //     lambdaEntry: pathResolve(
+    //       __dirname,
+    //       '../src/infra/update-participant/main.ts'
+    //     ),
+    //     lambdaProps: this.lambdaProps,
+    //     eventBus: externalEventsEventBus,
+    //     ruleDetails: {
+    //       object: ['participant'],
+    //       type: ['status-updated'],
+    //       status: ['updated'],
+    //     },
+    //     ruleDescription: 'Update internal, to match the external',
+    //   }
+    // );
 
-    // allow the lambda access to the table
-    coursesTableConstruct.table.grantReadData(
-      updateParticipantFunction.lambdaFunction
-    );
-    coursesTableConstruct.table.grantWriteData(
-      updateParticipantFunction.lambdaFunction
-    );
+    // // allow the lambda access to the table
+    // coursesTableConstruct.table.grantReadData(
+    //   updateParticipantFunction.lambdaFunction
+    // );
+    // coursesTableConstruct.table.grantWriteData(
+    //   updateParticipantFunction.lambdaFunction
+    // );
 
     /**
      * Outputs

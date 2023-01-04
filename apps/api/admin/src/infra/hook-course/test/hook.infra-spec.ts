@@ -77,7 +77,7 @@ defineFeature(feature, (test) => {
         if (!apiUrl) {
           throw new Error('No API URL found');
         }
-        const url = `${apiUrl}courses/hook/${eventType}/${externalId}`;
+        const url = `${apiUrl}courses/${externalId}/hook/${eventType}`;
         response = await getResponse(url, 'GET');
       }
     );

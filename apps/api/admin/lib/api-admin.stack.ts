@@ -11,8 +11,8 @@ import {
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 import {
-  HookConstruct,
-  HookProps,
+  CoursesHookConstruct,
+  CoursesHookProps,
 } from '../src/infra/hook-course/hook.construct';
 
 export class ApiAdminStack extends cdk.Stack {
@@ -53,15 +53,20 @@ export class ApiAdminStack extends cdk.Stack {
      * Courses
      */
     const courses = apiAdmin.api.root.addResource('courses');
+    const paramExternalId = courses.addResource('{externalId}');
 
     /**
      * Hook for external events
-     * GET /courses/{externalId}/{eventType}?{updatedStatus?}
+     * GET /courses/{externalId}/hook/{eventType}?{updatedStatus?}
      */
-    const coursesHookConstruct = new HookConstruct(this, 'courses-hook', {
-      apiConstruct: apiAdmin,
-      rootResource: courses.addResource('hook'),
-      eventBus: externalEventsEventBus,
-    } as HookProps);
+    const coursesHookConstruct = new CoursesHookConstruct(
+      this,
+      'courses-hook',
+      {
+        apiConstruct: apiAdmin,
+        rootResource: paramExternalId.addResource('hook'),
+        eventBus: externalEventsEventBus,
+      } as CoursesHookProps
+    );
   }
 }

@@ -13,7 +13,7 @@ import { CoApiConstruct } from '../../../../../../dist/local/@curioushuman/cdk-u
 /**
  * Props required to initialize a CO API Construct
  */
-export interface HookProps {
+export interface CoursesHookProps {
   apiConstruct: CoApiConstruct;
   rootResource: apigateway.IResource;
   eventBus: events.IEventBus;
@@ -28,7 +28,7 @@ export interface HookProps {
  *       can we do it another way? Maybe specific to the event?
  *       https://aws.amazon.com/premiumsupport/knowledge-center/lambda-function-idempotent/
  */
-export class HookConstruct extends Construct {
+export class CoursesHookConstruct extends Construct {
   private apiConstruct: CoApiConstruct;
   private rootResource: apigateway.IResource;
   private eventBus: events.IEventBus;
@@ -36,7 +36,7 @@ export class HookConstruct extends Construct {
   private awsIntegration: apigateway.AwsIntegration;
   private methodOptions: apigateway.MethodOptions;
 
-  constructor(scope: Construct, id: string, props: HookProps) {
+  constructor(scope: Construct, id: string, props: CoursesHookProps) {
     super(scope, id);
 
     this.apiConstruct = props.apiConstruct;
@@ -45,10 +45,9 @@ export class HookConstruct extends Construct {
 
     /**
      * Resources
-     * GET /courses/{externalId}/{eventType}?{updatedStatus?}
+     * GET /courses/{externalId}/hook/{eventType}?{updatedStatus?}
      */
-    const paramExternalId = this.rootResource.addResource('{externalId}');
-    const paramType = paramExternalId.addResource('{eventType}');
+    const paramType = this.rootResource.addResource('{eventType}');
 
     /**
      * Response model

@@ -1,9 +1,12 @@
-import { CourseId } from '../../../domain/value-objects/course-id';
+import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
 import {
   CourseIdentifier,
   CourseIdentifiers,
 } from '../../../domain/entities/course';
 import { CourseSlug } from '../../../domain/value-objects/course-slug';
+import { Source } from '../../../domain/value-objects/source';
+import { CourseId } from '../../../domain/value-objects/course-id';
+import { parseExternalIdSourceValue } from '@curioushuman/common';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -40,6 +43,8 @@ type FindCourseDtoParsers = {
  */
 const parsers: FindCourseDtoParsers = {
   id: (dto) => CourseId.check(dto.value),
+  idSource: (dto) =>
+    parseExternalIdSourceValue(dto.value, CourseSourceId, Source),
   slug: (dto) => CourseSlug.check(dto.value),
 };
 

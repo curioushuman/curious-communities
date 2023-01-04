@@ -9,7 +9,7 @@ import { Record, Static, String } from 'runtypes';
  */
 
 export const UpdateCourseRequestDto = Record({
-  id: String,
+  idSource: String,
 });
 
 export type UpdateCourseRequestDto = Static<typeof UpdateCourseRequestDto>;

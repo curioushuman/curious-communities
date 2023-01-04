@@ -75,7 +75,7 @@ export class UpdateCourseHandler
           ),
           performAction(
             findCourseDto.value,
-            this.courseRepository.checkById,
+            this.courseRepository.check(findCourseDto.identifier),
             this.errorFactory,
             this.logger,
             `find course: ${findCourseDto.value}`

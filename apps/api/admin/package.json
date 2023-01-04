@@ -7,7 +7,7 @@
     "@curioushuman/cdk-utils": "file:../../dist/local/cdk-utils/src/index.js"
   },
   "TODO-peerDependencies": {
-    "@curioushuman/error-factory": "file:../../dist/layers/shared/nodejs/node_modules/@curioushuman/error-factory/src/index.js"
+    "@curioushuman/error-factory": "file:../../dist/utils/layers/shared/nodejs/node_modules/@curioushuman/error-factory/src/index.js"
   },
   "devDependencies": {
     "aws-cdk-lib": "^2.55.1",

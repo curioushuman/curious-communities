@@ -1,6 +1,12 @@
 get:
   summary: Accept incoming events from external systems
   parameters:
+    - name: externalId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The identifier for the specific course this event has occurred to
     - name: eventType
       in: path
       required: true
@@ -12,12 +18,12 @@ get:
           * `created` - When a course has been created
           * `updated` - When a course has been updated
           * `status-updated` - A course has changed status; similar to updated, but more specific
-    - name: externalId
-      in: path
-      required: true
+    - name: source
+      in: query
+      required: false
       schema:
         type: string
-      description: The identifier for the specific course this event has occurred to
+      description: The specific source for this course and it's externalId
     - name: updatedStatus
       in: query
       required: false

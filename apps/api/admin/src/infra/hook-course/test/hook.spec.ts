@@ -44,11 +44,10 @@ describe('ApiAdminStack : hook', () => {
     template = Template.fromStack(stack);
   });
 
-  describe('/courses/{eventType}/{externalId}?{updatedStatus?}', () => {
-    const resourceParentRegex =
-      'ccapiadminRestApicourseshookeventType[A-Z0-9]+';
+  describe('/courses/{externalId}/{eventType}?{updatedStatus?}', () => {
+    const resourceParentRegex = 'ccapiadminRestApicourseshook[A-Z0-9]+';
     const resourceIdRegex =
-      'ccapiadminRestApicourseshookeventTypeexternalId[A-Z0-9]+';
+      'ccapiadminRestApicourseshookexternalIdeventType[A-Z0-9]+';
     const responseMethodSuccessModelRegex =
       'ccapiadminRestApiHookEventSuccessResponseModel[A-Z0-9]+';
 
@@ -91,15 +90,18 @@ describe('ApiAdminStack : hook', () => {
 
       test('With the relevant parameters', () => {
         expect(
-          requestParameters.asObject()['method.request.path.eventType']
+          requestParameters.asObject()['method.request.path.externalId']
         ).toBeTruthy();
         expect(
-          requestParameters.asObject()['method.request.path.externalId']
+          requestParameters.asObject()['method.request.path.eventType']
         ).toBeTruthy();
         expect(
           requestParameters.asObject()[
             'method.request.querystring.updatedStatus'
           ]
+        ).toBeDefined();
+        expect(
+          requestParameters.asObject()['method.request.querystring.source']
         ).toBeDefined();
       });
 

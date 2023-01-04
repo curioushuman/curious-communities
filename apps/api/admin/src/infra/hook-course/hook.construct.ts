@@ -45,10 +45,10 @@ export class HookConstruct extends Construct {
 
     /**
      * Resources
-     * GET /courses/{eventType}/{externalId}?{updatedStatus?}
+     * GET /courses/{externalId}/{eventType}?{updatedStatus?}
      */
-    const paramType = this.rootResource.addResource('{eventType}');
-    const paramExternalId = paramType.addResource('{externalId}');
+    const paramExternalId = this.rootResource.addResource('{externalId}');
+    const paramType = paramExternalId.addResource('{eventType}');
 
     /**
      * Response model
@@ -127,6 +127,7 @@ export class HookConstruct extends Construct {
       requestParameters: {
         'method.request.path.eventType': true,
         'method.request.path.externalId': true,
+        'method.request.querystring.source': false,
         'method.request.querystring.updatedStatus': false,
       },
       requestValidator: this.apiConstruct.requestValidators['basic-get'],
@@ -161,6 +162,6 @@ export class HookConstruct extends Construct {
      * hook: method definition
      * - AWS integration
      */
-    paramExternalId.addMethod('GET', this.awsIntegration, this.methodOptions);
+    paramType.addMethod('GET', this.awsIntegration, this.methodOptions);
   }
 }

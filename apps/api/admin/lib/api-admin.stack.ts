@@ -40,7 +40,7 @@ export class ApiAdminStack extends cdk.Stack {
     const externalEventsEventBus = events.EventBus.fromEventBusArn(
       this,
       externalEventsEventBusTitle,
-      `arn:aws:lambda:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:function:${externalEventsEventBusName}`
+      `arn:aws:events:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:event-bus:${externalEventsEventBusName}`
     );
     externalEventsEventBus.grantPutEventsTo(apiAdmin.role);
 
@@ -73,7 +73,7 @@ export class ApiAdminStack extends cdk.Stack {
 
     /**
      * Hook for external events
-     * GET /courses/{eventType}/{externalId}?{updatedStatus?}
+     * GET /courses/{externalId}/{eventType}?{updatedStatus?}
      */
     const coursesHookConstruct = new HookConstruct(this, 'courses-hook', {
       apiConstruct: apiAdmin,

@@ -52,11 +52,21 @@ export class CreateParticipantConstruct extends Construct {
     /**
      * Additional lambdas from other stacks
      */
-    // TODO: create this lambda
     const paxFindLambdaConstruct = new ChLambdaFrom(
       this,
-      'cc-participants-participant-find'
+      'cc-courses-participant-find'
     );
+    // TODO: create this lambda
+    const paxSourceFindLambdaConstruct = new ChLambdaFrom(
+      this,
+      'cc-courses-participant-source-find'
+    );
+    // TODO: create this lambda
+    const courseSourceFindLambdaConstruct = new ChLambdaFrom(
+      this,
+      'cc-courses-course-source-find'
+    );
+    // TODO: create this lambda
     const membersCreateLambda = new ChLambdaFrom(
       this,
       'cc-members-member-create'
@@ -87,20 +97,51 @@ export class CreateParticipantConstruct extends Construct {
      * {
      *  "DetailType":"putEvent",
      *  "Detail":
-     *    "{\"object\":\"participant\",\"type\":\"created\",\"idSource\":\"{course.idSourceValue}\",\"paxIdSource\":\"{pax.idSourceValue}\"}
+     *    "{\"object\":\"participant\",\"type\":\"created\",\"courseIdSource\":\"{course.idSourceValue}\",\"paxIdSource\":\"{pax.idSourceValue}\"}
      *  "Source": "apigw-cc-api-admin-participants-hook",
      *  "EventBusName": "eventBusArn"
      * }
+     *
+     * NOTES
+     * - this should then be available to all lambdas as event.detail
      */
 
     /**
-     * Step 1: Find participant based on course idSource and pax idSource
+     * Step 3A (Parallel): Find participant based on pax idSource
+     */
+    const findPaxSourceId = `${id}-find-participant-source`;
+    const findPaxSource = new tasks.LambdaInvoke(this, findPaxSourceId, {
+      lambdaFunction: paxSourceFindLambdaConstruct.lambdaFunction,
+      // this append the output of this task to the input into this task
+      resultPath: '$.participantSource',
+    }).addCatch(sfnFail);
+
+    /**
+     * Step 3B (Parallel): Find course based on course idSource
+     */
+    const findCourseSourceId = `${id}-find-course-source`;
+    const findCourseSource = new tasks.LambdaInvoke(this, findCourseSourceId, {
+      lambdaFunction: courseSourceFindLambdaConstruct.lambdaFunction,
+      // this append the output of this task to the input into this task
+      resultPath: '$.courseSource',
+    }).addCatch(sfnFail);
+
+    /**
+     * Step 3 (Parallel): Find participant and course sources
+     */
+    const findSourcesId = `${id}-find-sources`;
+    const findSources = new sfn.Parallel(this, findSourcesId);
+    findSources.branch(findPaxSource);
+    findSources.branch(findCourseSource);
+
+    /**
+     * Step 1: Check if a participant already exists
      *
      * NOTES
      * - this lambda should behave in the same way as the others, look for dto or dto as event.detail
      *   therefore doesn't require custom inputPath
      */
-    const findPaxId = `${id}-find-participant`;
+    const findPaxId = `${id}-find-participant-source`;
     const findPax = new tasks.LambdaInvoke(this, findPaxId, {
       lambdaFunction: paxFindLambdaConstruct.lambdaFunction,
       // this append the output of this task to the input into this task
@@ -108,7 +149,17 @@ export class CreateParticipantConstruct extends Construct {
     }).addCatch(sfnFail);
 
     /**
-     * Step 2: Find member id
+     * Step 2: Does PAX already exist?
+     */
+    const paxExistsId = `${id}-participant-exists`;
+    const paxExists = new sfn.Choice(this, paxExistsId);
+    paxExists.when(sfn.Condition.isPresent('$.participant.id'), sfnSuccess);
+    // otherwise continue in the chain
+    // ? is this necessary?
+    paxExists.otherwise(findSources);
+
+    /**
+     * Step 4: Find member based on email
      *
      * NOTES
      * - now we'll need to locate a member based on either the email or the idSource of the PAX
@@ -117,12 +168,12 @@ export class CreateParticipantConstruct extends Construct {
     const findMemberId = `${id}-find-member`;
     const findMember = new tasks.LambdaInvoke(this, findMemberId, {
       lambdaFunction: membersFindLambdaConstruct.lambdaFunction,
-      inputPath: '$.participant',
+      inputPath: '$.participantSource',
       resultPath: '$.member',
     }).addCatch(sfnFail);
 
     /**
-     * Step 4B: Create PAX
+     * Step 5B (Choice): Create PAX
      */
     const createPaxId = `${id}-create-participant`;
     const createPax = new tasks.LambdaInvoke(this, createPaxId, {
@@ -130,7 +181,12 @@ export class CreateParticipantConstruct extends Construct {
     }).addCatch(sfnFail);
 
     /**
-     * Step 4A: Create member
+     * Step 5A (Choice): Create member
+     *
+     * NOTES
+     * According to this example:
+     * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions.Choice.html
+     * next() back to a step in the chain should pick-up where we left off (in the chain)
      */
     const createMemberId = `${id}-create-member`;
     const createMember = new tasks.LambdaInvoke(this, createMemberId, {
@@ -138,9 +194,10 @@ export class CreateParticipantConstruct extends Construct {
     })
       .addCatch(sfnFail)
       .next(findMember);
+    // should then continue to memberExists
 
     /**
-     * Step 3: Does member exist?
+     * Step 5: Does member exist?
      *
      * Note: we're not passing inputPath or outputPath here
      * so the choice will receive the entire input from the previous step
@@ -149,11 +206,15 @@ export class CreateParticipantConstruct extends Construct {
     const memberExistsId = `${id}-member-exists`;
     const memberExists = new sfn.Choice(this, memberExistsId);
     memberExists.when(sfn.Condition.isNotPresent('$.member.id'), createMember);
+    // otherwise continue in the chain
+    // ? is this necessary?
+    memberExists.otherwise(createPax);
 
     /**
      * Step function definition
      */
     const definition = sfn.Chain.start(findPax)
+      .next(findSources)
       .next(findMember)
       .next(memberExists)
       .next(createPax)

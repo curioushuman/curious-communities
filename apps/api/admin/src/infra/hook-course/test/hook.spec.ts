@@ -44,16 +44,16 @@ describe('ApiAdminStack : hook', () => {
     template = Template.fromStack(stack);
   });
 
-  describe('/courses/{idSource}/{eventType}?{updatedStatus?}', () => {
+  describe('/courses/{courseIdSource}/{eventType}?{updatedStatus?}', () => {
     const resourceParentRegex = 'ccapiadminRestApicourses[A-Z0-9]+';
     const resourceIdRegex =
-      'ccapiadminRestApicoursesidSourcehookeventType[A-Z0-9]+';
+      'ccapiadminRestApicoursescourseIdSourcehookeventType[A-Z0-9]+';
     const responseMethodSuccessModelRegex =
       'ccapiadminRestApiHookEventSuccessResponseModel[A-Z0-9]+';
 
     it('Should exist', () => {
       template.hasResourceProperties('AWS::ApiGateway::Resource', {
-        PathPart: '{idSource}',
+        PathPart: '{courseIdSource}',
         ParentId: {
           Ref: Match.stringLikeRegexp(resourceParentRegex),
         },
@@ -90,7 +90,7 @@ describe('ApiAdminStack : hook', () => {
 
       test('With the relevant parameters', () => {
         expect(
-          requestParameters.asObject()['method.request.path.idSource']
+          requestParameters.asObject()['method.request.path.courseIdSource']
         ).toBeTruthy();
         expect(
           requestParameters.asObject()['method.request.path.eventType']

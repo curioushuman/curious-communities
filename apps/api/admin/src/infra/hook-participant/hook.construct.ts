@@ -45,7 +45,7 @@ export class ParticipantsHookConstruct extends Construct {
 
     /**
      * Resources
-     * GET /courses/{idSource}/participants/{paxIdSource}/hook/{eventType}?{updatedStatus?}
+     * GET /courses/{courseIdSource}/participants/{paxIdSource}/hook/{eventType}?{updatedStatus?}
      */
     const paramType = this.rootResource.addResource('{eventType}');
 
@@ -113,7 +113,7 @@ export class ParticipantsHookConstruct extends Construct {
       // Here we can define path, querystring, and acceptable headers
       requestParameters: {
         'method.request.path.eventType': true,
-        'method.request.path.idSource': true,
+        'method.request.path.courseIdSource': true,
         'method.request.path.paxIdSource': true,
         'method.request.querystring.updatedStatus': false,
       },

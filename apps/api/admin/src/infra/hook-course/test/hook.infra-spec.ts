@@ -63,12 +63,12 @@ defineFeature(feature, (test) => {
     then,
   }) => {
     let eventType: string;
-    let idSource: string;
+    let courseIdSource: string;
     let response: any;
 
     given('a valid external event has occurred', () => {
       eventType = 'created';
-      idSource = '123';
+      courseIdSource = '123';
     });
 
     when(
@@ -77,7 +77,7 @@ defineFeature(feature, (test) => {
         if (!apiUrl) {
           throw new Error('No API URL found');
         }
-        const url = `${apiUrl}courses/${idSource}/hook/${eventType}`;
+        const url = `${apiUrl}courses/${courseIdSource}/hook/${eventType}`;
         response = await getResponse(url, 'GET');
       }
     );
@@ -91,7 +91,7 @@ defineFeature(feature, (test) => {
 
     // and('an internal event is created', () => {
     //   // TODO
-    //   expect(idSource).toEqual('123');
+    //   expect(courseIdSource).toEqual('123');
     // });
 
     // and('an event ID is returned', () => {

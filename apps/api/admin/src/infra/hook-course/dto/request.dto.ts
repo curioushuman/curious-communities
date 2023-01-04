@@ -11,6 +11,6 @@
 export interface HookInternalEventDto {
   object: string; // course, or entry
   type: string; // created, updated, status-updated
-  externalId: string; // externalId
+  idSource: string; // idSource
   status?: string; // only for status-updated
 }

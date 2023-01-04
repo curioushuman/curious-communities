@@ -1,3 +1,4 @@
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as cdk from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
 
@@ -14,6 +15,10 @@ import {
   CoursesHookConstruct,
   CoursesHookProps,
 } from '../src/infra/hook-course/hook.construct';
+import {
+  ParticipantsHookConstruct,
+  ParticipantsHookProps,
+} from '../src/infra/hook-participant/hook.construct';
 
 export class ApiAdminStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
@@ -25,6 +30,18 @@ export class ApiAdminStack extends cdk.Stack {
     const apiAdmin = new CoApiConstruct(this, 'cc-api-admin', {
       description: 'Education Admin API',
       stageName: 'dev',
+    });
+
+    /**
+     * API Gateway Response models
+     *
+     * NOTES
+     * - currently all endpoints are hooks, so we'll use a single response model
+     */
+    apiAdmin.addResponseModel('hook-event-success', {
+      properties: {
+        message: { type: apigateway.JsonSchemaType.STRING },
+      },
     });
 
     /**
@@ -53,7 +70,7 @@ export class ApiAdminStack extends cdk.Stack {
      * Courses
      */
     const courses = apiAdmin.api.root.addResource('courses');
-    const paramExternalId = courses.addResource('{externalId}');
+    const coursesExternalId = courses.addResource('{externalId}');
 
     /**
      * Hook for external events
@@ -64,9 +81,29 @@ export class ApiAdminStack extends cdk.Stack {
       'courses-hook',
       {
         apiConstruct: apiAdmin,
-        rootResource: paramExternalId.addResource('hook'),
+        rootResource: coursesExternalId.addResource('hook'),
         eventBus: externalEventsEventBus,
       } as CoursesHookProps
+    );
+
+    /**
+     * Participants
+     */
+    const participants = coursesExternalId.addResource('participants');
+    const participantsPaxExternalId = courses.addResource('{paxExternalId}');
+
+    /**
+     * Hook for external events
+     * GET /courses/{externalId}/participants/{paxExternalId}/hook/{eventType}?{updatedStatus?}
+     */
+    const participantsHookConstruct = new ParticipantsHookConstruct(
+      this,
+      'participants-hook',
+      {
+        apiConstruct: apiAdmin,
+        rootResource: participantsPaxExternalId.addResource('hook'),
+        eventBus: externalEventsEventBus,
+      } as ParticipantsHookProps
     );
   }
 }

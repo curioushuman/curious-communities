@@ -13,14 +13,14 @@ import { CoApiConstruct } from '../../../../../../dist/local/@curioushuman/cdk-u
 /**
  * Props required to initialize a CO API Construct
  */
-export interface CoursesHookProps {
+export interface ParticipantsHookProps {
   apiConstruct: CoApiConstruct;
   rootResource: apigateway.IResource;
   eventBus: events.IEventBus;
 }
 
 /**
- * Components required for the api-admin stack courses:hook resource
+ * Components required for the api-admin stack participants:hook resource
  *
  * TODO:
  * - [ ] idempotency for the hook
@@ -28,7 +28,7 @@ export interface CoursesHookProps {
  *       can we do it another way? Maybe specific to the event?
  *       https://aws.amazon.com/premiumsupport/knowledge-center/lambda-function-idempotent/
  */
-export class CoursesHookConstruct extends Construct {
+export class ParticipantsHookConstruct extends Construct {
   private apiConstruct: CoApiConstruct;
   private rootResource: apigateway.IResource;
   private eventBus: events.IEventBus;
@@ -36,7 +36,7 @@ export class CoursesHookConstruct extends Construct {
   private awsIntegration: apigateway.AwsIntegration;
   private methodOptions: apigateway.MethodOptions;
 
-  constructor(scope: Construct, id: string, props: CoursesHookProps) {
+  constructor(scope: Construct, id: string, props: ParticipantsHookProps) {
     super(scope, id);
 
     this.apiConstruct = props.apiConstruct;
@@ -45,7 +45,7 @@ export class CoursesHookConstruct extends Construct {
 
     /**
      * Resources
-     * GET /courses/{externalId}/hook/{eventType}?{updatedStatus?}
+     * GET /courses/{externalId}/participants/{paxExternalId}/hook/{eventType}?{updatedStatus?}
      */
     const paramType = this.rootResource.addResource('{eventType}');
 
@@ -53,8 +53,8 @@ export class CoursesHookConstruct extends Construct {
      * hook: request mapping template
      * to convert API input/params/body, into acceptable lambda input
      */
-    const eventSourceId = `apigw-${this.apiConstruct.id}-courses-hook`;
-    const coursesHookRequestTemplate = CoApiConstruct.vtlTemplateFromFile(
+    const eventSourceId = `apigw-${this.apiConstruct.id}-participants-hook`;
+    const participantsHookRequestTemplate = CoApiConstruct.vtlTemplateFromFile(
       pathResolve(__dirname, './hook.map-request.vtl')
     )
       .replace('source.id', eventSourceId)
@@ -66,18 +66,19 @@ export class CoursesHookConstruct extends Construct {
      */
 
     // SUCCESS
-    const coursesHookFunctionSuccessResponse: apigateway.IntegrationResponse = {
-      statusCode: '200',
-      responseTemplates: {
-        'application/json': JSON.stringify({
-          id: "$input.path('$.Entries[0].EventId')",
-        }),
-      },
-    };
+    const participantsHookFunctionSuccessResponse: apigateway.IntegrationResponse =
+      {
+        statusCode: '200',
+        responseTemplates: {
+          'application/json': JSON.stringify({
+            id: "$input.path('$.Entries[0].EventId')",
+          }),
+        },
+      };
     // ERROR
-    const coursesHookFunctionServerErrorResponse =
+    const participantsHookFunctionServerErrorResponse =
       CoApiConstruct.serverErrorResponse();
-    const coursesHookFunctionClientErrorResponse =
+    const participantsHookFunctionClientErrorResponse =
       CoApiConstruct.clientErrorResponse();
 
     /**
@@ -90,13 +91,13 @@ export class CoursesHookConstruct extends Construct {
       options: {
         credentialsRole: this.apiConstruct.role,
         requestTemplates: {
-          'application/json': coursesHookRequestTemplate,
+          'application/json': participantsHookRequestTemplate,
         },
         passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
         integrationResponses: [
-          coursesHookFunctionSuccessResponse,
-          coursesHookFunctionServerErrorResponse,
-          coursesHookFunctionClientErrorResponse,
+          participantsHookFunctionSuccessResponse,
+          participantsHookFunctionServerErrorResponse,
+          participantsHookFunctionClientErrorResponse,
         ],
       },
     });
@@ -113,6 +114,7 @@ export class CoursesHookConstruct extends Construct {
       requestParameters: {
         'method.request.path.eventType': true,
         'method.request.path.externalId': true,
+        'method.request.path.paxExternalId': true,
         'method.request.querystring.updatedStatus': false,
       },
       requestValidator: this.apiConstruct.requestValidators['basic-get'],

@@ -10,4 +10,8 @@ paths:
 
   # Courses
   /courses/{externalId}/hook/{eventType}:
-    $ref: "./src/courses/hook/hook.path.yaml"
+    $ref: "./src/infra/hook-course/hook.path.yaml"
+
+  # Participants
+  /courses/{externalId}/participants/{paxExternalId}/hook/{eventType}:
+    $ref: "./src/infra/hook-participant/hook.path.yaml"

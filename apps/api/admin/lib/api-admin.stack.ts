@@ -50,23 +50,6 @@ export class ApiAdminStack extends cdk.Stack {
      */
 
     /**
-     * Course
-     *
-     * TODO
-     * - [ ] can we move this to a schema dir or similar
-     * - [ ] we also need to align with the openapi schema yaml
-     */
-    // was removed as we don't have a find anymore
-    // apiAdmin.addResponseModel('course-response-dto', {
-    //   properties: {
-    //     id: { type: apigateway.JsonSchemaType.STRING },
-    //     externalId: { type: apigateway.JsonSchemaType.STRING },
-    //     name: { type: apigateway.JsonSchemaType.STRING },
-    //     slug: { type: apigateway.JsonSchemaType.STRING },
-    //   },
-    // });
-
-    /**
      * Courses
      */
     const courses = apiAdmin.api.root.addResource('courses');

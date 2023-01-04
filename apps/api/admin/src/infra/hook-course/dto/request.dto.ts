@@ -8,9 +8,9 @@
  * * for most up to date values check out hook.path.yaml
  */
 
-export interface HookeInternalEventDto {
+export interface HookInternalEventDto {
   object: string; // course, or entry
   type: string; // created, updated, status-updated
-  id: string; // externalId
+  externalId: string; // externalId
   status?: string; // only for status-updated
 }

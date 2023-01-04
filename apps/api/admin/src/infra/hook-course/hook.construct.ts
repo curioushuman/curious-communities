@@ -127,7 +127,6 @@ export class HookConstruct extends Construct {
       requestParameters: {
         'method.request.path.eventType': true,
         'method.request.path.externalId': true,
-        'method.request.querystring.source': false,
         'method.request.querystring.updatedStatus': false,
       },
       requestValidator: this.apiConstruct.requestValidators['basic-get'],

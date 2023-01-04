@@ -6,7 +6,7 @@ get:
       required: true
       schema:
         type: string
-      description: The identifier for the specific course this event has occurred to
+      description: The identifier for the specific course. **IMPORTANT** - conforms to the `SOURCE#1234` format, where `SOURCE` is the key of the external system, and `1234` is the identifier for the course in that system.
     - name: eventType
       in: path
       required: true
@@ -18,12 +18,6 @@ get:
           * `created` - When a course has been created
           * `updated` - When a course has been updated
           * `status-updated` - A course has changed status; similar to updated, but more specific
-    - name: source
-      in: query
-      required: false
-      schema:
-        type: string
-      description: The specific source for this course and it's externalId
     - name: updatedStatus
       in: query
       required: false

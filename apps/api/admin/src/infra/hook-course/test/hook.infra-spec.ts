@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { getResponse } from 'aws-testing-library/lib/utils/api';
-// import { HookeInternalEventDto } from '../dto/request.dto';
+// import { HookInternalEventDto } from '../dto/request.dto';
 
 import {
   transformIdToResourceTitle,

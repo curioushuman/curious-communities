@@ -1,13 +1,13 @@
 openapi: "3.1.0"
 info:
   version: 1.0.0
-  title: Curious Outcomes admin API
-  description: These are the admin API endpoints for the Curious Outcomes system.
+  title: Curious Communities admin API
+  description: These are the admin API endpoints for the Curious Communities system.
 servers:
   - url: http://to.be.defined/v1
 
 paths:
 
   # Courses
-  /cc-courses/hook/{eventType}/{externalId}:
+  /courses/hook/{externalId}/{eventType}:
     $ref: "./src/courses/hook/hook.path.yaml"

@@ -100,9 +100,6 @@ describe('ApiAdminStack : hook', () => {
             'method.request.querystring.updatedStatus'
           ]
         ).toBeDefined();
-        expect(
-          requestParameters.asObject()['method.request.querystring.source']
-        ).toBeDefined();
       });
 
       // TODO: can we improve this?

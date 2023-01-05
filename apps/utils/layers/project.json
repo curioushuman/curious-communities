@@ -1,5 +1,5 @@
 {
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "targets": {
     "lint": {
@@ -188,8 +188,8 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "../../node_modules/.bin/rimraf ../../dist/apps/utils/layers",
-          "../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../dist/apps/utils/layers"
+          "../../../node_modules/.bin/rimraf ../../../dist/apps/utils/layers",
+          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/utils/layers"
         ],
         "cwd": "apps/utils/layers",
         "parallel": false
@@ -205,7 +205,7 @@
     "destroy-local": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "../../node_modules/.bin/cdklocal destroy --force --output ../../dist/apps/utils/layers",
+        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/utils/layers",
         "cwd": "apps/utils/layers",
         "parallel": false
       }
@@ -214,10 +214,10 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "rimraf dist/layers/node-modules",
-          "mkdir -p dist/layers/node-modules/nodejs",
-          "cp package.json dist/layers/node-modules/nodejs",
-          "cd dist/layers/node-modules/nodejs && npm install --production"
+          "rimraf dist/utils/layers/node-modules",
+          "mkdir -p dist/utils/layers/node-modules/nodejs",
+          "cp package.json dist/utils/layers/node-modules/nodejs",
+          "cd dist/utils/layers/node-modules/nodejs && npm install --production"
         ],
         "parallel": false
       }

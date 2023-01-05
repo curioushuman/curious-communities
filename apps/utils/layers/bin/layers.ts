@@ -6,7 +6,7 @@ import * as cdk from 'aws-cdk-lib';
 import {
   getAccountAndRegion,
   transformIdToResourceTitle,
-} from '../../../dist/local/@curioushuman/cdk-utils/src';
+} from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 

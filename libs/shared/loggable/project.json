@@ -7,7 +7,7 @@
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/layers/shared/nodejs/node_modules/@curioushuman/loggable",
+        "outputPath": "dist/utils/layers/shared/nodejs/node_modules/@curioushuman/loggable",
         "main": "libs/shared/loggable/src/index.ts",
         "tsConfig": "libs/shared/loggable/tsconfig.lib.json",
         "assets": ["libs/shared/loggable/*.md"]

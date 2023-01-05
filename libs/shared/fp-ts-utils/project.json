@@ -6,7 +6,7 @@
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/layers/shared/nodejs/node_modules/@curioushuman/fp-ts-utils",
+        "outputPath": "dist/utils/layers/shared/nodejs/node_modules/@curioushuman/fp-ts-utils",
         "main": "libs/shared/fp-ts-utils/src/index.ts",
         "tsConfig": "libs/shared/fp-ts-utils/tsconfig.lib.json",
         "packageJson": "libs/shared/fp-ts-utils/package.json",

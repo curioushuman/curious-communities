@@ -6,7 +6,7 @@
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/layers/cc-courses-service/nodejs/node_modules/@curioushuman/cc-courses-service",
+        "outputPath": "dist/utils/layers/cc-courses-service/nodejs/node_modules/@curioushuman/cc-courses-service",
         "tsConfig": "libs/education/courses/tsconfig.lib.json",
         "packageJson": "libs/education/courses/package.json",
         "main": "libs/education/courses/src/index.ts",

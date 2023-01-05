@@ -6,7 +6,7 @@
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/layers/shared/nodejs/node_modules/@curioushuman/error-factory",
+        "outputPath": "dist/utils/layers/shared/nodejs/node_modules/@curioushuman/error-factory",
         "main": "libs/shared/error-factory/src/index.ts",
         "tsConfig": "libs/shared/error-factory/tsconfig.lib.json",
         "packageJson": "libs/shared/error-factory/package.json",

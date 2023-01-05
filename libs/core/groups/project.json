@@ -6,7 +6,7 @@
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/layers/cc-groups-service/nodejs/node_modules/@curioushuman/cc-groups-service",
+        "outputPath": "dist/utils/layers/cc-groups-service/nodejs/node_modules/@curioushuman/cc-groups-service",
         "tsConfig": "libs/core/groups/tsconfig.lib.json",
         "packageJson": "libs/core/groups/package.json",
         "main": "libs/core/groups/src/index.ts",

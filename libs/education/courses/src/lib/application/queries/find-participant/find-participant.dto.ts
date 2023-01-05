@@ -1,8 +1,12 @@
+import { parseExternalIdSourceValue } from '@curioushuman/common';
+
 import { ParticipantId } from '../../../domain/value-objects/participant-id';
 import {
   ParticipantIdentifier,
   ParticipantIdentifiers,
 } from '../../../domain/entities/participant';
+import { Source } from '../../../domain/value-objects/source';
+import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -39,6 +43,8 @@ type FindParticipantDtoParsers = {
  */
 const parsers: FindParticipantDtoParsers = {
   id: (dto) => ParticipantId.check(dto.value),
+  idSourceValue: (dto) =>
+    parseExternalIdSourceValue(dto.value, ParticipantSourceId, Source),
 };
 
 /**

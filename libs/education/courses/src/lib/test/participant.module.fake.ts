@@ -15,10 +15,20 @@ import { CreateParticipantController } from '../infra/create-participant/create-
 import { UpdateParticipantController } from '../infra/update-participant/update-participant.controller';
 import { CreateParticipantHandler } from '../application/commands/create-participant/create-participant.command';
 import { UpdateParticipantHandler } from '../application/commands/update-participant/update-participant.command';
+import { FindParticipantHandler } from '../application/queries/find-participant/find-participant.query';
+import { FindParticipantController } from '../infra/find-participant/find-participant.controller';
 
-const controllers = [CreateParticipantController, UpdateParticipantController];
+const controllers = [
+  CreateParticipantController,
+  FindParticipantController,
+  UpdateParticipantController,
+];
 
-const handlers = [CreateParticipantHandler, UpdateParticipantHandler];
+const handlers = [
+  CreateParticipantHandler,
+  FindParticipantHandler,
+  UpdateParticipantHandler,
+];
 
 const repositories = [
   { provide: ParticipantRepository, useClass: FakeParticipantRepository },

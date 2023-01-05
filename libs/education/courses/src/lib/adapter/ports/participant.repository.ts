@@ -3,38 +3,49 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 import {
   Participant,
   ParticipantIdentifier,
+  ParticipantIdentifierValue,
 } from '../../domain/entities/participant';
 import { ParticipantId } from '../../domain/value-objects/participant-id';
+import { ParticipantSourceIdSourceValue } from '../../domain/value-objects/participant-source-id-source';
 
 /**
- * Literal list of finders for a participant
+ * Type for the findOne method interface within repository
  */
-export type ParticipantFinder = 'findById' | 'findBySlug';
-
-/**
- * Returns the correct finder for the given identifier
- *
- * Note: obviously this is a hacky way to do this, but it works.
- * If we need to move beyond this un-name restriction of identifier
- * and finder name we can at any point (by using object literal or similar).
- */
-export const identifierFinder = (
-  identifier: ParticipantIdentifier
-): ParticipantFinder => {
-  let identifierString: string = identifier as string;
-  identifierString =
-    identifierString.charAt(0).toUpperCase() + identifierString.slice(1);
-
-  return `findBy${identifierString}` as ParticipantFinder;
-};
+export type ParticipantFindMethod = (
+  value: ParticipantIdentifierValue
+) => TaskEither<Error, Participant>;
 
 export abstract class ParticipantRepository {
+  /**
+   * Object lookup for findMethods
+   */
+  abstract findOneBy: Record<ParticipantIdentifier, ParticipantFindMethod>;
+
+  /**
+   * Find a participant
+   *
+   * This method will accept a participant identifier and value
+   * and then determine which finder method to use.
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
+  abstract findOne(identifier: ParticipantIdentifier): ParticipantFindMethod;
+
   /**
    * Find a participant by the given ID
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findById(id: ParticipantId): TaskEither<Error, Participant>;
+  abstract findOneById(id: ParticipantId): TaskEither<Error, Participant>;
+
+  /**
+   * Find a participant by the given ID and source value
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
+  abstract findOneByIdSourceValue(
+    value: ParticipantSourceIdSourceValue
+  ): TaskEither<Error, Participant>;
 
   /**
    * Check for existence of participant by given ID

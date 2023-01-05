@@ -8,6 +8,12 @@ import config from '../../static/config';
 import { ParticipantStatus } from '../../domain/value-objects/participant-status';
 import { UpdateParticipantRequestDto } from '../../infra/update-participant/dto/update-participant.request.dto';
 import { UpdateParticipantDto } from '../../application/commands/update-participant/update-participant.dto';
+import { FindParticipantDto } from '../../application/queries/find-participant/find-participant.dto';
+import {
+  FindByIdParticipantRequestDto,
+  FindByIdSourceValueParticipantRequestDto,
+} from '../../infra/find-participant/dto/find-participant.request.dto';
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
 
 /**
  * A builder for Participants to play with in testing.
@@ -38,9 +44,18 @@ export const ParticipantBuilder = () => {
     memberId: '5008s1234519CjIABC',
     courseId: '5008s1234519CjIAEF',
     status: 'pending' as ParticipantStatus,
+
+    sourceIds: [
+      {
+        id: '5008s1234519CjIAAU',
+        source: 'COURSE',
+      },
+    ],
+
     memberName: 'James Brown',
     memberEmail: 'james@brown.com',
     memberOrganisationName: 'James Co',
+
     accountOwner: config.defaults.accountOwner,
   };
   const overrides: ParticipantLooseMimic = {
@@ -48,9 +63,13 @@ export const ParticipantBuilder = () => {
     memberId: defaultProperties.memberId,
     courseId: defaultProperties.courseId,
     status: defaultProperties.status,
+
+    sourceIds: defaultProperties.sourceIds,
+
     memberName: defaultProperties.memberName,
     memberEmail: defaultProperties.memberEmail,
     memberOrganisationName: defaultProperties.memberOrganisationName,
+
     accountOwner: defaultProperties.accountOwner,
   };
 
@@ -131,17 +150,47 @@ export const ParticipantBuilder = () => {
       } as Participant;
     },
 
-    buildCreateParticipantDto(): CreateParticipantDto {
+    // buildCreateParticipantDto(): CreateParticipantDto {
+    //   const build = this.build();
+    //   return {
+    //     id: build.id,
+    //     source: build.source,
+    //   } as CreateParticipantDto;
+    // },
+
+    // buildCreateParticipantRequestDto(): CreateParticipantRequestDto {
+    //   return {
+    //     id: this.buildNoCheck().id,
+    //   } as CreateParticipantRequestDto;
+    // },
+
+    buildFindByIdParticipantDto(): FindParticipantDto {
       return {
-        id: this.build().id,
-      } as CreateParticipantDto;
+        identifier: 'id',
+        value: this.build().id,
+      } as FindParticipantDto;
     },
 
-    buildCreateParticipantRequestDto(): CreateParticipantRequestDto {
+    buildFindByIdSourceValueParticipantDto(): FindParticipantDto {
+      const sourceId = this.build().sourceIds[0];
+      return {
+        identifier: 'idSourceValue',
+        value: prepareExternalIdSourceValue(sourceId.id, sourceId.source),
+      } as FindParticipantDto;
+    },
+
+    buildFindByIdParticipantRequestDto(): FindByIdParticipantRequestDto {
       return {
         id: this.buildNoCheck().id,
-      } as CreateParticipantRequestDto;
+      } as FindByIdParticipantRequestDto;
     },
+
+    // buildFindByIdSourceValueParticipantRequestDto(): FindByIdSourceValueParticipantRequestDto {
+    //   const sourceId = this.build().sourceIds[0];
+    //   return {
+    //     idSourceValue: sourceId.id,
+    //   } as FindByIdSourceValueParticipantRequestDto;
+    // },
 
     buildUpdateParticipantDto(): UpdateParticipantDto {
       return {

@@ -5,9 +5,15 @@ import { FindCourseDto } from '../../queries/find-course/find-course.dto';
 import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
 import { Source } from '../../../domain/value-objects/source';
 import {
+  createYearMonth,
   prepareExternalIdSource,
   prepareExternalIdSourceValue,
 } from '@curioushuman/common';
+import { CourseSource } from '../../../domain/entities/course-source';
+import { Course } from '../../../domain/entities/course';
+import { createCourseId } from '../../../domain/value-objects/course-id';
+import { createCourseSlug } from '../../../domain/value-objects/course-slug';
+import config from '../../../static/config';
 
 /**
  * TODO
@@ -36,5 +42,28 @@ export class CreateCourseMapper {
       identifier: 'idSourceValue',
       value: prepareExternalIdSourceValue(dto.id, dto.source),
     } as FindCourseDto;
+  }
+
+  public static fromSourceToCourse(source: CourseSource): Course {
+    return Course.check({
+      id: createCourseId(),
+      slug: createCourseSlug(source),
+      status: source.status,
+
+      sourceIds: [
+        {
+          id: source.id,
+          source: 'COURSE',
+        },
+      ],
+
+      supportType: config.defaults.courseSupportType,
+      name: source.name,
+      dateOpen: source.dateOpen,
+      dateClosed: source.dateClosed,
+      yearMonthOpen: createYearMonth(source.dateOpen),
+
+      accountOwner: config.defaults.accountOwner,
+    });
   }
 }

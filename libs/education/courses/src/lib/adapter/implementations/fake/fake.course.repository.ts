@@ -58,7 +58,7 @@ export class FakeCourseRepository implements CourseRepository {
         const idSourceValue = ParticipantSourceIdSourceValue.check(value);
         const idSource = prepareExternalIdSource(
           idSourceValue,
-          CourseId,
+          CourseSourceId,
           Source
         );
         const course = this.courses.find((cs) =>
@@ -150,12 +150,15 @@ export class FakeCourseRepository implements CourseRepository {
         const idSourceValue = ParticipantSourceIdSourceValue.check(value);
         const idSource = prepareExternalIdSource(
           idSourceValue,
-          CourseId,
+          CourseSourceId,
           Source
         );
-        const course = this.courses.find((cs) =>
-          cs.sourceIds.includes(idSource)
-        );
+        const course = this.courses.find((cs) => {
+          const matches = cs.sourceIds.filter(
+            (sId) => sId.id === idSource.id && sId.source === idSource.source
+          );
+          return matches.length > 0;
+        });
         return pipe(
           course,
           O.fromNullable,

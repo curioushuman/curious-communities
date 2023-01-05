@@ -1,4 +1,8 @@
-import { createYearMonth, Timestamp } from '@curioushuman/common';
+import {
+  createYearMonth,
+  prepareExternalIdSourceValue,
+  Timestamp,
+} from '@curioushuman/common';
 
 import { Course } from '../../domain/entities/course';
 import { CourseSource } from '../../domain/entities/course-source';
@@ -45,29 +49,51 @@ export const CourseBuilder = () => {
    * Default properties don't exist in source repository
    */
   const defaultProperties: CourseLooseMimic = {
-    id: '5008s1234519CjIAAU',
-    status: 'open' as CourseStatus,
+    id: '8e925369-7dd5-4d92-b2a0-fba16384ce79',
     slug: 'learn_to_be_a_dancer',
+    status: 'open' as CourseStatus,
+
+    sourceIds: [
+      {
+        id: '5008s1234519CjBBHU',
+        source: 'COURSE',
+      },
+    ],
+
     supportType: config.defaults.courseSupportType,
     name: 'Learn to be a dancer',
     dateOpen: timestamps[2],
     dateClosed: timestamps[0],
     yearMonthOpen: createYearMonth(timestamps[2] as Timestamp),
+
     accountOwner: config.defaults.accountOwner,
   };
   const overrides: CourseLooseMimic = {
     id: defaultProperties.id,
-    status: defaultProperties.status,
     slug: defaultProperties.slug,
+    status: defaultProperties.status,
+
+    sourceIds: defaultProperties.sourceIds,
+
     supportType: defaultProperties.supportType,
     name: defaultProperties.name,
     dateOpen: defaultProperties.dateOpen,
     dateClosed: defaultProperties.dateClosed,
     yearMonthOpen: defaultProperties.yearMonthOpen,
+
     accountOwner: defaultProperties.accountOwner,
   };
 
   return {
+    setSource(source: CourseSource) {
+      overrides.sourceIds = [
+        {
+          id: source.id,
+          source: 'COURSE',
+        },
+      ];
+    },
+
     funkyChars() {
       const source = CourseSourceBuilder().funkyChars().buildNoCheck();
       overrides.name = source.name;
@@ -78,7 +104,7 @@ export const CourseBuilder = () => {
     alpha() {
       // ID DOES NOT EXIST IN SOURCE REPO/DB
       const source = CourseSourceBuilder().alpha().buildNoCheck();
-      overrides.id = source.id;
+      this.setSource(source);
       overrides.name = source.name;
       overrides.slug = createCourseSlug(source);
       return this;
@@ -87,7 +113,7 @@ export const CourseBuilder = () => {
     beta() {
       // ID DOES NOT EXIST IN SOURCE REPO/DB
       const source = CourseSourceBuilder().beta().buildNoCheck();
-      overrides.id = source.id;
+      this.setSource(source);
       overrides.name = source.name;
       overrides.slug = createCourseSlug(source);
       return this;
@@ -95,26 +121,28 @@ export const CourseBuilder = () => {
 
     invalidSource() {
       const source = CourseSourceBuilder().invalidSource().buildNoCheck();
-      overrides.id = source.id;
+      this.setSource(source);
       overrides.slug = createCourseSlug(source);
       return this;
     },
 
     invalidStatus() {
       const source = CourseSourceBuilder().invalidStatus().buildNoCheck();
-      overrides.id = source.id;
+      this.setSource(source);
       overrides.slug = createCourseSlug(source);
       return this;
     },
 
     noMatchingSource() {
-      overrides.id = 'NoMatchingSource';
+      overrides.id = '21406982-bdf9-4e6c-9095-cd890fb80081';
       return this;
     },
 
     invalid() {
       delete defaultProperties.id;
       delete overrides.id;
+      delete defaultProperties.sourceIds;
+      delete overrides.sourceIds;
       delete defaultProperties.slug;
       delete overrides.slug;
       return this;
@@ -122,13 +150,14 @@ export const CourseBuilder = () => {
 
     exists() {
       const source = CourseSourceBuilder().exists().build();
-      overrides.id = source.id;
+      this.setSource(source);
+      overrides.name = source.name;
       overrides.slug = createCourseSlug(source);
       return this;
     },
 
     doesntExist() {
-      overrides.id = 'CourseDoesntExist';
+      overrides.id = '21406982-bdf9-4e6c-9095-cd890fb80081';
       overrides.slug = 'course-doesnt-exist';
       delete defaultProperties.id;
       delete overrides.id;
@@ -145,7 +174,7 @@ export const CourseBuilder = () => {
     },
 
     fromSource(source: CourseSource) {
-      overrides.id = source.id;
+      this.setSource(source);
       overrides.name = source.name;
       overrides.slug = createCourseSlug(source);
       return this;
@@ -166,26 +195,37 @@ export const CourseBuilder = () => {
     },
 
     buildCreateCourseDto(): CreateCourseDto {
-      return {
-        id: this.build().id,
-      } as CreateCourseDto;
+      const sourceId = this.build().sourceIds[0];
+      return sourceId as CreateCourseDto;
     },
 
     buildCreateCourseRequestDto(): CreateCourseRequestDto {
+      const sourceIds = this.buildNoCheck().sourceIds;
+      if (!sourceIds) {
+        return {
+          idSourceValue: '',
+        } as CreateCourseRequestDto;
+      }
       return {
-        id: this.buildNoCheck().id,
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceIds[0].id,
+          sourceIds[0].source
+        ),
       } as CreateCourseRequestDto;
     },
 
     buildUpdateCourseDto(): UpdateCourseDto {
-      return {
-        id: this.build().id,
-      } as UpdateCourseDto;
+      const sourceId = this.build().sourceIds[0];
+      return sourceId as UpdateCourseDto;
     },
 
     buildUpdateCourseRequestDto(): UpdateCourseRequestDto {
+      const sourceId = this.buildNoCheck().sourceIds[0];
       return {
-        id: this.buildNoCheck().id,
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceId.id,
+          sourceId.source
+        ),
       } as UpdateCourseRequestDto;
     },
 

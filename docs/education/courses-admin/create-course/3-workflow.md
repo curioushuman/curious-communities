@@ -64,7 +64,7 @@ Else
 ### Step 2. Create course in admin
 
 #### Input
-- CourseId
+- CourseSourceId
 
 #### Output: Success
 
@@ -100,7 +100,7 @@ Else
 ### Step 3. Sync artists to admin
 
 #### Input
-- CourseId
+- CourseSourceId
 - NextToken
 
 #### Output: Success

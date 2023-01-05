@@ -3,7 +3,7 @@
 ## 1. Details
 
 - **Subdomain**: Learning design
-- **Aggregate root**: Participants
+- **Aggregate root**: Courses
 
 ## 2. Data
 
@@ -34,7 +34,7 @@
 
 ### Side-effects
 
-- Participant created
+- Participant updated
 
 ## 4. Decisions
 

@@ -1,7 +1,7 @@
 get:
   summary: Accept incoming events from external systems in relation to courses
   parameters:
-    - name: courseIdSource
+    - name: courseIdSourceValue
       in: path
       required: true
       schema:

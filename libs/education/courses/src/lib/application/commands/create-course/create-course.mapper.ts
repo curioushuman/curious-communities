@@ -16,7 +16,7 @@ import {
 export class CreateCourseMapper {
   public static fromRequestDto(dto: CreateCourseRequestDto): CreateCourseDto {
     const parsedDto = prepareExternalIdSource(
-      dto.idSource,
+      dto.idSourceValue,
       CourseSourceId,
       Source
     );
@@ -33,7 +33,7 @@ export class CreateCourseMapper {
 
   public static toFindCourseDto(dto: CreateCourseDto): FindCourseDto {
     return {
-      identifier: 'idSource',
+      identifier: 'idSourceValue',
       value: prepareExternalIdSourceValue(dto.id, dto.source),
     } as FindCourseDto;
   }

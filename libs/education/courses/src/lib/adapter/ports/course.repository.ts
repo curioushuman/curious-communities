@@ -52,7 +52,7 @@ export abstract class CourseRepository {
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findOneByIdSource(
+  abstract findOneByIdSourceValue(
     value: CourseSourceIdSourceValue
   ): TaskEither<Error, Course>;
 
@@ -86,7 +86,7 @@ export abstract class CourseRepository {
   /**
    * Check for existence of course by given ID and source value
    */
-  abstract checkByIdSource(
+  abstract checkByIdSourceValue(
     value: CourseSourceIdSourceValue
   ): TaskEither<Error, boolean>;
 

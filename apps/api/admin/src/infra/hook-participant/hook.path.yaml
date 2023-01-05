@@ -1,13 +1,13 @@
 get:
   summary: Accept incoming events from external systems in relation to participants
   parameters:
-    - name: courseIdSource
+    - name: courseIdSourceValue
       in: path
       required: true
       schema:
         type: string
       description: The identifier for the course this participant belongs to. **IMPORTANT** - conforms to the `SOURCE#1234` format, where `SOURCE` is the key of the external system, and `1234` is the identifier for the course in that system.
-    - name: paxIdSource
+    - name: paxIdSourceValue
       in: path
       required: true
       schema:

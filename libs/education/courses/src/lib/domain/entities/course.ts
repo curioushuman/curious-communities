@@ -45,7 +45,7 @@ export type Course = Static<typeof Course>;
  */
 export type CourseIdentifiers = {
   id: CourseId;
-  idSource: CourseSourceIdSourceValue;
+  idSourceValue: CourseSourceIdSourceValue;
   slug: CourseSlug;
 };
 export type CourseIdentifier = keyof CourseIdentifiers;

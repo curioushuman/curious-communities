@@ -16,7 +16,7 @@ import { Source } from '../../../domain/value-objects/source';
 export class UpdateCourseMapper {
   public static fromRequestDto(dto: UpdateCourseRequestDto): UpdateCourseDto {
     const parsedDto = prepareExternalIdSource(
-      dto.idSource,
+      dto.idSourceValue,
       CourseSourceId,
       Source
     );
@@ -33,7 +33,7 @@ export class UpdateCourseMapper {
 
   public static toFindCourseDto(dto: UpdateCourseDto): FindCourseDto {
     return {
-      identifier: 'idSource',
+      identifier: 'idSourceValue',
       value: prepareExternalIdSourceValue(dto.id, dto.source),
     } as FindCourseDto;
   }

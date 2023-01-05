@@ -45,7 +45,7 @@ export class CoursesHookConstruct extends Construct {
 
     /**
      * Resources
-     * GET /courses/{courseIdSource}/hook/{eventType}?{updatedStatus?}
+     * GET /courses/{courseIdSourceValue}/hook/{eventType}?{updatedStatus?}
      */
     const paramType = this.rootResource.addResource('{eventType}');
 
@@ -112,7 +112,7 @@ export class CoursesHookConstruct extends Construct {
       // Here we can define path, querystring, and acceptable headers
       requestParameters: {
         'method.request.path.eventType': true,
-        'method.request.path.courseIdSource': true,
+        'method.request.path.courseIdSourceValue': true,
         'method.request.querystring.updatedStatus': false,
       },
       requestValidator: this.apiConstruct.requestValidators['basic-get'],

@@ -70,11 +70,11 @@ export class ApiAdminStack extends cdk.Stack {
      * Courses
      */
     const courses = apiAdmin.api.root.addResource('courses');
-    const coursesCourse = courses.addResource('{idSource}');
+    const coursesCourse = courses.addResource('{courseIdSourceValue}');
 
     /**
      * Hook for external events
-     * GET /courses/{idSource}/hook/{eventType}?{updatedStatus?}
+     * GET /courses/{courseIdSourceValue}/hook/{eventType}?{updatedStatus?}
      */
     const coursesHookConstruct = new CoursesHookConstruct(
       this,
@@ -90,11 +90,12 @@ export class ApiAdminStack extends cdk.Stack {
      * Participants
      */
     const participants = coursesCourse.addResource('participants');
-    const participantsParticipant = participants.addResource('{paxIdSource}');
+    const participantsParticipant =
+      participants.addResource('{paxIdSourceValue}');
 
     /**
      * Hook for external events
-     * GET /courses/{idSource}/participants/{paxIdSource}/hook/{eventType}?{updatedStatus?}
+     * GET /courses/{courseIdSourceValue}/participants/{paxIdSourceValue}/hook/{eventType}?{updatedStatus?}
      */
     const participantsHookConstruct = new ParticipantsHookConstruct(
       this,

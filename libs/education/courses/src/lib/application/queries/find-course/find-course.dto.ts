@@ -43,7 +43,7 @@ type FindCourseDtoParsers = {
  */
 const parsers: FindCourseDtoParsers = {
   id: (dto) => CourseId.check(dto.value),
-  idSource: (dto) =>
+  idSourceValue: (dto) =>
     parseExternalIdSourceValue(dto.value, CourseSourceId, Source),
   slug: (dto) => CourseSlug.check(dto.value),
 };

@@ -50,7 +50,7 @@ export class FakeCourseRepository implements CourseRepository {
     );
   };
 
-  findOneByIdSource = (
+  findOneByIdSourceValue = (
     value: ParticipantSourceIdSourceValue
   ): TE.TaskEither<Error, Course> => {
     return TE.tryCatch(
@@ -113,7 +113,7 @@ export class FakeCourseRepository implements CourseRepository {
    */
   findOneBy: Record<CourseIdentifier, CourseFindMethod> = {
     id: this.findOneById,
-    idSource: this.findOneByIdSource,
+    idSourceValue: this.findOneByIdSourceValue,
     slug: this.findOneBySlug,
   };
 
@@ -142,7 +142,7 @@ export class FakeCourseRepository implements CourseRepository {
     );
   };
 
-  checkByIdSource = (
+  checkByIdSourceValue = (
     value: CourseSourceIdSourceValue
   ): TE.TaskEither<Error, boolean> => {
     return TE.tryCatch(
@@ -199,7 +199,7 @@ export class FakeCourseRepository implements CourseRepository {
    */
   checkBy: Record<CourseIdentifier, CourseCheckMethod> = {
     id: this.checkById,
-    idSource: this.checkByIdSource,
+    idSourceValue: this.checkByIdSourceValue,
     slug: this.checkBySlug,
   };
 

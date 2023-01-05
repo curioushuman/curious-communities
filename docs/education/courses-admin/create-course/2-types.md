@@ -14,7 +14,7 @@ Assume everything is AND unless specified by OR and ()
   - string
 - UpdatedStatus
   - string
-- CourseId
+- CourseSourceId
   - ExternalId/string
 - NextToken
   - Review this further when you dig into the code a little bit more

@@ -31,7 +31,7 @@ defineFeature(feature, (test) => {
 
     given('the request contains invalid data', () => {
       dto = {
-        id: '',
+        courseIdSourceValue: '',
       };
     });
 

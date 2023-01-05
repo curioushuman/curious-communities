@@ -97,5 +97,7 @@ export const handler = async (
   //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
-  return createCourseController.create(requestDto);
+  return createCourseController.create({
+    idSourceValue: requestDto.courseIdSourceValue,
+  });
 };

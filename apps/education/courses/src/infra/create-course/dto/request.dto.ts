@@ -10,7 +10,7 @@ import { Record, Static, String } from 'runtypes';
  */
 
 export const CreateCourseRequestDto = Record({
-  idSource: String,
+  courseIdSourceValue: String,
 });
 
 export type CreateCourseRequestDto = Static<typeof CreateCourseRequestDto>;

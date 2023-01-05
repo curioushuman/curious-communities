@@ -9,9 +9,9 @@ servers:
 paths:
 
   # Courses
-  /courses/{idSource}/hook/{eventType}:
+  /courses/{courseIdSourceValue}/hook/{eventType}:
     $ref: "./src/infra/hook-course/hook.path.yaml"
 
   # Participants
-  /courses/{idSource}/participants/{paxIdSource}/hook/{eventType}:
+  /courses/{courseIdSourceValue}/participants/{paxIdSourceValue}/hook/{eventType}:
     $ref: "./src/infra/hook-participant/hook.path.yaml"

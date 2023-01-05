@@ -14,8 +14,8 @@ const MemberData = Record({
 });
 
 export const CreateParticipantRequestDto = Record({
-  courseIdSource: String,
-  participantIdSource: String,
+  courseIdSourceValue: String,
+  participantIdSourceValue: String,
   member: Optional(MemberData),
 });
 

@@ -18,10 +18,6 @@ import { MembersDynamoDbConstruct } from '../src/adapter/implementations/dynamod
 
 /**
  * These are the components required for the members stack
- *
- * TODO
- * - [ ] abstract the lambdas into Construct classes
- * - [*] -abstract the dynamodb table into Construct classes-
  */
 export class MembersStack extends cdk.Stack {
   private lambdaProps: NodejsFunctionProps = {
@@ -56,7 +52,7 @@ export class MembersStack extends cdk.Stack {
     const externalEventsEventBus = events.EventBus.fromEventBusArn(
       this,
       externalEventsEventBusTitle,
-      `arn:aws:lambda:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:function:${externalEventsEventBusName}`
+      `arn:aws:events:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:event-bus:${externalEventsEventBusName}`
     );
 
     /**

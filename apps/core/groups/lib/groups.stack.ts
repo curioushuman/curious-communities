@@ -56,7 +56,7 @@ export class GroupsStack extends cdk.Stack {
     const externalEventsEventBus = events.EventBus.fromEventBusArn(
       this,
       externalEventsEventBusTitle,
-      `arn:aws:lambda:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:function:${externalEventsEventBusName}`
+      `arn:aws:events:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:event-bus:${externalEventsEventBusName}`
     );
 
     /**

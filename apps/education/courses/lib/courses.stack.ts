@@ -14,7 +14,7 @@ import {
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import { CoursesDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/courses.construct';
+import { CoursesDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/courses-dynamodb.construct';
 
 /**
  * These are the components required for the courses stack

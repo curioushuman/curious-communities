@@ -34,7 +34,7 @@ export class LambdaEventSubscription extends Construct {
     this.lambdaFunction = lambdaConstruct.lambdaFunction;
 
     /**
-     * Rule: Create Course when course source is created
+     * Rule
      */
     const [ruleName, ruleTitle] = resourceNameTitle(id, 'Rule');
     const rule = new events.Rule(this, ruleTitle, {

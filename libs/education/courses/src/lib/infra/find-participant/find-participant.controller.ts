@@ -14,6 +14,7 @@ import {
 import { FindParticipantMapper } from '../../application/queries/find-participant/find-participant.mapper';
 import { FindParticipantQuery } from '../../application/queries/find-participant/find-participant.query';
 import { ParticipantResponseDto } from '../dto/participant.response.dto';
+import { ParticipantMapper } from '../participant.mapper';
 
 /**
  * Controller for find participant operations
@@ -56,10 +57,7 @@ export class FindParticipantController {
 
       // #4. transform to the response DTO
       TE.chain(
-        parseActionData(
-          FindParticipantMapper.toParticipantResponseDto,
-          this.logger
-        )
+        parseActionData(ParticipantMapper.toParticipantResponseDto, this.logger)
       )
     );
 
@@ -93,6 +91,11 @@ export class FindParticipantController {
           },
           (error: unknown) => error as Error
         )
+      ),
+
+      // #4. transform to the response DTO
+      TE.chain(
+        parseActionData(ParticipantMapper.toParticipantResponseDto, this.logger)
       )
     );
 
@@ -129,6 +132,11 @@ export class FindParticipantController {
           },
           (error: unknown) => error as Error
         )
+      ),
+
+      // #4. transform to the response DTO
+      TE.chain(
+        parseActionData(ParticipantMapper.toParticipantResponseDto, this.logger)
       )
     );
 

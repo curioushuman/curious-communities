@@ -1,7 +1,4 @@
-import {
-  parseExternalIdSourceValue,
-  prepareExternalIdSourceValue,
-} from '@curioushuman/common';
+import { parseExternalIdSourceValue } from '@curioushuman/common';
 
 import { FindParticipantDto } from './find-participant.dto';
 import {
@@ -12,8 +9,6 @@ import {
 import { ParticipantId } from '../../../domain/value-objects/participant-id';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
 import { Source } from '../../../domain/value-objects/source';
-import { Participant } from '../../../domain/entities/participant';
-import { ParticipantResponseDto } from '../../../infra/dto/participant.response.dto';
 
 /**
  * TODO
@@ -58,24 +53,5 @@ export class FindParticipantMapper {
       identifier: 'idSourceValue',
       value,
     } as FindParticipantDto;
-  }
-
-  public static toParticipantResponseDto(
-    participant: Participant
-  ): ParticipantResponseDto {
-    return {
-      id: participant.id,
-      memberId: participant.memberId,
-      courseId: participant.courseId,
-      status: participant.status,
-
-      sourceIds: participant.sourceIds.map((idSource) =>
-        prepareExternalIdSourceValue(idSource.id, idSource.source)
-      ),
-
-      memberName: participant.memberName,
-      memberEmail: participant.memberEmail,
-      memberOrganisationName: participant.memberOrganisationName,
-    } as ParticipantResponseDto;
   }
 }

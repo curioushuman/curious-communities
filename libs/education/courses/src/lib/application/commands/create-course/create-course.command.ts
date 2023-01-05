@@ -6,7 +6,6 @@ import { sequenceT } from 'fp-ts/lib/Apply';
 import {
   ErrorFactory,
   RepositoryItemConflictError,
-  RepositoryItemNotFoundError,
 } from '@curioushuman/error-factory';
 import {
   executeTask,
@@ -85,11 +84,6 @@ export class CreateCourseHandler
 
       // #3. validate + transform; courses exists, source is valid, source to course
       TE.chain(([courseSource, courseExists]) => {
-        if (!courseSource) {
-          throw new RepositoryItemNotFoundError(
-            `Course source id: ${createCourseDto.id}`
-          );
-        }
         if (courseExists === true) {
           throw new RepositoryItemConflictError(
             `Course id: ${createCourseDto.id}`

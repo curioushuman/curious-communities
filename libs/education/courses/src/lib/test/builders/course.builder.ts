@@ -220,11 +220,16 @@ export const CourseBuilder = () => {
     },
 
     buildUpdateCourseRequestDto(): UpdateCourseRequestDto {
-      const sourceId = this.buildNoCheck().sourceIds[0];
+      const sourceIds = this.buildNoCheck().sourceIds;
+      if (!sourceIds) {
+        return {
+          idSourceValue: '',
+        } as CreateCourseRequestDto;
+      }
       return {
         idSourceValue: prepareExternalIdSourceValue(
-          sourceId.id,
-          sourceId.source
+          sourceIds[0].id,
+          sourceIds[0].source
         ),
       } as UpdateCourseRequestDto;
     },

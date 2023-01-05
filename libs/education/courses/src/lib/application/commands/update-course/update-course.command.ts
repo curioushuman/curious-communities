@@ -19,7 +19,6 @@ import { UpdateCourseDto } from './update-course.dto';
 import { UpdateCourseMapper } from './update-course.mapper';
 import { CourseSourceRepository } from '../../../adapter/ports/course-source.repository';
 import { CourseSource } from '../../../domain/entities/course-source';
-import { CourseMapper } from '../../course.mapper';
 
 export class UpdateCourseCommand implements ICommand {
   constructor(public readonly updateCourseDto: UpdateCourseDto) {}
@@ -75,7 +74,7 @@ export class UpdateCourseHandler
           ),
           performAction(
             findCourseDto.value,
-            this.courseRepository.check(findCourseDto.identifier),
+            this.courseRepository.findOne(findCourseDto.identifier),
             this.errorFactory,
             this.logger,
             `find course: ${findCourseDto.value}`
@@ -84,13 +83,15 @@ export class UpdateCourseHandler
       ),
 
       // #3. validate + transform; courses exists, source is valid, source to course
-      TE.chain(([courseSource, courseExists]) => {
+      TE.chain(([courseSource, existingCourse]) => {
+        // ! These may be superfluous, as the findOne
+        // ! will throw if the item is not found
         if (!courseSource) {
           throw new RepositoryItemNotFoundError(
             `Course source id: ${updateCourseDto.id}`
           );
         }
-        if (courseExists === false) {
+        if (!existingCourse) {
           throw new RepositoryItemNotFoundError(
             `Course id: ${updateCourseDto.id}`
           );
@@ -104,7 +105,7 @@ export class UpdateCourseHandler
           ),
           TE.chain((courseSourceChecked) =>
             parseActionData(
-              CourseMapper.fromSourceToCourse,
+              UpdateCourseMapper.fromSourceToCourse(existingCourse),
               this.logger,
               'SourceInvalidError'
             )(courseSourceChecked)

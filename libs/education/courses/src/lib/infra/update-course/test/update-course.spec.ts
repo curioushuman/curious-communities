@@ -22,6 +22,7 @@ import { CourseSourceBuilder } from '../../../test/builders/course-source.builde
 import { CourseSource } from '../../../domain/entities/course-source';
 import { CourseSourceRepository } from '../../../adapter/ports/course-source.repository';
 import { FakeCourseSourceRepository } from '../../../adapter/implementations/fake/fake.course-source.repository';
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
 
 /**
  * INTEGRATION TEST
@@ -90,7 +91,12 @@ defineFeature(feature, (test) => {
       executeTask(courseSourcerepository.save(updatedCourseSource));
       const courses = await executeTask(repository.all());
       const courseBefore = courses.find(
-        (course) => course.id === updateCourseDto.id
+        (course) =>
+          updateCourseDto.idSourceValue ===
+          prepareExternalIdSourceValue(
+            course.sourceIds[0].id,
+            course.sourceIds[0].source
+          )
       );
       expect(courseBefore).toBeDefined();
       if (courseBefore) {
@@ -112,7 +118,12 @@ defineFeature(feature, (test) => {
       async () => {
         const courses = await executeTask(repository.all());
         const courseAfter = courses.find(
-          (course) => course.id === updateCourseDto.id
+          (course) =>
+            updateCourseDto.idSourceValue ===
+            prepareExternalIdSourceValue(
+              course.sourceIds[0].id,
+              course.sourceIds[0].source
+            )
         );
         expect(courseAfter).toBeDefined();
         if (courseAfter) {

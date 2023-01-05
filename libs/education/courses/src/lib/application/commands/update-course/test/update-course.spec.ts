@@ -90,7 +90,7 @@ defineFeature(feature, (test) => {
     and('the source does exist in our DB', async () => {
       const courses = await executeTask(repository.all());
       const courseBefore = courses.find(
-        (course) => course.id === updateCourseDto.id
+        (course) => course.sourceIds[0].id === updateCourseDto.id
       );
       expect(courseBefore).toBeDefined();
       if (courseBefore) {
@@ -99,7 +99,13 @@ defineFeature(feature, (test) => {
     });
 
     when('I attempt to update a course', async () => {
-      result = await handler.execute(new UpdateCourseCommand(updateCourseDto));
+      try {
+        result = await handler.execute(
+          new UpdateCourseCommand(updateCourseDto)
+        );
+      } catch (err) {
+        expect(err).toBeUndefined();
+      }
     });
 
     then(
@@ -107,7 +113,7 @@ defineFeature(feature, (test) => {
       async () => {
         const courses = await executeTask(repository.all());
         const courseAfter = courses.find(
-          (course) => course.id === updateCourseDto.id
+          (course) => course.sourceIds[0].id === updateCourseDto.id
         );
         expect(courseAfter).toBeDefined();
         if (courseAfter) {

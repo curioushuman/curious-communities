@@ -1,13 +1,17 @@
 import { Record, Static } from 'runtypes';
 
-import { ParticipantId } from '../../../domain/value-objects/participant-id';
+import { CourseForCreate } from '../../../domain/entities/course';
+import { MemberForCreate } from '../../../domain/entities/member';
+import { ParticipantSourceForCreate } from '../../../domain/entities/participant-source';
 
 /**
  * This is the form of data our repository will expect for the command
  */
 
 export const CreateParticipantDto = Record({
-  id: ParticipantId,
+  participantSource: ParticipantSourceForCreate,
+  course: CourseForCreate,
+  member: MemberForCreate,
 });
 
 export type CreateParticipantDto = Static<typeof CreateParticipantDto>;

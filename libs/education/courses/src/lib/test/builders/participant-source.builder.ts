@@ -27,19 +27,19 @@ export const ParticipantSourceBuilder = () => {
    * Default properties don't exist in source repository
    */
   const defaultProperties: ParticipantSourceLooseMimic = {
-    id: '5008s1234519CjIAAU',
-    memberId: '5008s1234519CjIABC',
-    courseId: '5008s1234519CjIAEF',
+    id: '5008s1234519CjIPPU',
+    courseId: '5008s1234519CjIAAU',
     status: 'pending' as ParticipantSourceStatus,
+
     memberName: 'James Brown',
     memberEmail: 'james@brown.com',
     memberOrganisationName: 'James Co',
   };
   const overrides: ParticipantSourceLooseMimic = {
     id: defaultProperties.id,
-    memberId: defaultProperties.memberId,
     courseId: defaultProperties.courseId,
     status: defaultProperties.status,
+
     memberName: defaultProperties.memberName,
     memberEmail: defaultProperties.memberEmail,
     memberOrganisationName: defaultProperties.memberOrganisationName,

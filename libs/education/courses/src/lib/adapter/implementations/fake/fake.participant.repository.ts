@@ -16,6 +16,7 @@ import { ParticipantId } from '../../../domain/value-objects/participant-id';
 import { ParticipantSourceIdSourceValue } from '../../../domain/value-objects/participant-source-id-source';
 import { prepareExternalIdSource } from '@curioushuman/common';
 import { Source } from '../../../domain/value-objects/source';
+import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
 
 @Injectable()
 export class FakeParticipantRepository implements ParticipantRepository {
@@ -69,12 +70,15 @@ export class FakeParticipantRepository implements ParticipantRepository {
         const idSourceValue = ParticipantSourceIdSourceValue.check(value);
         const idSource = prepareExternalIdSource(
           idSourceValue,
-          ParticipantId,
+          ParticipantSourceId,
           Source
         );
-        const participant = this.participants.find((cs) =>
-          cs.sourceIds.includes(idSource)
-        );
+        const participant = this.participants.find((cs) => {
+          const matches = cs.sourceIds.filter(
+            (sId) => sId.id === idSource.id && sId.source === idSource.source
+          );
+          return matches.length > 0;
+        });
         return pipe(
           participant,
           O.fromNullable,

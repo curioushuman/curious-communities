@@ -3,7 +3,7 @@
 ## 1. Details
 
 - **Subdomain**: Learning design
-- **Aggregate root**: Participants
+- **Aggregate root**: Courses
 
 ## 2. Data
 ### Input data:
@@ -12,9 +12,7 @@
 
 ### Dependencies (from other services/sources)
 
-- SourceRepo.findOne(ById)
-  - We need to validate that a source object exists before we save it
-  - We might as well grab the data while we're there
+- None
 
 ### Output (results, events, errors)
 
@@ -26,11 +24,9 @@
 
 - RequestInvalidError
 - RepositoryAuthenticationError
-- RepositoryItemNotFoundError
 - RepositoryServerError
 - RepositoryServerUnavailableError
 - SourceInvalidError
-- RepositoryItemConflictError
 
 ## 3. Behaviour
 

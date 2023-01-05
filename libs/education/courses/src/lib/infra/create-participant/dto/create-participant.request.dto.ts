@@ -8,8 +8,26 @@ import { Record, Static, String } from 'runtypes';
  * further into application layers.
  */
 
-export const CreateParticipantRequestDto = Record({
+const ParticipantSourcePartial = Record({
   id: String,
+  status: String,
+});
+
+const CoursePartial = Record({
+  id: String,
+});
+
+const MemberPartial = Record({
+  id: String,
+  email: String,
+  name: String,
+  organisationName: String,
+});
+
+export const CreateParticipantRequestDto = Record({
+  participantSource: ParticipantSourcePartial,
+  course: CoursePartial,
+  member: MemberPartial,
 });
 
 export type CreateParticipantRequestDto = Static<

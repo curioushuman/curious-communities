@@ -75,14 +75,12 @@ defineFeature(feature, (test) => {
     let createParticipantDto: CreateParticipantRequestDto;
     let error: Error;
 
-    given('the request is valid', () => {
+    given('the request is valid', async () => {
       // we know this to exist in our fake repo
       createParticipantDto = ParticipantBuilder()
         .beta()
         .buildCreateParticipantRequestDto();
-    });
 
-    and('a matching record is found at the source', async () => {
       participants = await executeTask(repository.all());
       participantsBefore = participants.length;
     });
@@ -96,36 +94,30 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then(
-      'a new record should have been created in the repository',
-      async () => {
-        participants = await executeTask(repository.all());
-        expect(participants.length).toEqual(participantsBefore + 1);
-      }
-    );
+    then('a new record should have been created', async () => {
+      participants = await executeTask(repository.all());
+      expect(participants.length).toEqual(participantsBefore + 1);
+    });
 
     and('no result is returned', () => {
       expect(result).toEqual(undefined);
     });
   });
 
-  test('Fail; Invalid request', ({ given, and, when, then }) => {
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
+  test('Fail; Invalid request', ({ given, when, then }) => {
     let createParticipantDto: CreateParticipantRequestDto;
     let error: Error;
 
     given('the request contains invalid data', () => {
       // we know this to exist in our fake repo
       createParticipantDto = ParticipantBuilder()
-        .invalid()
+        .invalidOther()
         .buildCreateParticipantRequestDto();
     });
 
     when('I attempt to create a participant', async () => {
       try {
-        result = await controller.create(createParticipantDto);
+        await controller.create(createParticipantDto);
       } catch (err) {
         error = err as Error;
       }
@@ -133,10 +125,6 @@ defineFeature(feature, (test) => {
 
     then('I should receive a RequestInvalidError', () => {
       expect(error).toBeInstanceOf(RequestInvalidError);
-    });
-
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
     });
   });
 });

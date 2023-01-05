@@ -50,3 +50,14 @@ export type CourseIdentifiers = {
 };
 export type CourseIdentifier = keyof CourseIdentifiers;
 export type CourseIdentifierValue = ValueOf<CourseIdentifier>;
+
+/**
+ * The below are additional types used during the creation of a participant
+ */
+
+/**
+ * This is the information we require from the course
+ */
+export const CourseForCreate = Course.pick('id');
+
+export type CourseForCreate = Static<typeof CourseForCreate>;

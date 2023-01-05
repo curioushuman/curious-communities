@@ -1,22 +1,35 @@
-import { Optional, Record, Static, String } from 'runtypes';
+import { Record, Static, String } from 'runtypes';
 
 /**
- * This is the form of data we expect as input into our Lambda
+ * NOTE: At this time we're going to keep it as simple as possible. We're
+ * going to assume that this lambda is only (currently) going to be called
+ * from the create participant step functions. Within which all of the below will
+ * be provided.
  *
- * NOTE: it is remarkably similar to the CreateParticipantRequestDto within Nest.
- * This is OK, as currently these two things are directly aligned. However,
- * at some point they may diverge; which is also OK. Hence the need for two
- * DTOs, for two different purposes.
+ * At some later date we can improve upon this and make it more flexible.
+ * e.g. supporting partial records or idSourceValue. Then within the service
+ * we can react accordingly.
  */
-const MemberData = Record({
+const ParticipantSourcePartial = Record({
+  id: String,
+  status: String,
+});
+
+const CoursePartial = Record({
+  id: String,
+});
+
+const MemberPartial = Record({
   id: String,
   email: String,
+  name: String,
+  organisationName: String,
 });
 
 export const CreateParticipantRequestDto = Record({
-  courseIdSourceValue: String,
-  participantIdSourceValue: String,
-  member: Optional(MemberData),
+  participantSource: ParticipantSourcePartial,
+  course: CoursePartial,
+  member: MemberPartial,
 });
 
 export type CreateParticipantRequestDto = Static<

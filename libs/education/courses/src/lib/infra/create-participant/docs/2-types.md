@@ -8,7 +8,16 @@ Assume everything is AND unless specified by OR and ()
 
 ### CreateParticipantRequestDto
 
-- ExternalId
+- participantSource
+  - id
+  - status
+- course
+  - id
+- member
+  - id
+  - name
+  - email
+  - organisationName
 
 ## Errors
 

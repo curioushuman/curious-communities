@@ -3,7 +3,7 @@
 ## 1. Details
 
 - **Subdomain**: Learning design
-- **Aggregate root**: Participants
+- **Aggregate root**: Courses
 
 ## 2. Data
 
@@ -30,7 +30,7 @@
 
 ### Triggered by
 
-- Lambda function(s)
+- Create participant step function
 
 ### Side-effects
 

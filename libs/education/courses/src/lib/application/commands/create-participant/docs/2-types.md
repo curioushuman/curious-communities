@@ -8,18 +8,32 @@ Assume everything is AND unless specified by OR and ()
 
 ### CreateParticipantDto
 
-- ExternalId
+- participantSource
+  - id
+  - status
+- course
+  - id
+- member
+  - id
+  - name
+  - email
+  - organisationName
 
-### findSourceDto
-
-- ExternalId
-
-### ParticipantSource
+### ParticipantSourceForCreate
 
 - id
+- status
+
+### CourseForCreate
+
+- id
+
+### Member
+
+- id
+- email
 - name
-- slug
-- (See entity for full spec)
+- organisationName
 
 ### Participant
 
@@ -33,12 +47,6 @@ Assume everything is AND unless specified by OR and ()
 - RequestInvalidError
   - Extends: BadRequestException
   - Message: Invalid request, please review
-- RepositoryAuthenticationError
-  - Extends: UnauthorizedException
-  - Message: Error authenticating at repository, please re-authenticate
-- RepositoryItemNotFoundError
-  - Extends: NotFoundException
-  - Message: A source could not be found, please check source for requested record
 - RepositoryServerError
   - Extends: InternalServerException
   - Message: Error connecting to repository, please try again or contact system administrator
@@ -48,9 +56,6 @@ Assume everything is AND unless specified by OR and ()
 - SourceInvalidError
   - Extends: BadRequestException
   - Message: Source contains insufficient or invalid data, please review requested record at source
-- RepositoryItemConflictError
-  - Extends: ConflictException
-  - Message: Source already exists within our database. No action required.
 - NotificationFailedError
   - Extends: InternalServerException
   - Message: Error sending Notification, contact your system administrator

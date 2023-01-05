@@ -14,6 +14,7 @@ import {
   FindByIdSourceValueParticipantRequestDto,
 } from '../../infra/find-participant/dto/find-participant.request.dto';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import { ParticipantSourceStatus } from '../../domain/value-objects/participant-source-status';
 
 /**
  * A builder for Participants to play with in testing.
@@ -40,14 +41,14 @@ export const ParticipantBuilder = () => {
    * Default properties don't exist in source repository
    */
   const defaultProperties: ParticipantLooseMimic = {
-    id: '5008s1234519CjIAAU',
-    memberId: '5008s1234519CjIABC',
-    courseId: '5008s1234519CjIAEF',
+    id: '6fce9d10-aeed-4bb1-8c8c-92094f1982ff',
+    memberId: 'bd4dfd87-70c1-4a6f-b590-b3bbfce99f51',
+    courseId: '5aad9387-2bfb-4391-82b3-8501a4fca58e',
     status: 'pending' as ParticipantStatus,
 
     sourceIds: [
       {
-        id: '5008s1234519CjIAAU',
+        id: '5008s1234519CjIPPU',
         source: 'COURSE',
       },
     ],
@@ -74,34 +75,43 @@ export const ParticipantBuilder = () => {
   };
 
   return {
+    setSource(source: ParticipantSource) {
+      overrides.sourceIds = [
+        {
+          id: source.id,
+          source: 'COURSE',
+        },
+      ];
+    },
+
     alpha() {
       // ID DOES NOT EXIST IN SOURCE REPO/DB
       const source = ParticipantSourceBuilder().alpha().buildNoCheck();
-      overrides.id = source.id;
+      this.setSource(source);
       return this;
     },
 
     beta() {
       // ID DOES NOT EXIST IN SOURCE REPO/DB
       const source = ParticipantSourceBuilder().beta().buildNoCheck();
-      overrides.id = source.id;
+      this.setSource(source);
       return this;
     },
 
     invalidSource() {
       const source = ParticipantSourceBuilder().invalidSource().buildNoCheck();
-      overrides.id = source.id;
+      this.setSource(source);
       return this;
     },
 
     invalidStatus() {
       const source = ParticipantSourceBuilder().invalidStatus().buildNoCheck();
-      overrides.id = source.id;
+      this.setSource(source);
       return this;
     },
 
     noMatchingSource() {
-      overrides.id = 'NoMatchingSource';
+      overrides.id = '751df4b2-c717-431a-b80b-a2d52dcc5d21';
       return this;
     },
 
@@ -111,14 +121,19 @@ export const ParticipantBuilder = () => {
       return this;
     },
 
+    invalidOther() {
+      overrides.status = 'happy';
+      return this;
+    },
+
     exists() {
       const source = ParticipantSourceBuilder().exists().build();
-      overrides.id = source.id;
+      this.setSource(source);
       return this;
     },
 
     doesntExist() {
-      overrides.id = 'ParticipantDoesntExist';
+      overrides.id = '9f7aeaf9-b258-4099-b23b-6c0e48c52a34';
       delete defaultProperties.id;
       delete overrides.id;
       return this;
@@ -132,7 +147,7 @@ export const ParticipantBuilder = () => {
     },
 
     fromSource(source: ParticipantSource) {
-      overrides.id = source.id;
+      this.setSource(source);
       return this;
     },
 
@@ -150,19 +165,43 @@ export const ParticipantBuilder = () => {
       } as Participant;
     },
 
-    // buildCreateParticipantDto(): CreateParticipantDto {
-    //   const build = this.build();
-    //   return {
-    //     id: build.id,
-    //     source: build.source,
-    //   } as CreateParticipantDto;
-    // },
+    buildCreateParticipantDto(): CreateParticipantDto {
+      const build = this.buildNoCheck();
+      return {
+        participantSource: {
+          id: build.sourceIds[0].id,
+          status: build.status as ParticipantSourceStatus,
+        },
+        course: {
+          id: build.courseId,
+        },
+        member: {
+          id: build.memberId,
+          email: build.memberEmail,
+          name: build.memberName,
+          organisationName: build.memberOrganisationName,
+        },
+      } as CreateParticipantDto;
+    },
 
-    // buildCreateParticipantRequestDto(): CreateParticipantRequestDto {
-    //   return {
-    //     id: this.buildNoCheck().id,
-    //   } as CreateParticipantRequestDto;
-    // },
+    buildCreateParticipantRequestDto(): CreateParticipantRequestDto {
+      const build = this.buildNoCheck();
+      return {
+        participantSource: {
+          id: build.sourceIds[0].id,
+          status: build.status,
+        },
+        course: {
+          id: build.courseId,
+        },
+        member: {
+          id: build.memberId,
+          email: build.memberEmail,
+          name: build.memberName,
+          organisationName: build.memberOrganisationName,
+        },
+      } as CreateParticipantRequestDto;
+    },
 
     buildFindByIdParticipantDto(): FindParticipantDto {
       return {
@@ -172,7 +211,7 @@ export const ParticipantBuilder = () => {
     },
 
     buildFindByIdSourceValueParticipantDto(): FindParticipantDto {
-      const sourceId = this.build().sourceIds[0];
+      const sourceId = this.buildNoCheck().sourceIds[0];
       return {
         identifier: 'idSourceValue',
         value: prepareExternalIdSourceValue(sourceId.id, sourceId.source),
@@ -185,16 +224,19 @@ export const ParticipantBuilder = () => {
       } as FindByIdParticipantRequestDto;
     },
 
-    // buildFindByIdSourceValueParticipantRequestDto(): FindByIdSourceValueParticipantRequestDto {
-    //   const sourceId = this.build().sourceIds[0];
-    //   return {
-    //     idSourceValue: sourceId.id,
-    //   } as FindByIdSourceValueParticipantRequestDto;
-    // },
+    buildFindByIdSourceValueParticipantRequestDto(): FindByIdSourceValueParticipantRequestDto {
+      const sourceId = this.buildNoCheck().sourceIds[0];
+      return {
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceId.id,
+          sourceId.source
+        ),
+      } as FindByIdSourceValueParticipantRequestDto;
+    },
 
     buildUpdateParticipantDto(): UpdateParticipantDto {
       return {
-        id: this.build().id,
+        id: this.buildNoCheck().id,
       } as UpdateParticipantDto;
     },
 

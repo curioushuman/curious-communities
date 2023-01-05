@@ -30,6 +30,11 @@ export class CreateParticipantController {
     this.logger.setContext(CreateParticipantController.name);
   }
 
+  /**
+   * This version of create assumes it is coming from step functions
+   * that do a lot of the heavy lifting. It doesn't run any checks, apart
+   * from validating the request dto.
+   */
   public async create(requestDto: CreateParticipantRequestDto): Promise<void> {
     const task = pipe(
       requestDto,

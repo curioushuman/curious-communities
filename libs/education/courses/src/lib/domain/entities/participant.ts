@@ -40,17 +40,6 @@ export const Participant = Record({
 export type Participant = Static<typeof Participant>;
 
 /**
- * Partial participant record, used to gather data from various
- * sources prior to creating a participant
- */
-// export const ParticipantPartial = Partial(Participant);
-
-/**
- * Type for the (internal) participant entity
- */
-export type ParticipantPartial = Partial<Participant>;
-
-/**
  * Type that defines all the possible identifiers for a participant
  * NOTE: this is utilized in find-participant.dto.ts and participant.repository.ts
  * to define parsers and finders.
@@ -61,3 +50,54 @@ export type ParticipantIdentifiers = {
 };
 export type ParticipantIdentifier = keyof ParticipantIdentifiers;
 export type ParticipantIdentifierValue = ValueOf<ParticipantIdentifiers>;
+
+/**
+ * The below are additional types used during the creation of a participant
+ */
+
+/**
+ * This is the information we receive from the participant source
+ */
+export const ParticipantFromSource = Participant.pick(
+  'id',
+  'accountOwner',
+  'status',
+  'sourceIds'
+);
+
+/**
+ * This is the information we receive from the participant source
+ */
+export type ParticipantFromSource = Static<typeof ParticipantFromSource>;
+
+/**
+ * This is the information we receive from the course,
+ * built on top of what was received from source
+ */
+export const ParticipantFromSourceAndCourse = Participant.pick(
+  'status',
+  'sourceIds',
+  'courseId'
+);
+
+/**
+ * This is the information we receive from the course
+ */
+export type ParticipantFromSourceAndCourse = Static<
+  typeof ParticipantFromSourceAndCourse
+>;
+
+/**
+ * This is the information we receive from the member
+ */
+export const ParticipantFromMember = Participant.pick(
+  'memberId',
+  'memberName',
+  'memberEmail',
+  'memberOrganisationName'
+);
+
+/**
+ * This is the information we receive from the member
+ */
+export type ParticipantFromMember = Static<typeof ParticipantFromMember>;

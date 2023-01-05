@@ -1,12 +1,10 @@
-import { NotFoundException } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
   ErrorFactory,
   FakeRepositoryErrorFactory,
-  RepositoryItemConflictError,
-  SourceInvalidError,
+  RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -28,7 +26,6 @@ import { CreateParticipantDto } from '../create-participant.dto';
  * SUT = the command & command handler
  *
  * Out of scope
- * - request validation
  * - repository authorisation
  * - repository access issues
  */
@@ -72,19 +69,12 @@ defineFeature(feature, (test) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
 
-    given('a matching record is found at the source', () => {
+    given('the request is valid', async () => {
       // we know this to exist in our fake repo
       createParticipantDto = ParticipantBuilder()
         .beta()
         .buildCreateParticipantDto();
-    });
 
-    and('the returned source populates a valid participant', () => {
-      // we know this to be true
-      // out of scope for this test
-    });
-
-    and('the source does not already exist in our DB', async () => {
       participants = await executeTask(repository.all());
       participantsBefore = participants.length;
     });
@@ -105,12 +95,12 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; Source not found for ID provided', ({ given, when, then }) => {
+  test('Fail; Invalid request', ({ given, when, then }) => {
     let error: Error;
 
-    given('no record exists that matches our request', () => {
+    given('the request contains invalid data', () => {
       createParticipantDto = ParticipantBuilder()
-        .noMatchingSource()
+        .invalidOther()
         .buildCreateParticipantDto();
     });
 
@@ -124,111 +114,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a RepositoryItemNotFoundError', () => {
-      expect(error).toBeInstanceOf(NotFoundException);
-    });
-  });
-
-  test('Fail; Source does not translate into a valid Participant', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      createParticipantDto = ParticipantBuilder()
-        .invalidSource()
-        .buildCreateParticipantDto();
-    });
-
-    and('the returned source does not populate a valid Participant', () => {
-      // this occurs during
-    });
-
-    when('I attempt to create a participant', async () => {
-      try {
-        await handler.execute(
-          new CreateParticipantCommand(createParticipantDto)
-        );
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive a SourceInvalidError', () => {
-      expect(error).toBeInstanceOf(SourceInvalidError);
-    });
-  });
-
-  test('Fail; Source already exists in our DB', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      // confirmed
-    });
-
-    and('the returned source populates a valid participant', () => {
-      // known
-    });
-
-    and('the source DOES already exist in our DB', () => {
-      createParticipantDto = ParticipantBuilder()
-        .exists()
-        .buildCreateParticipantDto();
-    });
-
-    when('I attempt to create a participant', async () => {
-      try {
-        await handler.execute(
-          new CreateParticipantCommand(createParticipantDto)
-        );
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive an RepositoryItemConflictError', () => {
-      expect(error).toBeInstanceOf(RepositoryItemConflictError);
-    });
-  });
-
-  test('Fail; Source is an invalid status to be created in admin', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      // we know this
-    });
-
-    and('the returned source has an invalid status', () => {
-      createParticipantDto = ParticipantBuilder()
-        .invalidStatus()
-        .buildCreateParticipantDto();
-    });
-
-    when('I attempt to create a participant', async () => {
-      try {
-        await handler.execute(
-          new CreateParticipantCommand(createParticipantDto)
-        );
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive a SourceInvalidError', () => {
-      expect(error).toBeInstanceOf(SourceInvalidError);
+    then('I should receive a RequestInvalidError', () => {
+      expect(error).toBeInstanceOf(RequestInvalidError);
     });
   });
 });

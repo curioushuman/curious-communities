@@ -29,6 +29,38 @@ NX_DESTROY_TARGET=destroy-local
 * ./tools/scripts/set-stage.sh updates the dynamic values automatically
 * all of this scripted in package.json
 
+## Loaclstack
+
+### Issues
+
+#### ARN64 still not fully supported :(
+
+As of 2022-12-27 it's in the post, but not quite there yet. The workaround I've discovered is:
+
+1. Pull the localstack image separately, using platform linux/amd64
+2. Run `pnpm deploy-local` normally, which will use the localstack image you just pulled
+
+```bash
+
+docker pull --platform linux/amd64 localstack/localstack-pro
+
+```
+
+Note: originally I was trying to pre-build the image (based on references below) but I couldn't figure out the specific location of the pro DockerFile so it wasn't working. Hence why we've moved to the pull method.
+
+References:
+
+* https://github.com/localstack/localstack/issues/4921
+  * Limitations of arm64 for localstack
+* https://docs.localstack.cloud/references/arm64-support/
+  * Localstack docs on arm64 support and workarounds
+* https://stackoverflow.com/questions/69054921/docker-on-mac-m1-gives-the-requested-images-platform-linux-amd64-does-not-m
+  * Answer that helped with the 'build first' method
+* https://github.com/docker/for-mac/issues/6356#issuecomment-1342520210
+  * Other answer that led to this approach
+* https://forums.docker.com/t/run-x86-intel-and-arm-based-images-on-apple-silicon-m1-macs/117123/6
+  * Additional discussion, mostly around running amd64 images on arm64
+
 ## Get started
 
 1. pnpm i
@@ -132,7 +164,7 @@ NX_DESTROY_TARGET=destroy-local
 
 - ids as external ids
   - The naming of the key identifier field will also reflect this
-    - e.g. Member.externalId: MemberIdExternal
+    - e.g. Member.externalId: MemberSourceId
   - The reason being that at any point down the line we could swan in and add an internal identifier without hassle
 - libs/services
   - Will use a single module, and a single controller

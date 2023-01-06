@@ -3,10 +3,7 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 import { sequenceT } from 'fp-ts/lib/Apply';
 
-import {
-  ErrorFactory,
-  RepositoryItemNotFoundError,
-} from '@curioushuman/error-factory';
+import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
@@ -84,20 +81,8 @@ export class UpdateCourseHandler
       ),
 
       // #3. validate + transform; courses exists, source is valid, source to course
-      TE.chain(([courseSource, existingCourse]) => {
-        // ! These may be superfluous, as the findOne
-        // ! will throw if the item is not found
-        if (!courseSource) {
-          throw new RepositoryItemNotFoundError(
-            `Course source id: ${updateCourseDto.id}`
-          );
-        }
-        if (!existingCourse) {
-          throw new RepositoryItemNotFoundError(
-            `Course id: ${updateCourseDto.id}`
-          );
-        }
-        return pipe(
+      TE.chain(([courseSource, existingCourse]) =>
+        pipe(
           courseSource,
           parseActionData(
             CourseSource.check,
@@ -111,8 +96,8 @@ export class UpdateCourseHandler
               'SourceInvalidError'
             )(courseSourceChecked)
           )
-        );
-      }),
+        )
+      ),
 
       // #5. update the course, from the source
       TE.chain((course) =>

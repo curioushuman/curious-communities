@@ -3,10 +3,7 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 import { sequenceT } from 'fp-ts/lib/Apply';
 
-import {
-  ErrorFactory,
-  RepositoryItemNotFoundError,
-} from '@curioushuman/error-factory';
+import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
@@ -84,18 +81,8 @@ export class UpdateParticipantHandler
       ),
 
       // #3. validate + transform; participants exists, source is valid, source to participant
-      TE.chain(([participantSource, existingParticipant]) => {
-        if (!participantSource) {
-          throw new RepositoryItemNotFoundError(
-            `Participant source id: ${updateParticipantDto.id}`
-          );
-        }
-        if (!existingParticipant) {
-          throw new RepositoryItemNotFoundError(
-            `Participant id: ${updateParticipantDto.id}`
-          );
-        }
-        return pipe(
+      TE.chain(([participantSource, existingParticipant]) =>
+        pipe(
           participantSource,
           parseActionData(
             ParticipantSource.check,
@@ -111,8 +98,8 @@ export class UpdateParticipantHandler
               'SourceInvalidError'
             )(participantSourceChecked)
           )
-        );
-      }),
+        )
+      ),
 
       // #5. update the participant, from the source
       TE.chain((participant) =>

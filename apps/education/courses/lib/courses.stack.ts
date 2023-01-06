@@ -72,7 +72,7 @@ export class CoursesStack extends cdk.Stack {
      *   "Source": "lambda",
      *   "EventBusName": "{eventBusArn}",
      *   "Detail": {
-     *     ...Participant
+     *     ...Participant (or Course)
      *   }
      * }
      *

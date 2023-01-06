@@ -14,13 +14,33 @@ export class CcEventsStack extends cdk.Stack {
     /**
      * Event Bus to handle all external events
      */
-    const eventBusId = 'cc-external-events';
-    const [eventBusName, eventBusTitle] = resourceNameTitle(
-      eventBusId,
+    const externalEventBusId = 'cc-external-events';
+    const [externalEventBusName, externalEventBusTitle] = resourceNameTitle(
+      externalEventBusId,
       'EventBus'
     );
-    const externalEventsEventBus = new events.EventBus(this, eventBusTitle, {
-      eventBusName,
-    });
+    const externalEventsEventBus = new events.EventBus(
+      this,
+      externalEventBusTitle,
+      {
+        eventBusName: externalEventBusName,
+      }
+    );
+
+    /**
+     * Event Bus to handle all internal events
+     */
+    const internalEventBusId = 'cc-internal-events';
+    const [internalEventBusName, internalEventBusTitle] = resourceNameTitle(
+      internalEventBusId,
+      'EventBus'
+    );
+    const internalEventsEventBus = new events.EventBus(
+      this,
+      internalEventBusTitle,
+      {
+        eventBusName: internalEventBusName,
+      }
+    );
   }
 }

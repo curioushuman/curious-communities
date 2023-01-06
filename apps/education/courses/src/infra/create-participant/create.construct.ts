@@ -1,5 +1,4 @@
 import * as cdk from 'aws-cdk-lib';
-import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
@@ -29,7 +28,6 @@ import {
 export interface CreateParticipantProps {
   lambdaProps: NodejsFunctionProps;
   externalEventBus: events.IEventBus;
-  internalEventBus: events.IEventBus;
   table: dynamodb.ITable;
 }
 
@@ -53,38 +51,11 @@ export class CreateParticipantConstruct extends Construct {
      *
      * NOTES:
      * - we are adding an eventbridge destination to announce pax creation
+     *   it is already in lambdaProps
      */
-
-    /**
-     * Eventbridge destination for our lambda
-     *
-     * NOTES:
-     * - we've opted for just the response from the lambda i.e. responseOnly: true
-     *   https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_destinations-readme.html#auto-extract-response-payload-with-lambda-destination
-     *
-     * Therefore event should look something like:
-     *
-     * {
-     *   "DetailType":"putEvent",
-     *   "Source": "lambda",
-     *   "EventBusName": "{eventBusArn}",
-     *   "Detail": {
-     *     ...Participant
-     *   }
-     * }
-     *
-     * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_destinations-readme.html#destination-specific-json-format
-     */
-    const createPaxLambdaSuccess = new destinations.EventBridgeDestination(
-      props.internalEventBus
-    );
-    const createPaxLambdaProps: NodejsFunctionProps = {
-      ...props.lambdaProps,
-      onSuccess: createPaxLambdaSuccess,
-    };
     const createPaxLambdaConstruct = new LambdaConstruct(this, id, {
       lambdaEntry: pathResolve(__dirname, './main.ts'),
-      lambdaProps: createPaxLambdaProps,
+      lambdaProps: props.lambdaProps,
     });
 
     // allow the local lambda access to the table

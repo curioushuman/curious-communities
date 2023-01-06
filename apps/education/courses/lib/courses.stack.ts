@@ -62,6 +62,31 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
+     * Eventbridge destination for our lambdas
+     *
+     * Resulting event should look something like:
+     *
+     * {
+     *   "DetailType":"Lambda Function Invocation Result - Success",
+     *   "Source": "lambda",
+     *   "EventBusName": "{eventBusArn}",
+     *   "Detail": {
+     *     ...Participant
+     *   }
+     * }
+     *
+     * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_destinations-readme.html#destination-specific-json-format
+     */
+    const createPaxLambdaSuccess = new destinations.EventBridgeDestination(
+      internalEventBusConstruct.eventBus
+    );
+    // use this for any lambda that needs to send events to the internal event bus
+    const lambdaPropsWithDestination: NodejsFunctionProps = {
+      ...this.lambdaProps,
+      onSuccess: createPaxLambdaSuccess,
+    };
+
+    /**
      * Required layers, additional to normal defaults
      */
     const chLayerCourses = new ChLayerFrom(this, 'cc-courses-service');
@@ -78,7 +103,7 @@ export class CoursesStack extends cdk.Stack {
           __dirname,
           '../src/infra/create-course/main.ts'
         ),
-        lambdaProps: this.lambdaProps,
+        lambdaProps: lambdaPropsWithDestination,
         eventBus: externalEventBusConstruct.eventBus,
         ruleDetails: {
           object: ['course'],
@@ -107,7 +132,7 @@ export class CoursesStack extends cdk.Stack {
           __dirname,
           '../src/infra/update-course/main.ts'
         ),
-        lambdaProps: this.lambdaProps,
+        lambdaProps: lambdaPropsWithDestination,
         eventBus: externalEventBusConstruct.eventBus,
         ruleDetails: {
           object: ['course'],
@@ -142,9 +167,8 @@ export class CoursesStack extends cdk.Stack {
       this,
       'cc-courses-participant-create',
       {
-        lambdaProps: this.lambdaProps,
+        lambdaProps: lambdaPropsWithDestination,
         externalEventBus: externalEventBusConstruct.eventBus,
-        internalEventBus: internalEventBusConstruct.eventBus,
         table: coursesTableConstruct.table,
       }
     );
@@ -152,32 +176,31 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Function: Update Participant
      */
-    // const updateParticipantFunction = new LambdaEventSubscription(
-    //   this,
-    //   'cc-courses-participant-update',
-    //   {
-    //     lambdaEntry: pathResolve(
-    //       __dirname,
-    //       '../src/infra/update-participant/main.ts'
-    //     ),
-    //     lambdaProps: this.lambdaProps,
-    //     eventBus: externalEventBusConstruct.eventBus,
-    //     ruleDetails: {
-    //       object: ['participant'],
-    //       type: ['status-updated'],
-    //       status: ['updated'],
-    //     },
-    //     ruleDescription: 'Update internal, to match the external',
-    //   }
-    // );
+    const updateParticipantFunction = new LambdaEventSubscription(
+      this,
+      'cc-courses-participant-update',
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/update-participant/main.ts'
+        ),
+        lambdaProps: lambdaPropsWithDestination,
+        eventBus: externalEventBusConstruct.eventBus,
+        ruleDetails: {
+          object: ['participant'],
+          type: ['updated'],
+        },
+        ruleDescription: 'Update internal, to match the external',
+      }
+    );
 
-    // // allow the lambda access to the table
-    // coursesTableConstruct.table.grantReadData(
-    //   updateParticipantFunction.lambdaFunction
-    // );
-    // coursesTableConstruct.table.grantWriteData(
-    //   updateParticipantFunction.lambdaFunction
-    // );
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      updateParticipantFunction.lambdaFunction
+    );
+    coursesTableConstruct.table.grantWriteData(
+      updateParticipantFunction.lambdaFunction
+    );
 
     /**
      * Outputs

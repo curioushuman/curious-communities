@@ -19,6 +19,7 @@ import { UpdateCourseDto } from './update-course.dto';
 import { UpdateCourseMapper } from './update-course.mapper';
 import { CourseSourceRepository } from '../../../adapter/ports/course-source.repository';
 import { CourseSource } from '../../../domain/entities/course-source';
+import { Course } from '../../../domain/entities/course';
 
 export class UpdateCourseCommand implements ICommand {
   constructor(public readonly updateCourseDto: UpdateCourseDto) {}
@@ -43,7 +44,7 @@ export class UpdateCourseHandler
     this.logger.setContext(UpdateCourseHandler.name);
   }
 
-  async execute(command: UpdateCourseCommand): Promise<void> {
+  async execute(command: UpdateCourseCommand): Promise<Course> {
     const { updateCourseDto } = command;
 
     const task = pipe(

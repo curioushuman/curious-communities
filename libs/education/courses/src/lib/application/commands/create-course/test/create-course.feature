@@ -6,7 +6,7 @@ Scenario: Successfully creating a course
   And the source does not already exist in our DB
   When I attempt to create a course
   Then a new record should have been created
-  And no result is returned
+  And saved course is returned
 
 Scenario: Fail; Source not found for ID provided
   Given no record exists that matches our request

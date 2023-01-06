@@ -9,6 +9,8 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { CreateCourseRequestDto } from './dto/create-course.request.dto';
 import { CreateCourseMapper } from '../../application/commands/create-course/create-course.mapper';
 import { CreateCourseCommand } from '../../application/commands/create-course/create-course.command';
+import { CourseResponseDto } from '../dto/course.response.dto';
+import { CourseMapper } from '../course.mapper';
 
 /**
  * Controller for create course operations
@@ -30,7 +32,9 @@ export class CreateCourseController {
     this.logger.setContext(CreateCourseController.name);
   }
 
-  public async create(requestDto: CreateCourseRequestDto): Promise<void> {
+  public async create(
+    requestDto: CreateCourseRequestDto
+  ): Promise<CourseResponseDto> {
     const task = pipe(
       requestDto,
 
@@ -50,7 +54,10 @@ export class CreateCourseController {
           },
           (error: unknown) => error as Error
         )
-      )
+      ),
+
+      // #4. transform to the response DTO
+      TE.chain(parseActionData(CourseMapper.toResponseDto, this.logger))
     );
 
     return executeTask(task);

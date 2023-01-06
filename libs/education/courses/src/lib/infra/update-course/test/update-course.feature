@@ -5,7 +5,7 @@ Scenario: Successfully updating a course
   And a matching record is found at the source
   When I attempt to update a course
   Then the related record should have been updated in the repository
-  And no result is returned
+  And saved course is returned
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

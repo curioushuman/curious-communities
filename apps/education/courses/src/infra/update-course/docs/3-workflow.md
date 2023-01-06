@@ -10,7 +10,7 @@
 
 #### Success
 
-- void
+- Saved course
 
 #### Fail
 
@@ -20,7 +20,7 @@
 
 1. Update course
 2. Return
-   1. void
+   1. Saved course
    2. Or Error
 
 ## Steps, detail
@@ -33,7 +33,7 @@
 
 #### Output: Success
 
-- void
+- Saved course
 
 #### Output: Fail
 
@@ -47,7 +47,7 @@ Update Course
 If Error
   return Error
 Else
-  return
+  return Saved course
 ```
 
 ### Step 2A. Return success

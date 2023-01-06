@@ -10,7 +10,7 @@
 
 #### Success
 
-- void
+- Saved participant
 
 #### Fail
 
@@ -33,7 +33,7 @@
 
 #### Output: Success
 
-- void
+- Saved participant
 
 #### Output: Fail
 
@@ -47,7 +47,7 @@ Create Participant
 If Error
   return Error
 Else
-  return
+  return Saved participant
 ```
 
 ### Step 2A. Return success

@@ -20,6 +20,7 @@ import { UpdateParticipantMapper } from './update-participant.mapper';
 import { ParticipantSourceRepository } from '../../../adapter/ports/participant-source.repository';
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 import { ParticipantMapper } from '../../participant.mapper';
+import { Participant } from '../../../domain/entities/participant';
 
 export class UpdateParticipantCommand implements ICommand {
   constructor(public readonly updateParticipantDto: UpdateParticipantDto) {}
@@ -44,7 +45,7 @@ export class UpdateParticipantHandler
     this.logger.setContext(UpdateParticipantHandler.name);
   }
 
-  async execute(command: UpdateParticipantCommand): Promise<void> {
+  async execute(command: UpdateParticipantCommand): Promise<Participant> {
     const { updateParticipantDto } = command;
 
     const task = pipe(

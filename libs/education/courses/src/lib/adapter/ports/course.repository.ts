@@ -98,5 +98,5 @@ export abstract class CourseRepository {
   /**
    * Create/update a course
    */
-  abstract save(course: Course): TaskEither<Error, void>;
+  abstract save(course: Course): TaskEither<Error, Course>;
 }

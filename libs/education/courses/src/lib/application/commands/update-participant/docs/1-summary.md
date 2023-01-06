@@ -20,7 +20,7 @@
 
 #### Success (singular result + event)
 
-- void
+- Saved participant
 
 ### Failure (1+):
 

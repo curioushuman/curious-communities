@@ -130,7 +130,7 @@ export class FakeParticipantRepository implements ParticipantRepository {
     );
   };
 
-  save = (participant: Participant): TE.TaskEither<Error, void> => {
+  save = (participant: Participant): TE.TaskEither<Error, Participant> => {
     return TE.tryCatch(
       async () => {
         const participantExists = this.participants.find(
@@ -143,6 +143,7 @@ export class FakeParticipantRepository implements ParticipantRepository {
         } else {
           this.participants.push(participant);
         }
+        return participant;
       },
       (reason: unknown) => reason as Error
     );

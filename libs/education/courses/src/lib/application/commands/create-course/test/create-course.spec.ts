@@ -96,8 +96,8 @@ defineFeature(feature, (test) => {
       expect(courses.length).toEqual(coursesBefore + 1);
     });
 
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
+    and('saved course is returned', () => {
+      expect(result.id).toBeDefined();
     });
   });
 

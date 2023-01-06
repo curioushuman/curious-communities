@@ -19,6 +19,7 @@ import { CreateCourseDto } from './create-course.dto';
 import { CreateCourseMapper } from './create-course.mapper';
 import { CourseSourceRepository } from '../../../adapter/ports/course-source.repository';
 import { CourseSource } from '../../../domain/entities/course-source';
+import { Course } from '../../../domain/entities/course';
 
 export class CreateCourseCommand implements ICommand {
   constructor(public readonly createCourseDto: CreateCourseDto) {}
@@ -43,7 +44,7 @@ export class CreateCourseHandler
     this.logger.setContext(CreateCourseHandler.name);
   }
 
-  async execute(command: CreateCourseCommand): Promise<void> {
+  async execute(command: CreateCourseCommand): Promise<Course> {
     const { createCourseDto } = command;
 
     const task = pipe(

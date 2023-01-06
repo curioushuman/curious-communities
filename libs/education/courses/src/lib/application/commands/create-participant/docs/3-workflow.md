@@ -20,7 +20,7 @@
 1. Build participant record from DTO
 2. Save participant
 3. Return
-   1. void
+   1. Saved participant
    2. Error
 
 ## Steps, detail
@@ -60,7 +60,7 @@ Return Participant
 
 #### Output: Success
 
-- void
+- Saved participant
 
 #### Output: Fail
 
@@ -79,7 +79,7 @@ Else
 
 ### Step 5A. Return success
 
-- void
+- Saved participant
 
 ### Step 5B. Or Error
 

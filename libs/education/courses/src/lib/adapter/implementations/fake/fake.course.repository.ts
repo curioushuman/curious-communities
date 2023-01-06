@@ -213,7 +213,7 @@ export class FakeCourseRepository implements CourseRepository {
     return this.checkBy[identifier];
   };
 
-  save = (course: Course): TE.TaskEither<Error, void> => {
+  save = (course: Course): TE.TaskEither<Error, Course> => {
     return TE.tryCatch(
       async () => {
         const courseExists = this.courses.find((cs) => cs.id === course.id);
@@ -224,6 +224,7 @@ export class FakeCourseRepository implements CourseRepository {
         } else {
           this.courses.push(course);
         }
+        return course;
       },
       (reason: unknown) => reason as Error
     );

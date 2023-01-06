@@ -4,7 +4,7 @@ Scenario: Successfully creating a participant
   Given the request is valid
   When I attempt to create a participant
   Then a new record should have been created in the repository
-  And no result is returned
+  And saved participant is returned
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

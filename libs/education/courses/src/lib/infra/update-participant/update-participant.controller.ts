@@ -9,6 +9,8 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { UpdateParticipantRequestDto } from './dto/update-participant.request.dto';
 import { UpdateParticipantMapper } from '../../application/commands/update-participant/update-participant.mapper';
 import { UpdateParticipantCommand } from '../../application/commands/update-participant/update-participant.command';
+import { ParticipantResponseDto } from '../dto/participant.response.dto';
+import { ParticipantMapper } from '../participant.mapper';
 
 /**
  * Controller for update participant operations
@@ -30,7 +32,9 @@ export class UpdateParticipantController {
     this.logger.setContext(UpdateParticipantController.name);
   }
 
-  public async update(requestDto: UpdateParticipantRequestDto): Promise<void> {
+  public async update(
+    requestDto: UpdateParticipantRequestDto
+  ): Promise<ParticipantResponseDto> {
     const task = pipe(
       requestDto,
 
@@ -54,7 +58,10 @@ export class UpdateParticipantController {
           },
           (error: unknown) => error as Error
         )
-      )
+      ),
+
+      // #4. transform to the response DTO
+      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger))
     );
 
     return executeTask(task);

@@ -5,6 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import {
   CreateCourseModule,
   CreateCourseController,
+  CourseResponseDto,
 } from '@curioushuman/cc-courses-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -63,7 +64,7 @@ export const handler = async (
   requestDtoOrEvent:
     | CreateCourseRequestDto
     | EventBridgeEvent<'putEvent', CreateCourseRequestDto>
-): Promise<void> => {
+): Promise<CourseResponseDto> => {
   // grab the dto
   const requestDto =
     'detail' in requestDtoOrEvent

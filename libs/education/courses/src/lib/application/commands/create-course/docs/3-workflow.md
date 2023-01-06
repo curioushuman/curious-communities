@@ -9,7 +9,7 @@
 
 #### Success
 
-- void
+- Saved course
 
 #### Fail
 
@@ -22,7 +22,7 @@
 3. Transform/validate external record
 4. Save course
 5. Return
-   1. void
+   1. Saved course
    2. Error
 
 ## Steps, detail
@@ -136,7 +136,7 @@ Save Course
 If Fails
   return RepositoryServerError
 Else
-  return void
+  return saved course
 ```
 
 ### Step 5A. Return success

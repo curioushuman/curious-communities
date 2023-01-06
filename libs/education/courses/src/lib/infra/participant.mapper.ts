@@ -7,7 +7,7 @@ import { prepareExternalIdSourceValue } from '@curioushuman/common';
  * - Should we do more checking of ParticipantResponseDto?
  */
 export class ParticipantMapper {
-  public static toParticipantResponseDto(
+  public static toResponseDto(
     participant: Participant
   ): ParticipantResponseDto {
     return {

@@ -3,7 +3,7 @@
 ## 1. Details
 
 - **Subdomain**: Learning design
-- **Aggregate root**: Participants
+- **Aggregate root**: Courses
 
 ## 2. Data
 
@@ -19,7 +19,7 @@
 
 #### Success (singular result + event)
 
-- void
+- Saved participant
 
 ### Failure (1+):
 

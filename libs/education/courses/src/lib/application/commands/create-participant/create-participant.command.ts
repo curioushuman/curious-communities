@@ -13,6 +13,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { ParticipantRepository } from '../../../adapter/ports/participant.repository';
 import { CreateParticipantDto } from './create-participant.dto';
 import { CreateParticipantMapper } from './create-participant.mapper';
+import { Participant } from '../../../domain/entities/participant';
 
 export class CreateParticipantCommand implements ICommand {
   constructor(public readonly createParticipantDto: CreateParticipantDto) {}
@@ -36,7 +37,7 @@ export class CreateParticipantHandler
     this.logger.setContext(CreateParticipantHandler.name);
   }
 
-  async execute(command: CreateParticipantCommand): Promise<void> {
+  async execute(command: CreateParticipantCommand): Promise<Participant> {
     const {
       createParticipantDto: { participantSource, course, member },
     } = command;

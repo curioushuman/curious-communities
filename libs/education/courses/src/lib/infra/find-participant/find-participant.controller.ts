@@ -56,9 +56,7 @@ export class FindParticipantController {
       ),
 
       // #4. transform to the response DTO
-      TE.chain(
-        parseActionData(ParticipantMapper.toParticipantResponseDto, this.logger)
-      )
+      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger))
     );
 
     return executeTask(task);
@@ -94,9 +92,7 @@ export class FindParticipantController {
       ),
 
       // #4. transform to the response DTO
-      TE.chain(
-        parseActionData(ParticipantMapper.toParticipantResponseDto, this.logger)
-      )
+      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger))
     );
 
     return executeTask(task);
@@ -135,9 +131,7 @@ export class FindParticipantController {
       ),
 
       // #4. transform to the response DTO
-      TE.chain(
-        parseActionData(ParticipantMapper.toParticipantResponseDto, this.logger)
-      )
+      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger))
     );
 
     return executeTask(task);

@@ -100,8 +100,8 @@ defineFeature(feature, (test) => {
       }
     );
 
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
+    and('saved course is returned', () => {
+      expect(result.id).toBeDefined();
     });
   });
 

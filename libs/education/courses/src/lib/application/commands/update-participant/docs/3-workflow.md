@@ -9,7 +9,7 @@
 
 #### Success
 
-- void
+- Saved participant
 
 #### Fail
 
@@ -22,7 +22,7 @@
 3. Transform/validate external record
 4. Save participant
 5. Return
-   1. void
+   1. Saved participant
    2. Error
 
 ## Steps, detail
@@ -118,7 +118,7 @@ Else
 
 #### Output: Success
 
-- void
+- Saved participant
 
 #### Output: Fail
 
@@ -132,12 +132,12 @@ Save Participant
 If Fails
   return RepositoryServerError
 Else
-  return void
+  return Saved participant
 ```
 
 ### Step 5A. Return success
 
-- void
+- Saved participant
 
 ### Step 5B. Or Error
 

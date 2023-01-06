@@ -8,7 +8,7 @@ Scenario: Successfully updating a course
   And the source does exist in our DB
   When I attempt to update a course
   Then the related record should have been updated in the repository
-  And no result is returned
+  And saved course is returned
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

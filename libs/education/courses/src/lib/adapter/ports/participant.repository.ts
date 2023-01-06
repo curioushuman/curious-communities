@@ -55,5 +55,5 @@ export abstract class ParticipantRepository {
   /**
    * Create/update a participant
    */
-  abstract save(participant: Participant): TaskEither<Error, void>;
+  abstract save(participant: Participant): TaskEither<Error, Participant>;
 }

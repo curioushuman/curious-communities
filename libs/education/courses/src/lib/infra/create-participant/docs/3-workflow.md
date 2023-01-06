@@ -10,7 +10,7 @@
 
 #### Success
 
-- void
+- Saved participant
 
 #### Fail
 
@@ -21,7 +21,7 @@
 1. Validate input
 2. Create participant
 3. Return
-   1. void
+   1. Saved participant
    2. Error
 
 ## Steps, detail
@@ -58,7 +58,7 @@ Else
 
 #### Output: Success
 
-- void
+- Saved participant
 
 #### Output: Fail
 
@@ -76,7 +76,7 @@ Else
 
 ### Step 4A. Return success
 
-- void
+- Saved participant
 
 ### Step 4B. Or Error
 

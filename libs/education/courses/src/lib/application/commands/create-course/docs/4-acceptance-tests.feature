@@ -8,7 +8,7 @@ Scenario: Successfully creating a course
   And the source does not already exist in our DB
   When I create a course
   Then a new record should have been created in the repository
-  And no result is returned
+  And created course is returned
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

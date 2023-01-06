@@ -10,7 +10,7 @@
 
 #### Success
 
-- void
+- Saved participant
 
 #### Fail
 
@@ -20,7 +20,7 @@
 
 1. Update participant
 2. Return
-   1. void
+   1. Saved participant
    2. Or Error
 
 ## Steps, detail
@@ -33,7 +33,7 @@
 
 #### Output: Success
 
-- void
+- Saved participant
 
 #### Output: Fail
 
@@ -47,7 +47,7 @@ Update Participant
 If Error
   return Error
 Else
-  return
+  return Saved participant
 ```
 
 ### Step 2A. Return success

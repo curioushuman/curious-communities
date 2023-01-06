@@ -9,9 +9,19 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { CreateParticipantRequestDto } from './dto/create-participant.request.dto';
 import { CreateParticipantMapper } from '../../application/commands/create-participant/create-participant.mapper';
 import { CreateParticipantCommand } from '../../application/commands/create-participant/create-participant.command';
+import { ParticipantResponseDto } from '../dto/participant.response.dto';
+import { ParticipantMapper } from '../participant.mapper';
 
 /**
  * Controller for create participant operations
+ *
+ * NOTES
+ * - we initially returned void for create/update actions but this made
+ *   internal communication with other systems difficult. We now return
+ *   the DTO for internal communication. When it comes to external communication
+ *   we will only return Success 201 and the ID of the created/updated resource.
+ *   https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#post-methods
+ *   https://softwareengineering.stackexchange.com/a/380430
  *
  * TODO
  * - [ ] should this actually be a service?
@@ -35,7 +45,9 @@ export class CreateParticipantController {
    * that do a lot of the heavy lifting. It doesn't run any checks, apart
    * from validating the request dto.
    */
-  public async create(requestDto: CreateParticipantRequestDto): Promise<void> {
+  public async create(
+    requestDto: CreateParticipantRequestDto
+  ): Promise<ParticipantResponseDto> {
     const task = pipe(
       requestDto,
 
@@ -59,7 +71,10 @@ export class CreateParticipantController {
           },
           (error: unknown) => error as Error
         )
-      )
+      ),
+
+      // #4. transform to the response DTO
+      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger))
     );
 
     return executeTask(task);

@@ -5,7 +5,7 @@ Feature: Update Participant
 #   Given the request is valid
 #   When I attempt to update a participant
 #   Then a new record should have been updated in the repository
-#   And no result is returned
+#   And saved participant is returned
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

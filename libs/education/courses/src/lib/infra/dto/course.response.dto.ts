@@ -9,6 +9,7 @@ export class CourseResponseDto {
   id!: string;
   slug!: string;
   status!: string;
+  sourceIds!: string[];
   supportType!: string;
   name!: string;
   dateOpen!: number;

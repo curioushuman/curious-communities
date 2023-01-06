@@ -1,5 +1,6 @@
 import { CourseResponseDto } from './dto/course.response.dto';
 import { Course } from '../domain/entities/course';
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
 
 /**
  * TODO
@@ -11,6 +12,11 @@ export class CourseMapper {
       id: course.id,
       status: course.status,
       slug: course.slug,
+
+      sourceIds: course.sourceIds.map((idSource) =>
+        prepareExternalIdSourceValue(idSource.id, idSource.source)
+      ),
+
       supportType: course.supportType,
       name: course.name,
       dateOpen: course.dateOpen,

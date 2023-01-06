@@ -15,10 +15,16 @@ import { CreateCourseController } from '../infra/create-course/create-course.con
 import { CreateCourseHandler } from '../application/commands/create-course/create-course.command';
 import { UpdateCourseController } from '../infra/update-course/update-course.controller';
 import { UpdateCourseHandler } from '../application/commands/update-course/update-course.command';
+import { FindCourseController } from '../infra/find-course/find-course.controller';
+import { FindCourseHandler } from '../application/queries/find-course/find-course.query';
 
-const controllers = [CreateCourseController, UpdateCourseController];
+const controllers = [
+  CreateCourseController,
+  UpdateCourseController,
+  FindCourseController,
+];
 
-const handlers = [CreateCourseHandler, UpdateCourseHandler];
+const handlers = [CreateCourseHandler, UpdateCourseHandler, FindCourseHandler];
 
 const repositories = [
   {

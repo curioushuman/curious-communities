@@ -152,6 +152,23 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
+     * Find Participant
+     */
+    const findCourseLambdaConstruct = new LambdaConstruct(
+      this,
+      'cc-courses-course-find',
+      {
+        lambdaEntry: pathResolve(__dirname, '../src/infra/find-course/main.ts'),
+        lambdaProps: this.lambdaProps,
+      }
+    );
+
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      findCourseLambdaConstruct.lambdaFunction
+    );
+
+    /**
      * Function: Open Course
      *
      * ruleDetails: {
@@ -216,6 +233,11 @@ export class CoursesStack extends cdk.Stack {
         ),
         lambdaProps: this.lambdaProps,
       }
+    );
+
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      findPaxLambdaConstruct.lambdaFunction
     );
 
     /**

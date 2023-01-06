@@ -1,12 +1,13 @@
-import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
+import { parseExternalIdSourceValue } from '@curioushuman/common';
+
+import { CourseId } from '../../../domain/value-objects/course-id';
 import {
   CourseIdentifier,
   CourseIdentifiers,
 } from '../../../domain/entities/course';
-import { CourseSlug } from '../../../domain/value-objects/course-slug';
 import { Source } from '../../../domain/value-objects/source';
-import { CourseId } from '../../../domain/value-objects/course-id';
-import { parseExternalIdSourceValue } from '@curioushuman/common';
+import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
+import { CourseSlug } from '../../../domain/value-objects/course-slug';
 
 /**
  * This type sets up our identifiers as discriminated unions.

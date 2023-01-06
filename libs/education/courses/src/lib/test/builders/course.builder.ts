@@ -15,6 +15,11 @@ import { createCourseSlug } from '../../domain/value-objects/course-slug';
 import { CourseStatus } from '../../domain/value-objects/course-status';
 import { UpdateCourseRequestDto } from '../../infra/update-course/dto/update-course.request.dto';
 import { UpdateCourseDto } from '../../application/commands/update-course/update-course.dto';
+import { FindCourseDto } from '../../application/queries/find-course/find-course.dto';
+import {
+  FindByIdCourseRequestDto,
+  FindByIdSourceValueCourseRequestDto,
+} from '../../infra/find-course/dto/find-course.request.dto';
 
 /**
  * A builder for Courses to play with in testing.
@@ -237,6 +242,50 @@ export const CourseBuilder = () => {
           sourceIds[0].source
         ),
       } as UpdateCourseRequestDto;
+    },
+
+    buildFindByIdCourseDto(): FindCourseDto {
+      return {
+        identifier: 'id',
+        value: this.buildNoCheck().id,
+      } as FindCourseDto;
+    },
+
+    buildFindByIdSourceValueCourseDto(): FindCourseDto {
+      const sourceIds = this.buildNoCheck().sourceIds;
+      if (!sourceIds) {
+        return {
+          identifier: 'idSourceValue',
+        } as FindCourseDto;
+      }
+      return {
+        identifier: 'idSourceValue',
+        value: prepareExternalIdSourceValue(
+          sourceIds[0].id,
+          sourceIds[0].source
+        ),
+      } as FindCourseDto;
+    },
+
+    buildFindByIdCourseRequestDto(): FindByIdCourseRequestDto {
+      return {
+        id: this.buildNoCheck().id,
+      } as FindByIdCourseRequestDto;
+    },
+
+    buildFindByIdSourceValueCourseRequestDto(): FindByIdSourceValueCourseRequestDto {
+      const sourceIds = this.buildNoCheck().sourceIds;
+      if (!sourceIds) {
+        return {
+          idSourceValue: '',
+        } as FindByIdSourceValueCourseRequestDto;
+      }
+      return {
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceIds[0].id,
+          sourceIds[0].source
+        ),
+      } as FindByIdSourceValueCourseRequestDto;
     },
 
     buildCourseResponseDto(): CourseResponseDto {

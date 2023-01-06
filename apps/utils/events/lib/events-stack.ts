@@ -14,7 +14,7 @@ export class CcEventsStack extends cdk.Stack {
     /**
      * Event Bus to handle all external events
      */
-    const externalEventBusId = 'cc-external-events';
+    const externalEventBusId = 'cc-eventbus-external';
     const [externalEventBusName, externalEventBusTitle] = resourceNameTitle(
       externalEventBusId,
       'EventBus'
@@ -30,7 +30,7 @@ export class CcEventsStack extends cdk.Stack {
     /**
      * Event Bus to handle all internal events
      */
-    const internalEventBusId = 'cc-internal-events';
+    const internalEventBusId = 'cc-eventbus-internal';
     const [internalEventBusName, internalEventBusTitle] = resourceNameTitle(
       internalEventBusId,
       'EventBus'

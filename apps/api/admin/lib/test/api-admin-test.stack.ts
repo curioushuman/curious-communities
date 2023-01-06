@@ -7,6 +7,7 @@ import { Construct } from 'constructs';
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
 import {
+  ChEventBusFrom,
   resourceNameTitle,
   testResourceNameTitle,
 } from '../../../../../dist/local/@curioushuman/cdk-utils/src';
@@ -20,13 +21,10 @@ export class ApiAdminTestStack extends cdk.Stack {
     /**
      * (SUT) External events eventBus
      */
-    const externalEventsEventBusId = 'cc-external-events';
-    const [externalEventsEventBusName, externalEventsEventBusTitle] =
-      resourceNameTitle(externalEventsEventBusId, 'EventBus');
-    const externalEventsEventBus = events.EventBus.fromEventBusArn(
+    const externalEventsEventBusId = 'cc-eventbus-external';
+    const externalEventBusConstruct = new ChEventBusFrom(
       this,
-      externalEventsEventBusTitle,
-      `arn:aws:lambda:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:function:${externalEventsEventBusName}`
+      externalEventsEventBusId
     );
 
     /**
@@ -47,8 +45,8 @@ export class ApiAdminTestStack extends cdk.Stack {
     const [ruleName, ruleTitle] = testResourceNameTitle('course', 'Rule');
     const testSqsRule = new events.Rule(this, ruleTitle, {
       ruleName,
-      eventBus: externalEventsEventBus,
-      description: 'Listen for all events from cc-external-events event bus.',
+      eventBus: externalEventBusConstruct.eventBus,
+      description: 'Listen for all events from cc-eventbus-external event bus.',
       eventPattern: {
         detailType: ['putEvent'],
       },

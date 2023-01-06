@@ -45,7 +45,7 @@ defineFeature(feature, (test) => {
   // let [queueArn, subscriptionArn, queueUrl] = ['', '', ''];
 
   beforeAll(async () => {
-    // const queueId = 'cc-external-events';
+    // const queueId = 'cc-eventbus-external';
     // const queueName = transformIdToTestResourceName(queueId, 'Queue');
     // queueArn = `arn:aws:sqs:${region}:${account}:${queueName}`;
     // console.log(queueArn);

@@ -1,6 +1,8 @@
 export * from './lib/apigw/api.construct';
 export * from './lib/apigw/api.types';
 
+export * from './lib/events/event-bus-from.construct';
+
 export * from './lib/lambda/lambda.construct';
 export * from './lib/lambda/lambda-event-subscription.construct';
 export * from './lib/lambda/lambda-from.construct';

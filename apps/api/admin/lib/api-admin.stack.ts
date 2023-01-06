@@ -5,8 +5,8 @@ import * as events from 'aws-cdk-lib/aws-events';
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
 import {
+  ChEventBusFrom,
   CoApiConstruct,
-  resourceNameTitle,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -51,15 +51,11 @@ export class ApiAdminStack extends cdk.Stack {
     /**
      * External events eventBus
      */
-    const externalEventsEventBusId = 'cc-external-events';
-    const [externalEventsEventBusName, externalEventsEventBusTitle] =
-      resourceNameTitle(externalEventsEventBusId, 'EventBus');
-    const externalEventsEventBus = events.EventBus.fromEventBusArn(
+    const externalEventBusConstruct = new ChEventBusFrom(
       this,
-      externalEventsEventBusTitle,
-      `arn:aws:events:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:event-bus:${externalEventsEventBusName}`
+      'cc-eventbus-external'
     );
-    externalEventsEventBus.grantPutEventsTo(apiAdmin.role);
+    externalEventBusConstruct.eventBus.grantPutEventsTo(apiAdmin.role);
 
     /**
      * Common response models
@@ -82,7 +78,7 @@ export class ApiAdminStack extends cdk.Stack {
       {
         apiConstruct: apiAdmin,
         rootResource: coursesCourse.addResource('hook'),
-        eventBus: externalEventsEventBus,
+        eventBus: externalEventBusConstruct.eventBus,
       } as CoursesHookProps
     );
 
@@ -103,7 +99,7 @@ export class ApiAdminStack extends cdk.Stack {
       {
         apiConstruct: apiAdmin,
         rootResource: participantsParticipant.addResource('hook'),
-        eventBus: externalEventsEventBus,
+        eventBus: externalEventBusConstruct.eventBus,
       } as ParticipantsHookProps
     );
   }

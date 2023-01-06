@@ -10,11 +10,12 @@ import {
   ChLayerFrom,
   resourceNameTitle,
   LambdaEventSubscription,
+  ChEventBusFrom,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import { MembersDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/members.construct';
+import { MembersDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/members-dynamodb.construct';
 
 /**
  * These are the components required for the members stack
@@ -46,13 +47,10 @@ export class MembersStack extends cdk.Stack {
     /**
      * External events eventBus
      */
-    const externalEventsEventBusId = 'cc-external-events';
-    const [externalEventsEventBusName, externalEventsEventBusTitle] =
-      resourceNameTitle(externalEventsEventBusId, 'EventBus');
-    const externalEventsEventBus = events.EventBus.fromEventBusArn(
+    const externalEventsEventBusId = 'cc-eventbus-external';
+    const externalEventBusConstruct = new ChEventBusFrom(
       this,
-      externalEventsEventBusTitle,
-      `arn:aws:events:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:event-bus:${externalEventsEventBusName}`
+      externalEventsEventBusId
     );
 
     /**
@@ -73,7 +71,7 @@ export class MembersStack extends cdk.Stack {
           '../src/infra/create-member/main.ts'
         ),
         lambdaProps: this.lambdaProps,
-        eventBus: externalEventsEventBus,
+        eventBus: externalEventBusConstruct.eventBus,
         ruleDetails: {
           object: ['member'],
           type: ['status-updated'],
@@ -103,7 +101,7 @@ export class MembersStack extends cdk.Stack {
           '../src/infra/update-member/main.ts'
         ),
         lambdaProps: this.lambdaProps,
-        eventBus: externalEventsEventBus,
+        eventBus: externalEventBusConstruct.eventBus,
         ruleDetails: {
           object: ['member'],
           type: ['status-updated'],

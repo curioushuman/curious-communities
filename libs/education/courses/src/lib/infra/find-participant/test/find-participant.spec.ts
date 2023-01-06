@@ -4,9 +4,13 @@ import { Test } from '@nestjs/testing';
 
 import { ParticipantModule } from '../../../test/participant.module.fake';
 import { FindParticipantModule } from '../../../find-participant.module';
-import { FindByIdParticipantRequestDto } from '../dto/find-participant.request.dto';
+import {
+  FindByIdParticipantRequestDto,
+  FindByIdSourceValueParticipantRequestDto,
+} from '../dto/find-participant.request.dto';
 import { ParticipantBuilder } from '../../../test/builders/participant.builder';
 import { FindParticipantController } from '../../../infra/find-participant/find-participant.controller';
+import { RequestInvalidError } from '@curioushuman/error-factory';
 
 /**
  * INTEGRATION TEST
@@ -60,7 +64,7 @@ defineFeature(feature, (test) => {
     given('the request is valid', () => {
       // we know this to exist in our fake repo
       findParticipantDto = ParticipantBuilder()
-        .beta()
+        .exists()
         .buildFindByIdParticipantRequestDto();
     });
 
@@ -73,39 +77,71 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('a record should have been returned from the repository', async () => {
+    then('a record should have been returned', async () => {
       expect(result.id).toEqual(findParticipantDto.id);
     });
   });
 
-  // test('Fail; Invalid request', ({ given, and, when, then }) => {
-  //   // disabling no-explicit-any for testing purposes
-  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //   let result: any;
-  //   let findParticipantDto: FindParticipantRequestDto;
-  //   let error: Error;
+  test('Successfully finding a participant by Source Id', ({
+    given,
+    when,
+    then,
+  }) => {
+    // disabling no-explicit-any for testing purposes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
+    let findParticipantDto: FindByIdSourceValueParticipantRequestDto;
+    let error: Error;
 
-  //   given('the request contains invalid data', () => {
-  //     // we know this to exist in our fake repo
-  //     findParticipantDto = ParticipantBuilder()
-  //       .invalid()
-  //       .buildFindParticipantRequestDto();
-  //   });
+    given('the request is valid', () => {
+      // we know this to exist in our fake repo
+      findParticipantDto = ParticipantBuilder()
+        .exists()
+        .buildFindByIdSourceValueParticipantRequestDto();
+    });
 
-  //   when('I attempt to find a participant', async () => {
-  //     try {
-  //       result = await controller.find(findParticipantDto);
-  //     } catch (err) {
-  //       error = err as Error;
-  //     }
-  //   });
+    when('I attempt to find a participant', async () => {
+      try {
+        result = await controller.findByIdSourceValue(findParticipantDto);
+      } catch (err) {
+        error = err as Error;
+        expect(error).toBeUndefined();
+      }
+    });
 
-  //   then('I should receive a RequestInvalidError', () => {
-  //     expect(error).toBeInstanceOf(RequestInvalidError);
-  //   });
+    then('a record should have been returned', async () => {
+      expect(result.sourceIds[0]).toEqual(findParticipantDto.idSourceValue);
+    });
+  });
 
-  //   and('no result is returned', () => {
-  //     expect(result).toEqual(undefined);
-  //   });
-  // });
+  test('Fail; Invalid request', ({ given, and, when, then }) => {
+    // disabling no-explicit-any for testing purposes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
+    let findParticipantDto: FindByIdSourceValueParticipantRequestDto;
+    let error: Error;
+
+    given('the request contains invalid data', () => {
+      // we know this to exist in our fake repo
+      findParticipantDto = ParticipantBuilder()
+        .invalid()
+        .buildFindByIdSourceValueParticipantRequestDto();
+    });
+
+    when('I attempt to find a participant', async () => {
+      try {
+        result = await controller.find(findParticipantDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a RequestInvalidError', () => {
+      expect(error).toBeInstanceOf(RequestInvalidError);
+    });
+
+    and('no result is returned', () => {
+      expect(result).toEqual(undefined);
+    });
+  });
 });

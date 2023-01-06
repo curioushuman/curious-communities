@@ -215,7 +215,7 @@ export const ParticipantBuilder = () => {
     buildFindByIdParticipantDto(): FindParticipantDto {
       return {
         identifier: 'id',
-        value: this.build().id,
+        value: this.buildNoCheck().id,
       } as FindParticipantDto;
     },
 
@@ -244,7 +244,7 @@ export const ParticipantBuilder = () => {
     },
 
     buildUpdateParticipantDto(): UpdateParticipantDto {
-      const sourceId = this.build().sourceIds[0];
+      const sourceId = this.buildNoCheck().sourceIds[0];
       return sourceId as UpdateParticipantDto;
     },
 

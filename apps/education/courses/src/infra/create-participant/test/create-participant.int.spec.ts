@@ -31,14 +31,25 @@ defineFeature(feature, (test) => {
 
     given('the request contains invalid data', () => {
       dto = {
-        id: '',
+        participantSource: {
+          id: 'NotOk',
+          status: 'NotOk',
+        },
+        course: {
+          id: 'NotOk',
+        },
+        member: {
+          id: 'NotOk',
+          email: 'NotOk',
+          name: 'NotOk',
+          organisationName: 'NotOk',
+        },
       };
     });
 
     when('I attempt to create a participant', async () => {
       try {
         response = await handler(dto);
-        expect(response).toBeUndefined();
       } catch (err: unknown) {
         error = err as HttpException;
       }

@@ -30,13 +30,14 @@ defineFeature(feature, (test) => {
     let response: any;
 
     given('the request contains invalid data', () => {
-      dto = {};
+      dto = {
+        participantIdSourceValue: 'NotOk',
+      };
     });
 
     when('I attempt to find a participant', async () => {
       try {
         response = await handler(dto);
-        expect(response).toBeUndefined();
       } catch (err: unknown) {
         error = err as HttpException;
       }

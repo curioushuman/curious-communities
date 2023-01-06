@@ -11,6 +11,7 @@ import {
   ChLayerFrom,
   LambdaEventSubscription,
   ChEventBusFrom,
+  LambdaConstruct,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -201,6 +202,17 @@ export class CoursesStack extends cdk.Stack {
     coursesTableConstruct.table.grantWriteData(
       updateParticipantFunction.lambdaFunction
     );
+
+    /**
+     * Find Participant
+     */
+    const findPaxLambdaConstruct = new LambdaConstruct(this, id, {
+      lambdaEntry: pathResolve(
+        __dirname,
+        '../src/infra/find-participant/main.ts'
+      ),
+      lambdaProps: this.lambdaProps,
+    });
 
     /**
      * Outputs

@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -8,13 +9,14 @@ import { resolve as pathResolve } from 'path';
 // Initially we're going to import from local sources
 import {
   ChLayerFrom,
-  resourceNameTitle,
   LambdaEventSubscription,
+  ChEventBusFrom,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 import { CoursesDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/courses-dynamodb.construct';
+import { CreateParticipantConstruct } from '../src/infra/create-participant/create.construct';
 
 /**
  * These are the components required for the courses stack
@@ -46,13 +48,17 @@ export class CoursesStack extends cdk.Stack {
     /**
      * External events eventBus
      */
-    const externalEventsEventBusId = 'cc-external-events';
-    const [externalEventsEventBusName, externalEventsEventBusTitle] =
-      resourceNameTitle(externalEventsEventBusId, 'EventBus');
-    const externalEventsEventBus = events.EventBus.fromEventBusArn(
+    const externalEventBusConstruct = new ChEventBusFrom(
       this,
-      externalEventsEventBusTitle,
-      `arn:aws:events:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:event-bus:${externalEventsEventBusName}`
+      'cc-eventbus-external'
+    );
+
+    /**
+     * Internal events eventBus
+     */
+    const internalEventBusConstruct = new ChEventBusFrom(
+      this,
+      'cc-eventbus-internal'
     );
 
     /**
@@ -64,7 +70,7 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Function: Create Course
      */
-    const createCourseFunction = new LambdaEventSubscription(
+    const createCourseLambdaConstruct = new LambdaEventSubscription(
       this,
       'cc-courses-course-create',
       {
@@ -73,7 +79,7 @@ export class CoursesStack extends cdk.Stack {
           '../src/infra/create-course/main.ts'
         ),
         lambdaProps: this.lambdaProps,
-        eventBus: externalEventsEventBus,
+        eventBus: externalEventBusConstruct.eventBus,
         ruleDetails: {
           object: ['course'],
           type: ['created'],
@@ -84,16 +90,16 @@ export class CoursesStack extends cdk.Stack {
 
     // allow the lambda access to the table
     coursesTableConstruct.table.grantReadData(
-      createCourseFunction.lambdaFunction
+      createCourseLambdaConstruct.lambdaFunction
     );
     coursesTableConstruct.table.grantWriteData(
-      createCourseFunction.lambdaFunction
+      createCourseLambdaConstruct.lambdaFunction
     );
 
     /**
      * Function: Update Course
      */
-    const updateCourseFunction = new LambdaEventSubscription(
+    const updateCourseLambdaConstruct = new LambdaEventSubscription(
       this,
       'cc-courses-course-update',
       {
@@ -102,7 +108,7 @@ export class CoursesStack extends cdk.Stack {
           '../src/infra/update-course/main.ts'
         ),
         lambdaProps: this.lambdaProps,
-        eventBus: externalEventsEventBus,
+        eventBus: externalEventBusConstruct.eventBus,
         ruleDetails: {
           object: ['course'],
           type: ['updated'],
@@ -113,10 +119,10 @@ export class CoursesStack extends cdk.Stack {
 
     // allow the lambda access to the table
     coursesTableConstruct.table.grantReadData(
-      updateCourseFunction.lambdaFunction
+      updateCourseLambdaConstruct.lambdaFunction
     );
     coursesTableConstruct.table.grantWriteData(
-      updateCourseFunction.lambdaFunction
+      updateCourseLambdaConstruct.lambdaFunction
     );
 
     /**
@@ -130,33 +136,17 @@ export class CoursesStack extends cdk.Stack {
      */
 
     /**
-     * Function: Create Participant
+     * Create Participant
      */
-    const createParticipantFunction = new LambdaEventSubscription(
+    const createParticipantConstruct = new CreateParticipantConstruct(
       this,
       'cc-courses-participant-create',
       {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/create-participant/main.ts'
-        ),
         lambdaProps: this.lambdaProps,
-        eventBus: externalEventsEventBus,
-        ruleDetails: {
-          object: ['participant'],
-          type: ['status-updated'],
-          status: ['created'],
-        },
-        ruleDescription: 'Create internal, to match the external',
+        externalEventBus: externalEventBusConstruct.eventBus,
+        internalEventBus: internalEventBusConstruct.eventBus,
+        table: coursesTableConstruct.table,
       }
-    );
-
-    // allow the lambda access to the table
-    coursesTableConstruct.table.grantReadData(
-      createParticipantFunction.lambdaFunction
-    );
-    coursesTableConstruct.table.grantWriteData(
-      createParticipantFunction.lambdaFunction
     );
 
     /**
@@ -171,7 +161,7 @@ export class CoursesStack extends cdk.Stack {
     //       '../src/infra/update-participant/main.ts'
     //     ),
     //     lambdaProps: this.lambdaProps,
-    //     eventBus: externalEventsEventBus,
+    //     eventBus: externalEventBusConstruct.eventBus,
     //     ruleDetails: {
     //       object: ['participant'],
     //       type: ['status-updated'],

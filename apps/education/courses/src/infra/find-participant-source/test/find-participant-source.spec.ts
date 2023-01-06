@@ -20,7 +20,7 @@ import { handler } from '../main';
  * - returning error
  */
 
-const feature = loadFeature('./create-participant.feature', {
+const feature = loadFeature('./find-participant-source.feature', {
   loadRelativePath: true,
 });
 
@@ -39,7 +39,7 @@ defineFeature(feature, (test) => {
       };
     });
 
-    when('I attempt to create a participant', async () => {
+    when('I attempt to find a participant source', async () => {
       try {
         response = await handler(dto);
       } catch (err: unknown) {

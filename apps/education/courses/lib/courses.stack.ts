@@ -206,13 +206,32 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Find Participant
      */
-    const findPaxLambdaConstruct = new LambdaConstruct(this, id, {
-      lambdaEntry: pathResolve(
-        __dirname,
-        '../src/infra/find-participant/main.ts'
-      ),
-      lambdaProps: this.lambdaProps,
-    });
+    const findPaxLambdaConstruct = new LambdaConstruct(
+      this,
+      'cc-courses-participant-find',
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/find-participant/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
+    );
+
+    /**
+     * Find Participant source
+     */
+    const findPaxSourceLambdaConstruct = new LambdaConstruct(
+      this,
+      'cc-courses-participant-find-source',
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/find-participant-source/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
+    );
 
     /**
      * Outputs

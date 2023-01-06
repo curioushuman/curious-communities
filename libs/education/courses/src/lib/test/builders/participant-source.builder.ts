@@ -1,7 +1,9 @@
-import { ExternalId } from '@curioushuman/common';
+import { ExternalId, prepareExternalIdSourceValue } from '@curioushuman/common';
+import { FindParticipantSourceDto } from '../../application/queries/find-participant-source/find-participant-source.dto';
 
 import { ParticipantSource } from '../../domain/entities/participant-source';
 import { ParticipantSourceStatus } from '../../domain/value-objects/participant-source-status';
+import { FindParticipantSourceRequestDto } from '../../infra/find-participant-source/dto/find-participant-source.request.dto';
 
 /**
  * A builder for Participant Sources to play with in testing.
@@ -62,6 +64,11 @@ export const ParticipantSourceBuilder = () => {
       return this;
     },
 
+    invalid() {
+      overrides.id = '';
+      return this;
+    },
+
     invalidStatus() {
       overrides.memberName = 'Jones Invalid';
       overrides.status = 'this is invalid';
@@ -96,6 +103,20 @@ export const ParticipantSourceBuilder = () => {
         ...defaultProperties,
         ...overrides,
       } as ParticipantSource;
+    },
+
+    buildFindParticipantSourceRequestDto(): FindParticipantSourceRequestDto {
+      const build = this.buildNoCheck();
+      return {
+        idSourceValue: prepareExternalIdSourceValue(build.id, 'COURSE'),
+      } as FindParticipantSourceRequestDto;
+    },
+
+    buildFindParticipantSourceDto(): FindParticipantSourceDto {
+      const build = this.buildNoCheck();
+      return {
+        id: build.id,
+      } as FindParticipantSourceDto;
     },
   };
 };

@@ -17,16 +17,20 @@ import { CreateParticipantHandler } from '../application/commands/create-partici
 import { UpdateParticipantHandler } from '../application/commands/update-participant/update-participant.command';
 import { FindParticipantHandler } from '../application/queries/find-participant/find-participant.query';
 import { FindParticipantController } from '../infra/find-participant/find-participant.controller';
+import { FindParticipantSourceHandler } from '../application/queries/find-participant-source/find-participant-source.query';
+import { FindParticipantSourceController } from '../infra/find-participant-source/find-participant-source.controller';
 
 const controllers = [
   CreateParticipantController,
   FindParticipantController,
+  FindParticipantSourceController,
   UpdateParticipantController,
 ];
 
 const handlers = [
   CreateParticipantHandler,
   FindParticipantHandler,
+  FindParticipantSourceHandler,
   UpdateParticipantHandler,
 ];
 

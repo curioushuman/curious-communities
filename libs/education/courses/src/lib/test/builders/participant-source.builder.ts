@@ -80,7 +80,7 @@ export const ParticipantSourceBuilder = () => {
 
     updated() {
       overrides.id = ExternalId.check('ThisSourceExists');
-      overrides.memberName = 'Jimmy Who Ha';
+      overrides.status = 'registered';
       return this;
     },
 

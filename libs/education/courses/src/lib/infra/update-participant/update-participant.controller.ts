@@ -15,6 +15,10 @@ import { ParticipantMapper } from '../participant.mapper';
 /**
  * Controller for update participant operations
  *
+ * NOTES
+ * - we initially returned void for create/update actions
+ *   see create controller for more info
+ *
  * TODO
  * - [ ] should this actually be a service?
  * - [ ] should we be doing auth. here as well?

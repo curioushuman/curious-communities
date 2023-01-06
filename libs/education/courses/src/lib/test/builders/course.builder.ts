@@ -134,7 +134,12 @@ export const CourseBuilder = () => {
     },
 
     noMatchingSource() {
-      overrides.id = '21406982-bdf9-4e6c-9095-cd890fb80081';
+      overrides.sourceIds = [
+        {
+          id: 'NothingCanBeFoundForThis',
+          source: 'COURSE',
+        },
+      ];
       return this;
     },
 

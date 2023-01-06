@@ -1,13 +1,13 @@
-import { Record, Static } from 'runtypes';
+import { Static } from 'runtypes';
 
-import { ParticipantId } from '../../../domain/value-objects/participant-id';
+import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
 
 /**
  * This is the form of data our repository will expect for the command
  */
 
-export const UpdateParticipantDto = Record({
-  id: ParticipantId,
-});
+export const UpdateParticipantDto = ParticipantSourceIdSource.withBrand(
+  'UpdateParticipantDto'
+);
 
 export type UpdateParticipantDto = Static<typeof UpdateParticipantDto>;

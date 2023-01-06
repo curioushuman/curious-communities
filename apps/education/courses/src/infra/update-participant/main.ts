@@ -101,5 +101,7 @@ export const handler = async (
   //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
-  return updateParticipantController.update(requestDto);
+  return updateParticipantController.update({
+    idSourceValue: requestDto.participantIdSourceValue,
+  });
 };

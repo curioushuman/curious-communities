@@ -19,7 +19,6 @@ import { UpdateParticipantDto } from './update-participant.dto';
 import { UpdateParticipantMapper } from './update-participant.mapper';
 import { ParticipantSourceRepository } from '../../../adapter/ports/participant-source.repository';
 import { ParticipantSource } from '../../../domain/entities/participant-source';
-import { ParticipantMapper } from '../../participant.mapper';
 import { Participant } from '../../../domain/entities/participant';
 
 export class UpdateParticipantCommand implements ICommand {
@@ -76,7 +75,7 @@ export class UpdateParticipantHandler
           ),
           performAction(
             findParticipantDto.value,
-            this.participantRepository.checkById,
+            this.participantRepository.findOne(findParticipantDto.identifier),
             this.errorFactory,
             this.logger,
             `find participant: ${findParticipantDto.value}`
@@ -85,13 +84,13 @@ export class UpdateParticipantHandler
       ),
 
       // #3. validate + transform; participants exists, source is valid, source to participant
-      TE.chain(([participantSource, participantExists]) => {
+      TE.chain(([participantSource, existingParticipant]) => {
         if (!participantSource) {
           throw new RepositoryItemNotFoundError(
             `Participant source id: ${updateParticipantDto.id}`
           );
         }
-        if (participantExists === false) {
+        if (!existingParticipant) {
           throw new RepositoryItemNotFoundError(
             `Participant id: ${updateParticipantDto.id}`
           );
@@ -105,7 +104,9 @@ export class UpdateParticipantHandler
           ),
           TE.chain((participantSourceChecked) =>
             parseActionData(
-              ParticipantMapper.fromSourceToParticipant,
+              UpdateParticipantMapper.fromSourceToParticipant(
+                existingParticipant
+              ),
               this.logger,
               'SourceInvalidError'
             )(participantSourceChecked)

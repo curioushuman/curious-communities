@@ -10,7 +10,7 @@ import { Record, Static, String } from 'runtypes';
  */
 
 export const UpdateParticipantRequestDto = Record({
-  id: String,
+  participantIdSourceValue: String,
 });
 
 export type UpdateParticipantRequestDto = Static<

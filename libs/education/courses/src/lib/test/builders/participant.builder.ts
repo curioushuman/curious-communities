@@ -111,13 +111,22 @@ export const ParticipantBuilder = () => {
     },
 
     noMatchingSource() {
-      overrides.id = '751df4b2-c717-431a-b80b-a2d52dcc5d21';
+      overrides.sourceIds = [
+        {
+          id: 'NothingCanBeFoundForThis',
+          source: 'COURSE',
+        },
+      ];
       return this;
     },
 
     invalid() {
-      delete defaultProperties.id;
-      delete overrides.id;
+      overrides.sourceIds = [
+        {
+          id: 'ThisIsMeaningless',
+          source: 'THISISSOINVALIDRIGHTNOW',
+        },
+      ];
       return this;
     },
 
@@ -235,14 +244,22 @@ export const ParticipantBuilder = () => {
     },
 
     buildUpdateParticipantDto(): UpdateParticipantDto {
-      return {
-        id: this.buildNoCheck().id,
-      } as UpdateParticipantDto;
+      const sourceId = this.build().sourceIds[0];
+      return sourceId as UpdateParticipantDto;
     },
 
     buildUpdateParticipantRequestDto(): UpdateParticipantRequestDto {
+      const sourceIds = this.buildNoCheck().sourceIds;
+      if (!sourceIds) {
+        return {
+          idSourceValue: '',
+        } as UpdateParticipantRequestDto;
+      }
       return {
-        id: this.buildNoCheck().id,
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceIds[0].id,
+          sourceIds[0].source
+        ),
       } as UpdateParticipantRequestDto;
     },
 

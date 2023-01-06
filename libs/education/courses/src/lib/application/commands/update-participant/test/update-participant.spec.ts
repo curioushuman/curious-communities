@@ -39,7 +39,7 @@ const feature = loadFeature('./update-participant.feature', {
 
 defineFeature(feature, (test) => {
   let repository: FakeParticipantRepository;
-  let participantSourcerepository: FakeParticipantSourceRepository;
+  let participantSourceRepository: FakeParticipantSourceRepository;
   let handler: UpdateParticipantHandler;
   let updateParticipantDto: UpdateParticipantDto;
 
@@ -63,7 +63,7 @@ defineFeature(feature, (test) => {
     repository = moduleRef.get<ParticipantRepository>(
       ParticipantRepository
     ) as FakeParticipantRepository;
-    participantSourcerepository = moduleRef.get<ParticipantSourceRepository>(
+    participantSourceRepository = moduleRef.get<ParticipantSourceRepository>(
       ParticipantSourceRepository
     ) as FakeParticipantSourceRepository;
     handler = moduleRef.get<UpdateParticipantHandler>(UpdateParticipantHandler);
@@ -86,18 +86,18 @@ defineFeature(feature, (test) => {
       // this is an updated version of the `exists()` participantSource
       updatedParticipantSource = ParticipantSourceBuilder().updated().build();
       // save it to our fake repo, we know it is valid
-      executeTask(participantSourcerepository.save(updatedParticipantSource));
+      executeTask(participantSourceRepository.save(updatedParticipantSource));
     });
 
     and('the source does exist in our DB', async () => {
       const participants = await executeTask(repository.all());
       const participantBefore = participants.find(
-        (participant) => participant.id === updateParticipantDto.id
+        (participant) => participant.sourceIds[0].id === updateParticipantDto.id
       );
       expect(participantBefore).toBeDefined();
       if (participantBefore) {
-        expect(participantBefore.memberName).not.toEqual(
-          updatedParticipantSource.memberName
+        expect(participantBefore.status).not.toEqual(
+          updatedParticipantSource.status
         );
       }
     });
@@ -113,12 +113,13 @@ defineFeature(feature, (test) => {
       async () => {
         const participants = await executeTask(repository.all());
         const participantAfter = participants.find(
-          (participant) => participant.id === updateParticipantDto.id
+          (participant) =>
+            participant.sourceIds[0].id === updateParticipantDto.id
         );
         expect(participantAfter).toBeDefined();
         if (participantAfter) {
-          expect(participantAfter.memberName).toEqual(
-            updatedParticipantSource.memberName
+          expect(participantAfter.status).toEqual(
+            updatedParticipantSource.status
           );
         }
       }

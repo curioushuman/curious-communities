@@ -22,6 +22,7 @@ import { ParticipantSourceBuilder } from '../../../test/builders/participant-sou
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 import { ParticipantSourceRepository } from '../../../adapter/ports/participant-source.repository';
 import { FakeParticipantSourceRepository } from '../../../adapter/implementations/fake/fake.participant-source.repository';
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
 
 /**
  * INTEGRATION TEST
@@ -94,12 +95,17 @@ defineFeature(feature, (test) => {
       executeTask(participantSourcerepository.save(updatedParticipantSource));
       const participants = await executeTask(repository.all());
       const participantBefore = participants.find(
-        (participant) => participant.id === updateParticipantDto.id
+        (participant) =>
+          updateParticipantDto.idSourceValue ===
+          prepareExternalIdSourceValue(
+            participant.sourceIds[0].id,
+            participant.sourceIds[0].source
+          )
       );
       expect(participantBefore).toBeDefined();
       if (participantBefore) {
-        expect(participantBefore.memberName).not.toEqual(
-          updatedParticipantSource.memberName
+        expect(participantBefore.status).not.toEqual(
+          updatedParticipantSource.status
         );
       }
     });
@@ -118,12 +124,17 @@ defineFeature(feature, (test) => {
       async () => {
         const participants = await executeTask(repository.all());
         const participantAfter = participants.find(
-          (participant) => participant.id === updateParticipantDto.id
+          (participant) =>
+            updateParticipantDto.idSourceValue ===
+            prepareExternalIdSourceValue(
+              participant.sourceIds[0].id,
+              participant.sourceIds[0].source
+            )
         );
         expect(participantAfter).toBeDefined();
         if (participantAfter) {
-          expect(participantAfter.memberName).toEqual(
-            updatedParticipantSource.memberName
+          expect(participantAfter.status).toEqual(
+            updatedParticipantSource.status
           );
         }
       }

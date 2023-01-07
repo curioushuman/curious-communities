@@ -31,14 +31,13 @@ defineFeature(feature, (test) => {
 
     given('the request contains invalid data', () => {
       dto = {
-        externalId: '',
+        memberIdSourceValue: '',
       };
     });
 
     when('I attempt to update a member', async () => {
       try {
         response = await handler(dto);
-        expect(response).toBeUndefined();
       } catch (err: unknown) {
         error = err as HttpException;
       }

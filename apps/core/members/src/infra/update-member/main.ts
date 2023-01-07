@@ -3,8 +3,9 @@ import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
-  UpdateMemberModule,
+  MutateMemberModule,
   UpdateMemberController,
+  MemberResponseDto,
 } from '@curioushuman/cc-members-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -29,10 +30,10 @@ let lambdaApp: INestApplicationContext;
  * i.e. we don't load Express, for optimization purposes
  */
 async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(UpdateMemberModule, {
+  const app = await NestFactory.createApplicationContext(MutateMemberModule, {
     bufferLogs: true,
   });
-  UpdateMemberModule.applyDefaults(app);
+  MutateMemberModule.applyDefaults(app);
   return app;
 }
 
@@ -63,7 +64,7 @@ export const handler = async (
   requestDtoOrEvent:
     | UpdateMemberRequestDto
     | EventBridgeEvent<'putEvent', UpdateMemberRequestDto>
-): Promise<void> => {
+): Promise<MemberResponseDto> => {
   // grab the dto
   const requestDto =
     'detail' in requestDtoOrEvent
@@ -97,5 +98,7 @@ export const handler = async (
   //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
-  return updateMemberController.update(requestDto);
+  return updateMemberController.update({
+    idSourceValue: requestDto.memberIdSourceValue,
+  });
 };

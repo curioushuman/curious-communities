@@ -12,12 +12,13 @@ import { Optional, Record, Static, String } from 'runtypes';
 /**
  * DTO that accepts any of the identifiers
  */
-export const CreateMemberRequestDto = Record({
+export const FindMemberRequestDto = Record({
+  memberId: Optional(String),
   memberEmail: Optional(String),
   memberIdSourceValue: Optional(String),
-}).withConstraint((dto) => !!(dto.memberEmail || dto.memberIdSourceValue));
+}).withConstraint((dto) => !!(dto.memberId || dto.memberIdSourceValue));
 
 /**
  * DTO that accepts any of the identifiers
  */
-export type CreateMemberRequestDto = Static<typeof CreateMemberRequestDto>;
+export type FindMemberRequestDto = Static<typeof FindMemberRequestDto>;

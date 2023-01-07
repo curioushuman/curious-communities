@@ -3,14 +3,14 @@ import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
-  MutateMemberModule,
-  CreateMemberController,
-  MemberResponseDto,
+  FindMemberSourceModule,
+  FindMemberSourceController,
 } from '@curioushuman/cc-members-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { CreateMemberRequestDto } from './dto/request.dto';
+import { FindMemberSourceRequestDto } from './dto/request.dto';
+import { MemberSourceResponseDto } from 'libs/core/members/src/lib/infra/dto/member-source.response.dto';
 
 /**
  * TODO
@@ -30,10 +30,13 @@ let lambdaApp: INestApplicationContext;
  * i.e. we don't load Express, for optimization purposes
  */
 async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(MutateMemberModule, {
-    bufferLogs: true,
-  });
-  MutateMemberModule.applyDefaults(app);
+  const app = await NestFactory.createApplicationContext(
+    FindMemberSourceModule,
+    {
+      bufferLogs: true,
+    }
+  );
+  FindMemberSourceModule.applyDefaults(app);
   return app;
 }
 
@@ -57,28 +60,27 @@ async function waitForApp() {
  * * We receive our own requestDto format, and not the usual AWS resource event.
  *   This will allow us most flexibility in invoking this function from multiple
  *   triggers. It reverses the dependency from invoked > invoker, to invoker > invoked.
- * * We return void
- *   Which basically indicates success.
+ * * We return MemberResponseDto
  */
 export const handler = async (
   requestDtoOrEvent:
-    | CreateMemberRequestDto
-    | EventBridgeEvent<'putEvent', CreateMemberRequestDto>
-): Promise<MemberResponseDto> => {
+    | FindMemberSourceRequestDto
+    | EventBridgeEvent<'putEvent', FindMemberSourceRequestDto>
+): Promise<MemberSourceResponseDto> => {
   // grab the dto
   const requestDto =
     'detail' in requestDtoOrEvent
       ? requestDtoOrEvent.detail
       : requestDtoOrEvent;
 
-  const logger = new LoggableLogger('CreateMemberFunction.handler');
+  const logger = new LoggableLogger('FindMemberSourceFunction.handler');
   logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
 
   // lambda level validation
-  if (!CreateMemberRequestDto.guard(requestDto)) {
+  if (!FindMemberSourceRequestDto.guard(requestDto)) {
     // NOTE: this is a 500 error, not a 400
     const error = new InternalRequestInvalidError(
-      'Invalid request sent to CreateMemberFunction.Lambda'
+      'Invalid request sent to FindMemberSourceFunction.Lambda'
     );
     // we straight out log this, as it's a problem our systems
     // aren't communicating properly.
@@ -88,7 +90,7 @@ export const handler = async (
 
   // init the app
   const app = await waitForApp();
-  const createMemberController = app.get(CreateMemberController);
+  const findMemberSourceController = app.get(FindMemberSourceController);
 
   // perform the action
   // NOTE: no try/catch here. According to the docs:
@@ -98,7 +100,7 @@ export const handler = async (
   //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
-  return createMemberController.create({
+  return findMemberSourceController.find({
     email: requestDto.memberEmail,
     idSourceValue: requestDto.memberIdSourceValue,
   });

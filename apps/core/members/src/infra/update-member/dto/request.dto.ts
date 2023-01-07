@@ -10,7 +10,7 @@ import { Record, Static, String } from 'runtypes';
  */
 
 export const UpdateMemberRequestDto = Record({
-  externalId: String,
+  memberIdSourceValue: String,
 });
 
 export type UpdateMemberRequestDto = Static<typeof UpdateMemberRequestDto>;

@@ -20,7 +20,7 @@
 
 1. Create member
 2. Return
-   1. void
+   1. Saved member
    2. Or Error
 
 ## Steps, detail
@@ -33,7 +33,7 @@
 
 #### Output: Success
 
-- void
+- Saved member
 
 #### Output: Fail
 
@@ -47,7 +47,7 @@ Create Member
 If Error
   return Error
 Else
-  return
+  return Saved member
 ```
 
 ### Step 2A. Return success

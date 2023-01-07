@@ -2,7 +2,7 @@ import { HttpException } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 
 import { handler } from '../main';
-import { CreateMemberRequestDto } from '../dto/request.dto';
+import { FindMemberRequestDto } from '../dto/request.dto';
 
 /**
  * INTEGRATION TEST
@@ -18,24 +18,24 @@ import { CreateMemberRequestDto } from '../dto/request.dto';
  * - handler and nest play nicely
  */
 
-const feature = loadFeature('./create-member.int.feature', {
+const feature = loadFeature('./find-member.int.feature', {
   loadRelativePath: true,
 });
 
 defineFeature(feature, (test) => {
   test('Fail; Invalid request', ({ given, when, then, and }) => {
     let error: HttpException;
-    let dto: CreateMemberRequestDto;
+    let dto: FindMemberRequestDto;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
 
     given('the request contains invalid data', () => {
       dto = {
-        memberIdSourceValue: 'NOTVALID',
+        memberIdSourceValue: 'NotOk',
       };
     });
 
-    when('I attempt to create a member', async () => {
+    when('I attempt to find a member', async () => {
       try {
         response = await handler(dto);
       } catch (err: unknown) {

@@ -78,13 +78,13 @@ export class CoursesStack extends cdk.Stack {
      *
      * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_destinations-readme.html#destination-specific-json-format
      */
-    const createPaxLambdaSuccess = new destinations.EventBridgeDestination(
+    const onLambdaSuccess = new destinations.EventBridgeDestination(
       internalEventBusConstruct.eventBus
     );
     // use this for any lambda that needs to send events to the internal event bus
     const lambdaPropsWithDestination: NodejsFunctionProps = {
       ...this.lambdaProps,
-      onSuccess: createPaxLambdaSuccess,
+      onSuccess: onLambdaSuccess,
     };
 
     /**
@@ -245,7 +245,7 @@ export class CoursesStack extends cdk.Stack {
      */
     const findPaxSourceLambdaConstruct = new LambdaConstruct(
       this,
-      'cc-courses-participant-find-source',
+      'cc-courses-participant-source-find',
       {
         lambdaEntry: pathResolve(
           __dirname,

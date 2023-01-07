@@ -1,4 +1,4 @@
-# Feature Summary: Update Member
+# Feature Summary: Find Member
 
 ## 1. Details
 
@@ -9,7 +9,7 @@
 
 ### Input data:
 
-- UpdateMemberRequestDto
+- FindMemberRequestDto
 
 ### Dependencies (from other services/sources)
 
@@ -19,7 +19,7 @@
 
 #### Success (singular result + event)
 
-- Saved member
+- MemberResponseDto
 
 ### Failure (1+):
 
@@ -30,11 +30,12 @@
 
 ### Triggered by
 
-- Eventbridge subscription
+- Create Member step functions
+- External API (but not yet)
 
 ### Side-effects
 
-- Member created
+- None
 
 ## 4. Decisions
 

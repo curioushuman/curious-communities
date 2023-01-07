@@ -55,4 +55,40 @@ describe('MembersStack', () => {
     // TODO: additional tests for the lambda
     // TODO: test RE subscribed to event with the correct rule details
   });
+
+  describe('Should contain a lambda for creating participants', () => {
+    const layers = new Capture();
+
+    it('Should exist', () => {
+      template.hasResourceProperties('AWS::Lambda::Function', {
+        FunctionName: 'CcMembersParticipantCreateLambda',
+        Layers: layers,
+      });
+    });
+
+    it('Should have 3 layers attached', () => {
+      expect(layers.asArray()).toHaveLength(3);
+    });
+
+    // TODO: additional tests for the lambda
+    // TODO: test RE subscribed to event with the correct rule details
+  });
+
+  describe('Should contain a lambda for updating participants', () => {
+    const layers = new Capture();
+
+    it('Should exist', () => {
+      template.hasResourceProperties('AWS::Lambda::Function', {
+        FunctionName: 'CcMembersParticipantUpdateLambda',
+        Layers: layers,
+      });
+    });
+
+    it('Should have 3 layers attached', () => {
+      expect(layers.asArray()).toHaveLength(3);
+    });
+
+    // TODO: additional tests for the lambda
+    // TODO: test RE subscribed to event with the correct rule details
+  });
 });

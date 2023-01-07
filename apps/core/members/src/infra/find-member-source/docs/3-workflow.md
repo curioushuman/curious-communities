@@ -1,16 +1,16 @@
-# Feature Workflow: Update Member
+# Feature Workflow: Find Member
 
 ## Algorithm
 
 ### Input
 
-- UpdateMemberRequestDto
+- FindMemberRequestDto
 
 ### Output
 
 #### Success
 
-- Saved member
+- MemberResponseDto
 
 #### Fail
 
@@ -18,22 +18,22 @@
 
 ### Steps
 
-1. Update member
+1. Find member
 2. Return
-   1. Saved member
+   1. MemberResponseDto
    2. Or Error
 
 ## Steps, detail
 
-### Step 1. Update member
+### Step 1. Find member
 
 #### Input
 
-- UpdateMemberRequestDto
+- FindMemberRequestDto
 
 #### Output: Success
 
-- Saved member
+- MemberResponseDto
 
 #### Output: Fail
 
@@ -43,11 +43,11 @@
 #### Steps (pseudocode)
 
 ```
-Update Member
+Find Member
 If Error
   return Error
 Else
-  return Saved member
+  return MemberResponseDto
 ```
 
 ### Step 2A. Return success

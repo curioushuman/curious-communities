@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -8,9 +9,9 @@ import { resolve as pathResolve } from 'path';
 // Initially we're going to import from local sources
 import {
   ChLayerFrom,
-  resourceNameTitle,
   LambdaEventSubscription,
   ChEventBusFrom,
+  LambdaConstruct,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -47,11 +48,43 @@ export class MembersStack extends cdk.Stack {
     /**
      * External events eventBus
      */
-    const externalEventsEventBusId = 'cc-eventbus-external';
     const externalEventBusConstruct = new ChEventBusFrom(
       this,
-      externalEventsEventBusId
+      'cc-eventbus-external'
     );
+
+    /**
+     * Internal events eventBus
+     */
+    const internalEventBusConstruct = new ChEventBusFrom(
+      this,
+      'cc-eventbus-internal'
+    );
+
+    /**
+     * Eventbridge destination for our lambdas
+     *
+     * Resulting event should look something like:
+     *
+     * {
+     *   "DetailType":"Lambda Function Invocation Result - Success",
+     *   "Source": "lambda",
+     *   "EventBusName": "{eventBusArn}",
+     *   "Detail": {
+     *     ...Member
+     *   }
+     * }
+     *
+     * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_destinations-readme.html#destination-specific-json-format
+     */
+    const onLambdaSuccess = new destinations.EventBridgeDestination(
+      internalEventBusConstruct.eventBus
+    );
+    // use this for any lambda that needs to send events to the internal event bus
+    const lambdaPropsWithDestination: NodejsFunctionProps = {
+      ...this.lambdaProps,
+      onSuccess: onLambdaSuccess,
+    };
 
     /**
      * Required layers, additional to normal defaults
@@ -62,7 +95,7 @@ export class MembersStack extends cdk.Stack {
     /**
      * Function: Create Member
      */
-    const createMemberFunction = new LambdaEventSubscription(
+    const createMemberLambdaConstruct = new LambdaEventSubscription(
       this,
       'cc-members-member-create',
       {
@@ -70,12 +103,11 @@ export class MembersStack extends cdk.Stack {
           __dirname,
           '../src/infra/create-member/main.ts'
         ),
-        lambdaProps: this.lambdaProps,
+        lambdaProps: lambdaPropsWithDestination,
         eventBus: externalEventBusConstruct.eventBus,
         ruleDetails: {
           object: ['member'],
-          type: ['status-updated'],
-          status: ['created'],
+          type: ['created'],
         },
         ruleDescription: 'Create internal, to match the external',
       }
@@ -83,16 +115,16 @@ export class MembersStack extends cdk.Stack {
 
     // allow the lambda access to the table
     membersTableConstruct.table.grantReadData(
-      createMemberFunction.lambdaFunction
+      createMemberLambdaConstruct.lambdaFunction
     );
     membersTableConstruct.table.grantWriteData(
-      createMemberFunction.lambdaFunction
+      createMemberLambdaConstruct.lambdaFunction
     );
 
     /**
      * Function: Update Member
      */
-    const updateMemberFunction = new LambdaEventSubscription(
+    const updateMemberLambdaConstruct = new LambdaEventSubscription(
       this,
       'cc-members-member-update',
       {
@@ -100,12 +132,11 @@ export class MembersStack extends cdk.Stack {
           __dirname,
           '../src/infra/update-member/main.ts'
         ),
-        lambdaProps: this.lambdaProps,
+        lambdaProps: lambdaPropsWithDestination,
         eventBus: externalEventBusConstruct.eventBus,
         ruleDetails: {
           object: ['member'],
-          type: ['status-updated'],
-          status: ['updated'],
+          type: ['updated'],
         },
         ruleDescription: 'Update internal, to match the external',
       }
@@ -113,10 +144,42 @@ export class MembersStack extends cdk.Stack {
 
     // allow the lambda access to the table
     membersTableConstruct.table.grantReadData(
-      updateMemberFunction.lambdaFunction
+      updateMemberLambdaConstruct.lambdaFunction
     );
     membersTableConstruct.table.grantWriteData(
-      updateMemberFunction.lambdaFunction
+      updateMemberLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Find Member
+     */
+    const findMemberLambdaConstruct = new LambdaConstruct(
+      this,
+      'cc-members-member-find',
+      {
+        lambdaEntry: pathResolve(__dirname, '../src/infra/find-member/main.ts'),
+        lambdaProps: this.lambdaProps,
+      }
+    );
+
+    // allow the lambda access to the table
+    membersTableConstruct.table.grantReadData(
+      findMemberLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Find Member source
+     */
+    const findMemberSourceLambdaConstruct = new LambdaConstruct(
+      this,
+      'cc-members-member-source-find',
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/find-member-source/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
     );
 
     /**

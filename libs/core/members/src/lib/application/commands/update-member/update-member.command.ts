@@ -3,10 +3,7 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 import { sequenceT } from 'fp-ts/lib/Apply';
 
-import {
-  ErrorFactory,
-  RepositoryItemNotFoundError,
-} from '@curioushuman/error-factory';
+import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
@@ -17,9 +14,17 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { MemberRepository } from '../../../adapter/ports/member.repository';
 import { UpdateMemberDto } from './update-member.dto';
 import { UpdateMemberMapper } from './update-member.mapper';
-import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
+import {
+  MemberSourceAuthRepository,
+  MemberSourceCommunityRepository,
+  MemberSourceCrmRepository,
+  MemberSourceMicroCourseRepository,
+  MemberSourceRepository,
+} from '../../../adapter/ports/member-source.repository';
 import { MemberSource } from '../../../domain/entities/member-source';
-import { MemberMapper } from '../../member.mapper';
+import { Member } from '../../../domain/entities/member';
+import config from '../../../static/config';
+import { parseDto as parseMemberSourceDto } from '../../queries/find-member-source/find-member-source.dto';
 
 export class UpdateMemberCommand implements ICommand {
   constructor(public readonly updateMemberDto: UpdateMemberDto) {}
@@ -37,15 +42,33 @@ export class UpdateMemberHandler
 {
   constructor(
     private readonly memberRepository: MemberRepository,
-    private readonly memberSourceRepository: MemberSourceRepository,
+    private readonly memberSourceAuthRepository: MemberSourceAuthRepository,
+    private readonly memberSourceCommunityRepository: MemberSourceCommunityRepository,
+    private readonly memberSourceCrmRepository: MemberSourceCrmRepository,
+    private readonly memberSourceMicroCourseRepository: MemberSourceMicroCourseRepository,
     private logger: LoggableLogger,
     private errorFactory: ErrorFactory
   ) {
     this.logger.setContext(UpdateMemberHandler.name);
   }
 
-  async execute(command: UpdateMemberCommand): Promise<void> {
+  async execute(command: UpdateMemberCommand): Promise<Member> {
     const { updateMemberDto } = command;
+
+    // * NOTE: currently idSource is the only identifier that is allowed
+    // *       to define a specific source for query. Otherwise reverts
+    // *       to the primary source.
+    const source = updateMemberDto.source
+      ? updateMemberDto.source
+      : config.defaults.primaryAccountSource;
+
+    // TODO this must be improved/moved at some later point
+    const sourceRepositories: Record<string, MemberSourceRepository> = {
+      AUTH: this.memberSourceAuthRepository,
+      COMMUNITY: this.memberSourceCommunityRepository,
+      CRM: this.memberSourceCrmRepository,
+      'MICRO-COURSE': this.memberSourceMicroCourseRepository,
+    };
 
     const task = pipe(
       // #1. parse the dto
@@ -67,15 +90,18 @@ export class UpdateMemberHandler
       TE.chain(([findMemberSourceDto, findMemberDto]) =>
         sequenceT(TE.ApplySeq)(
           performAction(
-            findMemberSourceDto,
-            this.memberSourceRepository.findOne,
+            // ! this is a bit not-normal
+            // this is the only place we do this here
+            // TODO: make this more consistent with the rest
+            parseMemberSourceDto(findMemberSourceDto),
+            sourceRepositories[source].findOne(findMemberSourceDto.identifier),
             this.errorFactory,
             this.logger,
-            `find member source: ${findMemberSourceDto.id}`
+            `find member source: ${findMemberSourceDto.value}`
           ),
           performAction(
             findMemberDto.value,
-            this.memberRepository.checkByExternalId,
+            this.memberRepository.findOne(findMemberDto.identifier),
             this.errorFactory,
             this.logger,
             `find member: ${findMemberDto.value}`
@@ -84,18 +110,8 @@ export class UpdateMemberHandler
       ),
 
       // #3. validate + transform; members exists, source is valid, source to member
-      TE.chain(([memberSource, memberExists]) => {
-        if (!memberSource) {
-          throw new RepositoryItemNotFoundError(
-            `Member source id: ${updateMemberDto.externalId}`
-          );
-        }
-        if (memberExists === false) {
-          throw new RepositoryItemNotFoundError(
-            `Member id: ${updateMemberDto.externalId}`
-          );
-        }
-        return pipe(
+      TE.chain(([memberSource, existingMember]) =>
+        pipe(
           memberSource,
           parseActionData(
             MemberSource.check,
@@ -104,13 +120,13 @@ export class UpdateMemberHandler
           ),
           TE.chain((memberSourceChecked) =>
             parseActionData(
-              MemberMapper.fromSourceToMember,
+              UpdateMemberMapper.fromSourceToMember(existingMember),
               this.logger,
               'SourceInvalidError'
             )(memberSourceChecked)
           )
-        );
-      }),
+        )
+      ),
 
       // #5. update the member, from the source
       TE.chain((member) =>

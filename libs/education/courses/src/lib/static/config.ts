@@ -4,5 +4,7 @@ export default {
   defaults: {
     accountOwner: 'apf',
     courseSupportType: 'facilitated' as CourseSupportType,
+    accountSources: ['COURSE'],
+    primaryAccountSource: 'COURSE',
   },
 };

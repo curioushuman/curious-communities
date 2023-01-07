@@ -4,6 +4,7 @@ import { FindParticipantSourceDto } from '../../application/queries/find-partici
 import { ParticipantSource } from '../../domain/entities/participant-source';
 import { ParticipantSourceStatus } from '../../domain/value-objects/participant-source-status';
 import { FindParticipantSourceRequestDto } from '../../infra/find-participant-source/dto/find-participant-source.request.dto';
+import config from '../../static/config';
 
 /**
  * A builder for Participant Sources to play with in testing.
@@ -108,7 +109,10 @@ export const ParticipantSourceBuilder = () => {
     buildFindParticipantSourceRequestDto(): FindParticipantSourceRequestDto {
       const build = this.buildNoCheck();
       return {
-        idSourceValue: prepareExternalIdSourceValue(build.id, 'COURSE'),
+        idSourceValue: prepareExternalIdSourceValue(
+          build.id,
+          config.defaults.primaryAccountSource
+        ),
       } as FindParticipantSourceRequestDto;
     },
 

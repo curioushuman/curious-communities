@@ -10,7 +10,7 @@
 
 #### Success
 
-- void
+- Saved member
 
 #### Fail
 
@@ -21,7 +21,7 @@
 1. Validate input
 2. Create member
 3. Return
-   1. void
+   1. Saved member
    2. Error
 
 ## Steps, detail
@@ -58,7 +58,7 @@ Else
 
 #### Output: Success
 
-- void
+- Saved member
 
 #### Output: Fail
 
@@ -76,7 +76,7 @@ Else
 
 ### Step 4A. Return success
 
-- void
+- Saved member
 
 ### Step 4B. Or Error
 

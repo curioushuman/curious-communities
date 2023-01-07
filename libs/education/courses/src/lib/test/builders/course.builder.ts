@@ -61,7 +61,7 @@ export const CourseBuilder = () => {
     sourceIds: [
       {
         id: '5008s1234519CjBBHU',
-        source: 'COURSE',
+        source: config.defaults.primaryAccountSource,
       },
     ],
 
@@ -94,7 +94,7 @@ export const CourseBuilder = () => {
       overrides.sourceIds = [
         {
           id: source.id,
-          source: 'COURSE',
+          source: config.defaults.primaryAccountSource,
         },
       ];
     },
@@ -142,7 +142,7 @@ export const CourseBuilder = () => {
       overrides.sourceIds = [
         {
           id: 'NothingCanBeFoundForThis',
-          source: 'COURSE',
+          source: config.defaults.primaryAccountSource,
         },
       ];
       return this;

@@ -3,10 +3,17 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
-import { MemberSource } from '../../../domain/entities/member-source';
-import { MemberSourceRepository } from '../../ports/member-source.repository';
+import {
+  MemberSource,
+  MemberSourceIdentifier,
+} from '../../../domain/entities/member-source';
+import {
+  MemberSourceFindMethod,
+  MemberSourceRepository,
+} from '../../ports/member-source.repository';
 import { MemberSourceBuilder } from '../../../test/builders/member-source.builder';
-import { FindMemberSourceDto } from '../../../application/queries/find-member-source/find-member-source.dto';
+import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
+import { MemberEmail } from '../../../domain/value-objects/member-email';
 
 @Injectable()
 export class FakeMemberSourceRepository implements MemberSourceRepository {
@@ -24,25 +31,30 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
     );
   }
 
-  findOne = (dto: FindMemberSourceDto): TE.TaskEither<Error, MemberSource> => {
-    const { id } = dto;
+  /**
+   * Find by source ID
+   *
+   * ? Should the value check be extracted into it's own (functional) step?
+   */
+  findOneById = (value: MemberSourceId): TE.TaskEither<Error, MemberSource> => {
     return TE.tryCatch(
       async () => {
-        const memberSource = this.memberSources.find((i) => i.id === id);
+        const id = MemberSourceId.check(value);
+        const member = this.memberSources.find((cs) => cs.id === id);
         return pipe(
-          memberSource,
+          member,
           O.fromNullable,
           O.fold(
             () => {
               // this mimics an API or DB call throwing an error
               throw new NotFoundException(
-                `Member source with id ${id} not found`
+                `MemberSource with id ${id} not found`
               );
             },
             // this mimics the fact that all non-fake adapters
             // will come with a mapper, which will perform a check
             // prior to return
-            (source) => MemberSource.check(source)
+            (member) => MemberSource.check(member)
           )
         );
       },
@@ -50,15 +62,59 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
     );
   };
 
+  /**
+   * Find by email
+   *
+   * ? Should the value check be extracted into it's own (functional) step?
+   */
+  findOneByEmail = (value: MemberEmail): TE.TaskEither<Error, MemberSource> => {
+    return TE.tryCatch(
+      async () => {
+        const email = MemberEmail.check(value);
+        const member = this.memberSources.find((cs) => cs.email === email);
+        return pipe(
+          member,
+          O.fromNullable,
+          O.fold(
+            () => {
+              // this mimics an API or DB call throwing an error
+              throw new NotFoundException(
+                `MemberSource with email ${email} not found`
+              );
+            },
+            // this mimics the fact that all non-fake adapters
+            // will come with a mapper, which will perform a check
+            // prior to return
+            (member) => MemberSource.check(member)
+          )
+        );
+      },
+      (reason: unknown) => reason as Error
+    );
+  };
+
+  /**
+   * Object lookup for findOneBy methods
+   */
+  findOneBy: Record<MemberSourceIdentifier, MemberSourceFindMethod> = {
+    // NOTE: idSource is parsed to id in application layer
+    idSource: this.findOneById,
+    email: this.findOneByEmail,
+  };
+
+  findOne = (identifier: MemberSourceIdentifier): MemberSourceFindMethod => {
+    return this.findOneBy[identifier];
+  };
+
   save = (memberSource: MemberSource): TE.TaskEither<Error, void> => {
     return TE.tryCatch(
       async () => {
         const memberExists = this.memberSources.find(
-          (i) => i.id === memberSource.id
+          (cs) => cs.id === memberSource.id
         );
         if (memberExists) {
-          this.memberSources = this.memberSources.map((i) =>
-            i.id === memberSource.id ? memberSource : i
+          this.memberSources = this.memberSources.map((cs) =>
+            cs.id === memberSource.id ? memberSource : cs
           );
         } else {
           this.memberSources.push(memberSource);

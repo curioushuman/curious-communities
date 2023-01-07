@@ -1,9 +1,13 @@
-import { MemberIdExternal } from '../../../domain/value-objects/member-id-external';
+import { parseExternalIdSourceValue } from '@curioushuman/common';
+
+import { MemberId } from '../../../domain/value-objects/member-id';
 import {
   MemberIdentifier,
   MemberIdentifiers,
 } from '../../../domain/entities/member';
-import { MemberSlug } from '../../../domain/value-objects/member-slug';
+import { Source } from '../../../domain/value-objects/source';
+import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
+import { MemberEmail } from '../../../domain/value-objects/member-email';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -39,8 +43,10 @@ type FindMemberDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindMemberDtoParsers = {
-  externalId: (dto) => MemberIdExternal.check(dto.value),
-  slug: (dto) => MemberSlug.check(dto.value),
+  id: (dto) => MemberId.check(dto.value),
+  idSourceValue: (dto) =>
+    parseExternalIdSourceValue(dto.value, MemberSourceId, Source),
+  email: (dto) => MemberEmail.check(dto.value),
 };
 
 /**

@@ -39,7 +39,7 @@ export class CreateParticipantMapper {
       sourceIds: [
         {
           id: source.id,
-          source: 'COURSE',
+          source: config.defaults.primaryAccountSource,
         },
       ],
       accountOwner: config.defaults.accountOwner,

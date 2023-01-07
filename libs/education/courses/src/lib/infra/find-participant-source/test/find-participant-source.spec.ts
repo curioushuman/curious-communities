@@ -9,6 +9,7 @@ import { ParticipantSourceBuilder } from '../../../test/builders/participant-sou
 import { FindParticipantSourceController } from '../../../infra/find-participant-source/find-participant-source.controller';
 import { RequestInvalidError } from '@curioushuman/error-factory';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import config from '../../../static/config';
 
 /**
  * INTEGRATION TEST
@@ -80,7 +81,10 @@ defineFeature(feature, (test) => {
     });
 
     then('a record should have been returned', async () => {
-      const idSourceValue = prepareExternalIdSourceValue(result.id, 'COURSE');
+      const idSourceValue = prepareExternalIdSourceValue(
+        result.id,
+        config.defaults.primaryAccountSource
+      );
       expect(idSourceValue).toEqual(findParticipantSourceDto.idSourceValue);
     });
   });

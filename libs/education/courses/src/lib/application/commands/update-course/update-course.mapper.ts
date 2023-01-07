@@ -59,7 +59,7 @@ export class UpdateCourseMapper {
         sourceIds: [
           {
             id: source.id,
-            source: 'COURSE',
+            source: config.defaults.primaryAccountSource,
           },
         ],
 

@@ -16,8 +16,16 @@ import {
 } from '../update-member.command';
 import { MemberRepository } from '../../../../adapter/ports/member.repository';
 import { FakeMemberRepository } from '../../../../adapter/implementations/fake/fake.member.repository';
-import { MemberSourceRepository } from '../../../../adapter/ports/member-source.repository';
-import { FakeMemberSourceRepository } from '../../../../adapter/implementations/fake/fake.member-source.repository';
+import {
+  MemberSourceAuthRepository,
+  MemberSourceCommunityRepository,
+  MemberSourceCrmRepository,
+  MemberSourceMicroCourseRepository,
+} from '../../../../adapter/ports/member-source.repository';
+import { FakeMemberSourceAuthRepository } from '../../../../adapter/implementations/fake/fake.member-source.auth.repository';
+import { FakeMemberSourceCrmRepository } from '../../../../adapter/implementations/fake/fake.member-source.crm.repository';
+import { FakeMemberSourceCommunityRepository } from '../../../../adapter/implementations/fake/fake.member-source.community.repository';
+import { FakeMemberSourceMicroCourseRepository } from '../../../../adapter/implementations/fake/fake.member-source.micro-course.repository';
 import { MemberBuilder } from '../../../../test/builders/member.builder';
 import { UpdateMemberDto } from '../update-member.dto';
 import { MemberSource } from '../../../../domain/entities/member-source';
@@ -39,7 +47,7 @@ const feature = loadFeature('./update-member.feature', {
 
 defineFeature(feature, (test) => {
   let repository: FakeMemberRepository;
-  let memberSourcerepository: FakeMemberSourceRepository;
+  let memberSourceRepository: FakeMemberSourceCrmRepository;
   let handler: UpdateMemberHandler;
   let updateMemberDto: UpdateMemberDto;
 
@@ -50,8 +58,20 @@ defineFeature(feature, (test) => {
         LoggableLogger,
         { provide: MemberRepository, useClass: FakeMemberRepository },
         {
-          provide: MemberSourceRepository,
-          useClass: FakeMemberSourceRepository,
+          provide: MemberSourceCrmRepository,
+          useClass: FakeMemberSourceCrmRepository,
+        },
+        {
+          provide: MemberSourceAuthRepository,
+          useClass: FakeMemberSourceAuthRepository,
+        },
+        {
+          provide: MemberSourceCommunityRepository,
+          useClass: FakeMemberSourceCommunityRepository,
+        },
+        {
+          provide: MemberSourceMicroCourseRepository,
+          useClass: FakeMemberSourceMicroCourseRepository,
         },
         {
           provide: ErrorFactory,
@@ -63,9 +83,9 @@ defineFeature(feature, (test) => {
     repository = moduleRef.get<MemberRepository>(
       MemberRepository
     ) as FakeMemberRepository;
-    memberSourcerepository = moduleRef.get<MemberSourceRepository>(
-      MemberSourceRepository
-    ) as FakeMemberSourceRepository;
+    memberSourceRepository = moduleRef.get<MemberSourceCrmRepository>(
+      MemberSourceCrmRepository
+    ) as FakeMemberSourceCrmRepository;
     handler = moduleRef.get<UpdateMemberHandler>(UpdateMemberHandler);
   });
 
@@ -84,17 +104,17 @@ defineFeature(feature, (test) => {
       // this is an updated version of the `exists()` memberSource
       updatedMemberSource = MemberSourceBuilder().updated().build();
       // save it to our fake repo, we know it is valid
-      executeTask(memberSourcerepository.save(updatedMemberSource));
+      executeTask(memberSourceRepository.save(updatedMemberSource));
     });
 
     and('the source does exist in our DB', async () => {
       const members = await executeTask(repository.all());
       const memberBefore = members.find(
-        (member) => member.externalId === updateMemberDto.externalId
+        (member) => member.sourceIds[0].id === updateMemberDto.id
       );
       expect(memberBefore).toBeDefined();
       if (memberBefore) {
-        expect(memberBefore.name).not.toEqual(updatedMemberSource.name);
+        expect(memberBefore.status).not.toEqual(updatedMemberSource.status);
       }
     });
 
@@ -102,22 +122,19 @@ defineFeature(feature, (test) => {
       result = await handler.execute(new UpdateMemberCommand(updateMemberDto));
     });
 
-    then(
-      'the related record should have been updated in the repository',
-      async () => {
-        const members = await executeTask(repository.all());
-        const memberAfter = members.find(
-          (member) => member.externalId === updateMemberDto.externalId
-        );
-        expect(memberAfter).toBeDefined();
-        if (memberAfter) {
-          expect(memberAfter.name).toEqual(updatedMemberSource.name);
-        }
+    then('the related record should have been updated', async () => {
+      const members = await executeTask(repository.all());
+      const memberAfter = members.find(
+        (member) => member.sourceIds[0].id === updateMemberDto.id
+      );
+      expect(memberAfter).toBeDefined();
+      if (memberAfter) {
+        expect(memberAfter.status).toEqual(updatedMemberSource.status);
       }
-    );
+    });
 
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
+    and('saved member is returned', () => {
+      expect(result.id).toBeDefined();
     });
   });
 

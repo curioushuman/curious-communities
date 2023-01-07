@@ -1,17 +1,21 @@
 Feature: Create Member
 
-Scenario: Successfully creating a member
+Scenario: Successfully creating a member by Source Id
   Given the request is valid
-  And a matching record is found at the source
   When I attempt to create a member
-  Then a new record should have been created in the repository
-  And no result is returned
+  Then a new record should have been created
+  And saved member is returned
+
+Scenario: Successfully creating a member by email
+  Given the request is valid
+  When I attempt to create a member
+  Then a new record should have been created
+  And saved member is returned
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data
   When I attempt to create a member
   Then I should receive a RequestInvalidError
-  And no result is returned
 
 # TODO - needs to be implemented
 # Scenario: Fail; internal error occurred
@@ -19,4 +23,3 @@ Scenario: Fail; Invalid request
 #   And an internal error occurs during member creation
 #   When I attempt to create a member
 #   Then I should receive an error
-#   And no result is returned

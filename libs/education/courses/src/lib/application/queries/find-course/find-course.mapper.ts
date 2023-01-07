@@ -19,10 +19,10 @@ export class FindCourseMapper {
     // NOTE: at least one of the two will be defined
     // this check occurs in the controller
     return dto.id
-      ? this.fromFindByIdRequestDto({
+      ? FindCourseMapper.fromFindByIdRequestDto({
           id: dto.id,
         })
-      : this.fromFindByIdSourceValueRequestDto({
+      : FindCourseMapper.fromFindByIdSourceValueRequestDto({
           idSourceValue: dto.idSourceValue as string,
         });
   }

@@ -1,14 +1,23 @@
 import { Member } from '../../domain/entities/member';
 import { MemberSource } from '../../domain/entities/member-source';
 import { MemberResponseDto } from '../../infra/dto/member.response.dto';
-import { CreateMemberRequestDto } from '../../infra/create-member/dto/create-member.request.dto';
+import {
+  CreateByEmailMemberRequestDto,
+  CreateByIdSourceValueMemberRequestDto,
+} from '../../infra/create-member/dto/create-member.request.dto';
 import { CreateMemberDto } from '../../application/commands/create-member/create-member.dto';
 import { MemberSourceBuilder } from './member-source.builder';
 import config from '../../static/config';
-import { createMemberSlug } from '../../domain/value-objects/member-slug';
 import { MemberStatus } from '../../domain/value-objects/member-status';
 import { UpdateMemberRequestDto } from '../../infra/update-member/dto/update-member.request.dto';
 import { UpdateMemberDto } from '../../application/commands/update-member/update-member.dto';
+import { FindMemberDto } from '../../application/queries/find-member/find-member.dto';
+import {
+  FindByEmailMemberRequestDto,
+  FindByIdMemberRequestDto,
+  FindByIdSourceValueMemberRequestDto,
+} from '../../infra/find-member/dto/find-member.request.dto';
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
 
 /**
  * A builder for Members to play with in testing.
@@ -35,104 +44,120 @@ export const MemberBuilder = () => {
    * Default properties don't exist in source repository
    */
   const defaultProperties: MemberLooseMimic = {
-    externalId: '5008s1234519CjIAAU',
-    status: 'open' as MemberStatus,
-    slug: 'james_brown',
+    id: '6fce9d10-aeed-4bb1-8c8c-92094f1982ff',
+    status: 'pending' as MemberStatus,
+
+    sourceIds: [
+      {
+        id: '5008s1234519CjIPPU',
+        source: config.defaults.primaryAccountSource,
+      },
+    ],
+
     name: 'James Brown',
-    email: 'james@brown.co',
-    organisationName: 'Brown Co',
+    email: 'james@brown.com',
+    organisationName: 'James Co',
+
     accountOwner: config.defaults.accountOwner,
   };
   const overrides: MemberLooseMimic = {
-    externalId: defaultProperties.externalId,
+    id: defaultProperties.id,
     status: defaultProperties.status,
-    slug: defaultProperties.slug,
+
+    sourceIds: defaultProperties.sourceIds,
+
     name: defaultProperties.name,
     email: defaultProperties.email,
     organisationName: defaultProperties.organisationName,
+
     accountOwner: defaultProperties.accountOwner,
   };
 
   return {
-    funkyChars() {
-      const source = MemberSourceBuilder().funkyChars().buildNoCheck();
-      overrides.name = source.name;
-      overrides.slug = createMemberSlug(source);
-      return this;
+    setSource(source: MemberSource) {
+      overrides.sourceIds = [
+        {
+          id: source.id,
+          source: config.defaults.primaryAccountSource,
+        },
+      ];
     },
 
     alpha() {
       // ID DOES NOT EXIST IN SOURCE REPO/DB
       const source = MemberSourceBuilder().alpha().buildNoCheck();
-      overrides.externalId = source.id;
-      overrides.name = source.name;
-      overrides.slug = createMemberSlug(source);
+      this.setSource(source);
+      overrides.email = source.email;
       return this;
     },
 
     beta() {
       // ID DOES NOT EXIST IN SOURCE REPO/DB
       const source = MemberSourceBuilder().beta().buildNoCheck();
-      overrides.externalId = source.id;
-      overrides.name = source.name;
-      overrides.slug = createMemberSlug(source);
+      this.setSource(source);
+      overrides.email = source.email;
       return this;
     },
 
     invalidSource() {
       const source = MemberSourceBuilder().invalidSource().buildNoCheck();
-      overrides.externalId = source.id;
+      this.setSource(source);
       return this;
     },
 
     invalidStatus() {
       const source = MemberSourceBuilder().invalidStatus().buildNoCheck();
-      overrides.externalId = source.id;
-      overrides.slug = createMemberSlug(source);
+      this.setSource(source);
       return this;
     },
 
     noMatchingSource() {
-      overrides.externalId = 'NoMatchingSource';
+      overrides.sourceIds = [
+        {
+          id: 'NothingCanBeFoundForThis',
+          source: config.defaults.primaryAccountSource,
+        },
+      ];
       return this;
     },
 
     invalid() {
-      delete defaultProperties.externalId;
-      delete overrides.externalId;
-      delete defaultProperties.slug;
-      delete overrides.slug;
+      overrides.sourceIds = [
+        {
+          id: 'ThisIsMeaningless',
+          source: 'THISISSOINVALIDRIGHTNOW',
+        },
+      ];
+      return this;
+    },
+
+    invalidOther() {
+      overrides.status = 'happy';
       return this;
     },
 
     exists() {
       const source = MemberSourceBuilder().exists().build();
-      overrides.externalId = source.id;
-      overrides.slug = createMemberSlug(source);
+      this.setSource(source);
       return this;
     },
 
     doesntExist() {
-      overrides.externalId = 'MemberDoesntExist';
-      overrides.slug = 'member-doesnt-exist';
-      delete defaultProperties.externalId;
-      delete overrides.externalId;
+      overrides.id = '9f7aeaf9-b258-4099-b23b-6c0e48c52a34';
+      delete defaultProperties.id;
+      delete overrides.id;
       return this;
     },
 
     doesntExistId() {
-      overrides.externalId = '1e72ef98-f21e-4e0a-aff1-a45ed7328123';
-      delete defaultProperties.externalId;
-      delete overrides.externalId;
-      delete defaultProperties.slug;
-      delete overrides.slug;
+      overrides.id = '1e72ef98-f21e-4e0a-aff1-a45ed7328123';
+      delete defaultProperties.id;
+      delete overrides.id;
       return this;
     },
 
     fromSource(source: MemberSource) {
-      overrides.externalId = source.id;
-      overrides.name = source.name;
-      overrides.slug = createMemberSlug(source);
+      this.setSource(source);
       return this;
     },
 
@@ -150,27 +175,111 @@ export const MemberBuilder = () => {
       } as Member;
     },
 
-    buildCreateMemberDto(): CreateMemberDto {
+    buildCreateByIdSourceValueMemberDto(): CreateMemberDto {
+      const sourceId = this.buildNoCheck().sourceIds[0];
       return {
-        externalId: this.build().externalId,
+        findMemberDto: {
+          identifier: 'idSourceValue',
+          value: prepareExternalIdSourceValue(sourceId.id, sourceId.source),
+        },
+        findMemberSourceDto: {
+          identifier: 'idSource',
+          value: sourceId,
+        },
       } as CreateMemberDto;
     },
 
-    buildCreateMemberRequestDto(): CreateMemberRequestDto {
+    buildCreateByIdSourceValueMemberRequestDto(): CreateByIdSourceValueMemberRequestDto {
+      const sourceId = this.buildNoCheck().sourceIds[0];
       return {
-        externalId: this.buildNoCheck().externalId,
-      } as CreateMemberRequestDto;
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceId.id,
+          sourceId.source
+        ),
+      } as CreateByIdSourceValueMemberRequestDto;
+    },
+
+    buildCreateByEmailMemberDto(): CreateMemberDto {
+      const value = this.buildNoCheck().email;
+      return {
+        findMemberDto: {
+          identifier: 'email',
+          value,
+        },
+        findMemberSourceDto: {
+          identifier: 'email',
+          value,
+        },
+      } as CreateMemberDto;
+    },
+
+    buildCreateByEmailMemberRequestDto(): CreateByEmailMemberRequestDto {
+      return {
+        email: this.buildNoCheck().email,
+      } as CreateByEmailMemberRequestDto;
+    },
+
+    buildFindByIdMemberDto(): FindMemberDto {
+      return {
+        identifier: 'id',
+        value: this.buildNoCheck().id,
+      } as FindMemberDto;
+    },
+
+    buildFindByIdMemberRequestDto(): FindByIdMemberRequestDto {
+      return {
+        id: this.buildNoCheck().id,
+      } as FindByIdMemberRequestDto;
+    },
+
+    buildFindByIdSourceValueMemberDto(): FindMemberDto {
+      const sourceId = this.buildNoCheck().sourceIds[0];
+      return {
+        identifier: 'idSourceValue',
+        value: prepareExternalIdSourceValue(sourceId.id, sourceId.source),
+      } as FindMemberDto;
+    },
+
+    buildFindByIdSourceValueMemberRequestDto(): FindByIdSourceValueMemberRequestDto {
+      const sourceId = this.buildNoCheck().sourceIds[0];
+      return {
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceId.id,
+          sourceId.source
+        ),
+      } as FindByIdSourceValueMemberRequestDto;
+    },
+
+    buildFindByEmailMemberDto(): FindMemberDto {
+      return {
+        identifier: 'email',
+        value: this.buildNoCheck().email,
+      } as FindMemberDto;
+    },
+
+    buildFindByEmailMemberRequestDto(): FindByEmailMemberRequestDto {
+      return {
+        email: this.buildNoCheck().email,
+      } as FindByEmailMemberRequestDto;
     },
 
     buildUpdateMemberDto(): UpdateMemberDto {
-      return {
-        externalId: this.build().externalId,
-      } as UpdateMemberDto;
+      const sourceId = this.buildNoCheck().sourceIds[0];
+      return sourceId as UpdateMemberDto;
     },
 
     buildUpdateMemberRequestDto(): UpdateMemberRequestDto {
+      const sourceIds = this.buildNoCheck().sourceIds;
+      if (!sourceIds) {
+        return {
+          idSourceValue: '',
+        } as UpdateMemberRequestDto;
+      }
       return {
-        externalId: this.buildNoCheck().externalId,
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceIds[0].id,
+          sourceIds[0].source
+        ),
       } as UpdateMemberRequestDto;
     },
 

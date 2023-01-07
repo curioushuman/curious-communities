@@ -9,23 +9,17 @@ import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
 
 import { MemberRepository } from './adapter/ports/member.repository';
 import { FakeMemberRepository } from './adapter/implementations/fake/fake.member.repository';
-import { CreateMemberHandler } from './application/commands/create-member/create-member.command';
-import { CreateMemberController } from './infra/create-member/create-member.controller';
-import { MemberSourceRepository } from './adapter/ports/member-source.repository';
-import { FakeMemberSourceRepository } from './adapter/implementations/fake/fake.member-source.repository';
+import { FindMemberHandler } from './application/queries/find-member/find-member.query';
+import { FindMemberController } from './infra/find-member/find-member.controller';
 
-const controllers = [CreateMemberController];
+const controllers = [FindMemberController];
 
-const handlers = [CreateMemberHandler];
+const handlers = [FindMemberHandler];
 
 const repositories = [
   {
     provide: MemberRepository,
     useClass: FakeMemberRepository,
-  },
-  {
-    provide: MemberSourceRepository,
-    useClass: FakeMemberSourceRepository,
   },
 ];
 
@@ -42,7 +36,7 @@ const services = [
   providers: [...handlers, ...repositories, ...services],
   exports: [],
 })
-export class CreateMemberModule {
+export class FindMemberModule {
   public static applyDefaults(app: INestApplicationContext) {
     app.useLogger(new LoggableLogger());
   }

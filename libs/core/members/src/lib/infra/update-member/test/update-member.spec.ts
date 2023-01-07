@@ -12,16 +12,17 @@ import {
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { MemberModule } from '../../../test/member.module.fake';
-import { UpdateMemberModule } from '../../../update-member.module';
+import { MutateMemberModule } from '../../../mutate-member.module';
 import { UpdateMemberRequestDto } from '../dto/update-member.request.dto';
 import { MemberBuilder } from '../../../test/builders/member.builder';
-import { UpdateMemberController } from '../../../infra/update-member/update-member.controller';
+import { UpdateMemberController } from '../update-member.controller';
 import { FakeMemberRepository } from '../../../adapter/implementations/fake/fake.member.repository';
 import { MemberRepository } from '../../../adapter/ports/member.repository';
 import { MemberSourceBuilder } from '../../../test/builders/member-source.builder';
 import { MemberSource } from '../../../domain/entities/member-source';
-import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
-import { FakeMemberSourceRepository } from '../../../adapter/implementations/fake/fake.member-source.repository';
+import { MemberSourceCrmRepository } from '../../../adapter/ports/member-source.repository';
+import { FakeMemberSourceCrmRepository } from '../../../adapter/implementations/fake/fake.member-source.crm.repository';
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
 
 /**
  * INTEGRATION TEST
@@ -46,7 +47,7 @@ const feature = loadFeature('./update-member.feature', {
 defineFeature(feature, (test) => {
   let app: INestApplication;
   let repository: FakeMemberRepository;
-  let memberSourcerepository: FakeMemberSourceRepository;
+  let memberSourcerepository: FakeMemberSourceCrmRepository;
   let controller: UpdateMemberController;
 
   beforeAll(async () => {
@@ -57,13 +58,13 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    UpdateMemberModule.applyDefaults(app);
+    MutateMemberModule.applyDefaults(app);
     repository = moduleRef.get<MemberRepository>(
       MemberRepository
     ) as FakeMemberRepository;
-    memberSourcerepository = moduleRef.get<MemberSourceRepository>(
-      MemberSourceRepository
-    ) as FakeMemberSourceRepository;
+    memberSourcerepository = moduleRef.get<MemberSourceCrmRepository>(
+      MemberSourceCrmRepository
+    ) as FakeMemberSourceCrmRepository;
     controller = moduleRef.get<UpdateMemberController>(UpdateMemberController);
   });
 
@@ -90,11 +91,16 @@ defineFeature(feature, (test) => {
       executeTask(memberSourcerepository.save(updatedMemberSource));
       const members = await executeTask(repository.all());
       const memberBefore = members.find(
-        (member) => member.externalId === updateMemberDto.externalId
+        (member) =>
+          updateMemberDto.idSourceValue ===
+          prepareExternalIdSourceValue(
+            member.sourceIds[0].id,
+            member.sourceIds[0].source
+          )
       );
       expect(memberBefore).toBeDefined();
       if (memberBefore) {
-        expect(memberBefore.name).not.toEqual(updatedMemberSource.name);
+        expect(memberBefore.status).not.toEqual(updatedMemberSource.status);
       }
     });
 
@@ -107,22 +113,24 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then(
-      'the related record should have been updated in the repository',
-      async () => {
-        const members = await executeTask(repository.all());
-        const memberAfter = members.find(
-          (member) => member.externalId === updateMemberDto.externalId
-        );
-        expect(memberAfter).toBeDefined();
-        if (memberAfter) {
-          expect(memberAfter.name).toEqual(updatedMemberSource.name);
-        }
+    then('the related record should have been updated', async () => {
+      const members = await executeTask(repository.all());
+      const memberAfter = members.find(
+        (member) =>
+          updateMemberDto.idSourceValue ===
+          prepareExternalIdSourceValue(
+            member.sourceIds[0].id,
+            member.sourceIds[0].source
+          )
+      );
+      expect(memberAfter).toBeDefined();
+      if (memberAfter) {
+        expect(memberAfter.status).toEqual(updatedMemberSource.status);
       }
-    );
+    });
 
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
+    and('saved member is returned', () => {
+      expect(result.id).toBeDefined();
     });
   });
 

@@ -9,25 +9,56 @@ import { LoggableModule } from '@curioushuman/loggable';
 
 import { MemberRepository } from '../adapter/ports/member.repository';
 import { FakeMemberRepository } from '../adapter/implementations/fake/fake.member.repository';
-import { MemberSourceRepository } from '../adapter/ports/member-source.repository';
-import { FakeMemberSourceRepository } from '../adapter/implementations/fake/fake.member-source.repository';
 import { CreateMemberController } from '../infra/create-member/create-member.controller';
-import { CreateMemberHandler } from '../application/commands/create-member/create-member.command';
 import { UpdateMemberController } from '../infra/update-member/update-member.controller';
+import { CreateMemberHandler } from '../application/commands/create-member/create-member.command';
 import { UpdateMemberHandler } from '../application/commands/update-member/update-member.command';
+import { FindMemberHandler } from '../application/queries/find-member/find-member.query';
+import { FindMemberController } from '../infra/find-member/find-member.controller';
+import { FindMemberSourceHandler } from '../application/queries/find-member-source/find-member-source.query';
+import { FindMemberSourceController } from '../infra/find-member-source/find-member-source.controller';
+import {
+  MemberSourceAuthRepository,
+  MemberSourceCommunityRepository,
+  MemberSourceCrmRepository,
+  MemberSourceMicroCourseRepository,
+} from '../adapter/ports/member-source.repository';
+import { FakeMemberSourceAuthRepository } from '../adapter/implementations/fake/fake.member-source.auth.repository';
+import { FakeMemberSourceCommunityRepository } from '../adapter/implementations/fake/fake.member-source.community.repository';
+import { FakeMemberSourceCrmRepository } from '../adapter/implementations/fake/fake.member-source.crm.repository';
+import { FakeMemberSourceMicroCourseRepository } from '../adapter/implementations/fake/fake.member-source.micro-course.repository';
 
-const controllers = [CreateMemberController, UpdateMemberController];
+const controllers = [
+  CreateMemberController,
+  FindMemberController,
+  FindMemberSourceController,
+  UpdateMemberController,
+];
 
-const handlers = [CreateMemberHandler, UpdateMemberHandler];
+const handlers = [
+  CreateMemberHandler,
+  FindMemberHandler,
+  FindMemberSourceHandler,
+  UpdateMemberHandler,
+];
 
 const repositories = [
+  { provide: MemberRepository, useClass: FakeMemberRepository },
   {
-    provide: MemberRepository,
-    useClass: FakeMemberRepository,
+    provide: MemberSourceAuthRepository,
+    useClass: FakeMemberSourceAuthRepository,
   },
   {
-    provide: MemberSourceRepository,
-    useClass: FakeMemberSourceRepository,
+    provide: MemberSourceCommunityRepository,
+    useClass: FakeMemberSourceCommunityRepository,
+  },
+  {
+    provide: MemberSourceCrmRepository,
+    useClass: FakeMemberSourceCrmRepository,
+  },
+  {
+    provide: MemberSourceMicroCourseRepository,
+    useClass: FakeMemberSourceMicroCourseRepository,
   },
 ];
 

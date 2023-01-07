@@ -12,7 +12,7 @@ import {
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { MemberModule } from '../../../test/member.module.fake';
-import { CreateMemberModule } from '../../../create-member.module';
+import { MutateMemberModule } from '../../../mutate-member.module';
 import { CreateMemberRequestDto } from '../dto/create-member.request.dto';
 import { Member } from '../../../domain/entities/member';
 import { MemberBuilder } from '../../../test/builders/member.builder';
@@ -53,7 +53,7 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    CreateMemberModule.applyDefaults(app);
+    MutateMemberModule.applyDefaults(app);
     repository = moduleRef.get<MemberRepository>(
       MemberRepository
     ) as FakeMemberRepository;
@@ -64,7 +64,12 @@ defineFeature(feature, (test) => {
     await app.close();
   });
 
-  test('Successfully creating a member', ({ given, and, when, then }) => {
+  test('Successfully creating a member by Source Id', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
     let members: Member[];
     let membersBefore: number;
     // disabling no-explicit-any for testing purposes
@@ -73,12 +78,12 @@ defineFeature(feature, (test) => {
     let createMemberDto: CreateMemberRequestDto;
     let error: Error;
 
-    given('the request is valid', () => {
+    given('the request is valid', async () => {
       // we know this to exist in our fake repo
-      createMemberDto = MemberBuilder().beta().buildCreateMemberRequestDto();
-    });
+      createMemberDto = MemberBuilder()
+        .alpha()
+        .buildCreateByIdSourceValueMemberRequestDto();
 
-    and('a matching record is found at the source', async () => {
       members = await executeTask(repository.all());
       membersBefore = members.length;
     });
@@ -92,29 +97,38 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then(
-      'a new record should have been created in the repository',
-      async () => {
-        members = await executeTask(repository.all());
-        expect(members.length).toEqual(membersBefore + 1);
-      }
-    );
+    then('a new record should have been created', async () => {
+      members = await executeTask(repository.all());
+      expect(members.length).toEqual(membersBefore + 1);
+    });
 
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
+    and('saved member is returned', () => {
+      expect(result.id).toBeDefined();
     });
   });
 
-  test('Fail; Invalid request', ({ given, and, when, then }) => {
+  test('Successfully creating a member by email', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    let members: Member[];
+    let membersBefore: number;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
     let createMemberDto: CreateMemberRequestDto;
     let error: Error;
 
-    given('the request contains invalid data', () => {
+    given('the request is valid', async () => {
       // we know this to exist in our fake repo
-      createMemberDto = MemberBuilder().invalid().buildCreateMemberRequestDto();
+      createMemberDto = MemberBuilder()
+        .beta()
+        .buildCreateByEmailMemberRequestDto();
+
+      members = await executeTask(repository.all());
+      membersBefore = members.length;
     });
 
     when('I attempt to create a member', async () => {
@@ -122,15 +136,41 @@ defineFeature(feature, (test) => {
         result = await controller.create(createMemberDto);
       } catch (err) {
         error = err as Error;
+        expect(error).toBeUndefined();
+      }
+    });
+
+    then('a new record should have been created', async () => {
+      members = await executeTask(repository.all());
+      expect(members.length).toEqual(membersBefore + 1);
+    });
+
+    and('saved member is returned', () => {
+      expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Fail; Invalid request', ({ given, when, then }) => {
+    let createMemberDto: CreateMemberRequestDto;
+    let error: Error;
+
+    given('the request contains invalid data', () => {
+      // we know this to exist in our fake repo
+      createMemberDto = MemberBuilder()
+        .invalid()
+        .buildCreateByIdSourceValueMemberRequestDto();
+    });
+
+    when('I attempt to create a member', async () => {
+      try {
+        await controller.create(createMemberDto);
+      } catch (err) {
+        error = err as Error;
       }
     });
 
     then('I should receive a RequestInvalidError', () => {
       expect(error).toBeInstanceOf(RequestInvalidError);
-    });
-
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
     });
   });
 });

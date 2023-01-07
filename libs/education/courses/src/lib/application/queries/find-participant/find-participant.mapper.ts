@@ -21,10 +21,10 @@ export class FindParticipantMapper {
     // NOTE: at least one of the two will be defined
     // this check occurs in the controller
     return dto.id
-      ? this.fromFindByIdRequestDto({
+      ? FindParticipantMapper.fromFindByIdRequestDto({
           id: dto.id,
         })
-      : this.fromFindByIdSourceValueRequestDto({
+      : FindParticipantMapper.fromFindByIdSourceValueRequestDto({
           idSourceValue: dto.idSourceValue as string,
         });
   }

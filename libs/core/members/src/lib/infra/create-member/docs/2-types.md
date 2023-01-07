@@ -8,7 +8,16 @@ Assume everything is AND unless specified by OR and ()
 
 ### CreateMemberRequestDto
 
-- ExternalId
+- memberSource
+  - id
+  - status
+- member
+  - id
+- member
+  - id
+  - name
+  - email
+  - organisationName
 
 ## Errors
 

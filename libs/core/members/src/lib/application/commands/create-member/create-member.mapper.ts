@@ -1,7 +1,11 @@
 import { CreateMemberDto } from './create-member.dto';
 import { CreateMemberRequestDto } from '../../../infra/create-member/dto/create-member.request.dto';
-import { FindMemberSourceDto } from '../../queries/find-member-source/find-member-source.dto';
-import { FindMemberDto } from '../../queries/find-member/find-member.dto';
+import { MemberSource } from '../../../domain/entities/member-source';
+import { Member } from '../../../domain/entities/member';
+import { createMemberId } from '../../../domain/value-objects/member-id';
+import config from '../../../static/config';
+import { FindMemberMapper } from '../../queries/find-member/find-member.mapper';
+import { FindMemberSourceMapper } from '../../queries/find-member-source/find-member-source.mapper';
 
 /**
  * TODO
@@ -9,23 +13,32 @@ import { FindMemberDto } from '../../queries/find-member/find-member.dto';
  */
 export class CreateMemberMapper {
   public static fromRequestDto(dto: CreateMemberRequestDto): CreateMemberDto {
-    return CreateMemberDto.check({
-      externalId: dto.externalId,
-    });
-  }
-
-  public static toFindMemberSourceDto(
-    dto: CreateMemberDto
-  ): FindMemberSourceDto {
-    return FindMemberSourceDto.check({
-      id: dto.externalId,
-    });
-  }
-
-  public static toFindMemberDto(dto: CreateMemberDto): FindMemberDto {
+    // NOTE: the DTO values are validated in these other mappers
+    const findMemberDto = FindMemberMapper.fromFindRequestDto(dto);
+    const findMemberSourceDto = FindMemberSourceMapper.fromFindRequestDto(dto);
     return {
-      identifier: 'externalId',
-      value: dto.externalId,
-    } as FindMemberDto;
+      findMemberDto,
+      findMemberSourceDto,
+    };
+  }
+
+  public static fromSourceToMember(source: MemberSource): Member {
+    return Member.check({
+      id: createMemberId(),
+      status: source.status,
+
+      sourceIds: [
+        {
+          id: source.id,
+          source: config.defaults.primaryAccountSource,
+        },
+      ],
+
+      name: source.name,
+      email: source.email,
+      organisationName: source.organisationName,
+
+      accountOwner: config.defaults.accountOwner,
+    });
   }
 }

@@ -9,9 +9,15 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { UpdateMemberRequestDto } from './dto/update-member.request.dto';
 import { UpdateMemberMapper } from '../../application/commands/update-member/update-member.mapper';
 import { UpdateMemberCommand } from '../../application/commands/update-member/update-member.command';
+import { MemberResponseDto } from '../dto/member.response.dto';
+import { MemberMapper } from '../member.mapper';
 
 /**
  * Controller for update member operations
+ *
+ * NOTES
+ * - we initially returned void for create/update actions
+ *   see create controller for more info
  *
  * TODO
  * - [ ] should this actually be a service?
@@ -30,7 +36,9 @@ export class UpdateMemberController {
     this.logger.setContext(UpdateMemberController.name);
   }
 
-  public async update(requestDto: UpdateMemberRequestDto): Promise<void> {
+  public async update(
+    requestDto: UpdateMemberRequestDto
+  ): Promise<MemberResponseDto> {
     const task = pipe(
       requestDto,
 
@@ -50,7 +58,10 @@ export class UpdateMemberController {
           },
           (error: unknown) => error as Error
         )
-      )
+      ),
+
+      // #4. transform to the response DTO
+      TE.chain(parseActionData(MemberMapper.toResponseDto, this.logger))
     );
 
     return executeTask(task);

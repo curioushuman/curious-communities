@@ -4,8 +4,8 @@ Scenario: Successfully updating a member
   Given the request is valid
   And a matching record is found at the source
   When I attempt to update a member
-  Then the related record should have been updated in the repository
-  And no result is returned
+  Then the related record should have been updated
+  And saved member is returned
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

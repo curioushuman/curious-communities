@@ -9,9 +9,19 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { CreateMemberRequestDto } from './dto/create-member.request.dto';
 import { CreateMemberMapper } from '../../application/commands/create-member/create-member.mapper';
 import { CreateMemberCommand } from '../../application/commands/create-member/create-member.command';
+import { MemberResponseDto } from '../dto/member.response.dto';
+import { MemberMapper } from '../member.mapper';
 
 /**
  * Controller for create member operations
+ *
+ * NOTES
+ * - we initially returned void for create/update actions but this made
+ *   internal communication with other systems difficult. We now return
+ *   the DTO for internal communication. When it comes to external communication
+ *   we will only return Success 201 and the ID of the created/updated resource.
+ *   https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#post-methods
+ *   https://softwareengineering.stackexchange.com/a/380430
  *
  * TODO
  * - [ ] should this actually be a service?
@@ -30,7 +40,14 @@ export class CreateMemberController {
     this.logger.setContext(CreateMemberController.name);
   }
 
-  public async create(requestDto: CreateMemberRequestDto): Promise<void> {
+  /**
+   * This version of create assumes it is coming from step functions
+   * that do a lot of the heavy lifting. It doesn't run any checks, apart
+   * from validating the request dto.
+   */
+  public async create(
+    requestDto: CreateMemberRequestDto
+  ): Promise<MemberResponseDto> {
     const task = pipe(
       requestDto,
 
@@ -50,7 +67,10 @@ export class CreateMemberController {
           },
           (error: unknown) => error as Error
         )
-      )
+      ),
+
+      // #4. transform to the response DTO
+      TE.chain(parseActionData(MemberMapper.toResponseDto, this.logger))
     );
 
     return executeTask(task);

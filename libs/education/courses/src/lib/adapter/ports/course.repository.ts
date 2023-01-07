@@ -11,6 +11,11 @@ import { CourseSourceIdSourceValue } from '../../domain/value-objects/course-sou
 import { CourseId } from '../../domain/value-objects/course-id';
 
 /**
+ * TODO:
+ * - [ ] move the find and check method types to generics
+ */
+
+/**
  * Type for the findOne method interface within repository
  */
 export type CourseFindMethod = (
@@ -69,12 +74,12 @@ export abstract class CourseRepository {
   abstract checkBy: Record<CourseIdentifier, CourseCheckMethod>;
 
   /**
-   * Find a course
+   * Check a course exists
    *
    * This method will accept a course identifier and value
    * and then determine which checker method to use.
    *
-   * NOTE: will throw NotFoundException if not found
+   * * NOTE: will NOT throw NotFoundException if not found
    */
   abstract check(identifier: CourseIdentifier): CourseCheckMethod;
 

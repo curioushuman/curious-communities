@@ -19,7 +19,7 @@
 
 #### Success (singular result + event)
 
-- void
+- Saved member
 
 ### Failure (1+):
 
@@ -30,7 +30,7 @@
 
 ### Triggered by
 
-- Lambda function(s)
+- Create member step function
 
 ### Side-effects
 

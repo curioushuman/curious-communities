@@ -6,7 +6,6 @@ import { sequenceT } from 'fp-ts/lib/Apply';
 import {
   ErrorFactory,
   RepositoryItemConflictError,
-  RepositoryItemNotFoundError,
 } from '@curioushuman/error-factory';
 import {
   executeTask,
@@ -18,9 +17,18 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { MemberRepository } from '../../../adapter/ports/member.repository';
 import { CreateMemberDto } from './create-member.dto';
 import { CreateMemberMapper } from './create-member.mapper';
-import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
+import {
+  MemberSourceAuthRepository,
+  MemberSourceCommunityRepository,
+  MemberSourceCrmRepository,
+  MemberSourceMicroCourseRepository,
+  MemberSourceRepository,
+} from '../../../adapter/ports/member-source.repository';
 import { MemberSource } from '../../../domain/entities/member-source';
-import { MemberMapper } from '../../member.mapper';
+import { Member } from '../../../domain/entities/member';
+import config from '../../../static/config';
+import { parseDto as parseMemberDto } from '../../queries/find-member/find-member.dto';
+import { parseDto as parseMemberSourceDto } from '../../queries/find-member-source/find-member-source.dto';
 
 export class CreateMemberCommand implements ICommand {
   constructor(public readonly createMemberDto: CreateMemberDto) {}
@@ -38,45 +46,64 @@ export class CreateMemberHandler
 {
   constructor(
     private readonly memberRepository: MemberRepository,
-    private readonly memberSourceRepository: MemberSourceRepository,
+    private readonly memberSourceAuthRepository: MemberSourceAuthRepository,
+    private readonly memberSourceCommunityRepository: MemberSourceCommunityRepository,
+    private readonly memberSourceCrmRepository: MemberSourceCrmRepository,
+    private readonly memberSourceMicroCourseRepository: MemberSourceMicroCourseRepository,
     private logger: LoggableLogger,
     private errorFactory: ErrorFactory
   ) {
     this.logger.setContext(CreateMemberHandler.name);
   }
 
-  async execute(command: CreateMemberCommand): Promise<void> {
-    const { createMemberDto } = command;
+  async execute(command: CreateMemberCommand): Promise<Member> {
+    const {
+      createMemberDto: { findMemberDto, findMemberSourceDto },
+    } = command;
+
+    // * NOTE: currently idSource is the only identifier that is allowed
+    // *       to define a specific source for query. Otherwise reverts
+    // *       to the primary source.
+    const source = findMemberSourceDto.value.source
+      ? findMemberSourceDto.value.source
+      : config.defaults.primaryAccountSource;
+
+    // TODO this must be improved/moved at some later point
+    const sourceRepositories: Record<string, MemberSourceRepository> = {
+      AUTH: this.memberSourceAuthRepository,
+      COMMUNITY: this.memberSourceCommunityRepository,
+      CRM: this.memberSourceCrmRepository,
+      'MICRO-COURSE': this.memberSourceMicroCourseRepository,
+    };
 
     const task = pipe(
-      // #1. parse the dto
-      // we want two DTOs 1. to find source, and 2. find member
+      // #1. parse the dto and extract the values
       sequenceT(TE.ApplySeq)(
         parseActionData(
-          CreateMemberMapper.toFindMemberSourceDto,
+          parseMemberSourceDto,
           this.logger,
           'RequestInvalidError'
-        )(createMemberDto),
+        )(findMemberSourceDto),
         parseActionData(
-          CreateMemberMapper.toFindMemberDto,
+          parseMemberDto,
           this.logger,
           'RequestInvalidError'
-        )(createMemberDto)
+        )(findMemberDto)
       ),
 
       // #2. Find the source, and the member (to be updated)
-      TE.chain(([findMemberSourceDto, findMemberDto]) =>
+      TE.chain(([parsedMemberSourceDtoValue, parsedMemberDtoValue]) =>
         sequenceT(TE.ApplySeq)(
           performAction(
-            findMemberSourceDto,
-            this.memberSourceRepository.findOne,
+            parsedMemberSourceDtoValue,
+            sourceRepositories[source].findOne(findMemberSourceDto.identifier),
             this.errorFactory,
             this.logger,
-            `find member source: ${findMemberSourceDto.id}`
+            `find member source: ${findMemberSourceDto.value}`
           ),
           performAction(
-            findMemberDto.value,
-            this.memberRepository.checkByExternalId,
+            parsedMemberDtoValue,
+            this.memberRepository.check(findMemberDto.identifier),
             this.errorFactory,
             this.logger,
             `check for existing member: ${findMemberDto.value}`
@@ -86,16 +113,12 @@ export class CreateMemberHandler
 
       // #3. validate + transform; members exists, source is valid, source to member
       TE.chain(([memberSource, memberExists]) => {
-        if (!memberSource) {
-          throw new RepositoryItemNotFoundError(
-            `Member source id: ${createMemberDto.externalId}`
-          );
-        }
         if (memberExists === true) {
           throw new RepositoryItemConflictError(
-            `Member id: ${createMemberDto.externalId}`
+            `Member: ${findMemberDto.value}`
           );
         }
+
         return pipe(
           memberSource,
           parseActionData(
@@ -105,7 +128,7 @@ export class CreateMemberHandler
           ),
           TE.chain((memberSourceChecked) =>
             parseActionData(
-              MemberMapper.fromSourceToMember,
+              CreateMemberMapper.fromSourceToMember,
               this.logger,
               'SourceInvalidError'
             )(memberSourceChecked)

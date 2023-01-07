@@ -13,7 +13,6 @@ import {
 } from '../../ports/course.repository';
 import { CourseBuilder } from '../../../test/builders/course.builder';
 import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
-import { ParticipantSourceIdSourceValue } from '../../../domain/value-objects/participant-source-id-source';
 import { CourseId } from '../../../domain/value-objects/course-id';
 import { Source } from '../../../domain/value-objects/source';
 import { CourseSourceIdSourceValue } from '../../../domain/value-objects/course-source-id-source';
@@ -51,11 +50,11 @@ export class FakeCourseRepository implements CourseRepository {
   };
 
   findOneByIdSourceValue = (
-    value: ParticipantSourceIdSourceValue
+    value: CourseSourceIdSourceValue
   ): TE.TaskEither<Error, Course> => {
     return TE.tryCatch(
       async () => {
-        const idSourceValue = ParticipantSourceIdSourceValue.check(value);
+        const idSourceValue = CourseSourceIdSourceValue.check(value);
         const idSource = prepareExternalIdSource(
           idSourceValue,
           CourseSourceId,
@@ -150,7 +149,7 @@ export class FakeCourseRepository implements CourseRepository {
   ): TE.TaskEither<Error, boolean> => {
     return TE.tryCatch(
       async () => {
-        const idSourceValue = ParticipantSourceIdSourceValue.check(value);
+        const idSourceValue = CourseSourceIdSourceValue.check(value);
         const idSource = prepareExternalIdSource(
           idSourceValue,
           CourseSourceId,

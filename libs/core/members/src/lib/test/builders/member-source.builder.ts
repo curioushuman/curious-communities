@@ -1,6 +1,13 @@
+import { ExternalId, prepareExternalIdSourceValue } from '@curioushuman/common';
+import { FindMemberSourceDto } from '../../application/queries/find-member-source/find-member-source.dto';
+
 import { MemberSource } from '../../domain/entities/member-source';
-import { MemberIdExternal } from '../../domain/value-objects/member-id-external';
 import { MemberSourceStatus } from '../../domain/value-objects/member-source-status';
+import {
+  FindByEmailMemberSourceRequestDto,
+  FindByIdSourceValueMemberSourceRequestDto,
+} from '../../infra/find-member-source/dto/find-member-source.request.dto';
+import config from '../../static/config';
 
 /**
  * A builder for Member Sources to play with in testing.
@@ -26,35 +33,41 @@ export const MemberSourceBuilder = () => {
    * Default properties don't exist in source repository
    */
   const defaultProperties: MemberSourceLooseMimic = {
-    id: '5008s1234519CjIAAU',
-    status: 'open' as MemberSourceStatus,
+    id: '5008s1234519CjIPPU',
+    status: 'pending' as MemberSourceStatus,
+
     name: 'James Brown',
     email: 'james@brown.com',
-    organisationName: 'Brown Co',
+    organisationName: 'James Co',
   };
   const overrides: MemberSourceLooseMimic = {
     id: defaultProperties.id,
     status: defaultProperties.status,
+
     name: defaultProperties.name,
     email: defaultProperties.email,
     organisationName: defaultProperties.organisationName,
   };
 
-  return {
-    funkyChars() {
-      overrides.name = "I'm gonna be a dancer!";
-      return this;
-    },
+  let source = config.defaults.primaryAccountSource;
 
+  return {
     alpha() {
       overrides.id = '5000K1234567GEYQA3';
-      overrides.name = 'Dance, like an alpha';
+      overrides.name = 'Jim Brown';
+      overrides.email = 'jim@brown.com';
       return this;
     },
 
     beta() {
       overrides.id = '5008s000000y7LUAAY';
-      overrides.name = 'Beta ray dancing';
+      overrides.name = 'June Brown';
+      overrides.email = 'june@brown.com';
+      return this;
+    },
+
+    alternateSource() {
+      source = 'AUTH';
       return this;
     },
 
@@ -62,8 +75,13 @@ export const MemberSourceBuilder = () => {
       return this;
     },
 
+    invalid() {
+      overrides.id = '';
+      return this;
+    },
+
     invalidStatus() {
-      overrides.name = 'Pending member';
+      overrides.name = 'Jones Invalid';
       overrides.status = 'this is invalid';
       return this;
     },
@@ -74,13 +92,13 @@ export const MemberSourceBuilder = () => {
     },
 
     exists() {
-      overrides.id = MemberIdExternal.check('ThisSourceExists');
+      overrides.id = ExternalId.check('ThisSourceExists');
       return this;
     },
 
     updated() {
-      overrides.id = MemberIdExternal.check('ThisSourceExists');
-      overrides.name = 'Updated member';
+      overrides.id = ExternalId.check('ThisSourceExists');
+      overrides.status = 'registered';
       return this;
     },
 
@@ -96,6 +114,37 @@ export const MemberSourceBuilder = () => {
         ...defaultProperties,
         ...overrides,
       } as MemberSource;
+    },
+
+    buildFindByIdSourceValueMemberDto(): FindMemberSourceDto {
+      const build = this.buildNoCheck();
+      return {
+        identifier: 'idSource',
+        value: {
+          id: build.id,
+          source,
+        },
+      } as FindMemberSourceDto;
+    },
+
+    buildFindByIdSourceValueMemberRequestDto(): FindByIdSourceValueMemberSourceRequestDto {
+      const build = this.buildNoCheck();
+      return {
+        idSourceValue: prepareExternalIdSourceValue(build.id, source),
+      } as FindByIdSourceValueMemberSourceRequestDto;
+    },
+
+    buildFindByEmailMemberDto(): FindMemberSourceDto {
+      return {
+        identifier: 'email',
+        value: this.buildNoCheck().email,
+      } as FindMemberSourceDto;
+    },
+
+    buildFindByEmailMemberRequestDto(): FindByEmailMemberSourceRequestDto {
+      return {
+        email: this.buildNoCheck().email,
+      } as FindByEmailMemberSourceRequestDto;
     },
   };
 };

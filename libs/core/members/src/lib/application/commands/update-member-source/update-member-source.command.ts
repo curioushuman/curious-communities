@@ -19,23 +19,23 @@ import {
   MemberSourceRepository,
 } from '../../../adapter/ports/member-source.repository';
 import { MemberSource } from '../../../domain/entities/member-source';
-import { CreateMemberSourceDto } from './create-member-source.dto';
-import { CreateMemberSourceMapper } from './create-member-source.mapper';
+import { UpdateMemberSourceDto } from './update-member-source.dto';
+import { UpdateMemberSourceMapper } from './update-member-source.mapper';
 
-export class CreateMemberSourceCommand implements ICommand {
-  constructor(public readonly createMemberSourceDto: CreateMemberSourceDto) {}
+export class UpdateMemberSourceCommand implements ICommand {
+  constructor(public readonly updateMemberSourceDto: UpdateMemberSourceDto) {}
 }
 
 /**
- * Command handler for create member source
+ * Command handler for update member source
  * TODO
  * - [ ] move the source repository selection to a separate service
  * - [ ] this shouldn't be accepting findDtos, doesn't feel right
  *       requires more thought. Look at upsert for example.
  */
-@CommandHandler(CreateMemberSourceCommand)
-export class CreateMemberSourceHandler
-  implements ICommandHandler<CreateMemberSourceCommand>
+@CommandHandler(UpdateMemberSourceCommand)
+export class UpdateMemberSourceHandler
+  implements ICommandHandler<UpdateMemberSourceCommand>
 {
   constructor(
     private readonly memberSourceAuthRepository: MemberSourceAuthRepository,
@@ -45,14 +45,14 @@ export class CreateMemberSourceHandler
     private logger: LoggableLogger,
     private errorFactory: ErrorFactory
   ) {
-    this.logger.setContext(CreateMemberSourceHandler.name);
+    this.logger.setContext(UpdateMemberSourceHandler.name);
   }
 
-  async execute(command: CreateMemberSourceCommand): Promise<MemberSource> {
-    const { createMemberSourceDto } = command;
+  async execute(command: UpdateMemberSourceCommand): Promise<MemberSource> {
+    const { updateMemberSourceDto } = command;
 
     // TODO don't do this here, extract it in the fp destructuring below
-    const source = createMemberSourceDto.source;
+    const source = updateMemberSourceDto.source;
 
     // TODO this must be improved/moved at some later point
     const sourceRepositories: Record<string, MemberSourceRepository> = {
@@ -63,38 +63,40 @@ export class CreateMemberSourceHandler
     };
 
     const task = pipe(
-      createMemberSourceDto,
+      updateMemberSourceDto,
       // #1. validate the DTO
       parseActionData(
-        CreateMemberSourceDto.check,
+        UpdateMemberSourceDto.check,
         this.logger,
         'RequestInvalidError'
       ),
 
       // #2. destructure the DTO
       // TODO improve/simplify
-      TE.chain((dto) => sequenceT(TE.ApplySeq)(TE.right(dto.member))),
+      TE.chain((dto) =>
+        sequenceT(TE.ApplySeq)(TE.right(dto.member), TE.right(dto.memberSource))
+      ),
 
       // #3. transform
-      TE.chain(([member]) =>
+      TE.chain(([member, memberSource]) =>
         pipe(
           member,
           parseActionData(
-            CreateMemberSourceMapper.fromMemberToSource,
+            UpdateMemberSourceMapper.fromMemberToSource(memberSource),
             this.logger,
-            'RequestInvalidError'
+            'SourceInvalidError'
           )
         )
       ),
 
-      // #4. create the member source
-      TE.chain((memberSourceForCreate) =>
+      // #4. update the member source
+      TE.chain((ms) =>
         performAction(
-          memberSourceForCreate,
-          sourceRepositories[source].create,
+          ms,
+          sourceRepositories[source].update,
           this.errorFactory,
           this.logger,
-          `save member source`
+          `update member source`
         )
       )
     );

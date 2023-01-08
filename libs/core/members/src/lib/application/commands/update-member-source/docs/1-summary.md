@@ -8,29 +8,22 @@
 ## 2. Data
 ### Input data:
 
-- UpdateMemberDto
+- UpdateMemberSourceDto
 
 ### Dependencies (from other services/sources)
 
-- SourceRepo.findOne(ById)
-  - We need to validate that a source object exists before we save it
-  - We might as well grab the data while we're there
+- None
 
 ### Output (results, events, errors)
 
 #### Success (singular result + event)
 
-- Saved member
+- Saved member source
 
 ### Failure (1+):
 
 - RequestInvalidError
-- RepositoryAuthenticationError
-- RepositoryItemNotFoundError
-- RepositoryServerError
-- RepositoryServerUnavailableError
-- SourceInvalidError
-- RepositoryItemConflictError
+- InternalError
 
 ## 3. Behaviour
 
@@ -40,7 +33,7 @@
 
 ### Side-effects
 
-- Member updated
+- Member source updated
 
 ## 4. Decisions
 

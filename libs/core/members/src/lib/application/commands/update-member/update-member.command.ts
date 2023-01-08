@@ -91,7 +91,7 @@ export class UpdateMemberHandler
         sequenceT(TE.ApplySeq)(
           performAction(
             // ! this is a bit not-normal
-            // this is the only place we do this here
+            // this is the only place we do parseMemberSourceDto here
             // TODO: make this more consistent with the rest
             parseMemberSourceDto(findMemberSourceDto),
             sourceRepositories[source].findOne(findMemberSourceDto.identifier),
@@ -128,7 +128,7 @@ export class UpdateMemberHandler
         )
       ),
 
-      // #5. update the member, from the source
+      // #4. update the member, from the source
       TE.chain((member) =>
         performAction(
           member,

@@ -136,7 +136,7 @@ export class CreateMemberHandler
         );
       }),
 
-      // #5. update the member, from the source
+      // #5. create the member, from the source
       TE.chain((member) =>
         performAction(
           member,

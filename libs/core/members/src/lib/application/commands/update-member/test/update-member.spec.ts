@@ -104,7 +104,7 @@ defineFeature(feature, (test) => {
       // this is an updated version of the `exists()` memberSource
       updatedMemberSource = MemberSourceBuilder().updated().build();
       // save it to our fake repo, we know it is valid
-      executeTask(memberSourceRepository.save(updatedMemberSource));
+      executeTask(memberSourceRepository.update(updatedMemberSource));
     });
 
     and('the source does exist in our DB', async () => {

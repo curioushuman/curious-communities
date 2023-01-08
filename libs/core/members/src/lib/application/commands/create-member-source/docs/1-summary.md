@@ -8,7 +8,7 @@
 ## 2. Data
 ### Input data:
 
-- CreateMemberDto
+- CreateMemberSourceDto
 
 ### Dependencies (from other services/sources)
 
@@ -18,7 +18,7 @@
 
 #### Success (singular result + event)
 
-- Saved member
+- Saved member source
 
 ### Failure (1+):
 
@@ -36,7 +36,7 @@
 
 ### Side-effects
 
-- Member created
+- MemberSource created
 
 ## 4. Decisions
 

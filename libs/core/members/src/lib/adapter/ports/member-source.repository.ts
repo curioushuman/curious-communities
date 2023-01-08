@@ -2,6 +2,7 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
   MemberSource,
+  MemberSourceForCreate,
   MemberSourceIdentifier,
   MemberSourceIdentifierValue,
 } from '../../domain/entities/member-source';
@@ -46,6 +47,18 @@ export abstract class MemberSourceRepository {
    * NOTE: will throw NotFoundException if not found
    */
   abstract findOneByEmail(email: MemberEmail): TaskEither<Error, MemberSource>;
+
+  /**
+   * Create/update a member
+   */
+  abstract create(
+    member: MemberSourceForCreate
+  ): TaskEither<Error, MemberSource>;
+
+  /**
+   * Create/update a member
+   */
+  abstract update(member: MemberSource): TaskEither<Error, MemberSource>;
 }
 
 export abstract class MemberSourceAuthRepository extends MemberSourceRepository {}

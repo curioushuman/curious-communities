@@ -5,6 +5,7 @@ import { pipe } from 'fp-ts/lib/function';
 
 import {
   MemberSource,
+  MemberSourceForCreate,
   MemberSourceIdentifier,
 } from '../../../domain/entities/member-source';
 import {
@@ -40,9 +41,9 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
     return TE.tryCatch(
       async () => {
         const id = MemberSourceId.check(value);
-        const member = this.memberSources.find((cs) => cs.id === id);
+        const memberSource = this.memberSources.find((cs) => cs.id === id);
         return pipe(
-          member,
+          memberSource,
           O.fromNullable,
           O.fold(
             () => {
@@ -54,7 +55,7 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
             // this mimics the fact that all non-fake adapters
             // will come with a mapper, which will perform a check
             // prior to return
-            (member) => MemberSource.check(member)
+            (memberSource) => MemberSource.check(memberSource)
           )
         );
       },
@@ -71,9 +72,11 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
     return TE.tryCatch(
       async () => {
         const email = MemberEmail.check(value);
-        const member = this.memberSources.find((cs) => cs.email === email);
+        const memberSource = this.memberSources.find(
+          (cs) => cs.email === email
+        );
         return pipe(
-          member,
+          memberSource,
           O.fromNullable,
           O.fold(
             () => {
@@ -85,7 +88,7 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
             // this mimics the fact that all non-fake adapters
             // will come with a mapper, which will perform a check
             // prior to return
-            (member) => MemberSource.check(member)
+            (memberSource) => MemberSource.check(memberSource)
           )
         );
       },
@@ -106,21 +109,43 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
     return this.findOneBy[identifier];
   };
 
-  save = (memberSource: MemberSource): TE.TaskEither<Error, void> => {
+  create = (
+    memberSource: MemberSourceForCreate
+  ): TE.TaskEither<Error, MemberSource> => {
     return TE.tryCatch(
       async () => {
-        const memberExists = this.memberSources.find(
-          (cs) => cs.id === memberSource.id
-        );
-        if (memberExists) {
-          this.memberSources = this.memberSources.map((cs) =>
-            cs.id === memberSource.id ? memberSource : cs
-          );
-        } else {
-          this.memberSources.push(memberSource);
-        }
+        const savedMemberSource = {
+          ...memberSource,
+          id: MemberSourceId.check(`FakeId${Date.now}`),
+        };
+        this.memberSources.push(savedMemberSource);
+        return savedMemberSource;
       },
       (reason: unknown) => reason as Error
     );
+  };
+
+  update = (memberSource: MemberSource): TE.TaskEither<Error, MemberSource> => {
+    return TE.tryCatch(
+      async () => {
+        const memberSourceExists = this.memberSources.find(
+          (cs) => cs.id === memberSource.id
+        );
+        if (!memberSourceExists) {
+          throw new NotFoundException(
+            `MemberSource with id ${memberSource.id} not found`
+          );
+        }
+        this.memberSources = this.memberSources.map((cs) =>
+          cs.id === memberSource.id ? memberSource : cs
+        );
+        return memberSourceExists;
+      },
+      (reason: unknown) => reason as Error
+    );
+  };
+
+  all = (): TE.TaskEither<Error, MemberSource[]> => {
+    return TE.right(this.memberSources);
   };
 }

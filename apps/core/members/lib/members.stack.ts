@@ -183,6 +183,31 @@ export class MembersStack extends cdk.Stack {
     );
 
     /**
+     * Function: Upsert Member Source
+     *
+     * Subscribed to internal eventBus
+     *
+     * ? Maybe we should not subscribe direct to this destination style event
+     * TODO: create a step function that will be able to take the raw output from
+     * other lambdas, and then start the upsert loop.
+     */
+    const upsertMemberSourceLambdaConstruct = new LambdaEventSubscription(
+      this,
+      'cc-members-member-source-upsert',
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/upsert-member-source/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+        eventBus: internalEventBusConstruct.eventBus,
+        ruleDetailType: 'Lambda Function Invocation Result - Success',
+        ruleSource: 'lambda',
+        ruleDescription: 'Update internal, to match the external',
+      }
+    );
+
+    /**
      * Outputs
      * (If any)
      */

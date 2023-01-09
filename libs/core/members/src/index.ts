@@ -6,6 +6,9 @@ export * from './lib/infra/find-member/find-member.controller';
 export * from './lib/find-member.module';
 export * from './lib/infra/find-member-source/find-member-source.controller';
 export * from './lib/find-member-source.module';
+export * from './lib/infra/upsert-member-source/upsert-member-source.controller';
+export * from './lib/upsert-member-source.module';
 
 // types
 export * from './lib/infra/dto/member.response.dto';
+export * from './lib/infra/dto/member-source.response.dto';

@@ -3,10 +3,7 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 import { sequenceT } from 'fp-ts/lib/Apply';
 
-import {
-  ErrorFactory,
-  RepositoryItemNotFoundError,
-} from '@curioushuman/error-factory';
+import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
@@ -17,9 +14,15 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { GroupRepository } from '../../../adapter/ports/group.repository';
 import { UpdateGroupDto } from './update-group.dto';
 import { UpdateGroupMapper } from './update-group.mapper';
-import { GroupSourceRepository } from '../../../adapter/ports/group-source.repository';
+import {
+  GroupSourceCommunityRepository,
+  GroupSourceMicroCourseRepository,
+  GroupSourceRepository,
+} from '../../../adapter/ports/group-source.repository';
 import { GroupSource } from '../../../domain/entities/group-source';
-import { GroupMapper } from '../../group.mapper';
+import { Group } from '../../../domain/entities/group';
+import config from '../../../static/config';
+import { parseDto as parseGroupSourceDto } from '../../queries/find-group-source/find-group-source.dto';
 
 export class UpdateGroupCommand implements ICommand {
   constructor(public readonly updateGroupDto: UpdateGroupDto) {}
@@ -35,15 +38,29 @@ export class UpdateGroupCommand implements ICommand {
 export class UpdateGroupHandler implements ICommandHandler<UpdateGroupCommand> {
   constructor(
     private readonly groupRepository: GroupRepository,
-    private readonly groupSourceRepository: GroupSourceRepository,
+    private readonly groupSourceCommunityRepository: GroupSourceCommunityRepository,
+    private readonly groupSourceMicroCourseRepository: GroupSourceMicroCourseRepository,
     private logger: LoggableLogger,
     private errorFactory: ErrorFactory
   ) {
     this.logger.setContext(UpdateGroupHandler.name);
   }
 
-  async execute(command: UpdateGroupCommand): Promise<void> {
+  async execute(command: UpdateGroupCommand): Promise<Group> {
     const { updateGroupDto } = command;
+
+    // * NOTE: currently idSource is the only identifier that is allowed
+    // *       to define a specific source for query. Otherwise reverts
+    // *       to the primary source.
+    const source = updateGroupDto.source
+      ? updateGroupDto.source
+      : config.defaults.primaryAccountSource;
+
+    // TODO this must be improved/moved at some later point
+    const sourceRepositories: Record<string, GroupSourceRepository> = {
+      COMMUNITY: this.groupSourceCommunityRepository,
+      'MICRO-COURSE': this.groupSourceMicroCourseRepository,
+    };
 
     const task = pipe(
       // #1. parse the dto
@@ -65,15 +82,18 @@ export class UpdateGroupHandler implements ICommandHandler<UpdateGroupCommand> {
       TE.chain(([findGroupSourceDto, findGroupDto]) =>
         sequenceT(TE.ApplySeq)(
           performAction(
-            findGroupSourceDto,
-            this.groupSourceRepository.findOne,
+            // ! this is a bit not-normal
+            // this is the only place we do parseGroupSourceDto here
+            // TODO: make this more consistent with the rest
+            parseGroupSourceDto(findGroupSourceDto),
+            sourceRepositories[source].findOne(findGroupSourceDto.identifier),
             this.errorFactory,
             this.logger,
-            `find group source: ${findGroupSourceDto.id}`
+            `find group source: ${findGroupSourceDto.value}`
           ),
           performAction(
             findGroupDto.value,
-            this.groupRepository.checkById,
+            this.groupRepository.findOne(findGroupDto.identifier),
             this.errorFactory,
             this.logger,
             `find group: ${findGroupDto.value}`
@@ -82,31 +102,21 @@ export class UpdateGroupHandler implements ICommandHandler<UpdateGroupCommand> {
       ),
 
       // #3. validate + transform; groups exists, source is valid, source to group
-      TE.chain(([groupSource, groupExists]) => {
-        if (!groupSource) {
-          throw new RepositoryItemNotFoundError(
-            `Group source id: ${updateGroupDto.id}`
-          );
-        }
-        if (groupExists === false) {
-          throw new RepositoryItemNotFoundError(
-            `Group id: ${updateGroupDto.id}`
-          );
-        }
-        return pipe(
+      TE.chain(([groupSource, existingGroup]) =>
+        pipe(
           groupSource,
           parseActionData(GroupSource.check, this.logger, 'SourceInvalidError'),
           TE.chain((groupSourceChecked) =>
             parseActionData(
-              GroupMapper.fromSourceToGroup,
+              UpdateGroupMapper.fromSourceToGroup(existingGroup),
               this.logger,
               'SourceInvalidError'
             )(groupSourceChecked)
           )
-        );
-      }),
+        )
+      ),
 
-      // #5. update the group, from the source
+      // #4. update the group, from the source
       TE.chain((group) =>
         performAction(
           group,

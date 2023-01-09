@@ -18,14 +18,10 @@ import { FindMemberController } from '../infra/find-member/find-member.controlle
 import { FindMemberSourceHandler } from '../application/queries/find-member-source/find-member-source.query';
 import { FindMemberSourceController } from '../infra/find-member-source/find-member-source.controller';
 import {
-  MemberSourceAuthRepository,
   MemberSourceCommunityRepository,
-  MemberSourceCrmRepository,
   MemberSourceMicroCourseRepository,
 } from '../adapter/ports/member-source.repository';
-import { FakeMemberSourceAuthRepository } from '../adapter/implementations/fake/fake.member-source.auth.repository';
 import { FakeMemberSourceCommunityRepository } from '../adapter/implementations/fake/fake.member-source.community.repository';
-import { FakeMemberSourceCrmRepository } from '../adapter/implementations/fake/fake.member-source.crm.repository';
 import { FakeMemberSourceMicroCourseRepository } from '../adapter/implementations/fake/fake.member-source.micro-course.repository';
 import { UpsertMemberSourceController } from '../infra/upsert-member-source/upsert-member-source.controller';
 import { CreateMemberSourceHandler } from '../application/commands/create-member-source/create-member-source.command';
@@ -51,16 +47,8 @@ const handlers = [
 const repositories = [
   { provide: MemberRepository, useClass: FakeMemberRepository },
   {
-    provide: MemberSourceAuthRepository,
-    useClass: FakeMemberSourceAuthRepository,
-  },
-  {
     provide: MemberSourceCommunityRepository,
     useClass: FakeMemberSourceCommunityRepository,
-  },
-  {
-    provide: MemberSourceCrmRepository,
-    useClass: FakeMemberSourceCrmRepository,
   },
   {
     provide: MemberSourceMicroCourseRepository,

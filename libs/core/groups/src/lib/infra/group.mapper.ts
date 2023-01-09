@@ -1,5 +1,7 @@
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
+
 import { GroupResponseDto } from './dto/group.response.dto';
-import { Group } from '../domain/entities/group';
+import { Group, prepareGroupExternalIdSource } from '../domain/entities/group';
 
 /**
  * TODO
@@ -7,15 +9,36 @@ import { Group } from '../domain/entities/group';
  */
 export class GroupMapper {
   public static toResponseDto(group: Group): GroupResponseDto {
-    return {
+    return GroupResponseDto.check({
       id: group.id,
       status: group.status,
+      type: group.type,
       slug: group.slug,
-      supportType: group.supportType,
+
+      sourceIds: group.sourceIds.map((idSource) =>
+        prepareExternalIdSourceValue(idSource.id, idSource.source)
+      ),
+
       name: group.name,
-      dateOpen: group.dateOpen,
-      dateClosed: group.dateClosed,
-      yearMonthOpen: group.yearMonthOpen,
-    } as GroupResponseDto;
+
+      accountOwner: group.accountOwner,
+    });
+  }
+
+  public static fromResponseDto(dto: GroupResponseDto): Group {
+    return Group.check({
+      id: dto.id,
+      status: dto.status,
+      type: dto.type,
+      slug: dto.slug,
+
+      sourceIds: dto.sourceIds.map((idSourceValue) =>
+        prepareGroupExternalIdSource(idSourceValue)
+      ),
+
+      name: dto.name,
+
+      accountOwner: dto.accountOwner,
+    });
   }
 }

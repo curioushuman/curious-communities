@@ -1,43 +1,86 @@
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
-import { Group, GroupIdentifier } from '../../domain/entities/group';
-import { GroupId } from '../../domain/value-objects/group-id';
+import {
+  Group,
+  GroupIdentifier,
+  GroupIdentifierValue,
+} from '../../domain/entities/group';
 import { GroupSlug } from '../../domain/value-objects/group-slug';
+import { GroupId } from '../../domain/value-objects/group-id';
+import { GroupSourceIdSourceValue } from '../../domain/value-objects/group-source-id-source';
 
 /**
- * Literal list of finders for a group
+ * TODO:
+ * - [ ] move the find and check method types to generics
  */
-export type GroupFinder = 'findById' | 'findBySlug';
 
 /**
- * Returns the correct finder for the given identifier
- *
- * Note: obviously this is a hacky way to do this, but it works.
- * If we need to move beyond this un-name restriction of identifier
- * and finder name we can at any point (by using object literal or similar).
+ * Type for the findOne method interface within repository
  */
-export const identifierFinder = (identifier: GroupIdentifier): GroupFinder => {
-  let identifierString: string = identifier as string;
-  identifierString =
-    identifierString.charAt(0).toUpperCase() + identifierString.slice(1);
+export type GroupFindMethod = (
+  value: GroupIdentifierValue
+) => TaskEither<Error, Group>;
 
-  return `findBy${identifierString}` as GroupFinder;
-};
+/**
+ * Type for the check method interface within repository
+ */
+export type GroupCheckMethod = (
+  value: GroupIdentifierValue
+) => TaskEither<Error, boolean>;
 
 export abstract class GroupRepository {
   /**
-   * Find a group by the given ID
+   * Object lookup for findMethods
+   */
+  abstract findOneBy: Record<GroupIdentifier, GroupFindMethod>;
+
+  /**
+   * Find a group
+   *
+   * This method will accept a group identifier and value
+   * and then determine which finder method to use.
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findById(id: GroupId): TaskEither<Error, Group>;
+  abstract findOne(identifier: GroupIdentifier): GroupFindMethod;
 
   /**
    * Find a group by the given ID
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findBySlug(slug: GroupSlug): TaskEither<Error, Group>;
+  abstract findOneById(id: GroupId): TaskEither<Error, Group>;
+
+  /**
+   * Find a group by the given ID and source value
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
+  abstract findOneByIdSourceValue(
+    value: GroupSourceIdSourceValue
+  ): TaskEither<Error, Group>;
+
+  /**
+   * Find a group by the given slug
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
+  abstract findOneBySlug(slug: GroupSlug): TaskEither<Error, Group>;
+
+  /**
+   * Object lookup for checkMethods
+   */
+  abstract checkBy: Record<GroupIdentifier, GroupCheckMethod>;
+
+  /**
+   * Check a group exists
+   *
+   * This method will accept a group identifier and value
+   * and then determine which checker method to use.
+   *
+   * * NOTE: will NOT throw NotFoundException if not found
+   */
+  abstract check(identifier: GroupIdentifier): GroupCheckMethod;
 
   /**
    * Check for existence of group by given ID
@@ -45,7 +88,23 @@ export abstract class GroupRepository {
   abstract checkById(id: GroupId): TaskEither<Error, boolean>;
 
   /**
+   * Find a group by the given ID and source value
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
+  abstract checkByIdSourceValue(
+    value: GroupSourceIdSourceValue
+  ): TaskEither<Error, boolean>;
+
+  /**
+   * Find a group by the given slug
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
+  abstract checkBySlug(slug: GroupSlug): TaskEither<Error, boolean>;
+
+  /**
    * Create/update a group
    */
-  abstract save(group: Group): TaskEither<Error, void>;
+  abstract save(group: Group): TaskEither<Error, Group>;
 }

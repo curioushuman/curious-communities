@@ -1,8 +1,12 @@
+import { parseExternalIdSourceValue } from '@curioushuman/common';
+
 import { GroupId } from '../../../domain/value-objects/group-id';
 import {
   GroupIdentifier,
   GroupIdentifiers,
 } from '../../../domain/entities/group';
+import { Source } from '../../../domain/value-objects/source';
+import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
 import { GroupSlug } from '../../../domain/value-objects/group-slug';
 
 /**
@@ -40,6 +44,8 @@ type FindGroupDtoParsers = {
  */
 const parsers: FindGroupDtoParsers = {
   id: (dto) => GroupId.check(dto.value),
+  idSourceValue: (dto) =>
+    parseExternalIdSourceValue(dto.value, GroupSourceId, Source),
   slug: (dto) => GroupSlug.check(dto.value),
 };
 

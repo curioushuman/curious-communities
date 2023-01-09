@@ -1,16 +1,22 @@
-import { createYearMonth, Timestamp } from '@curioushuman/common';
-
 import { Group } from '../../domain/entities/group';
 import { GroupSource } from '../../domain/entities/group-source';
 import { GroupResponseDto } from '../../infra/dto/group.response.dto';
-import { CreateGroupRequestDto } from '../../infra/create-group/dto/create-group.request.dto';
+import { CreateByIdSourceValueGroupRequestDto } from '../../infra/create-group/dto/create-group.request.dto';
 import { CreateGroupDto } from '../../application/commands/create-group/create-group.dto';
 import { GroupSourceBuilder } from './group-source.builder';
 import config from '../../static/config';
-import { createGroupSlug } from '../../domain/value-objects/group-slug';
 import { GroupStatus } from '../../domain/value-objects/group-status';
 import { UpdateGroupRequestDto } from '../../infra/update-group/dto/update-group.request.dto';
 import { UpdateGroupDto } from '../../application/commands/update-group/update-group.dto';
+import { FindGroupDto } from '../../application/queries/find-group/find-group.dto';
+import {
+  FindByIdGroupRequestDto,
+  FindByIdSourceValueGroupRequestDto,
+  FindBySlugGroupRequestDto,
+} from '../../infra/find-group/dto/find-group.request.dto';
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import { GroupSourceIdSource } from '../../domain/value-objects/group-source-id-source';
+import { GroupType } from '../../domain/value-objects/group-type';
 
 /**
  * A builder for Groups to play with in testing.
@@ -32,122 +38,125 @@ type GroupLooseMimic = {
   [K in keyof Group]?: Group[K] | string | number | object;
 };
 
-// timestamps used below
-const timestamps: number[] = [];
-const dateAgo = new Date();
-for (let i = 0; i <= 3; i++) {
-  dateAgo.setMonth(dateAgo.getMonth() - i);
-  timestamps.push(dateAgo.getTime());
-}
-
 export const GroupBuilder = () => {
   /**
    * Default properties don't exist in source repository
    */
   const defaultProperties: GroupLooseMimic = {
-    id: '5008s1234519CjIAAU',
-    status: 'open' as GroupStatus,
-    slug: 'learn_to_be_a_dancer',
-    supportType: config.defaults.groupSupportType,
-    name: 'Learn to be a dancer',
-    dateOpen: timestamps[2],
-    dateClosed: timestamps[0],
-    yearMonthOpen: createYearMonth(timestamps[2] as Timestamp),
+    id: '6fce9d10-aeed-4bb1-8c8c-92094f1982ff',
+    status: 'pending' as GroupStatus,
+    type: config.defaults.groupType as GroupType,
+    slug: 'brown-group',
+
+    sourceIds: [
+      {
+        id: '5008s1234519CjIPPU',
+        source: config.defaults.primaryAccountSource,
+      },
+    ],
+
+    name: 'Brown group',
+
     accountOwner: config.defaults.accountOwner,
   };
   const overrides: GroupLooseMimic = {
     id: defaultProperties.id,
     status: defaultProperties.status,
+    type: defaultProperties.type,
     slug: defaultProperties.slug,
-    supportType: defaultProperties.supportType,
+
+    sourceIds: defaultProperties.sourceIds,
+
     name: defaultProperties.name,
-    dateOpen: defaultProperties.dateOpen,
-    dateClosed: defaultProperties.dateClosed,
-    yearMonthOpen: defaultProperties.yearMonthOpen,
+
     accountOwner: defaultProperties.accountOwner,
   };
 
   return {
-    funkyChars() {
-      const source = GroupSourceBuilder().funkyChars().buildNoCheck();
-      overrides.name = source.name;
-      overrides.slug = createGroupSlug(source);
-      return this;
+    setSource(source: GroupSource) {
+      overrides.sourceIds = [
+        {
+          id: source.id,
+          source: config.defaults.primaryAccountSource,
+        },
+      ];
     },
 
     alpha() {
       // ID DOES NOT EXIST IN SOURCE REPO/DB
       const source = GroupSourceBuilder().alpha().buildNoCheck();
-      overrides.id = source.id;
+      this.setSource(source);
       overrides.name = source.name;
-      overrides.slug = createGroupSlug(source);
       return this;
     },
 
     beta() {
       // ID DOES NOT EXIST IN SOURCE REPO/DB
       const source = GroupSourceBuilder().beta().buildNoCheck();
-      overrides.id = source.id;
+      this.setSource(source);
       overrides.name = source.name;
-      overrides.slug = createGroupSlug(source);
       return this;
     },
 
     invalidSource() {
       const source = GroupSourceBuilder().invalidSource().buildNoCheck();
-      overrides.id = source.id;
-      overrides.slug = createGroupSlug(source);
+      this.setSource(source);
       return this;
     },
 
     invalidStatus() {
       const source = GroupSourceBuilder().invalidStatus().buildNoCheck();
-      overrides.id = source.id;
-      overrides.slug = createGroupSlug(source);
+      this.setSource(source);
+      return this;
+    },
+
+    noSourceExists() {
+      overrides.sourceIds = [];
       return this;
     },
 
     noMatchingSource() {
-      overrides.id = 'NoMatchingSource';
+      overrides.sourceIds = [
+        {
+          id: 'NothingCanBeFoundForThis',
+          source: config.defaults.primaryAccountSource,
+        },
+      ];
       return this;
     },
 
     invalid() {
-      delete defaultProperties.id;
-      delete overrides.id;
-      delete defaultProperties.slug;
-      delete overrides.slug;
+      overrides.sourceIds = [
+        {
+          id: 'ThisIsMeaningless',
+          source: 'THISISSOINVALIDRIGHTNOW',
+        },
+      ];
+      return this;
+    },
+
+    invalidOther() {
+      overrides.status = 'happy';
       return this;
     },
 
     exists() {
       const source = GroupSourceBuilder().exists().build();
-      overrides.id = source.id;
-      overrides.slug = createGroupSlug(source);
+      this.setSource(source);
+      overrides.name = source.name;
       return this;
     },
 
-    doesntExist() {
-      overrides.id = 'GroupDoesntExist';
-      overrides.slug = 'group-doesnt-exist';
-      delete defaultProperties.id;
-      delete overrides.id;
-      return this;
-    },
-
-    doesntExistId() {
-      overrides.id = '1e72ef98-f21e-4e0a-aff1-a45ed7328123';
-      delete defaultProperties.id;
-      delete overrides.id;
-      delete defaultProperties.slug;
-      delete overrides.slug;
+    updated() {
+      const source = GroupSourceBuilder().updated().build();
+      this.setSource(source);
+      overrides.status = source.status;
+      overrides.name = source.name;
       return this;
     },
 
     fromSource(source: GroupSource) {
-      overrides.id = source.id;
-      overrides.name = source.name;
-      overrides.slug = createGroupSlug(source);
+      this.setSource(source);
       return this;
     },
 
@@ -165,35 +174,103 @@ export const GroupBuilder = () => {
       } as Group;
     },
 
-    buildCreateGroupDto(): CreateGroupDto {
+    buildCreateByIdSourceValueGroupDto(): CreateGroupDto {
+      const sourceId = this.buildNoCheck().sourceIds[0];
       return {
-        id: this.build().id,
+        findGroupDto: {
+          identifier: 'idSourceValue',
+          value: prepareExternalIdSourceValue(sourceId.id, sourceId.source),
+        },
+        findGroupSourceDto: {
+          identifier: 'idSource',
+          value: sourceId,
+        },
       } as CreateGroupDto;
     },
 
-    buildCreateGroupRequestDto(): CreateGroupRequestDto {
+    buildCreateByIdSourceValueGroupRequestDto(): CreateByIdSourceValueGroupRequestDto {
+      const sourceId = this.buildNoCheck().sourceIds[0];
+      return {
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceId.id,
+          sourceId.source
+        ),
+      } as CreateByIdSourceValueGroupRequestDto;
+    },
+
+    buildFindByIdGroupDto(): FindGroupDto {
+      return {
+        identifier: 'id',
+        value: this.buildNoCheck().id,
+      } as FindGroupDto;
+    },
+
+    buildFindByIdGroupRequestDto(): FindByIdGroupRequestDto {
       return {
         id: this.buildNoCheck().id,
-      } as CreateGroupRequestDto;
+      } as FindByIdGroupRequestDto;
+    },
+
+    buildFindByIdSourceValueGroupDto(): FindGroupDto {
+      const sourceId = this.buildNoCheck().sourceIds[0];
+      return {
+        identifier: 'idSourceValue',
+        value: prepareExternalIdSourceValue(sourceId.id, sourceId.source),
+      } as FindGroupDto;
+    },
+
+    buildFindByIdSourceValueGroupRequestDto(): FindByIdSourceValueGroupRequestDto {
+      const sourceId = this.buildNoCheck().sourceIds[0];
+      return {
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceId.id,
+          sourceId.source
+        ),
+      } as FindByIdSourceValueGroupRequestDto;
+    },
+
+    buildFindBySlugGroupDto(): FindGroupDto {
+      return {
+        identifier: 'slug',
+        value: this.buildNoCheck().slug,
+      } as FindGroupDto;
+    },
+
+    buildFindBySlugGroupRequestDto(): FindBySlugGroupRequestDto {
+      return {
+        slug: this.buildNoCheck().slug,
+      } as FindBySlugGroupRequestDto;
     },
 
     buildUpdateGroupDto(): UpdateGroupDto {
-      return {
-        id: this.build().id,
-      } as UpdateGroupDto;
+      const sourceId = this.buildNoCheck().sourceIds[0];
+      return sourceId as UpdateGroupDto;
     },
 
     buildUpdateGroupRequestDto(): UpdateGroupRequestDto {
+      const sourceIds = this.buildNoCheck().sourceIds;
+      if (!sourceIds) {
+        return {
+          idSourceValue: '',
+        } as UpdateGroupRequestDto;
+      }
       return {
-        id: this.buildNoCheck().id,
+        idSourceValue: prepareExternalIdSourceValue(
+          sourceIds[0].id,
+          sourceIds[0].source
+        ),
       } as UpdateGroupRequestDto;
     },
 
     buildGroupResponseDto(): GroupResponseDto {
-      return {
+      const sourceIds = overrides.sourceIds as GroupSourceIdSource[];
+      return GroupResponseDto.check({
         ...defaultProperties,
         ...overrides,
-      } as GroupResponseDto;
+        sourceIds: sourceIds.map((idSource) =>
+          prepareExternalIdSourceValue(idSource.id, idSource.source)
+        ),
+      });
     },
   };
 };

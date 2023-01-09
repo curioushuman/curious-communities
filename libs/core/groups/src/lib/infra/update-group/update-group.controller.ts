@@ -9,9 +9,15 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { UpdateGroupRequestDto } from './dto/update-group.request.dto';
 import { UpdateGroupMapper } from '../../application/commands/update-group/update-group.mapper';
 import { UpdateGroupCommand } from '../../application/commands/update-group/update-group.command';
+import { GroupResponseDto } from '../dto/group.response.dto';
+import { GroupMapper } from '../group.mapper';
 
 /**
  * Controller for update group operations
+ *
+ * NOTES
+ * - we initially returned void for create/update actions
+ *   see create controller for more info
  *
  * TODO
  * - [ ] should this actually be a service?
@@ -30,7 +36,9 @@ export class UpdateGroupController {
     this.logger.setContext(UpdateGroupController.name);
   }
 
-  public async update(requestDto: UpdateGroupRequestDto): Promise<void> {
+  public async update(
+    requestDto: UpdateGroupRequestDto
+  ): Promise<GroupResponseDto> {
     const task = pipe(
       requestDto,
 
@@ -50,7 +58,10 @@ export class UpdateGroupController {
           },
           (error: unknown) => error as Error
         )
-      )
+      ),
+
+      // #4. transform to the response DTO
+      TE.chain(parseActionData(GroupMapper.toResponseDto, this.logger))
     );
 
     return executeTask(task);

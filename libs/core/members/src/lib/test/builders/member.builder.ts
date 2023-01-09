@@ -161,20 +161,6 @@ export const MemberBuilder = () => {
       return this;
     },
 
-    doesntExist() {
-      overrides.id = '9f7aeaf9-b258-4099-b23b-6c0e48c52a34';
-      delete defaultProperties.id;
-      delete overrides.id;
-      return this;
-    },
-
-    doesntExistId() {
-      overrides.id = '1e72ef98-f21e-4e0a-aff1-a45ed7328123';
-      delete defaultProperties.id;
-      delete overrides.id;
-      return this;
-    },
-
     fromSource(source: MemberSource) {
       this.setSource(source);
       return this;

@@ -16,8 +16,12 @@ import {
 } from '../update-group.command';
 import { GroupRepository } from '../../../../adapter/ports/group.repository';
 import { FakeGroupRepository } from '../../../../adapter/implementations/fake/fake.group.repository';
-import { GroupSourceRepository } from '../../../../adapter/ports/group-source.repository';
-import { FakeGroupSourceRepository } from '../../../../adapter/implementations/fake/fake.group-source.repository';
+import {
+  GroupSourceCommunityRepository,
+  GroupSourceMicroCourseRepository,
+} from '../../../../adapter/ports/group-source.repository';
+import { FakeGroupSourceCommunityRepository } from '../../../../adapter/implementations/fake/fake.group-source.community.repository';
+import { FakeGroupSourceMicroCourseRepository } from '../../../../adapter/implementations/fake/fake.group-source.micro-course.repository';
 import { GroupBuilder } from '../../../../test/builders/group.builder';
 import { UpdateGroupDto } from '../update-group.dto';
 import { GroupSource } from '../../../../domain/entities/group-source';
@@ -39,7 +43,7 @@ const feature = loadFeature('./update-group.feature', {
 
 defineFeature(feature, (test) => {
   let repository: FakeGroupRepository;
-  let groupSourcerepository: FakeGroupSourceRepository;
+  let groupSourceRepository: FakeGroupSourceCommunityRepository;
   let handler: UpdateGroupHandler;
   let updateGroupDto: UpdateGroupDto;
 
@@ -50,8 +54,12 @@ defineFeature(feature, (test) => {
         LoggableLogger,
         { provide: GroupRepository, useClass: FakeGroupRepository },
         {
-          provide: GroupSourceRepository,
-          useClass: FakeGroupSourceRepository,
+          provide: GroupSourceCommunityRepository,
+          useClass: FakeGroupSourceCommunityRepository,
+        },
+        {
+          provide: GroupSourceMicroCourseRepository,
+          useClass: FakeGroupSourceMicroCourseRepository,
         },
         {
           provide: ErrorFactory,
@@ -63,9 +71,9 @@ defineFeature(feature, (test) => {
     repository = moduleRef.get<GroupRepository>(
       GroupRepository
     ) as FakeGroupRepository;
-    groupSourcerepository = moduleRef.get<GroupSourceRepository>(
-      GroupSourceRepository
-    ) as FakeGroupSourceRepository;
+    groupSourceRepository = moduleRef.get<GroupSourceCommunityRepository>(
+      GroupSourceCommunityRepository
+    ) as FakeGroupSourceCommunityRepository;
     handler = moduleRef.get<UpdateGroupHandler>(UpdateGroupHandler);
   });
 
@@ -84,17 +92,17 @@ defineFeature(feature, (test) => {
       // this is an updated version of the `exists()` groupSource
       updatedGroupSource = GroupSourceBuilder().updated().build();
       // save it to our fake repo, we know it is valid
-      executeTask(groupSourcerepository.save(updatedGroupSource));
+      executeTask(groupSourceRepository.update(updatedGroupSource));
     });
 
     and('the source does exist in our DB', async () => {
       const groups = await executeTask(repository.all());
       const groupBefore = groups.find(
-        (group) => group.id === updateGroupDto.id
+        (group) => group.sourceIds[0].id === updateGroupDto.id
       );
       expect(groupBefore).toBeDefined();
       if (groupBefore) {
-        expect(groupBefore.name).not.toEqual(updatedGroupSource.name);
+        expect(groupBefore.status).not.toEqual(updatedGroupSource.status);
       }
     });
 
@@ -102,22 +110,19 @@ defineFeature(feature, (test) => {
       result = await handler.execute(new UpdateGroupCommand(updateGroupDto));
     });
 
-    then(
-      'the related record should have been updated in the repository',
-      async () => {
-        const groups = await executeTask(repository.all());
-        const groupAfter = groups.find(
-          (group) => group.id === updateGroupDto.id
-        );
-        expect(groupAfter).toBeDefined();
-        if (groupAfter) {
-          expect(groupAfter.name).toEqual(updatedGroupSource.name);
-        }
+    then('the related record should have been updated', async () => {
+      const groups = await executeTask(repository.all());
+      const groupAfter = groups.find(
+        (group) => group.sourceIds[0].id === updateGroupDto.id
+      );
+      expect(groupAfter).toBeDefined();
+      if (groupAfter) {
+        expect(groupAfter.status).toEqual(updatedGroupSource.status);
       }
-    );
+    });
 
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
+    and('saved group is returned', () => {
+      expect(result.id).toBeDefined();
     });
   });
 

@@ -2,7 +2,7 @@
 
 ## 1. Details
 
-- **Subdomain**: Learning design
+- **Subdomain**: Groups
 - **Aggregate root**: Groups
 
 ## 2. Data
@@ -12,25 +12,21 @@
 
 ### Dependencies (from other services/sources)
 
-- SourceRepo.findOne(ById)
-  - We need to validate that a source object exists before we save it
-  - We might as well grab the data while we're there
+- None
 
 ### Output (results, events, errors)
 
 #### Success (singular result + event)
 
-- void
+- Saved group
 
 ### Failure (1+):
 
 - RequestInvalidError
 - RepositoryAuthenticationError
-- RepositoryItemNotFoundError
 - RepositoryServerError
 - RepositoryServerUnavailableError
 - SourceInvalidError
-- RepositoryItemConflictError
 
 ## 3. Behaviour
 

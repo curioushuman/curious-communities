@@ -2,7 +2,7 @@
 
 ## 1. Details
 
-- **Subdomain**: Learning design
+- **Subdomain**: Groups
 - **Aggregate root**: Groups
 
 ## 2. Data
@@ -19,7 +19,7 @@
 
 #### Success (singular result + event)
 
-- void
+- Saved group
 
 ### Failure (1+):
 
@@ -30,7 +30,7 @@
 
 ### Triggered by
 
-- Lambda function(s)
+- Create group step function
 
 ### Side-effects
 

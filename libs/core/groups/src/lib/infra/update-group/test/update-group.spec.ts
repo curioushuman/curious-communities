@@ -12,16 +12,17 @@ import {
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { GroupModule } from '../../../test/group.module.fake';
-import { UpdateGroupModule } from '../../../update-group.module';
+import { MutateGroupModule } from '../../../mutate-group.module';
 import { UpdateGroupRequestDto } from '../dto/update-group.request.dto';
 import { GroupBuilder } from '../../../test/builders/group.builder';
-import { UpdateGroupController } from '../../../infra/update-group/update-group.controller';
+import { UpdateGroupController } from '../update-group.controller';
 import { FakeGroupRepository } from '../../../adapter/implementations/fake/fake.group.repository';
 import { GroupRepository } from '../../../adapter/ports/group.repository';
 import { GroupSourceBuilder } from '../../../test/builders/group-source.builder';
 import { GroupSource } from '../../../domain/entities/group-source';
-import { GroupSourceRepository } from '../../../adapter/ports/group-source.repository';
-import { FakeGroupSourceRepository } from '../../../adapter/implementations/fake/fake.group-source.repository';
+import { GroupSourceCommunityRepository } from '../../../adapter/ports/group-source.repository';
+import { FakeGroupSourceCommunityRepository } from '../../../adapter/implementations/fake/fake.group-source.community.repository';
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
 
 /**
  * INTEGRATION TEST
@@ -46,7 +47,7 @@ const feature = loadFeature('./update-group.feature', {
 defineFeature(feature, (test) => {
   let app: INestApplication;
   let repository: FakeGroupRepository;
-  let groupSourcerepository: FakeGroupSourceRepository;
+  let groupSourcerepository: FakeGroupSourceCommunityRepository;
   let controller: UpdateGroupController;
 
   beforeAll(async () => {
@@ -57,13 +58,13 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    UpdateGroupModule.applyDefaults(app);
+    MutateGroupModule.applyDefaults(app);
     repository = moduleRef.get<GroupRepository>(
       GroupRepository
     ) as FakeGroupRepository;
-    groupSourcerepository = moduleRef.get<GroupSourceRepository>(
-      GroupSourceRepository
-    ) as FakeGroupSourceRepository;
+    groupSourcerepository = moduleRef.get<GroupSourceCommunityRepository>(
+      GroupSourceCommunityRepository
+    ) as FakeGroupSourceCommunityRepository;
     controller = moduleRef.get<UpdateGroupController>(UpdateGroupController);
   });
 
@@ -87,14 +88,19 @@ defineFeature(feature, (test) => {
     and('a matching record is found at the source', async () => {
       updatedGroupSource = GroupSourceBuilder().updated().build();
       // save it to our fake repo
-      executeTask(groupSourcerepository.save(updatedGroupSource));
+      executeTask(groupSourcerepository.update(updatedGroupSource));
       const groups = await executeTask(repository.all());
       const groupBefore = groups.find(
-        (group) => group.id === updateGroupDto.id
+        (group) =>
+          updateGroupDto.idSourceValue ===
+          prepareExternalIdSourceValue(
+            group.sourceIds[0].id,
+            group.sourceIds[0].source
+          )
       );
       expect(groupBefore).toBeDefined();
       if (groupBefore) {
-        expect(groupBefore.name).not.toEqual(updatedGroupSource.name);
+        expect(groupBefore.status).not.toEqual(updatedGroupSource.status);
       }
     });
 
@@ -107,29 +113,28 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then(
-      'the related record should have been updated in the repository',
-      async () => {
-        const groups = await executeTask(repository.all());
-        const groupAfter = groups.find(
-          (group) => group.id === updateGroupDto.id
-        );
-        expect(groupAfter).toBeDefined();
-        if (groupAfter) {
-          expect(groupAfter.name).toEqual(updatedGroupSource.name);
-        }
+    then('the related record should have been updated', async () => {
+      const groups = await executeTask(repository.all());
+      const groupAfter = groups.find(
+        (group) =>
+          updateGroupDto.idSourceValue ===
+          prepareExternalIdSourceValue(
+            group.sourceIds[0].id,
+            group.sourceIds[0].source
+          )
+      );
+      expect(groupAfter).toBeDefined();
+      if (groupAfter) {
+        expect(groupAfter.status).toEqual(updatedGroupSource.status);
       }
-    );
+    });
 
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
+    and('saved group is returned', () => {
+      expect(result.id).toBeDefined();
     });
   });
 
-  test('Fail; Invalid request', ({ given, and, when, then }) => {
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
+  test('Fail; Invalid request', ({ given, when, then }) => {
     let updateGroupDto: UpdateGroupRequestDto;
     let error: Error;
 
@@ -140,7 +145,7 @@ defineFeature(feature, (test) => {
 
     when('I attempt to update a group', async () => {
       try {
-        result = await controller.update(updateGroupDto);
+        await controller.update(updateGroupDto);
       } catch (err) {
         error = err as Error;
       }
@@ -148,10 +153,6 @@ defineFeature(feature, (test) => {
 
     then('I should receive a RequestInvalidError', () => {
       expect(error).toBeInstanceOf(RequestInvalidError);
-    });
-
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
     });
   });
 });

@@ -6,7 +6,6 @@ import { sequenceT } from 'fp-ts/lib/Apply';
 import {
   ErrorFactory,
   RepositoryItemConflictError,
-  RepositoryItemNotFoundError,
 } from '@curioushuman/error-factory';
 import {
   executeTask,
@@ -18,9 +17,16 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { GroupRepository } from '../../../adapter/ports/group.repository';
 import { CreateGroupDto } from './create-group.dto';
 import { CreateGroupMapper } from './create-group.mapper';
-import { GroupSourceRepository } from '../../../adapter/ports/group-source.repository';
+import {
+  GroupSourceCommunityRepository,
+  GroupSourceMicroCourseRepository,
+  GroupSourceRepository,
+} from '../../../adapter/ports/group-source.repository';
 import { GroupSource } from '../../../domain/entities/group-source';
-import { GroupMapper } from '../../group.mapper';
+import { Group } from '../../../domain/entities/group';
+import config from '../../../static/config';
+import { parseDto as parseGroupDto } from '../../queries/find-group/find-group.dto';
+import { parseDto as parseGroupSourceDto } from '../../queries/find-group-source/find-group-source.dto';
 
 export class CreateGroupCommand implements ICommand {
   constructor(public readonly createGroupDto: CreateGroupDto) {}
@@ -36,45 +42,60 @@ export class CreateGroupCommand implements ICommand {
 export class CreateGroupHandler implements ICommandHandler<CreateGroupCommand> {
   constructor(
     private readonly groupRepository: GroupRepository,
-    private readonly groupSourceRepository: GroupSourceRepository,
+    private readonly groupSourceCommunityRepository: GroupSourceCommunityRepository,
+    private readonly groupSourceMicroCourseRepository: GroupSourceMicroCourseRepository,
     private logger: LoggableLogger,
     private errorFactory: ErrorFactory
   ) {
     this.logger.setContext(CreateGroupHandler.name);
   }
 
-  async execute(command: CreateGroupCommand): Promise<void> {
-    const { createGroupDto } = command;
+  async execute(command: CreateGroupCommand): Promise<Group> {
+    const {
+      createGroupDto: { findGroupDto, findGroupSourceDto },
+    } = command;
+
+    // * NOTE: currently idSource is the only identifier that is allowed
+    // *       to define a specific source for query. Otherwise reverts
+    // *       to the primary source.
+    const source = findGroupSourceDto.value.source
+      ? findGroupSourceDto.value.source
+      : config.defaults.primaryAccountSource;
+
+    // TODO this must be improved/moved at some later point
+    const sourceRepositories: Record<string, GroupSourceRepository> = {
+      COMMUNITY: this.groupSourceCommunityRepository,
+      'MICRO-COURSE': this.groupSourceMicroCourseRepository,
+    };
 
     const task = pipe(
-      // #1. parse the dto
-      // we want two DTOs 1. to find source, and 2. find group
+      // #1. parse the dto and extract the values
       sequenceT(TE.ApplySeq)(
         parseActionData(
-          CreateGroupMapper.toFindGroupSourceDto,
+          parseGroupSourceDto,
           this.logger,
           'RequestInvalidError'
-        )(createGroupDto),
+        )(findGroupSourceDto),
         parseActionData(
-          CreateGroupMapper.toFindGroupDto,
+          parseGroupDto,
           this.logger,
           'RequestInvalidError'
-        )(createGroupDto)
+        )(findGroupDto)
       ),
 
       // #2. Find the source, and the group (to be updated)
-      TE.chain(([findGroupSourceDto, findGroupDto]) =>
+      TE.chain(([parsedGroupSourceDtoValue, parsedGroupDtoValue]) =>
         sequenceT(TE.ApplySeq)(
           performAction(
-            findGroupSourceDto,
-            this.groupSourceRepository.findOne,
+            parsedGroupSourceDtoValue,
+            sourceRepositories[source].findOne(findGroupSourceDto.identifier),
             this.errorFactory,
             this.logger,
-            `find group source: ${findGroupSourceDto.id}`
+            `find group source: ${findGroupSourceDto.value}`
           ),
           performAction(
-            findGroupDto.value,
-            this.groupRepository.checkById,
+            parsedGroupDtoValue,
+            this.groupRepository.check(findGroupDto.identifier),
             this.errorFactory,
             this.logger,
             `check for existing group: ${findGroupDto.value}`
@@ -84,22 +105,16 @@ export class CreateGroupHandler implements ICommandHandler<CreateGroupCommand> {
 
       // #3. validate + transform; groups exists, source is valid, source to group
       TE.chain(([groupSource, groupExists]) => {
-        if (!groupSource) {
-          throw new RepositoryItemNotFoundError(
-            `Group source id: ${createGroupDto.id}`
-          );
-        }
         if (groupExists === true) {
-          throw new RepositoryItemConflictError(
-            `Group id: ${createGroupDto.id}`
-          );
+          throw new RepositoryItemConflictError(`Group: ${findGroupDto.value}`);
         }
+
         return pipe(
           groupSource,
           parseActionData(GroupSource.check, this.logger, 'SourceInvalidError'),
           TE.chain((groupSourceChecked) =>
             parseActionData(
-              GroupMapper.fromSourceToGroup,
+              CreateGroupMapper.fromSourceToGroup,
               this.logger,
               'SourceInvalidError'
             )(groupSourceChecked)
@@ -107,7 +122,7 @@ export class CreateGroupHandler implements ICommandHandler<CreateGroupCommand> {
         );
       }),
 
-      // #5. update the group, from the source
+      // #5. create the group, from the source
       TE.chain((group) =>
         performAction(
           group,

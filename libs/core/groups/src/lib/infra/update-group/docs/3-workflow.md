@@ -10,7 +10,7 @@
 
 #### Success
 
-- void
+- Saved group
 
 #### Fail
 
@@ -21,7 +21,7 @@
 1. Validate input
 2. Update group
 3. Return
-   1. void
+   1. Saved group
    2. Error
 
 ## Steps, detail
@@ -58,7 +58,7 @@ Else
 
 #### Output: Success
 
-- void
+- Saved group
 
 #### Output: Fail
 
@@ -76,7 +76,7 @@ Else
 
 ### Step 4A. Return success
 
-- void
+- Saved group
 
 ### Step 4B. Or Error
 

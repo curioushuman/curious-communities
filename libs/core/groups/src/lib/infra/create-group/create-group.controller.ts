@@ -9,9 +9,19 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { CreateGroupRequestDto } from './dto/create-group.request.dto';
 import { CreateGroupMapper } from '../../application/commands/create-group/create-group.mapper';
 import { CreateGroupCommand } from '../../application/commands/create-group/create-group.command';
+import { GroupResponseDto } from '../dto/group.response.dto';
+import { GroupMapper } from '../group.mapper';
 
 /**
  * Controller for create group operations
+ *
+ * NOTES
+ * - we initially returned void for create/update actions but this made
+ *   internal communication with other systems difficult. We now return
+ *   the DTO for internal communication. When it comes to external communication
+ *   we will only return Success 201 and the ID of the created/updated resource.
+ *   https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#post-methods
+ *   https://softwareengineering.stackexchange.com/a/380430
  *
  * TODO
  * - [ ] should this actually be a service?
@@ -30,7 +40,14 @@ export class CreateGroupController {
     this.logger.setContext(CreateGroupController.name);
   }
 
-  public async create(requestDto: CreateGroupRequestDto): Promise<void> {
+  /**
+   * This version of create assumes it is coming from step functions
+   * that do a lot of the heavy lifting. It doesn't run any checks, apart
+   * from validating the request dto.
+   */
+  public async create(
+    requestDto: CreateGroupRequestDto
+  ): Promise<GroupResponseDto> {
     const task = pipe(
       requestDto,
 
@@ -50,7 +67,10 @@ export class CreateGroupController {
           },
           (error: unknown) => error as Error
         )
-      )
+      ),
+
+      // #4. transform to the response DTO
+      TE.chain(parseActionData(GroupMapper.toResponseDto, this.logger))
     );
 
     return executeTask(task);

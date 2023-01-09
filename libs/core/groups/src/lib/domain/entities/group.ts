@@ -1,33 +1,38 @@
-import { Record, Static } from 'runtypes';
+import { Array, Record, Static } from 'runtypes';
 
-import { Timestamp, YearMonth } from '@curioushuman/common';
-
-import { GroupName } from '../value-objects/group-name';
 import { GroupId } from '../value-objects/group-id';
 import { GroupStatus } from '../value-objects/group-status';
-import { GroupSupportType } from '../value-objects/group-support-type';
 import { AccountSlug } from '../value-objects/account-slug';
+import { GroupName } from '../value-objects/group-name';
+import {
+  GroupSourceIdSource,
+  GroupSourceIdSourceValue,
+} from '../value-objects/group-source-id-source';
+import { prepareExternalIdSource, ValueOf } from '@curioushuman/common';
+import { GroupSourceId } from '../value-objects/group-source-id';
+import { Source } from '../value-objects/source';
 import { GroupSlug } from '../value-objects/group-slug';
+import { GroupType } from '../value-objects/group-type';
 
 /**
- * Runtypes constant for the (internal) Group entity
- * Used for type checking and validation
+ * Type for internal group entity
  */
 export const Group = Record({
   id: GroupId,
-  slug: GroupSlug,
   status: GroupStatus,
-  supportType: GroupSupportType,
+  type: GroupType,
+  slug: GroupSlug,
+
+  sourceIds: Array(GroupSourceIdSource),
+
   name: GroupName,
-  dateOpen: Timestamp,
-  dateClosed: Timestamp,
-  yearMonthOpen: YearMonth,
+
   // e.g. APF being the account that owns this group
   accountOwner: AccountSlug,
 });
 
 /**
- * Type for the (internal) group entity
+ * Type for internal group entity
  */
 export type Group = Static<typeof Group>;
 
@@ -38,6 +43,17 @@ export type Group = Static<typeof Group>;
  */
 export type GroupIdentifiers = {
   id: GroupId;
+  idSourceValue: GroupSourceIdSourceValue;
   slug: GroupSlug;
 };
 export type GroupIdentifier = keyof GroupIdentifiers;
+export type GroupIdentifierValue = ValueOf<GroupIdentifiers>;
+
+/**
+ * Convenience function to prepare a GroupSourceIdSource
+ */
+export function prepareGroupExternalIdSource(
+  idSourceValue: string
+): GroupSourceIdSource {
+  return prepareExternalIdSource(idSourceValue, GroupSourceId, Source);
+}

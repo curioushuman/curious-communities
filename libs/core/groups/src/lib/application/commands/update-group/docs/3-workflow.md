@@ -9,7 +9,7 @@
 
 #### Success
 
-- void
+- Saved group
 
 #### Fail
 
@@ -22,7 +22,7 @@
 3. Transform/validate external record
 4. Save group
 5. Return
-   1. void
+   1. Saved group
    2. Error
 
 ## Steps, detail
@@ -118,7 +118,7 @@ Else
 
 #### Output: Success
 
-- void
+- Saved group
 
 #### Output: Fail
 
@@ -132,12 +132,12 @@ Save Group
 If Fails
   return RepositoryServerError
 Else
-  return void
+  return Saved group
 ```
 
 ### Step 5A. Return success
 
-- void
+- Saved group
 
 ### Step 5B. Or Error
 

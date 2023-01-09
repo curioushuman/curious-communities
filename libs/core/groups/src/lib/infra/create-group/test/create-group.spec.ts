@@ -12,7 +12,7 @@ import {
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { GroupModule } from '../../../test/group.module.fake';
-import { CreateGroupModule } from '../../../create-group.module';
+import { MutateGroupModule } from '../../../mutate-group.module';
 import { CreateGroupRequestDto } from '../dto/create-group.request.dto';
 import { Group } from '../../../domain/entities/group';
 import { GroupBuilder } from '../../../test/builders/group.builder';
@@ -53,7 +53,7 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    CreateGroupModule.applyDefaults(app);
+    MutateGroupModule.applyDefaults(app);
     repository = moduleRef.get<GroupRepository>(
       GroupRepository
     ) as FakeGroupRepository;
@@ -64,7 +64,12 @@ defineFeature(feature, (test) => {
     await app.close();
   });
 
-  test('Successfully creating a group', ({ given, and, when, then }) => {
+  test('Successfully creating a group by Source Id', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
     let groups: Group[];
     let groupsBefore: number;
     // disabling no-explicit-any for testing purposes
@@ -73,12 +78,12 @@ defineFeature(feature, (test) => {
     let createGroupDto: CreateGroupRequestDto;
     let error: Error;
 
-    given('the request is valid', () => {
+    given('the request is valid', async () => {
       // we know this to exist in our fake repo
-      createGroupDto = GroupBuilder().beta().buildCreateGroupRequestDto();
-    });
+      createGroupDto = GroupBuilder()
+        .alpha()
+        .buildCreateByIdSourceValueGroupRequestDto();
 
-    and('a matching record is found at the source', async () => {
       groups = await executeTask(repository.all());
       groupsBefore = groups.length;
     });
@@ -92,34 +97,30 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then(
-      'a new record should have been created in the repository',
-      async () => {
-        groups = await executeTask(repository.all());
-        expect(groups.length).toEqual(groupsBefore + 1);
-      }
-    );
+    then('a new record should have been created', async () => {
+      groups = await executeTask(repository.all());
+      expect(groups.length).toEqual(groupsBefore + 1);
+    });
 
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
+    and('saved group is returned', () => {
+      expect(result.id).toBeDefined();
     });
   });
 
-  test('Fail; Invalid request', ({ given, and, when, then }) => {
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
+  test('Fail; Invalid request', ({ given, when, then }) => {
     let createGroupDto: CreateGroupRequestDto;
     let error: Error;
 
     given('the request contains invalid data', () => {
       // we know this to exist in our fake repo
-      createGroupDto = GroupBuilder().invalid().buildCreateGroupRequestDto();
+      createGroupDto = GroupBuilder()
+        .invalid()
+        .buildCreateByIdSourceValueGroupRequestDto();
     });
 
     when('I attempt to create a group', async () => {
       try {
-        result = await controller.create(createGroupDto);
+        await controller.create(createGroupDto);
       } catch (err) {
         error = err as Error;
       }
@@ -127,10 +128,6 @@ defineFeature(feature, (test) => {
 
     then('I should receive a RequestInvalidError', () => {
       expect(error).toBeInstanceOf(RequestInvalidError);
-    });
-
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
     });
   });
 });

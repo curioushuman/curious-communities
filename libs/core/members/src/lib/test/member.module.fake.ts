@@ -27,19 +27,25 @@ import { FakeMemberSourceAuthRepository } from '../adapter/implementations/fake/
 import { FakeMemberSourceCommunityRepository } from '../adapter/implementations/fake/fake.member-source.community.repository';
 import { FakeMemberSourceCrmRepository } from '../adapter/implementations/fake/fake.member-source.crm.repository';
 import { FakeMemberSourceMicroCourseRepository } from '../adapter/implementations/fake/fake.member-source.micro-course.repository';
+import { UpsertMemberSourceController } from '../infra/upsert-member-source/upsert-member-source.controller';
+import { CreateMemberSourceHandler } from '../application/commands/create-member-source/create-member-source.command';
+import { UpdateMemberSourceHandler } from '../application/commands/update-member-source/update-member-source.command';
 
 const controllers = [
   CreateMemberController,
   FindMemberController,
   FindMemberSourceController,
   UpdateMemberController,
+  UpsertMemberSourceController,
 ];
 
 const handlers = [
   CreateMemberHandler,
+  CreateMemberSourceHandler,
   FindMemberHandler,
   FindMemberSourceHandler,
   UpdateMemberHandler,
+  UpdateMemberSourceHandler,
 ];
 
 const repositories = [

@@ -11,9 +11,3 @@ Scenario: Fail; Invalid request
   Given the request contains invalid data
   When I attempt to update a member source
   Then I should receive a RequestInvalidError
-
-# Scenario: Fail; Source not found
-#   Given the request is valid
-#   And NO matching record is found at the source
-#   When I attempt to update a member source
-#   Then I should receive a RepositoryItemNotFoundError

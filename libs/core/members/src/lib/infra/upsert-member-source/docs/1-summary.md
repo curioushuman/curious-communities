@@ -1,4 +1,4 @@
-# Feature Summary: Find Member Source
+# Feature Summary: Upsert Member Source
 
 ## 1. Details
 
@@ -9,7 +9,7 @@
 
 ### Input data:
 
-- FindMemberSourceDto
+- UpsertMemberSourceRequestDto
 
 ### Dependencies (from other services/sources)
 
@@ -30,7 +30,7 @@
 
 ### Triggered by
 
-- Lambda function(s)
+- Internal Eventbus
 
 ### Side-effects
 

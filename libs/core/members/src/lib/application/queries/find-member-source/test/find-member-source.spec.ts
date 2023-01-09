@@ -87,7 +87,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findMemberSourceDto = MemberSourceBuilder()
         .exists()
-        .buildFindByIdSourceValueMemberDto();
+        .buildFindByIdSourceValueMemberSourceDto();
     });
 
     when('I attempt to find a member source', async () => {
@@ -114,7 +114,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findMemberSourceDto = MemberSourceBuilder()
         .exists()
-        .buildFindByEmailMemberDto();
+        .buildFindByEmailMemberSourceDto();
     });
 
     when('I attempt to find a member source', async () => {
@@ -142,7 +142,7 @@ defineFeature(feature, (test) => {
       findMemberSourceDto = MemberSourceBuilder()
         .exists()
         .alternateSource()
-        .buildFindByIdSourceValueMemberDto();
+        .buildFindByIdSourceValueMemberSourceDto();
     });
 
     when('I attempt to find a member source', async () => {
@@ -162,7 +162,7 @@ defineFeature(feature, (test) => {
     given('the request contains invalid data', () => {
       findMemberSourceDto = MemberSourceBuilder()
         .invalid()
-        .buildFindByIdSourceValueMemberDto();
+        .buildFindByIdSourceValueMemberSourceDto();
     });
 
     when('I attempt to find a member source', async () => {

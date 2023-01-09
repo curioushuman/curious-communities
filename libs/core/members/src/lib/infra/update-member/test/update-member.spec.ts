@@ -88,7 +88,7 @@ defineFeature(feature, (test) => {
     and('a matching record is found at the source', async () => {
       updatedMemberSource = MemberSourceBuilder().updated().build();
       // save it to our fake repo
-      executeTask(memberSourcerepository.save(updatedMemberSource));
+      executeTask(memberSourcerepository.update(updatedMemberSource));
       const members = await executeTask(repository.all());
       const memberBefore = members.find(
         (member) =>

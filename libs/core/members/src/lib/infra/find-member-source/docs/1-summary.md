@@ -2,7 +2,7 @@
 
 ## 1. Details
 
-- **Subdomain**: Learning design
+- **Subdomain**: Members
 - **Aggregate root**: Members
 
 ## 2. Data

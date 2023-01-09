@@ -68,7 +68,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findMemberSourceDto = MemberSourceBuilder()
         .exists()
-        .buildFindByIdSourceValueMemberRequestDto();
+        .buildFindByIdSourceValueMemberSourceRequestDto();
     });
 
     when('I attempt to find a member source', async () => {
@@ -104,7 +104,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findMemberSourceDto = MemberSourceBuilder()
         .exists()
-        .buildFindByEmailMemberRequestDto();
+        .buildFindByEmailMemberSourceRequestDto();
     });
 
     when('I attempt to find a member source', async () => {
@@ -129,7 +129,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findMemberSourceDto = MemberSourceBuilder()
         .invalid()
-        .buildFindByIdSourceValueMemberRequestDto();
+        .buildFindByIdSourceValueMemberSourceRequestDto();
     });
 
     when('I attempt to find a member source', async () => {

@@ -18,6 +18,7 @@ import {
   FindByIdSourceValueMemberRequestDto,
 } from '../../infra/find-member/dto/find-member.request.dto';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import { MemberSourceIdSource } from '../../domain/value-objects/member-source-id-source';
 
 /**
  * A builder for Members to play with in testing.
@@ -121,6 +122,13 @@ export const MemberBuilder = () => {
       return this;
     },
 
+    noSourceExists() {
+      overrides.name = 'NOT FOUND';
+      overrides.email = 'not@found.com';
+      overrides.sourceIds = [];
+      return this;
+    },
+
     invalid() {
       overrides.sourceIds = [
         {
@@ -139,6 +147,17 @@ export const MemberBuilder = () => {
     exists() {
       const source = MemberSourceBuilder().exists().build();
       this.setSource(source);
+      overrides.name = source.name;
+      overrides.email = source.email;
+      return this;
+    },
+
+    updated() {
+      const source = MemberSourceBuilder().updated().build();
+      this.setSource(source);
+      overrides.status = source.status;
+      overrides.name = source.name;
+      overrides.email = source.email;
       return this;
     },
 
@@ -284,10 +303,14 @@ export const MemberBuilder = () => {
     },
 
     buildMemberResponseDto(): MemberResponseDto {
-      return {
+      const sourceIds = overrides.sourceIds as MemberSourceIdSource[];
+      return MemberResponseDto.check({
         ...defaultProperties,
         ...overrides,
-      } as MemberResponseDto;
+        sourceIds: sourceIds.map((idSource) =>
+          prepareExternalIdSourceValue(idSource.id, idSource.source)
+        ),
+      });
     },
   };
 };

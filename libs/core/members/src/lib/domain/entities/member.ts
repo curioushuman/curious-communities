@@ -10,11 +10,12 @@ import {
   MemberSourceIdSource,
   MemberSourceIdSourceValue,
 } from '../value-objects/member-source-id-source';
-import { ValueOf } from '@curioushuman/common';
+import { prepareExternalIdSource, ValueOf } from '@curioushuman/common';
+import { MemberSourceId } from '../value-objects/member-source-id';
+import { Source } from '../value-objects/source';
 
 /**
- * Runtypes constant for the (internal) Member entity
- * Used for type checking and validation
+ * Type for internal member entity
  */
 export const Member = Record({
   id: MemberId,
@@ -31,7 +32,7 @@ export const Member = Record({
 });
 
 /**
- * Type for the (internal) member entity
+ * Type for internal member entity
  */
 export type Member = Static<typeof Member>;
 
@@ -47,3 +48,12 @@ export type MemberIdentifiers = {
 };
 export type MemberIdentifier = keyof MemberIdentifiers;
 export type MemberIdentifierValue = ValueOf<MemberIdentifiers>;
+
+/**
+ * Convenience function to prepare a MemberSourceIdSource
+ */
+export function prepareMemberExternalIdSource(
+  idSourceValue: string
+): MemberSourceIdSource {
+  return prepareExternalIdSource(idSourceValue, MemberSourceId, Source);
+}

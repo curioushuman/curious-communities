@@ -1,6 +1,10 @@
-import { MemberResponseDto } from './dto/member.response.dto';
-import { Member } from '../domain/entities/member';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
+
+import { MemberResponseDto } from './dto/member.response.dto';
+import {
+  Member,
+  prepareMemberExternalIdSource,
+} from '../domain/entities/member';
 
 /**
  * TODO
@@ -8,7 +12,7 @@ import { prepareExternalIdSourceValue } from '@curioushuman/common';
  */
 export class MemberMapper {
   public static toResponseDto(member: Member): MemberResponseDto {
-    return {
+    return MemberResponseDto.check({
       id: member.id,
       status: member.status,
 
@@ -19,6 +23,25 @@ export class MemberMapper {
       name: member.name,
       email: member.email,
       organisationName: member.organisationName,
-    } as MemberResponseDto;
+
+      accountOwner: member.accountOwner,
+    });
+  }
+
+  public static fromResponseDto(dto: MemberResponseDto): Member {
+    return Member.check({
+      id: dto.id,
+      status: dto.status,
+
+      sourceIds: dto.sourceIds.map((idSourceValue) =>
+        prepareMemberExternalIdSource(idSourceValue)
+      ),
+
+      name: dto.name,
+      email: dto.email,
+      organisationName: dto.organisationName,
+
+      accountOwner: dto.accountOwner,
+    });
   }
 }

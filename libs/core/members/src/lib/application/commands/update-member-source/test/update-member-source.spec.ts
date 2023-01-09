@@ -97,7 +97,6 @@ defineFeature(feature, (test) => {
       // i.e. it is all handled in the builder
       updateMemberSourceDto =
         MemberSourceBuilder().buildUpdateMemberSourceDto();
-      console.log('0', updateMemberSourceDto);
     });
 
     and('a matching record is found at the source', async () => {

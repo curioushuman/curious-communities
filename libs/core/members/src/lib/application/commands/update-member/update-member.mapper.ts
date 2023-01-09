@@ -2,14 +2,12 @@ import { UpdateMemberDto } from './update-member.dto';
 import { UpdateMemberRequestDto } from '../../../infra/update-member/dto/update-member.request.dto';
 import { FindMemberSourceDto } from '../../queries/find-member-source/find-member-source.dto';
 import { FindMemberDto } from '../../queries/find-member/find-member.dto';
-import {
-  prepareExternalIdSource,
-  prepareExternalIdSourceValue,
-} from '@curioushuman/common';
-import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
-import { Source } from '../../../domain/value-objects/source';
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
 import { MemberSource } from '../../../domain/entities/member-source';
-import { Member } from '../../../domain/entities/member';
+import {
+  Member,
+  prepareMemberExternalIdSource,
+} from '../../../domain/entities/member';
 
 /**
  * TODO
@@ -17,11 +15,7 @@ import { Member } from '../../../domain/entities/member';
  */
 export class UpdateMemberMapper {
   public static fromRequestDto(dto: UpdateMemberRequestDto): UpdateMemberDto {
-    const idSource = prepareExternalIdSource(
-      dto.idSourceValue,
-      MemberSourceId,
-      Source
-    );
+    const idSource = prepareMemberExternalIdSource(dto.idSourceValue);
     return UpdateMemberDto.check(idSource);
   }
 

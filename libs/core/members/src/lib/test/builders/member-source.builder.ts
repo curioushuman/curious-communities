@@ -1,13 +1,18 @@
 import { ExternalId, prepareExternalIdSourceValue } from '@curioushuman/common';
+import { CreateMemberSourceDto } from '../../application/commands/create-member-source/create-member-source.dto';
+import { UpdateMemberSourceDto } from '../../application/commands/update-member-source/update-member-source.dto';
 import { FindMemberSourceDto } from '../../application/queries/find-member-source/find-member-source.dto';
 
 import { MemberSource } from '../../domain/entities/member-source';
+import { MemberName } from '../../domain/value-objects/member-name';
 import { MemberSourceStatus } from '../../domain/value-objects/member-source-status';
 import {
   FindByEmailMemberSourceRequestDto,
   FindByIdSourceValueMemberSourceRequestDto,
 } from '../../infra/find-member-source/dto/find-member-source.request.dto';
+import { UpsertMemberSourceRequestDto } from '../../infra/upsert-member-source/dto/upsert-member-source.request.dto';
 import config from '../../static/config';
+import { MemberBuilder } from './member.builder';
 
 /**
  * A builder for Member Sources to play with in testing.
@@ -93,11 +98,15 @@ export const MemberSourceBuilder = () => {
 
     exists() {
       overrides.id = ExternalId.check('ThisSourceExists');
+      overrides.name = 'Jade Green';
+      overrides.email = 'jade@green.com';
       return this;
     },
 
     updated() {
       overrides.id = ExternalId.check('ThisSourceExists');
+      overrides.name = 'Jade Green';
+      overrides.email = 'jade@green.com';
       overrides.status = 'registered';
       return this;
     },
@@ -116,7 +125,7 @@ export const MemberSourceBuilder = () => {
       } as MemberSource;
     },
 
-    buildFindByIdSourceValueMemberDto(): FindMemberSourceDto {
+    buildFindByIdSourceValueMemberSourceDto(): FindMemberSourceDto {
       const build = this.buildNoCheck();
       return {
         identifier: 'idSource',
@@ -127,24 +136,96 @@ export const MemberSourceBuilder = () => {
       } as FindMemberSourceDto;
     },
 
-    buildFindByIdSourceValueMemberRequestDto(): FindByIdSourceValueMemberSourceRequestDto {
+    buildFindByIdSourceValueMemberSourceRequestDto(): FindByIdSourceValueMemberSourceRequestDto {
       const build = this.buildNoCheck();
       return {
         idSourceValue: prepareExternalIdSourceValue(build.id, source),
       } as FindByIdSourceValueMemberSourceRequestDto;
     },
 
-    buildFindByEmailMemberDto(): FindMemberSourceDto {
+    buildFindByEmailMemberSourceDto(): FindMemberSourceDto {
       return {
         identifier: 'email',
         value: this.buildNoCheck().email,
       } as FindMemberSourceDto;
     },
 
-    buildFindByEmailMemberRequestDto(): FindByEmailMemberSourceRequestDto {
+    buildFindByEmailMemberSourceRequestDto(): FindByEmailMemberSourceRequestDto {
       return {
         email: this.buildNoCheck().email,
       } as FindByEmailMemberSourceRequestDto;
+    },
+
+    buildCreateMemberSourceDto(): CreateMemberSourceDto {
+      const member = MemberBuilder().noSourceExists().buildNoCheck();
+      return {
+        source: config.defaults.primaryAccountSource,
+        member,
+      } as CreateMemberSourceDto;
+    },
+
+    buildCreateUpsertMemberSourceRequestDto(): UpsertMemberSourceRequestDto {
+      const member = MemberBuilder().noSourceExists().buildMemberResponseDto();
+      return {
+        source: config.defaults.primaryAccountSource,
+        member,
+      } as UpsertMemberSourceRequestDto;
+    },
+
+    buildInvalidCreateMemberSourceDto(): CreateMemberSourceDto {
+      const member = MemberBuilder().noSourceExists().buildNoCheck();
+      member.name = '' as MemberName;
+      return {
+        source: config.defaults.primaryAccountSource,
+        member,
+      } as CreateMemberSourceDto;
+    },
+
+    buildInvalidUpsertMemberSourceRequestDto(): UpsertMemberSourceRequestDto {
+      const member = MemberBuilder().exists().buildMemberResponseDto();
+      member.name = '' as MemberName;
+      return {
+        source: config.defaults.primaryAccountSource,
+        member,
+      } as UpsertMemberSourceRequestDto;
+    },
+
+    buildUpdateMemberSourceDto(): UpdateMemberSourceDto {
+      const member = MemberBuilder().updated().buildNoCheck();
+      const memberSource = this.exists().buildNoCheck();
+      return {
+        source: config.defaults.primaryAccountSource,
+        member,
+        memberSource,
+      } as UpdateMemberSourceDto;
+    },
+
+    buildUpdateUpsertMemberSourceRequestDto(): UpsertMemberSourceRequestDto {
+      const member = MemberBuilder().exists().buildMemberResponseDto();
+      return {
+        source: config.defaults.primaryAccountSource,
+        member,
+      } as UpsertMemberSourceRequestDto;
+    },
+
+    buildUpdateByEmailUpsertMemberSourceRequestDto(): UpsertMemberSourceRequestDto {
+      const member = MemberBuilder().exists().buildMemberResponseDto();
+      member.sourceIds = [];
+      return {
+        source: config.defaults.primaryAccountSource,
+        member,
+      } as UpsertMemberSourceRequestDto;
+    },
+
+    buildInvalidUpdateMemberSourceDto(): UpdateMemberSourceDto {
+      const member = MemberBuilder().exists().buildNoCheck();
+      const memberSource = this.exists().buildNoCheck();
+      member.name = '' as MemberName;
+      return {
+        source: config.defaults.primaryAccountSource,
+        member,
+        memberSource,
+      } as UpdateMemberSourceDto;
     },
   };
 };

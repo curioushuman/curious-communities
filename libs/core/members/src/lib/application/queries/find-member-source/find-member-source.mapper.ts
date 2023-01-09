@@ -1,7 +1,4 @@
-import {
-  parseExternalIdSourceValue,
-  prepareExternalIdSource,
-} from '@curioushuman/common';
+import { parseExternalIdSourceValue } from '@curioushuman/common';
 
 import { FindMemberSourceDto } from './find-member-source.dto';
 import {
@@ -14,6 +11,8 @@ import { Source } from '../../../domain/value-objects/source';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
 import { CreateMemberRequestDto } from '../../../infra/create-member/dto/create-member.request.dto';
 import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
+import { UpsertMemberSourceRequestDto } from '../../../infra/upsert-member-source/dto/upsert-member-source.request.dto';
+import { prepareMemberExternalIdSource } from '../../../domain/entities/member';
 
 /**
  * TODO
@@ -49,7 +48,7 @@ export class FindMemberSourceMapper {
     );
     return {
       identifier: 'idSource',
-      value: prepareExternalIdSource(value, MemberSourceId, Source),
+      value: prepareMemberExternalIdSource(value),
     } as FindMemberSourceDto;
   }
 
@@ -61,6 +60,28 @@ export class FindMemberSourceMapper {
     return {
       identifier: 'email',
       value,
+    } as FindMemberSourceDto;
+  }
+
+  public static fromUpsertRequestDto(
+    dto: UpsertMemberSourceRequestDto
+  ): FindMemberSourceDto {
+    // look to see if we have a source id
+    // for this source, for this member
+    const idSourceValue = dto.member.sourceIds.find(
+      (idSV) => idSV.indexOf(dto.source) === 0
+    );
+    // if we don't have them on record
+    if (!idSourceValue) {
+      // see if they exist in the external DB via their email
+      return {
+        identifier: 'email',
+        value: MemberEmail.check(dto.member.email),
+      } as FindMemberSourceDto;
+    }
+    return {
+      identifier: 'idSource',
+      value: prepareMemberExternalIdSource(idSourceValue),
     } as FindMemberSourceDto;
   }
 

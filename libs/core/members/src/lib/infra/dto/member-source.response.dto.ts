@@ -1,3 +1,4 @@
+import { Record, Static, String } from 'runtypes';
 /**
  * This is the structure of data the world will receive
  *
@@ -19,11 +20,15 @@
  * ? [*] Should we expose the externalIdentifiers?
  *       Yes, we'll expose this as admin only. Moved to TODO
  */
-export class MemberSourceResponseDto {
-  id!: string;
-  status!: string;
+export const MemberSourceResponseDto = Record({
+  id: String,
+  status: String,
+  name: String,
+  email: String,
+  organisationName: String,
+});
 
-  name!: string;
-  email!: string;
-  organisationName!: string;
-}
+/**
+ * DTO that accepts any of the identifiers
+ */
+export type MemberSourceResponseDto = Static<typeof MemberSourceResponseDto>;

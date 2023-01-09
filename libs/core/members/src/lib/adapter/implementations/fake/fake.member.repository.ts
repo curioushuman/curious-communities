@@ -3,7 +3,11 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
-import { Member, MemberIdentifier } from '../../../domain/entities/member';
+import {
+  Member,
+  MemberIdentifier,
+  prepareMemberExternalIdSource,
+} from '../../../domain/entities/member';
 import {
   MemberCheckMethod,
   MemberFindMethod,
@@ -12,9 +16,6 @@ import {
 import { MemberBuilder } from '../../../test/builders/member.builder';
 import { MemberId } from '../../../domain/value-objects/member-id';
 import { MemberSourceIdSourceValue } from '../../../domain/value-objects/member-source-id-source';
-import { prepareExternalIdSource } from '@curioushuman/common';
-import { Source } from '../../../domain/value-objects/source';
-import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
 
 @Injectable()
@@ -65,11 +66,7 @@ export class FakeMemberRepository implements MemberRepository {
     return TE.tryCatch(
       async () => {
         const idSourceValue = MemberSourceIdSourceValue.check(value);
-        const idSource = prepareExternalIdSource(
-          idSourceValue,
-          MemberSourceId,
-          Source
-        );
+        const idSource = prepareMemberExternalIdSource(idSourceValue);
         const member = this.members.find((cs) => {
           const matches = cs.sourceIds.filter(
             (sId) => sId.id === idSource.id && sId.source === idSource.source
@@ -165,11 +162,7 @@ export class FakeMemberRepository implements MemberRepository {
     return TE.tryCatch(
       async () => {
         const idSourceValue = MemberSourceIdSourceValue.check(value);
-        const idSource = prepareExternalIdSource(
-          idSourceValue,
-          MemberSourceId,
-          Source
-        );
+        const idSource = prepareMemberExternalIdSource(idSourceValue);
         const member = this.members.find((cs) => {
           const matches = cs.sourceIds.filter(
             (sId) => sId.id === idSource.id && sId.source === idSource.source

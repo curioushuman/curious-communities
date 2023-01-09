@@ -8,10 +8,13 @@ export interface LambdaEventSubscriptionProps {
   lambdaEntry: string;
   lambdaProps: NodejsFunctionProps;
   eventBus: events.IEventBus;
+  ruleDescription?: string;
+  // We're mimic-ing the `RuleProps` interface from `aws-cdk-lib`
+  // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_events.EventPattern.html
   ruleDetails?: {
-    // We're mimic-ing the `RuleProps` interface from `aws-cdk-lib`
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   };
-  ruleDescription?: string;
+  ruleSource?: string;
+  ruleDetailType?: string;
 }

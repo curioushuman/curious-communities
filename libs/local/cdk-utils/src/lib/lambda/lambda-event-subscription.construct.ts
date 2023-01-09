@@ -42,7 +42,8 @@ export class LambdaEventSubscription extends Construct {
       eventBus: props.eventBus,
       description: props.ruleDescription,
       eventPattern: {
-        detailType: ['putEvent'],
+        detailType: [props.ruleDetailType || 'putEvent'],
+        source: props.ruleSource ? [props.ruleSource] : undefined,
         detail: props.ruleDetails,
       },
     });

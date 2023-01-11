@@ -14,9 +14,9 @@ export class ParticipantSourceMapper {
       courseId: participantSource.courseId,
       status: participantSource.status,
 
-      memberName: participantSource.memberName,
-      memberEmail: participantSource.memberEmail,
-      memberOrganisationName: participantSource.memberOrganisationName,
+      name: participantSource.name,
+      email: participantSource.email,
+      organisationName: participantSource.organisationName,
     } as ParticipantSourceResponseDto;
   }
 }

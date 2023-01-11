@@ -14,10 +14,14 @@ import {
 } from '../../ports/group-source.repository';
 import { GroupSourceBuilder } from '../../../test/builders/group-source.builder';
 import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
+import { Group } from '../../../domain/entities/group';
+import { Source } from '../../../domain/value-objects/source';
 
 @Injectable()
 export class FakeGroupSourceRepository implements GroupSourceRepository {
   private groupSources: GroupSource[] = [];
+
+  readonly source: Source = 'GROUP';
 
   constructor() {
     this.groupSources.push(GroupSourceBuilder().exists().build());
@@ -59,11 +63,44 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
   };
 
   /**
+   * Find by any value on the entity
+   *
+   * ? Should the value check be extracted into it's own (functional) step?
+   */
+  findOneByEntity = (group: Group): TE.TaskEither<Error, GroupSource> => {
+    return TE.tryCatch(
+      async () => {
+        const groupSource = this.groupSources.find(
+          (g) => g.name === group.name
+        );
+        return pipe(
+          groupSource,
+          O.fromNullable,
+          O.fold(
+            () => {
+              // this mimics an API or DB call throwing an error
+              throw new NotFoundException(
+                `GroupSource matching ${group.name} not found`
+              );
+            },
+            // this mimics the fact that all non-fake adapters
+            // will come with a mapper, which will perform a check
+            // prior to return
+            (groupSource) => GroupSource.check(groupSource)
+          )
+        );
+      },
+      (reason: unknown) => reason as Error
+    );
+  };
+
+  /**
    * Object lookup for findOneBy methods
    */
-  findOneBy: Record<GroupSourceIdentifier, GroupSourceFindMethod> = {
+  readonly findOneBy: Record<GroupSourceIdentifier, GroupSourceFindMethod> = {
     // NOTE: idSource is parsed to id in application layer
     idSource: this.findOneById,
+    entity: this.findOneByEntity,
   };
 
   findOne = (identifier: GroupSourceIdentifier): GroupSourceFindMethod => {
@@ -77,7 +114,7 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
       async () => {
         const savedGroupSource = {
           ...groupSource,
-          id: GroupSourceId.check(`FakeId${Date.now}`),
+          id: GroupSourceId.check(`FakeId${Date.now()}`),
         };
         this.groupSources.push(savedGroupSource);
         return savedGroupSource;
@@ -90,7 +127,7 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
     return TE.tryCatch(
       async () => {
         const groupSourceExists = this.groupSources.find(
-          (cs) => cs.id === groupSource.id
+          (gS) => gS.id === groupSource.id
         );
         if (!groupSourceExists) {
           throw new NotFoundException(
@@ -100,7 +137,7 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
         this.groupSources = this.groupSources.map((cs) =>
           cs.id === groupSource.id ? groupSource : cs
         );
-        return groupSourceExists;
+        return groupSource;
       },
       (reason: unknown) => reason as Error
     );

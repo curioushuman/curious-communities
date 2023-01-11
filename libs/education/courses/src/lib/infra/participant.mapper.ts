@@ -20,9 +20,9 @@ export class ParticipantMapper {
         prepareExternalIdSourceValue(idSource.id, idSource.source)
       ),
 
-      memberName: participant.memberName,
-      memberEmail: participant.memberEmail,
-      memberOrganisationName: participant.memberOrganisationName,
+      name: participant.name,
+      email: participant.email,
+      organisationName: participant.organisationName,
     } as ParticipantResponseDto;
   }
 }

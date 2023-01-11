@@ -6,6 +6,7 @@ import { GroupSourceStatus } from '../value-objects/group-source-status';
 import { GroupName } from '../value-objects/group-name';
 import { GroupSourceId } from '../value-objects/group-source-id';
 import { GroupSourceIdSource } from '../value-objects/group-source-id-source';
+import { Group } from './group';
 
 /**
  * Type for external group entity
@@ -39,6 +40,7 @@ export type GroupSourceForCreate = Static<typeof GroupSourceForCreate>;
  */
 export type GroupSourceIdentifiers = {
   idSource: GroupSourceIdSource;
+  entity: Group;
 };
 export type GroupSourceIdentifier = keyof GroupSourceIdentifiers;
 export type GroupSourceIdentifierValue = ValueOf<GroupSourceIdentifiers>;

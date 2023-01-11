@@ -1,0 +1,57 @@
+# Data types: Create GroupMember
+
+## Notes
+
+Assume everything is AND unless specified by OR and ()
+
+## Types
+
+### CreateGroupMemberDto
+
+- source
+- group
+
+## Errors
+
+- RequestInvalidError
+  - Extends: BadRequestException
+  - Message: Invalid request, please review
+- RepositoryServerError
+  - Extends: InternalServerException
+  - Message: Error connecting to repository, please try again or contact system administrator
+- RepositoryServerUnavailableError
+  - Extends: ServiceUnavailableException
+  - Message: The repository is currently unavailable, please try again or contact system administrator
+- SourceInvalidError
+  - Extends: BadRequestException
+  - Message: Source contains insufficient or invalid data, please review requested record at source
+- NotificationFailedError
+  - Extends: InternalServerException
+  - Message: Error sending Notification, contact your system administrator
+- EventFailedError
+  - Extends: InternalServerException
+  - Message: Error emitting event, contact your system administrator
+
+### By Exception extended
+
+- BadRequestException
+  - RequestInvalidError
+  - SourceInvalidError
+- UnauthorizedException
+  - RepositoryAuthenticationError
+- NotFoundException
+  - RepositoryItemNotFoundError
+- InternalServerException
+  - RepositoryServerError
+  - NotificationFailedError
+  - EventFailedError
+- ConflictException
+  - RepositoryItemConflictError
+
+## Events
+
+- none
+
+## Notifications
+
+- none

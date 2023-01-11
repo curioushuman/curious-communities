@@ -27,6 +27,8 @@ export class UpdateGroupSourceCommand implements ICommand {
 /**
  * Command handler for update group source
  * TODO
+ * - [ ] accept a groupSource entity in the DTO (so we don't find it twice)
+ *       keep the current DTO format as well, so we can react to either
  * - [ ] move the source repository selection to a separate service
  * - [ ] this shouldn't be accepting findDtos, doesn't feel right
  *       requires more thought. Look at upsert for example.

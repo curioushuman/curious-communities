@@ -5,14 +5,15 @@ import { pipe } from 'fp-ts/lib/function';
 
 import {
   Group,
-  GroupIdentifier,
+  GroupBase,
   prepareGroupExternalIdSource,
 } from '../../../domain/entities/group';
+import { GroupRepository } from '../../ports/group.repository';
 import {
+  GetGroupIdentifier,
   GroupCheckMethod,
   GroupFindMethod,
-  GroupRepository,
-} from '../../ports/group.repository';
+} from '../../ports/group.repository.base';
 import { GroupBuilder } from '../../../test/builders/group.builder';
 import { GroupId } from '../../../domain/value-objects/group-id';
 import { GroupSourceIdSourceValue } from '../../../domain/value-objects/group-source-id-source';
@@ -30,6 +31,9 @@ export class FakeGroupRepository implements GroupRepository {
    * Find by internal ID
    *
    * ? Should the value check be extracted into it's own (functional) step?
+   *
+   * TODO
+   * - [ ] is there a way to include functions in here to help CourseGroupRepository
    */
   findOneById = (value: GroupId): TE.TaskEither<Error, Group> => {
     return TE.tryCatch(
@@ -126,13 +130,16 @@ export class FakeGroupRepository implements GroupRepository {
   /**
    * Object lookup for findOneBy methods
    */
-  findOneBy: Record<GroupIdentifier, GroupFindMethod> = {
+  readonly findOneBy: Record<
+    GetGroupIdentifier<Group>,
+    GroupFindMethod<Group>
+  > = {
     id: this.findOneById,
     idSourceValue: this.findOneByIdSourceValue,
     slug: this.findOneBySlug,
   };
 
-  findOne = (identifier: GroupIdentifier): GroupFindMethod => {
+  findOne = (identifier: GetGroupIdentifier<Group>): GroupFindMethod<Group> => {
     return this.findOneBy[identifier];
   };
 
@@ -202,28 +209,38 @@ export class FakeGroupRepository implements GroupRepository {
   /**
    * Object lookup for checkBy methods
    */
-  checkBy: Record<GroupIdentifier, GroupCheckMethod> = {
-    id: this.checkById,
-    idSourceValue: this.checkByIdSourceValue,
-    slug: this.checkBySlug,
-  };
+  readonly checkBy: Record<GetGroupIdentifier<Group>, GroupCheckMethod<Group>> =
+    {
+      id: this.checkById,
+      idSourceValue: this.checkByIdSourceValue,
+      slug: this.checkBySlug,
+    };
 
-  check = (identifier: GroupIdentifier): GroupCheckMethod => {
+  check = (identifier: GetGroupIdentifier<Group>): GroupCheckMethod<Group> => {
     return this.checkBy[identifier];
   };
 
-  save = (group: Group): TE.TaskEither<Error, Group> => {
+  /**
+   * TODO - use a mapper between the GroupBase and Group
+   */
+  save = (group: Group | GroupBase): TE.TaskEither<Error, Group> => {
     return TE.tryCatch(
       async () => {
-        const groupExists = this.groups.find((cs) => cs.id === group.id);
+        // sneaky member addition
+        // it's a fake repo, so we can do this
+        const groupToSave = {
+          ...group,
+          members: 'members' in group ? group.members : [],
+        };
+        const groupExists = this.groups.find((g) => g.id === group.id);
         if (groupExists) {
-          this.groups = this.groups.map((cs) =>
-            cs.id === group.id ? group : cs
+          this.groups = this.groups.map((g) =>
+            g.id === group.id ? groupToSave : g
           );
         } else {
-          this.groups.push(group);
+          this.groups.push(groupToSave);
         }
-        return group;
+        return Group.check(groupToSave);
       },
       (reason: unknown) => reason as Error
     );

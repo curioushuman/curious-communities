@@ -37,8 +37,10 @@ export class CreateMemberCommand implements ICommand {
 /**
  * Command handler for create member
  * TODO
- * - [ ] better associated member check
- *       e.g. check against local IDs rather than just existence of memberId
+ * - [ ] I don't like that findDto's are handed in as arguments on the DTO
+ *       this doesn't feel right and needs to change
+ *       keep the incoming DTO simple, parse it, and transform into find DTOs here
+ *       look at createGroupMember as a better way to do it
  */
 @CommandHandler(CreateMemberCommand)
 export class CreateMemberHandler

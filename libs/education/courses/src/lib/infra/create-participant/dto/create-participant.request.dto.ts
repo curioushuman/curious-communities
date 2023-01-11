@@ -1,4 +1,7 @@
-import { Record, Static, String } from 'runtypes';
+import { Record, Static } from 'runtypes';
+import { CourseDto } from '../../dto/course.dto';
+import { MemberDto } from '../../dto/member.dto';
+import { ParticipantSourceDto } from '../../dto/participant-source.dto';
 
 /**
  * This is the form of data we expect as input into our application
@@ -8,26 +11,10 @@ import { Record, Static, String } from 'runtypes';
  * further into application layers.
  */
 
-const ParticipantSourcePartial = Record({
-  id: String,
-  status: String,
-});
-
-const CoursePartial = Record({
-  id: String,
-});
-
-const MemberPartial = Record({
-  id: String,
-  email: String,
-  name: String,
-  organisationName: String,
-});
-
 export const CreateParticipantRequestDto = Record({
-  participantSource: ParticipantSourcePartial,
-  course: CoursePartial,
-  member: MemberPartial,
+  participantSource: ParticipantSourceDto,
+  course: CourseDto,
+  member: MemberDto,
 });
 
 export type CreateParticipantRequestDto = Static<

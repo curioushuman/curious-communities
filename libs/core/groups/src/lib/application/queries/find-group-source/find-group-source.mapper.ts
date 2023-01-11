@@ -1,16 +1,13 @@
-import { parseExternalIdSourceValue } from '@curioushuman/common';
-
 import { FindGroupSourceDto } from './find-group-source.dto';
-import {
-  FindByIdSourceValueGroupSourceRequestDto,
-  FindGroupSourceRequestDto,
-} from '../../../infra/find-group-source/dto/find-group-source.request.dto';
 import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
-import { Source } from '../../../domain/value-objects/source';
-import { CreateGroupRequestDto } from '../../../infra/create-group/dto/create-group.request.dto';
-import { GroupSourceIdSource } from '../../../domain/value-objects/group-source-id-source';
+import {
+  GroupSourceIdSource,
+  GroupSourceIdSourceValue,
+} from '../../../domain/value-objects/group-source-id-source';
 import { UpsertGroupSourceRequestDto } from '../../../infra/upsert-group-source/dto/upsert-group-source.request.dto';
 import { prepareGroupExternalIdSource } from '../../../domain/entities/group';
+import { GroupMapper } from '../../../infra/group.mapper';
+import { Source } from '../../../domain/value-objects/source';
 
 /**
  * TODO
@@ -18,31 +15,14 @@ import { prepareGroupExternalIdSource } from '../../../domain/entities/group';
  */
 export class FindGroupSourceMapper {
   /**
-   * As we use a similar construct when creating our groups,
-   * we can share mapper functions.
+   * Little sneaky function to make sure the Array.find method knows what type
+   * it is dealing with.
    */
-  public static fromFindRequestDto(
-    dto: FindGroupSourceRequestDto | CreateGroupRequestDto
-  ): FindGroupSourceDto {
-    // NOTE: this is based on a model that inc. multiple identifiers
-    return FindGroupSourceMapper.fromFindByIdSourceValueRequestDto({
-      idSourceValue: dto.idSourceValue,
-    });
-  }
-
-  public static fromFindByIdSourceValueRequestDto(
-    dto: FindByIdSourceValueGroupSourceRequestDto
-  ): FindGroupSourceDto {
-    // this will throw an error if the value is not valid
-    const value = parseExternalIdSourceValue(
-      dto.idSourceValue,
-      GroupSourceId,
-      Source
-    );
-    return {
-      identifier: 'idSource',
-      value: prepareGroupExternalIdSource(value),
-    } as FindGroupSourceDto;
+  public static matchIdSourceBySource(
+    source: string
+  ): (idSourceValue: GroupSourceIdSourceValue) => boolean {
+    return (idSourceValue: GroupSourceIdSourceValue) =>
+      idSourceValue.indexOf(source) === 0;
   }
 
   public static fromUpsertRequestDto(
@@ -51,15 +31,25 @@ export class FindGroupSourceMapper {
     // look to see if we have a source id
     // for this source, for this group
     const idSourceValue = dto.group.sourceIds.find(
-      (idSV) => idSV.indexOf(dto.source) === 0
+      FindGroupSourceMapper.matchIdSourceBySource(dto.source)
     );
-    // if we don't have them on record
+
+    // I do want to check the source here
+    // as this isn't dynamic like the identifier
+    const source = Source.check(dto.source);
+
+    // if we don't have them on internal record
     if (!idSourceValue) {
-      return;
+      return {
+        identifier: 'entity',
+        value: GroupMapper.fromResponseDto(dto.group),
+        source,
+      } as FindGroupSourceDto;
     }
     return {
       identifier: 'idSource',
       value: prepareGroupExternalIdSource(idSourceValue),
+      source,
     } as FindGroupSourceDto;
   }
 

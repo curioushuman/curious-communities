@@ -45,11 +45,9 @@ export class FindGroupSourceHandler
   async execute(query: FindGroupSourceQuery): Promise<GroupSource> {
     const { findGroupSourceDto } = query;
 
-    // * NOTE: currently idSource is the only identifier that is allowed
-    // *       to define a specific source for query. Otherwise reverts
-    // *       to the primary source.
-    const source = findGroupSourceDto.value.source
-      ? findGroupSourceDto.value.source
+    // NOTE: Source has been validated in the mapper
+    const source = findGroupSourceDto.source
+      ? findGroupSourceDto.source
       : config.defaults.primaryAccountSource;
 
     // TODO this must be improved/moved at some later point
@@ -63,6 +61,8 @@ export class FindGroupSourceHandler
       // #1. parse the dto
       // NOTE: this uses a dynamic parser that will parse the dto based on the
       //       identifier within the dto
+      // * Hence why this is one of the only places (remaining)
+      // * where validation wasn't handled in the mapper
       parseActionData(parseDto, this.logger, 'RequestInvalidError'),
 
       // #2. Find the groupSource

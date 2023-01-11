@@ -5,7 +5,7 @@ import { pipe } from 'fp-ts/lib/function';
 
 import { ValidationAllowedErrorTypeName } from '@curioushuman/error-factory';
 
-import { logParse } from './log-parse';
+import { logActionParse, logParse } from './log-parse';
 
 type Parser<I, O> = (data: I) => O;
 
@@ -42,5 +42,39 @@ export const parseActionData =
       },
       (error: unknown) => error as ErrorLike
     );
-    return pipe(tryParse, TE.fromEither, logParse(logger, asErrorType));
+    return pipe(tryParse, TE.fromEither, logActionParse(logger, asErrorType));
+  };
+
+/**
+ * Similar to parseActionData, but without the Task part
+ */
+export const parseData =
+  <InputLike, OutputLike, ErrorLike extends Error>(
+    parser: Parser<InputLike, OutputLike>,
+    logger: LoggerService,
+    asErrorType?: ValidationAllowedErrorTypeName
+  ) =>
+  (data: InputLike): OutputLike => {
+    // Our current validation methods throw exceptions, so we need to handle them
+    const tryParse = E.tryCatch<ErrorLike, OutputLike>(
+      () => {
+        // NOTE: logging context and data here
+        // so we see it in both error/success cases
+        const context = `parseData: ${parser.name}`;
+        logger.debug ? logger.debug(context) : logger.log(context);
+        logger.verbose ? logger.verbose(data) : logger.log(data);
+        return pipe(data, parser);
+      },
+      (error: unknown) => error as ErrorLike
+    );
+    return pipe(
+      tryParse,
+      logParse(logger, asErrorType),
+      E.match(
+        (err) => {
+          throw err;
+        },
+        (dto) => dto
+      )
+    );
   };

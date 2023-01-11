@@ -1,4 +1,5 @@
 import { TaskEither } from 'fp-ts/lib/TaskEither';
+import { Group } from '../../domain/entities/group';
 
 import {
   GroupSource,
@@ -7,6 +8,7 @@ import {
   GroupSourceIdentifierValue,
 } from '../../domain/entities/group-source';
 import { GroupSourceId } from '../../domain/value-objects/group-source-id';
+import { Source } from '../../domain/value-objects/source';
 
 /**
  * Type for the findOne method interface within repository
@@ -17,9 +19,18 @@ export type GroupSourceFindMethod = (
 
 export abstract class GroupSourceRepository {
   /**
+   * Each source repository should also be marked with the source
+   * it represents
+   */
+  abstract readonly source: Source;
+
+  /**
    * Object lookup for findMethods
    */
-  abstract findOneBy: Record<GroupSourceIdentifier, GroupSourceFindMethod>;
+  abstract readonly findOneBy: Record<
+    GroupSourceIdentifier,
+    GroupSourceFindMethod
+  >;
 
   /**
    * Find a group
@@ -39,6 +50,13 @@ export abstract class GroupSourceRepository {
    * - idSource is parsed to id in application layer
    */
   abstract findOneById(id: GroupSourceId): TaskEither<Error, GroupSource>;
+
+  /**
+   * Find a source, from the entity it reflects
+   *
+   * NOTE: will throw NotFoundException if not found
+   */
+  abstract findOneByEntity(group: Group): TaskEither<Error, GroupSource>;
 
   /**
    * Create/update a group

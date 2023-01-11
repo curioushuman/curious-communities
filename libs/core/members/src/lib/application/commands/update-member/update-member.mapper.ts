@@ -45,8 +45,8 @@ export class UpdateMemberMapper {
   public static fromSourceToMember(
     member: Member
   ): (source: MemberSource) => Member {
-    return (source: MemberSource) => {
-      return Member.check({
+    return (source: MemberSource) =>
+      Member.check({
         ...member,
         status: source.status,
 
@@ -54,6 +54,5 @@ export class UpdateMemberMapper {
         email: source.email,
         organisationName: source.organisationName,
       });
-    };
   }
 }

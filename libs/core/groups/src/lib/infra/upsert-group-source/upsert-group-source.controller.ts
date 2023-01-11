@@ -4,7 +4,11 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
-import { executeTask, parseActionData } from '@curioushuman/fp-ts-utils';
+import {
+  executeTask,
+  parseActionData,
+  parseData,
+} from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import { UpsertGroupSourceRequestDto } from './dto/upsert-group-source.request.dto';
@@ -48,26 +52,25 @@ export class UpsertGroupSourceController {
    * Then we pipe that result into the rest of the function.
    *
    * TODO
+   * - [ ] add the found groupSource to the requestDto
    * - [ ] at some point extract the update and create into a single, simpler, static function
    */
   public async upsert(
     requestDto: UpsertGroupSourceRequestDto
   ): Promise<GroupSourceResponseDto> {
-    // find will
-    // - validate dto
-    // - find groupSource or undefined
-    const groupSource = await this.find(requestDto);
-    const task = pipe(
-      groupSource,
+    const validDto = pipe(
+      requestDto,
 
       // #1. parse the dto
-      // handled in find
+      parseData(UpsertGroupSourceRequestDto.check, this.logger)
+    );
 
-      // #2. see if you can find a groupSource
-      // handled in find
+    // #2. see if you can find a groupSource
+    const groupSource = await this.find(validDto);
 
-      // #3. based on whether or not we find anything, take the appropriate action
-      // groupSource could be null
+    // #3. based on whether or not we find anything, take the appropriate action
+    const task = pipe(
+      groupSource,
       O.fromNullable,
       O.fold(
         // if it is, then create
@@ -112,7 +115,7 @@ export class UpsertGroupSourceController {
           )
       ),
 
-      // #5. transform to the response DTO
+      // #4. transform to the response DTO
       TE.chain(parseActionData(GroupSourceMapper.toResponseDto, this.logger))
     );
 
@@ -120,26 +123,16 @@ export class UpsertGroupSourceController {
   }
 
   private find(
-    requestDto: UpsertGroupSourceRequestDto
+    validRequestDto: UpsertGroupSourceRequestDto
   ): Promise<GroupSource | undefined> {
     const task = pipe(
-      requestDto,
+      validRequestDto,
 
-      // #1. parse the dto
-      parseActionData(UpsertGroupSourceRequestDto.check, this.logger),
-
-      // #2. transform the dto
+      // #1. transform the dto
       // NOTE: if no idSource for this source exists, this will return undefined
-      TE.chain((dto) =>
-        pipe(
-          dto,
-          parseActionData(
-            FindGroupSourceMapper.fromUpsertRequestDto,
-            this.logger
-          )
-        )
-      ),
+      parseActionData(FindGroupSourceMapper.fromUpsertRequestDto, this.logger),
 
+      // #2. find the groupSource
       TE.chain((findDto) =>
         pipe(
           findDto,

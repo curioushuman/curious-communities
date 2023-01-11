@@ -17,13 +17,15 @@ import {
 } from './adapter/ports/group-source.repository';
 import { FakeGroupSourceCommunityRepository } from './adapter/implementations/fake/fake.group-source.community.repository';
 import { FakeGroupSourceMicroCourseRepository } from './adapter/implementations/fake/fake.group-source.micro-course.repository';
+import { GroupRepository } from './adapter/ports/group.repository';
+import { FakeGroupSourceRepository } from './adapter/implementations/fake/fake.group-source.repository';
 
 const controllers = [UpsertGroupSourceController];
 
 const handlers = [
+  CreateGroupSourceHandler,
   FindGroupSourceHandler,
   UpdateGroupSourceHandler,
-  CreateGroupSourceHandler,
 ];
 
 /**
@@ -37,6 +39,7 @@ const handlers = [
  *       OR just leave it where it is
  */
 const repositories = [
+  { provide: GroupRepository, useClass: FakeGroupSourceRepository },
   {
     provide: GroupSourceCommunityRepository,
     useClass: FakeGroupSourceCommunityRepository,

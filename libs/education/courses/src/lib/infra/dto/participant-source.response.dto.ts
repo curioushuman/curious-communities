@@ -24,7 +24,7 @@ export class ParticipantSourceResponseDto {
   courseId!: string;
   status!: string;
 
-  memberName!: string;
-  memberEmail!: string;
-  memberOrganisationName!: string;
+  name!: string;
+  email!: string;
+  organisationName!: string;
 }

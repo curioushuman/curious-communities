@@ -34,30 +34,30 @@ export const ParticipantSourceBuilder = () => {
     courseId: '5008s1234519CjIAAU',
     status: 'pending' as ParticipantSourceStatus,
 
-    memberName: 'James Brown',
-    memberEmail: 'james@brown.com',
-    memberOrganisationName: 'James Co',
+    name: 'James Brown',
+    email: 'james@brown.com',
+    organisationName: 'James Co',
   };
   const overrides: ParticipantSourceLooseMimic = {
     id: defaultProperties.id,
     courseId: defaultProperties.courseId,
     status: defaultProperties.status,
 
-    memberName: defaultProperties.memberName,
-    memberEmail: defaultProperties.memberEmail,
-    memberOrganisationName: defaultProperties.memberOrganisationName,
+    name: defaultProperties.name,
+    email: defaultProperties.email,
+    organisationName: defaultProperties.organisationName,
   };
 
   return {
     alpha() {
       overrides.id = '5000K1234567GEYQA3';
-      overrides.memberName = 'Jim Brown';
+      overrides.name = 'Jim Brown';
       return this;
     },
 
     beta() {
       overrides.id = '5008s000000y7LUAAY';
-      overrides.memberName = 'June Brown';
+      overrides.name = 'June Brown';
       return this;
     },
 
@@ -71,13 +71,13 @@ export const ParticipantSourceBuilder = () => {
     },
 
     invalidStatus() {
-      overrides.memberName = 'Jones Invalid';
+      overrides.name = 'Jones Invalid';
       overrides.status = 'this is invalid';
       return this;
     },
 
     invalidSource() {
-      overrides.memberName = '';
+      overrides.name = '';
       return this;
     },
 

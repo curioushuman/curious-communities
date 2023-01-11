@@ -1,4 +1,4 @@
-import { ExternalId, prepareExternalIdSourceValue } from '@curioushuman/common';
+import { ExternalId } from '@curioushuman/common';
 import { CreateGroupSourceDto } from '../../application/commands/create-group-source/create-group-source.dto';
 import { UpdateGroupSourceDto } from '../../application/commands/update-group-source/update-group-source.dto';
 import { FindGroupSourceDto } from '../../application/queries/find-group-source/find-group-source.dto';
@@ -6,9 +6,9 @@ import { FindGroupSourceDto } from '../../application/queries/find-group-source/
 import { GroupSource } from '../../domain/entities/group-source';
 import { GroupName } from '../../domain/value-objects/group-name';
 import { GroupSourceStatus } from '../../domain/value-objects/group-source-status';
-import { FindByIdSourceValueGroupSourceRequestDto } from '../../infra/find-group-source/dto/find-group-source.request.dto';
 import { UpsertGroupSourceRequestDto } from '../../infra/upsert-group-source/dto/upsert-group-source.request.dto';
 import config from '../../static/config';
+import { GroupMemberBuilder } from './group-member.builder';
 import { GroupBuilder } from './group.builder';
 
 /**
@@ -94,6 +94,19 @@ export const GroupSourceBuilder = () => {
       return this;
     },
 
+    existsAlpha() {
+      overrides.id = ExternalId.check('ThisSourceExistsAlpha');
+      overrides.name = 'Alpha Exists group';
+      return this;
+    },
+
+    updatedAlpha() {
+      overrides.id = ExternalId.check('ThisSourceExistsAlpha');
+      overrides.name = 'Alpha Exists group';
+      overrides.status = 'open';
+      return this;
+    },
+
     build(): GroupSource {
       return GroupSource.check({
         ...defaultProperties,
@@ -116,15 +129,16 @@ export const GroupSourceBuilder = () => {
           id: build.id,
           source,
         },
+        source,
       } as FindGroupSourceDto;
     },
 
-    buildFindByIdSourceValueGroupSourceRequestDto(): FindByIdSourceValueGroupSourceRequestDto {
-      const build = this.buildNoCheck();
-      return {
-        idSourceValue: prepareExternalIdSourceValue(build.id, source),
-      } as FindByIdSourceValueGroupSourceRequestDto;
-    },
+    // buildFindByIdSourceValueGroupSourceRequestDto(): FindByIdSourceValueGroupSourceRequestDto {
+    //   const build = this.buildNoCheck();
+    //   return {
+    //     idSourceValue: prepareExternalIdSourceValue(build.id, source),
+    //   } as FindByIdSourceValueGroupSourceRequestDto;
+    // },
 
     buildCreateGroupSourceDto(): CreateGroupSourceDto {
       const group = GroupBuilder().noSourceExists().buildNoCheck();
@@ -134,14 +148,6 @@ export const GroupSourceBuilder = () => {
       } as CreateGroupSourceDto;
     },
 
-    buildCreateUpsertGroupSourceRequestDto(): UpsertGroupSourceRequestDto {
-      const group = GroupBuilder().noSourceExists().buildGroupResponseDto();
-      return {
-        source: config.defaults.primaryAccountSource,
-        group,
-      } as UpsertGroupSourceRequestDto;
-    },
-
     buildInvalidCreateGroupSourceDto(): CreateGroupSourceDto {
       const group = GroupBuilder().noSourceExists().buildNoCheck();
       group.name = '' as GroupName;
@@ -149,15 +155,6 @@ export const GroupSourceBuilder = () => {
         source: config.defaults.primaryAccountSource,
         group,
       } as CreateGroupSourceDto;
-    },
-
-    buildInvalidUpsertGroupSourceRequestDto(): UpsertGroupSourceRequestDto {
-      const group = GroupBuilder().exists().buildGroupResponseDto();
-      group.name = '' as GroupName;
-      return {
-        source: config.defaults.primaryAccountSource,
-        group,
-      } as UpsertGroupSourceRequestDto;
     },
 
     buildUpdateGroupSourceDto(): UpdateGroupSourceDto {
@@ -170,14 +167,6 @@ export const GroupSourceBuilder = () => {
       } as UpdateGroupSourceDto;
     },
 
-    buildUpdateUpsertGroupSourceRequestDto(): UpsertGroupSourceRequestDto {
-      const group = GroupBuilder().exists().buildGroupResponseDto();
-      return {
-        source: config.defaults.primaryAccountSource,
-        group,
-      } as UpsertGroupSourceRequestDto;
-    },
-
     buildInvalidUpdateGroupSourceDto(): UpdateGroupSourceDto {
       const group = GroupBuilder().exists().buildNoCheck();
       const groupSource = this.exists().buildNoCheck();
@@ -187,6 +176,42 @@ export const GroupSourceBuilder = () => {
         group,
         groupSource,
       } as UpdateGroupSourceDto;
+    },
+
+    buildCreateUpsertGroupSourceRequestDto(): UpsertGroupSourceRequestDto {
+      const group = GroupBuilder().noSourceExists().buildGroupResponseDto();
+      return {
+        source: config.defaults.primaryAccountSource,
+        group,
+      } as UpsertGroupSourceRequestDto;
+    },
+
+    buildUpdateUpsertGroupSourceRequestDto(): UpsertGroupSourceRequestDto {
+      const group = GroupBuilder().exists().buildGroupResponseDto();
+      group.status = 'open';
+      return {
+        source: config.defaults.primaryAccountSource,
+        group,
+      } as UpsertGroupSourceRequestDto;
+    },
+
+    buildUpdateByEntityUpsertGroupSourceRequestDto(): UpsertGroupSourceRequestDto {
+      const group = GroupBuilder().existsAlpha().buildGroupResponseDto();
+      group.status = 'open';
+      group.sourceIds = [];
+      return {
+        source: config.defaults.primaryAccountSource,
+        group,
+      } as UpsertGroupSourceRequestDto;
+    },
+
+    buildInvalidUpsertGroupSourceRequestDto(): UpsertGroupSourceRequestDto {
+      const group = GroupBuilder().exists().buildGroupResponseDto();
+      group.name = '' as GroupName;
+      return {
+        source: config.defaults.primaryAccountSource,
+        group,
+      } as UpsertGroupSourceRequestDto;
     },
   };
 };

@@ -14,6 +14,13 @@ Scenario: Successfully updating a group source by Source Id
   Then the record should have been updated
   And the updated record should be returned
 
+Scenario: Successfully updating a group source by entity
+  Given the request is valid
+  And a matching record is found at the source
+  When I attempt to upsert a group source
+  Then the record should have been updated
+  And the updated record should be returned
+
 # * This would default to create, therefore unnecessary
 # Scenario: Fail; Source not found
 

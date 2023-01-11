@@ -1,7 +1,9 @@
+import { Group } from '../../../domain/entities/group';
 import {
   GroupSourceIdentifier,
   GroupSourceIdentifiers,
 } from '../../../domain/entities/group-source';
+import { Source } from '../../../domain/value-objects/source';
 import { FindGroupSourceMapper } from './find-group-source.mapper';
 
 /**
@@ -16,6 +18,7 @@ type FindGroupSourceDtoTypes = {
   [I in GroupSourceIdentifier]: {
     identifier: I;
     value: GroupSourceIdentifiers[I];
+    source: Source;
   };
 };
 
@@ -40,6 +43,7 @@ type FindGroupSourceDtoParsers = {
 const parsers: FindGroupSourceDtoParsers = {
   // * NOTE: the idSource parser will validate the idSource AND extract id
   idSource: (dto) => FindGroupSourceMapper.fromIdSourceToId(dto.value),
+  entity: (dto) => Group.check(dto.value),
 };
 
 /**

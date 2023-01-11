@@ -1,27 +1,12 @@
 import { Array, Record, Static, String } from 'runtypes';
+import { GroupMemberBaseResponseDto } from './group-member.response.dto';
 
 /**
- * This is the structure of data the world will receive
+ * Base type for response DTO
  *
- * UPDATE
- *
- * This is the structure of data the rest of our applications will receive.
- * When it comes to stripping out data for the public, we'll do that in the
- * API (i.e. API Gateway) layer, not here.
- *
- * I think it is still worth including a layer of abstraction between the
- * core Group entity and the DTO we hand around to other applications.
- *
- * TODO
- * - [*] Unnecessary - Somehow strip out some elements for admin only
- * - [*] Unnecessary - Add swagger ApiProperty to all
- * - [ ] later, if/when necessary, add underlying interface
- *
- * ? QUESTIONS
- * ? [*] Should we expose the externalIdentifiers?
- *       Yes, we'll expose this as admin only. Moved to TODO
+ * i.e. just the fields
  */
-export const GroupResponseDto = Record({
+export const GroupBaseResponseDto = Record({
   id: String,
   status: String,
   type: String,
@@ -29,6 +14,25 @@ export const GroupResponseDto = Record({
   sourceIds: Array(String),
   name: String,
   accountOwner: String,
+});
+
+/**
+ * Base type for response DTO
+ *
+ * i.e. just the fields
+ */
+export type GroupBaseResponseDto = Static<typeof GroupBaseResponseDto>;
+
+/**
+ * This is the structure of data the rest of our applications will receive.
+ * When it comes to stripping out data for the public, we'll do that in the
+ * API (i.e. API Gateway) layer, not here.
+ *
+ * i.e. fields + relationships
+ */
+
+export const GroupResponseDto = GroupBaseResponseDto.extend({
+  members: Array(GroupMemberBaseResponseDto),
 });
 
 /**

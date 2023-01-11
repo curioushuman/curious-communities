@@ -53,9 +53,9 @@ export const ParticipantBuilder = () => {
       },
     ],
 
-    memberName: 'James Brown',
-    memberEmail: 'james@brown.com',
-    memberOrganisationName: 'James Co',
+    name: 'James Brown',
+    email: 'james@brown.com',
+    organisationName: 'James Co',
 
     accountOwner: config.defaults.accountOwner,
   };
@@ -67,9 +67,9 @@ export const ParticipantBuilder = () => {
 
     sourceIds: defaultProperties.sourceIds,
 
-    memberName: defaultProperties.memberName,
-    memberEmail: defaultProperties.memberEmail,
-    memberOrganisationName: defaultProperties.memberOrganisationName,
+    name: defaultProperties.name,
+    email: defaultProperties.email,
+    organisationName: defaultProperties.organisationName,
 
     accountOwner: defaultProperties.accountOwner,
   };
@@ -186,9 +186,9 @@ export const ParticipantBuilder = () => {
         },
         member: {
           id: build.memberId,
-          email: build.memberEmail,
-          name: build.memberName,
-          organisationName: build.memberOrganisationName,
+          email: build.email,
+          name: build.name,
+          organisationName: build.organisationName,
         },
       } as CreateParticipantDto;
     },
@@ -205,9 +205,9 @@ export const ParticipantBuilder = () => {
         },
         member: {
           id: build.memberId,
-          email: build.memberEmail,
-          name: build.memberName,
-          organisationName: build.memberOrganisationName,
+          email: build.email,
+          name: build.name,
+          organisationName: build.organisationName,
         },
       } as CreateParticipantRequestDto;
     },

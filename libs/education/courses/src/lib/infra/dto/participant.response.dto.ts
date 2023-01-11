@@ -27,7 +27,7 @@ export class ParticipantResponseDto {
 
   sourceIds!: string[];
 
-  memberName!: string;
-  memberEmail!: string;
-  memberOrganisationName!: string;
+  name!: string;
+  email!: string;
+  organisationName!: string;
 }

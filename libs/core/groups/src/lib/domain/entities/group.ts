@@ -13,11 +13,14 @@ import { GroupSourceId } from '../value-objects/group-source-id';
 import { Source } from '../value-objects/source';
 import { GroupSlug } from '../value-objects/group-slug';
 import { GroupType } from '../value-objects/group-type';
+import { GroupMemberBase } from './group-member';
 
 /**
- * Type for internal group entity
+ * Base type for internal group entity
+ *
+ * i.e. just the fields
  */
-export const Group = Record({
+export const GroupBase = Record({
   id: GroupId,
   status: GroupStatus,
   type: GroupType,
@@ -32,7 +35,27 @@ export const Group = Record({
 });
 
 /**
+ * Base type for internal group entity
+ *
+ * i.e. just the fields
+ */
+export type GroupBase = Static<typeof GroupBase>;
+
+/**
  * Type for internal group entity
+ *
+ * i.e. fields + relationships
+ *
+ * * NOTE: I've had to duplicate this extension over at CourseGroup
+ */
+export const Group = GroupBase.extend({
+  members: Array(GroupMemberBase),
+});
+
+/**
+ * Type for internal group entity
+ *
+ * i.e. fields + relationships
  */
 export type Group = Static<typeof Group>;
 
@@ -41,11 +64,11 @@ export type Group = Static<typeof Group>;
  * NOTE: this is utilized in find-group.dto.ts and group.repository.ts
  * to define parsers and finders.
  */
-export type GroupIdentifiers = {
+export interface GroupIdentifiers {
   id: GroupId;
   idSourceValue: GroupSourceIdSourceValue;
   slug: GroupSlug;
-};
+}
 export type GroupIdentifier = keyof GroupIdentifiers;
 export type GroupIdentifierValue = ValueOf<GroupIdentifiers>;
 

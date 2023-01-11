@@ -9,14 +9,6 @@ import { LoggableModule } from '@curioushuman/loggable';
 
 import { GroupRepository } from '../adapter/ports/group.repository';
 import { FakeGroupRepository } from '../adapter/implementations/fake/fake.group.repository';
-import { CreateGroupController } from '../infra/create-group/create-group.controller';
-import { UpdateGroupController } from '../infra/update-group/update-group.controller';
-import { CreateGroupHandler } from '../application/commands/create-group/create-group.command';
-import { UpdateGroupHandler } from '../application/commands/update-group/update-group.command';
-import { FindGroupHandler } from '../application/queries/find-group/find-group.query';
-import { FindGroupController } from '../infra/find-group/find-group.controller';
-import { FindGroupSourceHandler } from '../application/queries/find-group-source/find-group-source.query';
-import { FindGroupSourceController } from '../infra/find-group-source/find-group-source.controller';
 import {
   GroupSourceCommunityRepository,
   GroupSourceMicroCourseRepository,
@@ -26,21 +18,13 @@ import { FakeGroupSourceMicroCourseRepository } from '../adapter/implementations
 import { UpsertGroupSourceController } from '../infra/upsert-group-source/upsert-group-source.controller';
 import { CreateGroupSourceHandler } from '../application/commands/create-group-source/create-group-source.command';
 import { UpdateGroupSourceHandler } from '../application/commands/update-group-source/update-group-source.command';
+import { FindGroupSourceHandler } from '../application/queries/find-group-source/find-group-source.query';
 
-const controllers = [
-  CreateGroupController,
-  FindGroupController,
-  FindGroupSourceController,
-  UpdateGroupController,
-  UpsertGroupSourceController,
-];
+const controllers = [UpsertGroupSourceController];
 
 const handlers = [
-  CreateGroupHandler,
   CreateGroupSourceHandler,
-  FindGroupHandler,
   FindGroupSourceHandler,
-  UpdateGroupHandler,
   UpdateGroupSourceHandler,
 ];
 

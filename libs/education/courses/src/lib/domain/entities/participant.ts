@@ -4,9 +4,9 @@ import { ParticipantId } from '../value-objects/participant-id';
 import { ParticipantStatus } from '../value-objects/participant-status';
 import { AccountSlug } from '../value-objects/account-slug';
 import { MemberId } from '../value-objects/member-id';
-import { MemberName } from '../value-objects/member-name';
-import { MemberEmail } from '../value-objects/member-email';
-import { MemberOrganisationName } from '../value-objects/member-organisation-name';
+import { ParticipantName } from '../value-objects/participant-name';
+import { ParticipantEmail } from '../value-objects/participant-email';
+import { ParticipantOrganisationName } from '../value-objects/participant-organisation-name';
 import { CourseId } from '../value-objects/course-id';
 import {
   ParticipantSourceIdSource,
@@ -26,9 +26,9 @@ export const Participant = Record({
 
   sourceIds: Array(ParticipantSourceIdSource),
 
-  memberName: MemberName,
-  memberEmail: MemberEmail,
-  memberOrganisationName: MemberOrganisationName,
+  name: ParticipantName,
+  email: ParticipantEmail,
+  organisationName: ParticipantOrganisationName,
 
   // e.g. APF being the account that owns this participant
   accountOwner: AccountSlug,
@@ -92,9 +92,9 @@ export type ParticipantFromSourceAndCourse = Static<
  */
 export const ParticipantFromMember = Participant.pick(
   'memberId',
-  'memberName',
-  'memberEmail',
-  'memberOrganisationName'
+  'name',
+  'email',
+  'organisationName'
 );
 
 /**

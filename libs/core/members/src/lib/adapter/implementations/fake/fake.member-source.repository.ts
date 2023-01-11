@@ -116,7 +116,7 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
       async () => {
         const savedMemberSource = {
           ...memberSource,
-          id: MemberSourceId.check(`FakeId${Date.now}`),
+          id: MemberSourceId.check(`FakeId${Date.now()}`),
         };
         this.memberSources.push(savedMemberSource);
         return savedMemberSource;

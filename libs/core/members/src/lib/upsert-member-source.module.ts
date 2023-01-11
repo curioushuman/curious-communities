@@ -21,13 +21,15 @@ import { FakeMemberSourceAuthRepository } from './adapter/implementations/fake/f
 import { FakeMemberSourceCommunityRepository } from './adapter/implementations/fake/fake.member-source.community.repository';
 import { FakeMemberSourceCrmRepository } from './adapter/implementations/fake/fake.member-source.crm.repository';
 import { FakeMemberSourceMicroCourseRepository } from './adapter/implementations/fake/fake.member-source.micro-course.repository';
+import { MemberRepository } from './adapter/ports/member.repository';
+import { FakeMemberRepository } from './adapter/implementations/fake/fake.member.repository';
 
 const controllers = [UpsertMemberSourceController];
 
 const handlers = [
+  CreateMemberSourceHandler,
   FindMemberSourceHandler,
   UpdateMemberSourceHandler,
-  CreateMemberSourceHandler,
 ];
 
 /**
@@ -41,6 +43,10 @@ const handlers = [
  *       OR just leave it where it is
  */
 const repositories = [
+  {
+    provide: MemberRepository,
+    useClass: FakeMemberRepository,
+  },
   {
     provide: MemberSourceAuthRepository,
     useClass: FakeMemberSourceAuthRepository,

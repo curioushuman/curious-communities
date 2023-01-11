@@ -11,8 +11,6 @@ import { FakeGroupSourceCommunityRepository } from '../../../adapter/implementat
 import { GroupSourceCommunityRepository } from '../../../adapter/ports/group-source.repository';
 import { GroupSource } from '../../../domain/entities/group-source';
 import { executeTask } from '@curioushuman/fp-ts-utils';
-import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
-import { prepareGroupExternalIdSource } from '../../../domain/entities/group';
 import { RequestInvalidError } from '@curioushuman/error-factory';
 
 /**
@@ -34,6 +32,18 @@ import { RequestInvalidError } from '@curioushuman/error-factory';
 const feature = loadFeature('./upsert-group-source.feature', {
   loadRelativePath: true,
 });
+
+const matchingRecordFound = async (
+  repository: FakeGroupSourceCommunityRepository,
+  dto: UpsertGroupSourceRequestDto
+): Promise<GroupSource | undefined> => {
+  const groupSources = await executeTask(repository.all());
+  const groupSource = groupSources.find(
+    (groupSource) => groupSource.name === dto.group.name
+  );
+  expect(groupSource).toBeDefined();
+  return groupSource;
+};
 
 defineFeature(feature, (test) => {
   let app: INestApplication;
@@ -105,8 +115,6 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
-    let groupSourceBefore: GroupSource;
-    let groupSourceId: GroupSourceId;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
@@ -119,15 +127,7 @@ defineFeature(feature, (test) => {
     });
 
     and('a matching record is found at the source', async () => {
-      // we'll grab the groupSource before the update
-      const idSourceValue = upsertGroupSourceDto.group.sourceIds[0];
-      const idSource = prepareGroupExternalIdSource(idSourceValue);
-      groupSourceId = idSource.id as GroupSourceId;
-      const groupSources = await executeTask(repository.all());
-      groupSourceBefore = groupSources.find(
-        (groupSource) => groupSource.id === groupSourceId
-      ) as GroupSource;
-      expect(groupSourceBefore).toBeDefined();
+      await matchingRecordFound(repository, upsertGroupSourceDto);
     });
 
     when('I attempt to upsert a group source', async () => {
@@ -140,11 +140,57 @@ defineFeature(feature, (test) => {
     });
 
     then('the record should have been updated', async () => {
-      const groupSources = await executeTask(repository.all());
-      const groupSourceAfter = groupSources.find(
-        (groupSource) => groupSource.id === groupSourceId
+      const groupSourceAfter = await matchingRecordFound(
+        repository,
+        upsertGroupSourceDto
       );
-      expect(groupSourceAfter).toBeDefined();
+      if (groupSourceAfter) {
+        expect(groupSourceAfter.status).toEqual(
+          upsertGroupSourceDto.group.status
+        );
+      }
+    });
+
+    and('the updated record should be returned', async () => {
+      expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Successfully updating a group source by entity', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    // disabling no-explicit-any for testing purposes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
+    let upsertGroupSourceDto: UpsertGroupSourceRequestDto;
+    let error: Error;
+
+    given('the request is valid', () => {
+      upsertGroupSourceDto =
+        GroupSourceBuilder().buildUpdateByEntityUpsertGroupSourceRequestDto();
+    });
+
+    and('a matching record is found at the source', async () => {
+      await matchingRecordFound(repository, upsertGroupSourceDto);
+    });
+
+    when('I attempt to upsert a group source', async () => {
+      try {
+        result = await controller.upsert(upsertGroupSourceDto);
+      } catch (err) {
+        error = err as Error;
+        expect(error).toBeUndefined();
+      }
+    });
+
+    then('the record should have been updated', async () => {
+      const groupSourceAfter = await matchingRecordFound(
+        repository,
+        upsertGroupSourceDto
+      );
       if (groupSourceAfter) {
         expect(groupSourceAfter.status).toEqual(
           upsertGroupSourceDto.group.status

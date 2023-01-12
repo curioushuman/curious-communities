@@ -13,11 +13,11 @@
     "cc-education-layers": "apps/education/layers",
     "cc-core-layers": "apps/core/layers",
     "cc-api-admin": "apps/api/admin",
+    "cc-groups": "apps/core/groups",
+    "cc-groups-service": "libs/core/groups",
     "cc-members": "apps/core/members",
     "cc-members-service": "libs/core/members",
     "cc-courses": "apps/education/courses",
-    "cc-courses-service": "libs/education/courses",
-    "cc-groups": "apps/core/groups",
-    "cc-groups-service": "libs/core/groups"
+    "cc-courses-service": "libs/education/courses"
   }
 }

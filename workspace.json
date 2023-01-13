@@ -10,6 +10,7 @@
     "layers": "apps/utils/layers",
     "cc-ci-cd": "apps/utils/ci-cd",
     "cc-events": "apps/utils/events",
+    "cc-test-stack": "apps/utils/test-stack",
     "cc-education-layers": "apps/education/layers",
     "cc-core-layers": "apps/core/layers",
     "cc-api-admin": "apps/api/admin",

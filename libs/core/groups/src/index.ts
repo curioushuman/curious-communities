@@ -19,3 +19,5 @@ export * from './lib/infra/dto/group-source.response.dto';
 
 export * from './lib/infra/dto/group-member.response.dto';
 export * from './lib/infra/dto/group-member-source.response.dto';
+
+export * from './lib/infra/dto/course.dto';

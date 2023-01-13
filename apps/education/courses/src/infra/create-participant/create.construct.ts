@@ -47,6 +47,13 @@ export class CreateParticipantConstruct extends Construct {
      */
 
     /**
+     * ! DO NOT IGNORE
+     * ! Must use naming convention for all step Ids
+     * ! AND choices
+     * ! AND state machine
+     */
+
+    /**
      * Local lambda to create participant record
      *
      * NOTES:

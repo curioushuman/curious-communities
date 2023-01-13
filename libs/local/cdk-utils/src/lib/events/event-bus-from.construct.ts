@@ -9,9 +9,10 @@ import {
 import { ResourceId } from '../utils/name.types';
 
 /**
- * LayerFrom construct
+ * EventBusFrom construct
  *
- * This accepts a ResourceId, and
+ * This type of construct makes it simpler to use an existing
+ * eventBus without having to think too hard about it's ID.
  */
 export class ChEventBusFrom extends Construct {
   public id: ResourceId;
@@ -33,6 +34,13 @@ export class ChEventBusFrom extends Construct {
       eventBusTitle,
       eventBusArn
     );
+
+    /**
+     * Outputs
+     */
+    new cdk.CfnOutput(this, `eventBusArn for ${eventBusTitle}`, {
+      value: eventBusArn,
+    });
   }
 
   private prepareArn(id: ResourceId) {
@@ -41,6 +49,6 @@ export class ChEventBusFrom extends Construct {
         ? process.env.AWS_ACCOUNT_LOCAL
         : cdk.Aws.ACCOUNT_ID;
     const name = transformIdToResourceName(id, 'EventBus');
-    return `arn:aws:events:${cdk.Aws.REGION}:${accountId}:event-bus:${name}`;
+    return `arn:aws:events:${cdk.Aws.REGION}:${accountId}:event-bus/${name}`;
   }
 }

@@ -1,0 +1,17 @@
+{
+  "name": "@curioushuman/cc-test-stack",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "TODO-dependencies": {
+    "@curioushuman/cdk-utils": "file:../../dist/local/cdk-utils/src/index.js"
+  },
+  "TODO-peerDependencies": {
+    "@curioushuman/error-factory": "file:../../dist/utils/layers/shared/nodejs/node_modules/@curioushuman/error-factory/src/index.js"
+  },
+  "devDependencies": {
+    "aws-cdk-lib": "^2.55.1",
+    "constructs": "^10.1.196",
+    "tslib": "^2.4.1"
+  }
+}

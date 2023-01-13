@@ -9,9 +9,10 @@ import {
 import { ResourceId } from '../utils/name.types';
 
 /**
- * LayerFrom construct
+ * LambdaFrom construct
  *
- * This accepts a ResourceId, and
+ * This type of construct makes it simpler to use an existing
+ * Lambda without having to think too hard about it's ID.
  */
 export class ChLambdaFrom extends Construct {
   public id: ResourceId;

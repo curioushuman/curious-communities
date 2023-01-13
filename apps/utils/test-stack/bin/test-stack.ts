@@ -10,14 +10,14 @@ import {
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import { ApiAdminStack } from '../lib/api-admin.stack';
+import { CcTestStack } from '../lib/test-stack.stack';
 
 const [account, region] = getAccountAndRegion();
 
 // creating an app in cloud or local
 const app = new cdk.App();
-const stackId = 'cc-api-admin';
-new ApiAdminStack(app, transformIdToResourceTitle(stackId, 'Stack'), {
+const stackId = 'cc-api-test';
+new CcTestStack(app, transformIdToResourceTitle(stackId, 'Stack'), {
   env: {
     account,
     region,

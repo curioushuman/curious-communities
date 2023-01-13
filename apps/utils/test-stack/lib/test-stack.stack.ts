@@ -8,24 +8,26 @@ import { Construct } from 'constructs';
 // Initially we're going to import from local sources
 import {
   ChEventBusFrom,
-  resourceNameTitle,
   testResourceNameTitle,
-} from '../../../../../dist/local/@curioushuman/cdk-utils/src';
+} from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-export class ApiAdminTestStack extends cdk.Stack {
+export class CcTestStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     /**
-     * (SUT) External events eventBus
+     * External events eventBus
      */
-    const externalEventsEventBusId = 'cc-eventbus-external';
-    const externalEventBusConstruct = new ChEventBusFrom(
-      this,
-      externalEventsEventBusId
-    );
+    const externalEventsEventBusId = 'cc-external';
+    const externalEventBusConstruct = new ChEventBusFrom(this, 'cc-external');
+
+    /**
+     * Internal events eventBus
+     */
+    const internalEventsEventBusId = 'cc-internal';
+    const internalEventBusConstruct = new ChEventBusFrom(this, 'cc-internal');
 
     /**
      * SQS queue that we will subscribe to all external events
@@ -46,7 +48,7 @@ export class ApiAdminTestStack extends cdk.Stack {
     const testSqsRule = new events.Rule(this, ruleTitle, {
       ruleName,
       eventBus: externalEventBusConstruct.eventBus,
-      description: 'Listen for all events from cc-eventbus-external event bus.',
+      description: 'Listen for all events from cc-external event bus.',
       eventPattern: {
         detailType: ['putEvent'],
       },

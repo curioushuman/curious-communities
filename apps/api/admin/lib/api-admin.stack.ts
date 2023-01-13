@@ -51,10 +51,7 @@ export class ApiAdminStack extends cdk.Stack {
     /**
      * External events eventBus
      */
-    const externalEventBusConstruct = new ChEventBusFrom(
-      this,
-      'cc-eventbus-external'
-    );
+    const externalEventBusConstruct = new ChEventBusFrom(this, 'cc-external');
     externalEventBusConstruct.eventBus.grantPutEventsTo(apiAdmin.role);
 
     /**

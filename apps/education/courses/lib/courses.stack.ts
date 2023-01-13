@@ -44,23 +44,20 @@ export class CoursesStack extends cdk.Stack {
      * - this has been abstracted into a construct just to keep this file tidy
      * - all LSI and GSI details can be found in the construct
      */
-    const coursesTableConstruct = new CoursesDynamoDbConstruct(this, 'courses');
+    const coursesTableConstruct = new CoursesDynamoDbConstruct(
+      this,
+      'cc-courses'
+    );
 
     /**
      * External events eventBus
      */
-    const externalEventBusConstruct = new ChEventBusFrom(
-      this,
-      'cc-eventbus-external'
-    );
+    const externalEventBusConstruct = new ChEventBusFrom(this, 'cc-external');
 
     /**
      * Internal events eventBus
      */
-    const internalEventBusConstruct = new ChEventBusFrom(
-      this,
-      'cc-eventbus-internal'
-    );
+    const internalEventBusConstruct = new ChEventBusFrom(this, 'cc-internal');
 
     /**
      * Eventbridge destination for our lambdas
@@ -181,79 +178,79 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Create Participant
      */
-    const createParticipantConstruct = new CreateParticipantConstruct(
-      this,
-      'cc-courses-participant-create',
-      {
-        lambdaProps: lambdaPropsWithDestination,
-        externalEventBus: externalEventBusConstruct.eventBus,
-        table: coursesTableConstruct.table,
-      }
-    );
+    // const createParticipantConstruct = new CreateParticipantConstruct(
+    //   this,
+    //   'cc-courses-participant-create',
+    //   {
+    //     lambdaProps: lambdaPropsWithDestination,
+    //     externalEventBus: externalEventBusConstruct.eventBus,
+    //     table: coursesTableConstruct.table,
+    //   }
+    // );
 
     /**
      * Function: Update Participant
      */
-    const updateParticipantFunction = new LambdaEventSubscription(
-      this,
-      'cc-courses-participant-update',
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/update-participant/main.ts'
-        ),
-        lambdaProps: lambdaPropsWithDestination,
-        eventBus: externalEventBusConstruct.eventBus,
-        ruleDetails: {
-          object: ['participant'],
-          type: ['updated'],
-        },
-        ruleDescription: 'Update internal, to match the external',
-      }
-    );
+    // const updateParticipantFunction = new LambdaEventSubscription(
+    //   this,
+    //   'cc-courses-participant-update',
+    //   {
+    //     lambdaEntry: pathResolve(
+    //       __dirname,
+    //       '../src/infra/update-participant/main.ts'
+    //     ),
+    //     lambdaProps: lambdaPropsWithDestination,
+    //     eventBus: externalEventBusConstruct.eventBus,
+    //     ruleDetails: {
+    //       object: ['participant'],
+    //       type: ['updated'],
+    //     },
+    //     ruleDescription: 'Update internal, to match the external',
+    //   }
+    // );
 
     // allow the lambda access to the table
-    coursesTableConstruct.table.grantReadData(
-      updateParticipantFunction.lambdaFunction
-    );
-    coursesTableConstruct.table.grantWriteData(
-      updateParticipantFunction.lambdaFunction
-    );
+    // coursesTableConstruct.table.grantReadData(
+    //   updateParticipantFunction.lambdaFunction
+    // );
+    // coursesTableConstruct.table.grantWriteData(
+    //   updateParticipantFunction.lambdaFunction
+    // );
 
     /**
      * Find Participant
      */
-    const findPaxLambdaConstruct = new LambdaConstruct(
-      this,
-      'cc-courses-participant-find',
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/find-participant/main.ts'
-        ),
-        lambdaProps: this.lambdaProps,
-      }
-    );
+    // const findPaxLambdaConstruct = new LambdaConstruct(
+    //   this,
+    //   'cc-courses-participant-find',
+    //   {
+    //     lambdaEntry: pathResolve(
+    //       __dirname,
+    //       '../src/infra/find-participant/main.ts'
+    //     ),
+    //     lambdaProps: this.lambdaProps,
+    //   }
+    // );
 
     // allow the lambda access to the table
-    coursesTableConstruct.table.grantReadData(
-      findPaxLambdaConstruct.lambdaFunction
-    );
+    // coursesTableConstruct.table.grantReadData(
+    //   findPaxLambdaConstruct.lambdaFunction
+    // );
 
     /**
      * Find Participant source
      */
-    const findPaxSourceLambdaConstruct = new LambdaConstruct(
-      this,
-      'cc-courses-participant-source-find',
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/find-participant-source/main.ts'
-        ),
-        lambdaProps: this.lambdaProps,
-      }
-    );
+    // const findPaxSourceLambdaConstruct = new LambdaConstruct(
+    //   this,
+    //   'cc-courses-participant-source-find',
+    //   {
+    //     lambdaEntry: pathResolve(
+    //       __dirname,
+    //       '../src/infra/find-participant-source/main.ts'
+    //     ),
+    //     lambdaProps: this.lambdaProps,
+    //   }
+    // );
 
     /**
      * Outputs

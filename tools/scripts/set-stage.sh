@@ -16,6 +16,7 @@ envFile=$(<.env)
 nodeEnv="NODE_ENV=$1"
 envFile=$(echo "$envFile" | awk '{sub(/NODE_ENV=.*/,"'$nodeEnv'")}1')
 
+# IF NOT LOCAL
 if [[ ! " ${localStages[*]} " =~ " ${1} " ]]; then
   # find the profile name
   profileLine=$(echo "AWS_PROFILE_$1" | awk '{print toupper($0)}');

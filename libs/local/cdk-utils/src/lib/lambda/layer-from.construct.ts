@@ -15,7 +15,8 @@ import { ChLayer } from './layer.construct';
 /**
  * LayerFrom construct
  *
- * This accepts a ResourceId, and
+ * This type of construct makes it simpler to use an existing
+ * Layer without having to think too hard about it's ID.
  */
 export class ChLayerFrom extends Construct {
   public id: ResourceId;

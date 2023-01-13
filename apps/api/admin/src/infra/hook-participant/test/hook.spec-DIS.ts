@@ -44,10 +44,10 @@ describe('ApiAdminStack : hook', () => {
     template = Template.fromStack(stack);
   });
 
-  describe('/courses/{courseIdSourceValue}/{eventType}?{updatedStatus?}', () => {
+  describe('/participants/{courseIdSourceValue}/{sourceEvent}?{updatedStatus?}', () => {
     const resourceParentRegex = 'ccapiadminRestApicourses[A-Z0-9]+';
     const resourceIdRegex =
-      'ccapiadminRestApicoursescourseIdSourceValuehookeventType[A-Z0-9]+';
+      'ccapiadminRestApicoursescourseIdSourceValueparticipantspaxIdSourceValuehooksourceEvent[A-Z0-9]+';
     const responseMethodSuccessModelRegex =
       'ccapiadminRestApiHookEventSuccessResponseModel[A-Z0-9]+';
 
@@ -95,7 +95,10 @@ describe('ApiAdminStack : hook', () => {
           ]
         ).toBeTruthy();
         expect(
-          requestParameters.asObject()['method.request.path.eventType']
+          requestParameters.asObject()['method.request.path.paxIdSourceValue']
+        ).toBeTruthy();
+        expect(
+          requestParameters.asObject()['method.request.path.sourceEvent']
         ).toBeTruthy();
         expect(
           requestParameters.asObject()[
@@ -169,7 +172,7 @@ describe('ApiAdminStack : hook', () => {
           );
         });
 
-        test('Success returning the course response DTO model', () => {
+        test('Success returning the participant response DTO model', () => {
           const responses = methodResponses.asArray();
           const successResponse = responses.find(
             (response) => response.StatusCode === '200'

@@ -43,23 +43,20 @@ export class MembersStack extends cdk.Stack {
      * - this has been abstracted into a construct just to keep this file tidy
      * - all LSI and GSI details can be found in the construct
      */
-    const membersTableConstruct = new MembersDynamoDbConstruct(this, 'members');
+    const membersTableConstruct = new MembersDynamoDbConstruct(
+      this,
+      'cc-members'
+    );
 
     /**
      * External events eventBus
      */
-    const externalEventBusConstruct = new ChEventBusFrom(
-      this,
-      'cc-eventbus-external'
-    );
+    const externalEventBusConstruct = new ChEventBusFrom(this, 'cc-external');
 
     /**
      * Internal events eventBus
      */
-    const internalEventBusConstruct = new ChEventBusFrom(
-      this,
-      'cc-eventbus-internal'
-    );
+    const internalEventBusConstruct = new ChEventBusFrom(this, 'cc-internal');
 
     /**
      * Eventbridge destination for our lambdas

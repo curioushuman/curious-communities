@@ -15,12 +15,12 @@ import { handler } from '../main';
  *
  * Scope
  * - validating the request (to the lambda)
- * - creating group-member
+ * - creating group
  * - returning response
  * - returning error
  */
 
-const feature = loadFeature('./update-group-member.feature', {
+const feature = loadFeature('./create-group.feature', {
   loadRelativePath: true,
 });
 
@@ -39,10 +39,9 @@ defineFeature(feature, (test) => {
       };
     });
 
-    when('I attempt to update a group-member', async () => {
+    when('I attempt to create a group', async () => {
       try {
         response = await handler(dto);
-        expect(response).toBeUndefined();
       } catch (err: unknown) {
         error = err as HttpException;
       }

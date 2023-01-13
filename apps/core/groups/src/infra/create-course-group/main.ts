@@ -3,13 +3,14 @@ import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
-  CreateGroupModule,
-  CreateGroupController,
+  MutateCourseGroupModule,
+  CreateCourseGroupController,
+  CourseGroupResponseDto,
 } from '@curioushuman/cc-groups-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { CreateGroupRequestDto } from './dto/request.dto';
+import { CreateCourseGroupRequestDto } from './dto/request.dto';
 
 /**
  * TODO
@@ -29,10 +30,13 @@ let lambdaApp: INestApplicationContext;
  * i.e. we don't load Express, for optimization purposes
  */
 async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(CreateGroupModule, {
-    bufferLogs: true,
-  });
-  CreateGroupModule.applyDefaults(app);
+  const app = await NestFactory.createApplicationContext(
+    MutateCourseGroupModule,
+    {
+      bufferLogs: true,
+    }
+  );
+  MutateCourseGroupModule.applyDefaults(app);
   return app;
 }
 
@@ -61,23 +65,23 @@ async function waitForApp() {
  */
 export const handler = async (
   requestDtoOrEvent:
-    | CreateGroupRequestDto
-    | EventBridgeEvent<'putEvent', CreateGroupRequestDto>
-): Promise<void> => {
+    | CreateCourseGroupRequestDto
+    | EventBridgeEvent<'putEvent', CreateCourseGroupRequestDto>
+): Promise<CourseGroupResponseDto> => {
   // grab the dto
   const requestDto =
     'detail' in requestDtoOrEvent
       ? requestDtoOrEvent.detail
       : requestDtoOrEvent;
 
-  const logger = new LoggableLogger('CreateGroupFunction.handler');
+  const logger = new LoggableLogger('CreateCourseGroupFunction.handler');
   logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
 
   // lambda level validation
-  if (!CreateGroupRequestDto.guard(requestDto)) {
+  if (!CreateCourseGroupRequestDto.guard(requestDto)) {
     // NOTE: this is a 500 error, not a 400
     const error = new InternalRequestInvalidError(
-      'Invalid request sent to CreateGroupFunction.Lambda'
+      'Invalid request sent to CreateCourseGroupFunction.Lambda'
     );
     // we straight out log this, as it's a problem our systems
     // aren't communicating properly.
@@ -87,7 +91,7 @@ export const handler = async (
 
   // init the app
   const app = await waitForApp();
-  const createGroupController = app.get(CreateGroupController);
+  const controller = app.get(CreateCourseGroupController);
 
   // perform the action
   // NOTE: no try/catch here. According to the docs:
@@ -97,5 +101,7 @@ export const handler = async (
   //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
-  return createGroupController.create(requestDto);
+  return controller.create({
+    course: requestDto.course,
+  });
 };

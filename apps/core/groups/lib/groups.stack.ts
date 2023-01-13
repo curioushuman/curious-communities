@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -8,21 +9,17 @@ import { resolve as pathResolve } from 'path';
 // Initially we're going to import from local sources
 import {
   ChLayerFrom,
-  resourceNameTitle,
   LambdaEventSubscription,
   ChEventBusFrom,
+  LambdaConstruct,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import { GroupsDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/groups.construct';
+import { GroupsDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/groups-dynamodb.construct';
 
 /**
  * These are the components required for the groups stack
- *
- * TODO
- * - [ ] abstract the lambdas into Construct classes
- * - [*] -abstract the dynamodb table into Construct classes-
  */
 export class GroupsStack extends cdk.Stack {
   private lambdaProps: NodejsFunctionProps = {
@@ -46,16 +43,40 @@ export class GroupsStack extends cdk.Stack {
      * - this has been abstracted into a construct just to keep this file tidy
      * - all LSI and GSI details can be found in the construct
      */
-    const groupsTableConstruct = new GroupsDynamoDbConstruct(this, 'groups');
+    const groupsTableConstruct = new GroupsDynamoDbConstruct(this, 'cc-groups');
 
     /**
-     * External events eventBus
+     * Internal events eventBus
      */
-    const externalEventsEventBusId = 'cc-eventbus-external';
-    const externalEventBusConstruct = new ChEventBusFrom(
+    const internalEventBusConstruct = new ChEventBusFrom(
       this,
-      externalEventsEventBusId
+      'cc-eventbus-internal'
     );
+
+    /**
+     * Eventbridge destination for our lambdas
+     *
+     * Resulting event should look something like:
+     *
+     * {
+     *   "DetailType":"Lambda Function Invocation Result - Success",
+     *   "Source": "lambda",
+     *   "EventBusName": "{eventBusArn}",
+     *   "Detail": {
+     *     ...GroupMember (or Group)
+     *   }
+     * }
+     *
+     * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_destinations-readme.html#destination-specific-json-format
+     */
+    const onLambdaSuccess = new destinations.EventBridgeDestination(
+      internalEventBusConstruct.eventBus
+    );
+    // use this for any lambda that needs to send events to the internal event bus
+    const lambdaPropsWithDestination: NodejsFunctionProps = {
+      ...this.lambdaProps,
+      onSuccess: onLambdaSuccess,
+    };
 
     /**
      * Required layers, additional to normal defaults
@@ -64,52 +85,25 @@ export class GroupsStack extends cdk.Stack {
     this.lambdaProps.layers?.push(chLayerGroups.layer);
 
     /**
-     * Function: Create Group
+     * Function: Create group
+     *
+     * Triggers
+     * - mostly the internal event bus i.e. when course created
+     * - also manually (mostly for testing)
      */
-    const createGroupFunction = new LambdaEventSubscription(
+    const createCourseGroupLambdaConstruct = new LambdaEventSubscription(
       this,
-      'cc-groups-group-create',
+      'cc-groups-course-group-create',
       {
         lambdaEntry: pathResolve(
           __dirname,
-          '../src/infra/create-group/main.ts'
+          '../src/infra/create-course-group/main.ts'
         ),
-        lambdaProps: this.lambdaProps,
-        eventBus: externalEventBusConstruct.eventBus,
+        lambdaProps: lambdaPropsWithDestination,
+        eventBus: internalEventBusConstruct.eventBus,
         ruleDetails: {
-          object: ['group'],
-          type: ['status-updated'],
-          status: ['created'],
-        },
-        ruleDescription: 'Create internal, to match the external',
-      }
-    );
-
-    // allow the lambda access to the table
-    groupsTableConstruct.table.grantReadData(
-      createGroupFunction.lambdaFunction
-    );
-    groupsTableConstruct.table.grantWriteData(
-      createGroupFunction.lambdaFunction
-    );
-
-    /**
-     * Function: Update Group
-     */
-    const updateGroupFunction = new LambdaEventSubscription(
-      this,
-      'cc-groups-group-update',
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/update-group/main.ts'
-        ),
-        lambdaProps: this.lambdaProps,
-        eventBus: externalEventBusConstruct.eventBus,
-        ruleDetails: {
-          object: ['group'],
-          type: ['status-updated'],
-          status: ['updated'],
+          object: ['course'],
+          type: ['updated'],
         },
         ruleDescription: 'Update internal, to match the external',
       }
@@ -117,70 +111,10 @@ export class GroupsStack extends cdk.Stack {
 
     // allow the lambda access to the table
     groupsTableConstruct.table.grantReadData(
-      updateGroupFunction.lambdaFunction
+      createCourseGroupLambdaConstruct.lambdaFunction
     );
     groupsTableConstruct.table.grantWriteData(
-      updateGroupFunction.lambdaFunction
-    );
-
-    /**
-     * Function: Create GroupMember
-     */
-    const createGroupMemberFunction = new LambdaEventSubscription(
-      this,
-      'cc-groups-group-member-create',
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/create-group-member/main.ts'
-        ),
-        lambdaProps: this.lambdaProps,
-        eventBus: externalEventBusConstruct.eventBus,
-        ruleDetails: {
-          object: ['group-member'],
-          type: ['status-updated'],
-          status: ['created'],
-        },
-        ruleDescription: 'Create internal, to match the external',
-      }
-    );
-
-    // allow the lambda access to the table
-    groupsTableConstruct.table.grantReadData(
-      createGroupMemberFunction.lambdaFunction
-    );
-    groupsTableConstruct.table.grantWriteData(
-      createGroupMemberFunction.lambdaFunction
-    );
-
-    /**
-     * Function: Update GroupMember
-     */
-    const updateGroupMemberFunction = new LambdaEventSubscription(
-      this,
-      'cc-groups-group-member-update',
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/update-group-member/main.ts'
-        ),
-        lambdaProps: this.lambdaProps,
-        eventBus: externalEventBusConstruct.eventBus,
-        ruleDetails: {
-          object: ['group-member'],
-          type: ['status-updated'],
-          status: ['updated'],
-        },
-        ruleDescription: 'Update internal, to match the external',
-      }
-    );
-
-    // allow the lambda access to the table
-    groupsTableConstruct.table.grantReadData(
-      updateGroupMemberFunction.lambdaFunction
-    );
-    groupsTableConstruct.table.grantWriteData(
-      updateGroupMemberFunction.lambdaFunction
+      createCourseGroupLambdaConstruct.lambdaFunction
     );
 
     /**

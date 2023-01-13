@@ -56,7 +56,7 @@ describe('GroupsStack', () => {
     // TODO: test RE subscribed to event with the correct rule details
   });
 
-  describe('Should contain a lambda for creating participants', () => {
+  describe('Should contain a lambda for creating group-members', () => {
     const layers = new Capture();
 
     it('Should exist', () => {
@@ -74,7 +74,7 @@ describe('GroupsStack', () => {
     // TODO: test RE subscribed to event with the correct rule details
   });
 
-  describe('Should contain a lambda for updating participants', () => {
+  describe('Should contain a lambda for updating group-members', () => {
     const layers = new Capture();
 
     it('Should exist', () => {

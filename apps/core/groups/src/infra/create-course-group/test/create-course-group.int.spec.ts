@@ -31,14 +31,13 @@ defineFeature(feature, (test) => {
 
     given('the request contains invalid data', () => {
       dto = {
-        id: '',
+        groupIdSourceValue: '',
       };
     });
 
     when('I attempt to create a group', async () => {
       try {
         response = await handler(dto);
-        expect(response).toBeUndefined();
       } catch (err: unknown) {
         error = err as HttpException;
       }

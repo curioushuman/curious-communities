@@ -34,25 +34,55 @@ export class CcTestStack extends cdk.Stack {
      * via the event bus. We use this to test that events have been fired
      * via the API.
      */
-    const queueId = externalEventsEventBusId;
-    const [queueName, queueTitle] = testResourceNameTitle(queueId, 'Queue');
-    const queueExternalEvents = new sqs.Queue(this, queueTitle, {
-      queueName,
+    const externalEventsQueueId = externalEventsEventBusId;
+    const [externalEventsQueueName, externalEventsQueueTitle] =
+      testResourceNameTitle(externalEventsQueueId, 'Queue');
+    const externalEventsQueue = new sqs.Queue(this, externalEventsQueueTitle, {
+      queueName: externalEventsQueueName,
       retentionPeriod: cdk.Duration.hours(1),
     });
 
     /**
      * Rule: Subscribe the SQS queue to everything coming out of the EventBus
      */
-    const [ruleName, ruleTitle] = testResourceNameTitle('course', 'Rule');
-    const testSqsRule = new events.Rule(this, ruleTitle, {
-      ruleName,
+    const [externalEventsRuleName, externalEventsRuleTitle] =
+      testResourceNameTitle(externalEventsQueueId, 'Rule');
+    const externalEventsRule = new events.Rule(this, externalEventsRuleTitle, {
+      ruleName: externalEventsRuleName,
       eventBus: externalEventBusConstruct.eventBus,
       description: 'Listen for all events from cc-external event bus.',
       eventPattern: {
         detailType: ['putEvent'],
       },
     });
-    testSqsRule.addTarget(new targets.SqsQueue(queueExternalEvents));
+    externalEventsRule.addTarget(new targets.SqsQueue(externalEventsQueue));
+
+    /**
+     * SQS queue that we will subscribe to all internal events
+     * via the event bus. We use this to test that events have been fired
+     * via the API.
+     */
+    const internalEventsQueueId = internalEventsEventBusId;
+    const [internalEventsQueueName, internalEventsQueueTitle] =
+      testResourceNameTitle(internalEventsQueueId, 'Queue');
+    const internalEventsQueue = new sqs.Queue(this, internalEventsQueueTitle, {
+      queueName: internalEventsQueueName,
+      retentionPeriod: cdk.Duration.hours(1),
+    });
+
+    /**
+     * Rule: Subscribe the SQS queue to everything coming out of the EventBus
+     */
+    const [internalEventsRuleName, internalEventsRuleTitle] =
+      testResourceNameTitle(internalEventsQueueId, 'Rule');
+    const internalEventsRule = new events.Rule(this, internalEventsRuleTitle, {
+      ruleName: internalEventsRuleName,
+      eventBus: internalEventBusConstruct.eventBus,
+      description: 'Listen for all events from cc-internal event bus.',
+      eventPattern: {
+        detailType: ['putEvent'],
+      },
+    });
+    internalEventsRule.addTarget(new targets.SqsQueue(internalEventsQueue));
   }
 }

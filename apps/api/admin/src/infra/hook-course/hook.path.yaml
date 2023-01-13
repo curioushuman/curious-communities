@@ -1,13 +1,13 @@
 get:
   summary: Accept incoming events from external systems in relation to courses
   parameters:
-    - name: courseIdSourceValue
+    - name: sourceKey
       in: path
       required: true
       schema:
         type: string
-      description: The identifier for the specific course. **IMPORTANT** - conforms to the `SOURCE#1234` format, where `SOURCE` is the key of the external system, and `1234` is the identifier for the course in that system.
-    - name: eventType
+      description: The identifier for the SOURCE this sourceId is coming from. i.e. COURSE, AUTH, CRM, etc
+    - name: courseSourceEvent
       in: path
       required: true
       schema:
@@ -18,6 +18,12 @@ get:
           * `created` - When a course has been created
           * `updated` - When a course has been updated
           * `status-updated` - A course has changed status; similar to updated, but more specific
+    - name: courseSourceId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The identifier for the specific course from this source.
     - name: updatedStatus
       in: query
       required: false

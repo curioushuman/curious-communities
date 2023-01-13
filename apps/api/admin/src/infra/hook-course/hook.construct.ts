@@ -16,6 +16,7 @@ import { CoApiConstruct } from '../../../../../../dist/local/@curioushuman/cdk-u
 export interface CoursesHookProps {
   apiConstruct: CoApiConstruct;
   rootResource: apigateway.IResource;
+  requestParameters: { [key: string]: boolean };
   eventBus: events.IEventBus;
 }
 
@@ -42,12 +43,6 @@ export class CoursesHookConstruct extends Construct {
     this.apiConstruct = props.apiConstruct;
     this.rootResource = props.rootResource;
     this.eventBus = props.eventBus;
-
-    /**
-     * Resources
-     * GET /courses/{courseIdSourceValue}/hook/{eventType}?{updatedStatus?}
-     */
-    const paramType = this.rootResource.addResource('{eventType}');
 
     /**
      * hook: request mapping template
@@ -110,11 +105,7 @@ export class CoursesHookConstruct extends Construct {
 
     this.methodOptions = {
       // Here we can define path, querystring, and acceptable headers
-      requestParameters: {
-        'method.request.path.eventType': true,
-        'method.request.path.courseIdSourceValue': true,
-        'method.request.querystring.updatedStatus': false,
-      },
+      requestParameters: props.requestParameters,
       requestValidator: this.apiConstruct.requestValidators['basic-get'],
       // what we allow to be returned as a response
       methodResponses: [
@@ -147,6 +138,6 @@ export class CoursesHookConstruct extends Construct {
      * hook: method definition
      * - AWS integration
      */
-    paramType.addMethod('GET', this.awsIntegration, this.methodOptions);
+    this.rootResource.addMethod('GET', this.awsIntegration, this.methodOptions);
   }
 }

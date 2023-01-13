@@ -151,8 +151,7 @@ export class ApiAdminStack extends cdk.Stack {
     };
 
     /**
-     * Hook for external events on participants
-     * GET /hook/{sourceKey}/external-event/{sourceEvent}/course/{courseSourceId}/participant/{participantSourceId}?{updatedStatus?}
+     * Participant hook lambda and co
      */
     const participantExternalEventHookConstruct = new ParticipantsHookConstruct(
       this,

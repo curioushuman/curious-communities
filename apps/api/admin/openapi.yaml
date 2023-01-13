@@ -8,10 +8,13 @@ servers:
 
 paths:
 
-  # Courses
-  /courses/{courseIdSourceValue}/hook/{eventType}:
+  # Hooks
+  # External events
+
+  # Course
+  /hook/external-event/course/{sourceKey}/{courseSourceEvent}/{courseSourceId}?{updatedStatus?}:
     $ref: "./src/infra/hook-course/hook.path.yaml"
 
-  # Participants
-  /courses/{courseIdSourceValue}/participants/{paxIdSourceValue}/hook/{eventType}:
+  # Participant
+  /hook/external-event/participant/{sourceKey}/{participantSourceEvent}/{participantSourceId}?{updatedStatus?}:
     $ref: "./src/infra/hook-participant/hook.path.yaml"

@@ -16,6 +16,7 @@ import { CoApiConstruct } from '../../../../../../dist/local/@curioushuman/cdk-u
 export interface ParticipantsHookProps {
   apiConstruct: CoApiConstruct;
   rootResource: apigateway.IResource;
+  requestParameters: { [key: string]: boolean };
   eventBus: events.IEventBus;
 }
 
@@ -45,9 +46,9 @@ export class ParticipantsHookConstruct extends Construct {
 
     /**
      * Resources
-     * GET /courses/{courseIdSourceValue}/participants/{paxIdSourceValue}/hook/{eventType}?{updatedStatus?}
+     * GET /hook/{sourceKey}/external-event/{sourceEvent}/course/{courseSourceId}/participant/{participantSourceId}?{updatedStatus?}
      */
-    const paramType = this.rootResource.addResource('{eventType}');
+    const paramType = this.rootResource.addResource('{sourceEvent}');
 
     /**
      * hook: request mapping template
@@ -111,12 +112,7 @@ export class ParticipantsHookConstruct extends Construct {
 
     this.methodOptions = {
       // Here we can define path, querystring, and acceptable headers
-      requestParameters: {
-        'method.request.path.eventType': true,
-        'method.request.path.courseIdSourceValue': true,
-        'method.request.path.paxIdSourceValue': true,
-        'method.request.querystring.updatedStatus': false,
-      },
+      requestParameters: props.requestParameters,
       requestValidator: this.apiConstruct.requestValidators['basic-get'],
       // what we allow to be returned as a response
       methodResponses: [

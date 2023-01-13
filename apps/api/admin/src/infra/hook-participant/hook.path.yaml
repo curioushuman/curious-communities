@@ -1,19 +1,13 @@
 get:
   summary: Accept incoming events from external systems in relation to participants
   parameters:
-    - name: courseIdSourceValue
+    - name: sourceKey
       in: path
       required: true
       schema:
         type: string
-      description: The identifier for the course this participant belongs to. **IMPORTANT** - conforms to the `SOURCE#1234` format, where `SOURCE` is the key of the external system, and `1234` is the identifier for the course in that system.
-    - name: paxIdSourceValue
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The identifier for the specific participant. **IMPORTANT** - conforms to the `SOURCE#1234` format, where `SOURCE` is the key of the external system, and `1234` is the identifier for the participant in that system.
-    - name: eventType
+      description: The identifier for the SOURCE this sourceId is coming from. i.e. COURSE, AUTH, CRM, etc
+    - name: participantSourceEvent
       in: path
       required: true
       schema:
@@ -24,6 +18,12 @@ get:
           * `created` - When a participant has been created
           * `updated` - When a participant has been updated
           * `status-updated` - A participant has changed status; similar to updated, but more specific
+    - name: participantSourceId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The identifier for the specific participant from this source.
     - name: updatedStatus
       in: query
       required: false

@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
@@ -40,10 +40,12 @@ import {
  */
 export class CoApiConstruct extends Construct {
   public id: ResourceId;
-  public api: apigateway.RestApi;
+  public api: apigw.RestApi;
   public role: iam.Role;
-  public responseModels: { [name: string]: apigateway.Model };
-  public requestValidators: { [name: string]: apigateway.RequestValidator };
+  public responseModels: { [name: string]: apigw.Model };
+  public requestValidators: { [name: string]: apigw.RequestValidator };
+  public usagePlan: apigw.IUsagePlan;
+  public apiKey: apigw.IApiKey;
 
   constructor(scope: Construct, id: string, props: CoApiProps) {
     super(scope, id);
@@ -68,17 +70,17 @@ export class CoApiConstruct extends Construct {
      * - [ ] tighten up the CORS defaults below
      */
     const [restApiName, restApiTitle] = this.resourceNameTitle('rest', 'Api');
-    this.api = new apigateway.RestApi(this, restApiTitle, {
+    this.api = new apigw.RestApi(this, restApiTitle, {
       restApiName,
       description: props.description,
       deployOptions: {
         metricsEnabled: true,
-        loggingLevel: apigateway.MethodLoggingLevel.INFO,
+        loggingLevel: apigw.MethodLoggingLevel.INFO,
         dataTraceEnabled: true,
         stageName: props.stageName || 'dev',
       },
       defaultCorsPreflightOptions: {
-        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowOrigins: apigw.Cors.ALL_ORIGINS,
       },
     });
 
@@ -114,9 +116,43 @@ export class CoApiConstruct extends Construct {
     };
 
     /**
+     * Add a basic usage plan
+     * - [ ] configure in props
+     * - [ ] dynamic key
+     *
+     * * Note: currently not in use, API open
+     */
+    this.usagePlan = this.api.addUsagePlan('UsagePlan', {
+      name: 'CcApiUsagePlan',
+      throttle: {
+        burstLimit: 5,
+        rateLimit: 10,
+      },
+      quota: {
+        limit: 100,
+        period: apigw.Period.DAY,
+      },
+    });
+
+    /**
+     * Add an API key
+     * TODO
+     * - [ ] configure in props
+     * - [ ] dynamic key
+     *
+     * * Note: currently not in use, API open
+     */
+    this.apiKey = this.api.addApiKey('ApiKey', {
+      apiKeyName: 'av-api-key',
+      value: 'av-api-key-value-********',
+    });
+    this.usagePlan.addApiKey(this.apiKey);
+
+    /**
      * Outputs
      */
     new cdk.CfnOutput(this, 'apiUrl', { value: this.api.urlForPath() });
+    new cdk.CfnOutput(this, 'apiKey', { value: this.apiKey.toString() });
   }
 
   /**
@@ -125,7 +161,7 @@ export class CoApiConstruct extends Construct {
   public addRequestValidatorToApi(
     id: ResourceId,
     props: CoApiRequestValidatorProps
-  ): apigateway.RequestValidator {
+  ): apigw.RequestValidator {
     const { validateRequestBody, validateRequestParameters } = props;
     const requestValidatorTitle = this.transformIdToResourceTitle(
       id,
@@ -135,7 +171,7 @@ export class CoApiConstruct extends Construct {
       id,
       'RequestValidator'
     );
-    return new apigateway.RequestValidator(this, requestValidatorTitle, {
+    return new apigw.RequestValidator(this, requestValidatorTitle, {
       restApi: this.api,
       // the properties below are optional
       requestValidatorName,
@@ -150,7 +186,7 @@ export class CoApiConstruct extends Construct {
   public addRequestValidator(
     id: ResourceId,
     props: CoApiRequestValidatorProps
-  ): apigateway.RequestValidator {
+  ): apigw.RequestValidator {
     this.requestValidators[id] = this.addRequestValidatorToApi(id, props);
     return this.requestValidators[id];
   }
@@ -176,11 +212,11 @@ export class CoApiConstruct extends Construct {
    */
   public addErrorResponseModelToApi(
     props?: CoApiResponseModelProps
-  ): apigateway.Model {
+  ): apigw.Model {
     // destructure, or assign default
     const { properties } = props || {
       properties: {
-        message: { type: apigateway.JsonSchemaType.STRING },
+        message: { type: apigw.JsonSchemaType.STRING },
       },
     };
     return this.addResponseModelToApi('error', {
@@ -194,7 +230,7 @@ export class CoApiConstruct extends Construct {
   public addResponseModelToApi(
     id: ResourceId,
     props: CoApiResponseModelProps
-  ): apigateway.Model {
+  ): apigw.Model {
     const { properties } = props;
     // this prefixes the name with the namePrefix
     const modelName = this.transformIdToResourceName(id, 'ResponseModel');
@@ -204,8 +240,8 @@ export class CoApiConstruct extends Construct {
       contentType: 'application/json',
       modelName,
       schema: {
-        schema: apigateway.JsonSchemaVersion.DRAFT4,
-        type: apigateway.JsonSchemaType.OBJECT,
+        schema: apigw.JsonSchemaVersion.DRAFT4,
+        type: apigw.JsonSchemaType.OBJECT,
         title,
         properties,
       },
@@ -218,7 +254,7 @@ export class CoApiConstruct extends Construct {
   public addResponseModel(
     id: ResourceId,
     props: CoApiResponseModelProps
-  ): apigateway.Model {
+  ): apigw.Model {
     this.responseModels[id] = this.addResponseModelToApi(id, props);
     return this.responseModels[id];
   }
@@ -240,7 +276,7 @@ export class CoApiConstruct extends Construct {
    * _"If the back end is an AWS Lambda function, the AWS Lambda
    * function error header is matched. For all other HTTP and AWS back
    * ends, the HTTP status code is matched."_
-   * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigateway.IntegrationResponse.html
+   * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigw.IntegrationResponse.html
    * ---
    * defining no selectionPattern defines denotes the default response
    * https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-integration-settings-integration-response.html
@@ -260,7 +296,7 @@ export class CoApiConstruct extends Construct {
    *      "'true'",
    *    },
    */
-  public static serverErrorResponse(): apigateway.IntegrationResponse {
+  public static serverErrorResponse(): apigw.IntegrationResponse {
     return CoApiConstruct.errorResponse(
       '500',
       CoApiConstruct.serverErrorRegex()
@@ -298,7 +334,7 @@ export class CoApiConstruct extends Construct {
    * TODO:
    * - [ ] similar RE CORS stuff
    */
-  public static clientErrorResponse(): apigateway.IntegrationResponse {
+  public static clientErrorResponse(): apigw.IntegrationResponse {
     return CoApiConstruct.errorResponse(
       '400',
       CoApiConstruct.clientErrorRegex()
@@ -327,7 +363,7 @@ export class CoApiConstruct extends Construct {
    * TODO:
    * - [ ] similar RE CORS stuff
    */
-  public static notFoundErrorResponse(): apigateway.IntegrationResponse {
+  public static notFoundErrorResponse(): apigw.IntegrationResponse {
     return CoApiConstruct.errorResponse(
       '404',
       CoApiConstruct.notFoundErrorRegex()
@@ -359,7 +395,7 @@ export class CoApiConstruct extends Construct {
   public static errorResponse(
     statusCode: string,
     selectionPattern: string
-  ): apigateway.IntegrationResponse {
+  ): apigw.IntegrationResponse {
     return {
       selectionPattern,
       statusCode,

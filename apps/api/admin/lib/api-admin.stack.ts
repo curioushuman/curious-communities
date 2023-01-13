@@ -1,4 +1,4 @@
-import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as cdk from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
 
@@ -40,7 +40,7 @@ export class ApiAdminStack extends cdk.Stack {
      */
     apiAdmin.addResponseModel('hook-event-success', {
       properties: {
-        message: { type: apigateway.JsonSchemaType.STRING },
+        message: { type: apigw.JsonSchemaType.STRING },
       },
     });
 

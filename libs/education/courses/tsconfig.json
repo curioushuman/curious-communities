@@ -2,16 +2,14 @@
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["es2021"],
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "types": ["node"]
   },
-  "files": [],
-  "include": [],
-  "references": [
-    {
-      "path": "./tsconfig.lib.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
-    }
-  ]
+  "exclude": [
+    "jest.config.ts",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.builder.ts"
+  ],
+  "include": ["**/*.ts"]
 }

@@ -39,6 +39,7 @@ testem.log
 Thumbs.db
 
 # secret files
+/env
 .env
 
 # AWS

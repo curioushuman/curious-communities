@@ -39,6 +39,14 @@
         "jestConfig": "libs/education/courses/jest.config.ts",
         "passWithNoTests": true
       }
+    },
+    "test-infra": {
+      "executor": "@nrwl/jest:jest",
+      "options": {
+        "jestConfig": "libs/education/courses/jest.config.infra.ts",
+        "passWithNoTests": true,
+        "cwd": "libs/education/courses"
+      }
     }
   },
   "tags": ["scope:layers"]

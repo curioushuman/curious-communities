@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
+import { INestApplicationContext, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
 import {
   ErrorFactory,
   FakeRepositoryErrorFactory,
 } from '@curioushuman/error-factory';
-import { LoggableModule } from '@curioushuman/loggable';
+import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
 
 import { ParticipantRepository } from '../adapter/ports/participant.repository';
 import { FakeParticipantRepository } from '../adapter/implementations/fake/fake.participant.repository';
@@ -55,4 +55,8 @@ const services = [
   providers: [...handlers, ...repositories, ...services],
   exports: [],
 })
-export class ParticipantModule {}
+export class ParticipantModule {
+  public static applyDefaults(app: INestApplicationContext) {
+    app.useLogger(new LoggableLogger());
+  }
+}

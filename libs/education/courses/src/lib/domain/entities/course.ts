@@ -1,4 +1,4 @@
-import { Array, Record, Static } from 'runtypes';
+import { Array, Optional, Record, Static } from 'runtypes';
 
 import { Timestamp, ValueOf, YearMonth } from '@curioushuman/common';
 
@@ -26,9 +26,9 @@ export const Course = Record({
 
   supportType: CourseSupportType,
   name: CourseName,
-  dateOpen: Timestamp,
-  dateClosed: Timestamp,
-  yearMonthOpen: YearMonth,
+  dateOpen: Optional(Timestamp),
+  dateClosed: Optional(Timestamp),
+  yearMonthOpen: Optional(YearMonth),
   // e.g. APF being the account that owns this course
   accountOwner: AccountSlug,
 });

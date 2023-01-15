@@ -1,9 +1,9 @@
-import { Static } from 'runtypes';
-import { CourseSourceStatus } from './course-source-status';
+import { Literal, Static, Union } from 'runtypes';
 
-/**
- * ? Should we define the list twice?
- */
-export const CourseStatus = CourseSourceStatus.withBrand('CourseStatus');
+export const CourseStatus = Union(
+  Literal('pending'),
+  Literal('open'),
+  Literal('closed')
+);
 
 export type CourseStatus = Static<typeof CourseStatus>;

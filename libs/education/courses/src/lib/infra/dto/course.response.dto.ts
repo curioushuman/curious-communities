@@ -12,7 +12,7 @@ export class CourseResponseDto {
   sourceIds!: string[];
   supportType!: string;
   name!: string;
-  dateOpen!: number;
-  dateClosed!: number;
+  dateOpen?: number;
+  dateClosed?: number;
   yearMonthOpen!: string;
 }

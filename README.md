@@ -19,6 +19,15 @@ AWS_PROFILE_LOCAL=
 AWS_PROFILE_TEST={test profile name}
 AWS_PROFILE_PROD={prod profile name}
 
+# Salesforce - see Salesforce API implementation for details on how to generate these
+SALESFORCE_CONSUMER_KEY={consumer key}
+SALESFORCE_CONSUMER_SECRET={consumer secret}
+SALESFORCE_USER=api@partner.example
+SALESFORCE_URL_AUTH=https://login.salesforce.com
+# This is only here as a backup, we obtain this from auth response
+#SALESFORCE_URL_DATA=https://partner.my.salesforce.com
+SALESFORCE_URL_DATA_VERSION=56.0
+
 # DYNAMICALLY UPDATED
 AWS_ACCOUNT=000000000000
 AWS_PROFILE=

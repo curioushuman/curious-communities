@@ -37,7 +37,7 @@ export class FindGroupMemberSourceMapper {
     // I do want to check the source here
     // as this isn't dynamic like the identifier
     const source = Source.check(dto.source);
-    console.log('idSourceValue', idSourceValue);
+
     // if we don't have them on internal record
     if (!idSourceValue) {
       return {

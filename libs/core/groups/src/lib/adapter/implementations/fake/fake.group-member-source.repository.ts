@@ -114,7 +114,6 @@ export class FakeGroupMemberSourceRepository
           (gMS) =>
             gMS.email === groupMember.email && this.matchGroup(gMS, groupMember)
         );
-        console.log('members', this.groupMemberSources);
         return pipe(
           groupMemberSource,
           O.fromNullable,

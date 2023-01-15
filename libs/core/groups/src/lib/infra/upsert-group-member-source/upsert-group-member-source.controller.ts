@@ -60,7 +60,6 @@ export class UpsertGroupMemberSourceController {
   public async upsert(
     requestDto: UpsertGroupMemberSourceRequestDto
   ): Promise<GroupMemberSourceResponseDto> {
-    console.log('r', requestDto);
     // #1. parse the dto
     const validDto = pipe(
       requestDto,
@@ -69,7 +68,7 @@ export class UpsertGroupMemberSourceController {
 
     // #2. find a group
     const groupMemberSource = await this.find(validDto);
-    console.log('3', groupMemberSource);
+
     // #3. based on whether or not we find anything, take the appropriate action
     // groupMemberSource could be null
     const task = pipe(

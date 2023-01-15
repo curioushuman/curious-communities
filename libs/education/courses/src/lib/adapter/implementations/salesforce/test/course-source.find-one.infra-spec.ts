@@ -13,6 +13,7 @@ import { SalesforceApiHttpConfigService } from '../http-config.service';
 import { SalesforceApiCourseSourceRepository } from '../course-source.repository';
 import { CourseSourceRepositoryErrorFactory } from '../../../ports/course-source.repository.error-factory';
 import { SalesforceApiRepositoryErrorFactory } from '../repository.error-factory';
+import { CourseSourceBuilder } from '../../../../test/builders/course-source.builder';
 
 /**
  * INTEGRATION TEST
@@ -88,41 +89,41 @@ defineFeature(feature, (test) => {
     });
   });
 
-  // test('Fail; Source not found for ID provided', ({
-  //   given,
-  //   and,
-  //   when,
-  //   then,
-  // }) => {
-  //   let absentCourseSource: CourseSource;
-  //   let result: CourseSource;
-  //   let error: Error;
+  test('Fail; Source not found for ID provided', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    let result: CourseSource;
+    let error: Error;
 
-  //   given('I am authorised to access the source', () => {
-  //     // assumed
-  //   });
+    given('I am authorised to access the source', () => {
+      // out of scope
+    });
 
-  //   and('a matching record DOES NOT exist at the source', () => {
-  //     absentCourseSource = CourseSourceBuilder().noMatchingSource().build();
-  //     findCourseSourceDto = {
-  //       id: absentCourseSource.id,
-  //     };
-  //   });
+    and('a matching record DOES NOT exist at the source', () => {
+      findCourseSourceDto = {
+        id: CourseSourceBuilder().noMatchingSource().build().id,
+      };
+    });
 
-  //   when('I request the source by ID', async () => {
-  //     try {
-  //       result = await executeTask(repository.findOne(findCourseSourceDto));
-  //     } catch (err) {
-  //       error = err;
-  //     }
-  //   });
+    when('I request the source by ID', async () => {
+      try {
+        result = await executeTask(repository.findOne(findCourseSourceDto));
+      } catch (err) {
+        error = err;
+      }
+    });
 
-  //   then('I should receive an Error', () => {
-  //     expect(error).toBeInstanceOf(Error);
-  //   });
+    then('I should receive an Error', () => {
+      // NOTE: we don't test for our application specific errors here
+      // as they are one level above the repository
+      expect(error).toBeInstanceOf(Error);
+    });
 
-  //   and('no result is returned', () => {
-  //     expect(result).toBeUndefined();
-  //   });
-  // });
+    and('no result is returned', () => {
+      expect(result).toBeUndefined();
+    });
+  });
 });

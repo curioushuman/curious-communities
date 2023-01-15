@@ -56,11 +56,8 @@ export class SalesforceApiCourseSourceRepository
         // could this similarly be in a serialisation decorator?
         return SalesforceApiCourseSourceMapper.toDomain(response.data);
       },
-      (reason: SalesforceApiRepositoryError) => {
-        console.log(reason.response?.data);
-        // console.log(reason);
-        return reason as Error;
-      }
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: SalesforceApiRepositoryError) => reason as Error
     );
   };
 

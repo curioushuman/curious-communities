@@ -41,7 +41,6 @@ export abstract class ErrorFactory<
   constructor(protected errorMap: Record<number, ErrorType>) {}
 
   public error(error: Error, asErrorType?: AllowedErrorTypeName): Error {
-    // console.log(error);
     const err = this.isKnown(error) ? error : this.newError(error, asErrorType);
     return err;
   }

@@ -9,12 +9,12 @@ import { readFileSync } from 'fs';
 import { resolve as pathResolve } from 'path';
 
 import { LoggableLogger } from '@curioushuman/loggable';
-import {
-  RepositoryAuthenticationError,
-  RepositoryAuthenticationExpiredError,
-} from '@curioushuman/error-factory';
+import { RepositoryAuthenticationError } from '@curioushuman/error-factory';
 import { executeTask, logAction } from '@curioushuman/fp-ts-utils';
-import { SalesforceApiRepositoryErrorFactory } from './repository.error-factory';
+import {
+  SalesforceApiRepositoryError,
+  SalesforceApiRepositoryErrorFactory,
+} from './repository.error-factory';
 import { SalesforceApiAuthResponse } from './types/auth-response';
 import { CourseSourceRepositoryErrorFactory } from '../../ports/course-source.repository.error-factory';
 
@@ -39,10 +39,7 @@ export class SalesforceApiHttpConfigService
   private logger: LoggableLogger;
   private errorFactory: CourseSourceRepositoryErrorFactory;
   private authURL: string;
-  private tokenURL: string;
   private baseURL: string;
-  private sessionTimeoutMinutes = 30;
-  private refreshToken = '';
 
   /**
    * This is a little function to confirm the env vars we need
@@ -60,15 +57,26 @@ export class SalesforceApiHttpConfigService
   constructor() {
     this.errorFactory = new SalesforceApiRepositoryErrorFactory();
     this.logger = new LoggableLogger(SalesforceApiHttpConfigService.name);
-    const requiredEnvVars = [
-      'SALESFORCE_URL_AUTH',
-      'SALESFORCE_URL_DATA',
-      'SALESFORCE_URL_DATA_VERSION',
-    ];
+    const requiredEnvVars = ['SALESFORCE_URL_AUTH'];
     this.confirmEnvVars(requiredEnvVars);
     this.authURL = `${process.env.SALESFORCE_URL_AUTH}/services/oauth2/token`;
-    this.tokenURL = `${process.env.SALESFORCE_URL_AUTH}/services/oauth2/token`;
-    this.baseURL = `${process.env.SALESFORCE_URL_DATA}/services/data/v${process.env.SALESFORCE_URL_DATA_VERSION}/`;
+    this.baseURL = this.prepareBaseUrl();
+  }
+
+  /**
+   * Added this function so we can dynamically set the base URL
+   * from the auth response (if instance_url is returned)
+   */
+  private prepareBaseUrl(baseUrl?: string): string {
+    const url = baseUrl || process.env.SALESFORCE_URL_DATA;
+    if (!url) {
+      throw new Error(
+        `Missing Base Url for ${SalesforceApiHttpConfigService.name}`
+      );
+    }
+    const requiredEnvVars = ['SALESFORCE_URL_DATA_VERSION'];
+    this.confirmEnvVars(requiredEnvVars);
+    return `${url}/services/data/v${process.env.SALESFORCE_URL_DATA_VERSION}/`;
   }
 
   /**
@@ -93,12 +101,6 @@ export class SalesforceApiHttpConfigService
   private token(): TE.TaskEither<Error, string> {
     return pipe(
       this.getTokenFromSource(),
-      // if expired, try and refresh
-      TE.orElse((err) => {
-        return err instanceof RepositoryAuthenticationExpiredError
-          ? this.refreshTokenFromSource()
-          : TE.left(err);
-      }),
       logAction(
         this.logger,
         this.errorFactory,
@@ -108,72 +110,25 @@ export class SalesforceApiHttpConfigService
     );
   }
 
-  private hasTokenExpired(issuedAt: number): boolean {
-    const sessionTimeInMilliseconds = this.sessionTimeoutMinutes * 60 * 1000;
-    return issuedAt + sessionTimeInMilliseconds < Date.now();
-  }
-
+  /**
+   * Things that need to be done with/based on the response
+   */
   private processAuthResponse(response: SalesforceApiAuthResponse): string {
     if (response.access_token === undefined) {
       // this will be caught (below), and passed through ErrorFactory
       throw new RepositoryAuthenticationError('No access token received');
     }
-    this.logger.debug(response);
-    if (this.hasTokenExpired(response.issued_at)) {
-      this.refreshToken = response.refresh_token;
-      throw new RepositoryAuthenticationExpiredError(
-        `Token older than ${this.sessionTimeoutMinutes} minutes}`
-      );
+    // if instance url returned, use this for baseUrl
+    if (response.instance_url) {
+      this.baseURL = this.prepareBaseUrl(response.instance_url);
     }
+    this.logger.debug(response);
     return response.access_token;
   }
 
-  private getTokenFromSource(): TE.TaskEither<Error, string> {
-    return TE.tryCatch(
-      async () => {
-        const body = new URLSearchParams({
-          grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-          assertion: this.prepareJwt(),
-        });
-        const response = await axios.post<SalesforceApiAuthResponse>(
-          this.authURL,
-          body
-        );
-        this.logger.debug(response.data);
-        if (!response.data) {
-          throw new RepositoryAuthenticationError('No response received');
-        }
-        return this.processAuthResponse(response.data);
-      },
-      (error: Error) =>
-        this.errorFactory.error(error, 'RepositoryAuthenticationError')
-    );
-  }
-
-  private refreshTokenFromSource(): TE.TaskEither<Error, string> {
-    return TE.tryCatch(
-      async () => {
-        this.confirmEnvVars(['SALESFORCE_CONSUMER_KEY']);
-        const body = new URLSearchParams({
-          grant_type: 'refresh_token',
-          refresh_token: this.refreshToken,
-          // confirmed above
-          client_id: process.env.SALESFORCE_CONSUMER_KEY as string,
-        });
-        const response = await axios.post<SalesforceApiAuthResponse>(
-          this.tokenURL,
-          body
-        );
-        if (!response.data) {
-          throw new RepositoryAuthenticationError('No response received');
-        }
-        return this.processAuthResponse(response.data);
-      },
-      (error: Error) =>
-        this.errorFactory.error(error, 'RepositoryAuthenticationError')
-    );
-  }
-
+  /**
+   * Specific JWT preparation for this API
+   */
   private prepareJwt(): string {
     const keyPath = pathResolve(
       __dirname,
@@ -192,7 +147,8 @@ export class SalesforceApiHttpConfigService
       privateKey,
       {
         algorithm: 'RS256',
-        expiresIn: '1h',
+        // * NOTE: without expiry, this token will be invalid
+        expiresIn: '365d',
         header: {
           alg: 'RS256',
           typ: 'JWT',
@@ -201,6 +157,34 @@ export class SalesforceApiHttpConfigService
     );
   }
 
+  /**
+   * Makes the auth request
+   */
+  private getTokenFromSource(): TE.TaskEither<Error, string> {
+    return TE.tryCatch(
+      async () => {
+        const body = new URLSearchParams({
+          grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+          assertion: this.prepareJwt(),
+        });
+        const response = await axios.post<SalesforceApiAuthResponse>(
+          this.authURL,
+          body
+        );
+        this.logger.debug(response.data);
+        if (!response.data) {
+          throw new RepositoryAuthenticationError('No response received');
+        }
+        return this.processAuthResponse(response.data);
+      },
+      (error: SalesforceApiRepositoryError) =>
+        this.errorFactory.error(error, 'RepositoryAuthenticationError')
+    );
+  }
+
+  /**
+   * Breaks the auth request (for testing)
+   */
   public testBreakAuth(): void {
     this.authURL = `${process.env.SALESFORCE_URL_AUTH}/something/completely/wrong`;
   }

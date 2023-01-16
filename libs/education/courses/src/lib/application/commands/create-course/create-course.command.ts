@@ -1,12 +1,7 @@
 import { CommandHandler, ICommandHandler, ICommand } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
-import { sequenceT } from 'fp-ts/lib/Apply';
 
-import {
-  ErrorFactory,
-  RepositoryItemConflictError,
-} from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
@@ -17,9 +12,8 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { CourseRepository } from '../../../adapter/ports/course.repository';
 import { CreateCourseDto } from './create-course.dto';
 import { CreateCourseMapper } from './create-course.mapper';
-import { CourseSourceRepository } from '../../../adapter/ports/course-source.repository';
-import { CourseSource } from '../../../domain/entities/course-source';
 import { Course } from '../../../domain/entities/course';
+import { CourseRepositoryErrorFactory } from '../../../adapter/ports/course.repository.error-factory';
 
 export class CreateCourseCommand implements ICommand {
   constructor(public readonly createCourseDto: CreateCourseDto) {}
@@ -37,83 +31,36 @@ export class CreateCourseHandler
 {
   constructor(
     private readonly courseRepository: CourseRepository,
-    private readonly courseSourceRepository: CourseSourceRepository,
     private logger: LoggableLogger,
-    private errorFactory: ErrorFactory
+    private courseErrorFactory: CourseRepositoryErrorFactory
   ) {
     this.logger.setContext(CreateCourseHandler.name);
   }
 
   async execute(command: CreateCourseCommand): Promise<Course> {
-    const { createCourseDto } = command;
+    const {
+      createCourseDto: { courseSource },
+    } = command;
+
+    // dto will have been validated prior to this
+    // so we can safely destructure
 
     const task = pipe(
-      // #1. parse the dto
-      // we want two DTOs 1. to find source, and 2. find course
-      sequenceT(TE.ApplySeq)(
-        parseActionData(
-          CreateCourseMapper.toFindCourseSourceDto,
-          this.logger,
-          'RequestInvalidError'
-        )(createCourseDto),
-        parseActionData(
-          CreateCourseMapper.toFindCourseDto,
-          this.logger,
-          'RequestInvalidError'
-        )(createCourseDto)
+      courseSource,
+
+      // #1. transform from dto to entity
+      parseActionData(
+        CreateCourseMapper.fromSourceToCourse,
+        this.logger,
+        'SourceInvalidError'
       ),
 
-      // #2. Find the source, and the course (to be updated)
-      TE.chain(([findCourseSourceDto, findCourseDto]) =>
-        sequenceT(TE.ApplySeq)(
-          performAction(
-            findCourseSourceDto,
-            this.courseSourceRepository.findOne,
-            this.errorFactory,
-            this.logger,
-            `find course source: ${findCourseSourceDto.id}`
-          ),
-          performAction(
-            findCourseDto.value,
-            this.courseRepository.check(findCourseDto.identifier),
-            this.errorFactory,
-            this.logger,
-            `check for existing course: ${findCourseDto.value}`
-          )
-        )
-      ),
-
-      // #3. validate + transform; courses exists, source is valid, source to course
-      TE.chain(([courseSource, courseExists]) => {
-        if (courseExists === true) {
-          throw new RepositoryItemConflictError(
-            `Course id: ${createCourseDto.id}`
-          );
-        }
-
-        return pipe(
-          courseSource,
-          parseActionData(
-            CourseSource.check,
-            this.logger,
-            'SourceInvalidError'
-          ),
-          TE.chain((courseSourceChecked) =>
-            parseActionData(
-              CreateCourseMapper.fromSourceToCourse,
-              this.logger,
-              'SourceInvalidError'
-            )(courseSourceChecked)
-          )
-        );
-      }),
-
-      // #5. update the course, from the source
+      // #2. update the entity, from the source
       TE.chain((course) =>
         performAction(
           course,
           this.courseRepository.save,
-          this.errorFactory,
+          this.courseErrorFactory,
           this.logger,
           `save course from source`
         )

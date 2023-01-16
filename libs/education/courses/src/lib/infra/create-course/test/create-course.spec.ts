@@ -2,17 +2,10 @@ import { INestApplication } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
-import {
-  //   ErrorFactory,
-  //   FakeRepositoryErrorFactory,
-  //   RepositoryItemConflictError,
-  //   SourceInvalidError,
-  RequestInvalidError,
-} from '@curioushuman/error-factory';
+import { RequestInvalidError } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { CourseModule } from '../../../test/course.module.fake';
-import { CreateCourseModule } from '../../../create-course.module';
 import { CreateCourseRequestDto } from '../dto/create-course.request.dto';
 import { Course } from '../../../domain/entities/course';
 import { CourseBuilder } from '../../../test/builders/course.builder';
@@ -53,7 +46,7 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    CreateCourseModule.applyDefaults(app);
+    CourseModule.applyDefaults(app);
     repository = moduleRef.get<CourseRepository>(
       CourseRepository
     ) as FakeCourseRepository;

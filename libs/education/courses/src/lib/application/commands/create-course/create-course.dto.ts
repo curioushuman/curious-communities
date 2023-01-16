@@ -1,6 +1,6 @@
-import { Static } from 'runtypes';
+import { Record, Static } from 'runtypes';
 
-import { CourseSourceIdSource } from '../../../domain/value-objects/course-source-id-source';
+import { CourseSource } from '../../../domain/entities/course-source';
 
 /**
  * This is the form of data our repository will expect for the command
@@ -9,7 +9,8 @@ import { CourseSourceIdSource } from '../../../domain/value-objects/course-sourc
  * required. It is just a convenience.
  */
 
-export const CreateCourseDto =
-  CourseSourceIdSource.withBrand('CreateCourseDto');
+export const CreateCourseDto = Record({
+  courseSource: CourseSource,
+});
 
 export type CreateCourseDto = Static<typeof CreateCourseDto>;

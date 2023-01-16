@@ -1,16 +1,28 @@
 import { Controller } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 
-import { executeTask, parseActionData } from '@curioushuman/fp-ts-utils';
+import {
+  executeTask,
+  parseActionData,
+  parseData,
+} from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import { CreateCourseRequestDto } from './dto/create-course.request.dto';
-import { CreateCourseMapper } from '../../application/commands/create-course/create-course.mapper';
 import { CreateCourseCommand } from '../../application/commands/create-course/create-course.command';
 import { CourseResponseDto } from '../dto/course.response.dto';
 import { CourseMapper } from '../course.mapper';
+import { CourseSource } from '../../domain/entities/course-source';
+import { FindCourseMapper } from '../../application/queries/find-course/find-course.mapper';
+import { FindCourseQuery } from '../../application/queries/find-course/find-course.query';
+import {
+  RepositoryItemConflictError,
+  RepositoryItemNotFoundError,
+} from '@curioushuman/error-factory';
+import { Course } from '../../domain/entities/course';
+import { CreateCourseDto } from '../../application/commands/create-course/create-course.dto';
 
 /**
  * Controller for create course operations
@@ -27,7 +39,8 @@ import { CourseMapper } from '../course.mapper';
 export class CreateCourseController {
   constructor(
     private logger: LoggableLogger,
-    private readonly commandBus: CommandBus
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus
   ) {
     this.logger.setContext(CreateCourseController.name);
   }
@@ -35,16 +48,36 @@ export class CreateCourseController {
   public async create(
     requestDto: CreateCourseRequestDto
   ): Promise<CourseResponseDto> {
-    const task = pipe(
+    // #1. validate the dto
+    const validDto = pipe(
       requestDto,
+      parseData(CreateCourseRequestDto.check, this.logger)
+    );
 
-      // #1. parse the dto
-      parseActionData(CreateCourseRequestDto.check, this.logger),
+    // #2. find source and course
+    // NOTE: These will error if they need to
+    const [course, courseSource] = await Promise.all([
+      this.findCourse(validDto),
+      this.findCourseSource(validDto),
+    ]);
 
-      // #2. transform the dto
-      TE.chain(parseActionData(CreateCourseMapper.fromRequestDto, this.logger)),
+    // if a course exists, throw an error, go no further
+    if (course) {
+      throw new RepositoryItemConflictError(`Course id: ${course.id}`);
+    }
 
-      // #3. call the command
+    // otherwise, crack on
+    const createDto = {
+      courseSource,
+    };
+
+    const task = pipe(
+      createDto,
+
+      // #3. validate the dto
+      parseActionData(CreateCourseDto.check, this.logger),
+
+      // #4. call the command
       // NOTE: proper error handling within the command itself
       TE.chain((commandDto) =>
         TE.tryCatch(
@@ -56,8 +89,70 @@ export class CreateCourseController {
         )
       ),
 
-      // #4. transform to the response DTO
+      // #5. transform to the response DTO
       TE.chain(parseActionData(CourseMapper.toResponseDto, this.logger))
+    );
+
+    return executeTask(task);
+  }
+
+  private findCourse(
+    requestDto: CreateCourseRequestDto
+  ): Promise<Course | undefined> {
+    const task = pipe(
+      requestDto,
+
+      // #1. transform dto
+      parseActionData(FindCourseMapper.fromCreateCourseRequestDto, this.logger),
+
+      // #2. call the query
+      TE.chain((findDto) =>
+        pipe(
+          TE.tryCatch(
+            async () => {
+              const query = new FindCourseQuery(findDto);
+              return await this.queryBus.execute<FindCourseQuery>(query);
+            },
+            (error: unknown) => error as Error
+          ),
+          // check if it's a notFound error just return undefined
+          // otherwise, continue on the left path with the error
+          TE.orElse((err) => {
+            return err instanceof RepositoryItemNotFoundError
+              ? TE.right(undefined)
+              : TE.left(err);
+          })
+        )
+      )
+    );
+
+    return executeTask(task);
+  }
+
+  private findCourseSource(
+    requestDto: CreateCourseRequestDto
+  ): Promise<CourseSource | undefined> {
+    const task = pipe(
+      requestDto,
+
+      // #1. transform dto
+      parseActionData(
+        FindCourseSourceMapper.fromCreateCourseRequestDto,
+        this.logger
+      ),
+
+      // #2. call the query
+      TE.chain((findDto) =>
+        pipe(
+          TE.tryCatch(
+            async () => {
+              const query = new FindCourseSourceQuery(findDto);
+              return await this.queryBus.execute<FindCourseSourceQuery>(query);
+            },
+            (error: unknown) => error as Error
+          )
+        )
+      )
     );
 
     return executeTask(task);

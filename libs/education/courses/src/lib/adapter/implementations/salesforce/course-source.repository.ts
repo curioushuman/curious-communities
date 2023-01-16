@@ -1,5 +1,4 @@
-import { Runtype } from 'runtypes';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as TE from 'fp-ts/lib/TaskEither';
@@ -18,6 +17,7 @@ export class SalesforceApiCourseSourceRepository
   implements CourseSourceRepository
 {
   private sourceName: string;
+  private responseType = SalesforceApiCourseSourceResponse;
 
   constructor(
     private httpService: HttpService,
@@ -29,15 +29,15 @@ export class SalesforceApiCourseSourceRepository
 
   // private fields<T>(salesforceResponseRuntype: Record<T>): string[] {
   private fields(): string {
-    const rawRunType = SalesforceApiCourseSourceResponse.omit('attributes');
+    const rawRunType = this.responseType.omit('attributes');
     return Object.keys(rawRunType.fields).join(',');
   }
 
   findOne = (dto: FindCourseSourceDto): TE.TaskEither<Error, CourseSource> => {
     const { id } = dto;
     const endpoint = `sobjects/${this.sourceName}/${id}`;
-    const fields = this.fields();
     this.logger.debug(`Finding ${this.sourceName} with endpoint ${endpoint}`);
+    const fields = this.fields();
     this.logger.verbose(fields);
     return TE.tryCatch(
       async () => {
@@ -49,8 +49,7 @@ export class SalesforceApiCourseSourceRepository
           });
         const response = await firstValueFrom(request$);
 
-        // TODO
-        // - [ ] Not found check
+        // NOTE: if not found, an error would have been thrown and caught
 
         // NOTE: if the response was invalid, an error would have been thrown
         // could this similarly be in a serialisation decorator?

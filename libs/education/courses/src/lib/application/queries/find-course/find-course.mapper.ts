@@ -9,6 +9,7 @@ import {
 import { CourseId } from '../../../domain/value-objects/course-id';
 import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
 import { Source } from '../../../domain/value-objects/source';
+import { CreateCourseRequestDto } from '../../../infra/create-course/dto/create-course.request.dto';
 
 /**
  * TODO
@@ -50,6 +51,15 @@ export class FindCourseMapper {
     return {
       identifier: 'idSourceValue',
       value,
+    } as FindCourseDto;
+  }
+
+  public static fromCreateCourseRequestDto(
+    dto: CreateCourseRequestDto
+  ): FindCourseDto {
+    return {
+      identifier: 'idSourceValue',
+      value: dto.idSourceValue,
     } as FindCourseDto;
   }
 }

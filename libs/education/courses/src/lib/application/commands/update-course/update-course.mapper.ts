@@ -3,7 +3,6 @@ import { UpdateCourseRequestDto } from '../../../infra/update-course/dto/update-
 import { FindCourseSourceDto } from '../../queries/find-course-source/find-course-source.dto';
 import { FindCourseDto } from '../../queries/find-course/find-course.dto';
 import {
-  createYearMonth,
   prepareExternalIdSource,
   prepareExternalIdSourceValue,
 } from '@curioushuman/common';
@@ -12,7 +11,7 @@ import { Source } from '../../../domain/value-objects/source';
 import { CourseSource } from '../../../domain/entities/course-source';
 import { Course } from '../../../domain/entities/course';
 import { createCourseSlug } from '../../../domain/value-objects/course-slug';
-import config from '../../../static/config';
+import { CourseMapper } from '../../../domain/mappers/course.mapper';
 
 /**
  * TODO
@@ -51,25 +50,11 @@ export class UpdateCourseMapper {
     course: Course
   ): (source: CourseSource) => Course {
     return (source: CourseSource) => {
+      const mappedCourse = CourseMapper.fromSourceToCourse(source);
       return Course.check({
+        ...mappedCourse,
         id: course.id,
         slug: createCourseSlug(source),
-        status: source.status,
-
-        sourceIds: [
-          {
-            id: source.id,
-            source: config.defaults.primaryAccountSource,
-          },
-        ],
-
-        supportType: config.defaults.courseSupportType,
-        name: source.name,
-        dateOpen: source.dateOpen,
-        dateClosed: source.dateClosed,
-        yearMonthOpen: createYearMonth(source.dateOpen),
-
-        accountOwner: config.defaults.accountOwner,
       });
     };
   }

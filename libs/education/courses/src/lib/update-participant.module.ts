@@ -1,10 +1,7 @@
 import { INestApplicationContext, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import {
-  ErrorFactory,
-  FakeRepositoryErrorFactory,
-} from '@curioushuman/error-factory';
+import { FakeRepositoryErrorFactory } from '@curioushuman/error-factory';
 import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
 
 import { ParticipantRepository } from './adapter/ports/participant.repository';
@@ -13,6 +10,7 @@ import { UpdateParticipantHandler } from './application/commands/update-particip
 import { UpdateParticipantController } from './infra/update-participant/update-participant.controller';
 import { ParticipantSourceRepository } from './adapter/ports/participant-source.repository';
 import { FakeParticipantSourceRepository } from './adapter/implementations/fake/fake.participant-source.repository';
+import { ParticipantRepositoryErrorFactory } from './adapter/ports/participant.repository.error-factory';
 
 const controllers = [UpdateParticipantController];
 
@@ -31,7 +29,7 @@ const repositories = [
 
 const services = [
   {
-    provide: ErrorFactory,
+    provide: ParticipantRepositoryErrorFactory,
     useClass: FakeRepositoryErrorFactory,
   },
 ];

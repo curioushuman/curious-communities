@@ -1,10 +1,7 @@
 import { INestApplicationContext, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import {
-  ErrorFactory,
-  FakeRepositoryErrorFactory,
-} from '@curioushuman/error-factory';
+import { FakeRepositoryErrorFactory } from '@curioushuman/error-factory';
 import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
 
 import { ParticipantRepository } from '../adapter/ports/participant.repository';
@@ -19,6 +16,9 @@ import { FindParticipantHandler } from '../application/queries/find-participant/
 import { FindParticipantController } from '../infra/find-participant/find-participant.controller';
 import { FindParticipantSourceHandler } from '../application/queries/find-participant-source/find-participant-source.query';
 import { FindParticipantSourceController } from '../infra/find-participant-source/find-participant-source.controller';
+import { ParticipantSourceRepositoryErrorFactory } from '../adapter/ports/participant-source.repository.error-factory';
+import { ParticipantRepositoryErrorFactory } from '../adapter/ports/participant.repository.error-factory';
+import { SalesforceApiRepositoryErrorFactory } from '../adapter/implementations/salesforce/repository.error-factory';
 
 const controllers = [
   CreateParticipantController,
@@ -44,7 +44,11 @@ const repositories = [
 
 const services = [
   {
-    provide: ErrorFactory,
+    provide: ParticipantSourceRepositoryErrorFactory,
+    useClass: SalesforceApiRepositoryErrorFactory,
+  },
+  {
+    provide: ParticipantRepositoryErrorFactory,
     useClass: FakeRepositoryErrorFactory,
   },
 ];

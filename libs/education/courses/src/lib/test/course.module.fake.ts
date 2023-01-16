@@ -1,10 +1,7 @@
 import { INestApplicationContext, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import {
-  ErrorFactory,
-  FakeRepositoryErrorFactory,
-} from '@curioushuman/error-factory';
+import { FakeRepositoryErrorFactory } from '@curioushuman/error-factory';
 import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
 
 import { CourseRepository } from '../adapter/ports/course.repository';
@@ -17,6 +14,8 @@ import { UpdateCourseController } from '../infra/update-course/update-course.con
 import { UpdateCourseHandler } from '../application/commands/update-course/update-course.command';
 import { FindCourseController } from '../infra/find-course/find-course.controller';
 import { FindCourseHandler } from '../application/queries/find-course/find-course.query';
+import { CourseSourceRepositoryErrorFactory } from '../adapter/ports/course-source.repository.error-factory';
+import { CourseRepositoryErrorFactory } from '../adapter/ports/course.repository.error-factory';
 
 const controllers = [
   CreateCourseController,
@@ -39,7 +38,11 @@ const repositories = [
 
 const services = [
   {
-    provide: ErrorFactory,
+    provide: CourseRepositoryErrorFactory,
+    useClass: FakeRepositoryErrorFactory,
+  },
+  {
+    provide: CourseSourceRepositoryErrorFactory,
     useClass: FakeRepositoryErrorFactory,
   },
 ];

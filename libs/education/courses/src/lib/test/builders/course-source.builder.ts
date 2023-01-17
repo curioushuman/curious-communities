@@ -1,7 +1,9 @@
 import { ExternalId } from '@curioushuman/common';
+import { FindCourseSourceDto } from '../../application/queries/find-course-source/find-course-source.dto';
 
 import { CourseSource } from '../../domain/entities/course-source';
 import { CourseSourceStatus } from '../../domain/value-objects/course-source-status';
+import config from '../../static/config';
 
 /**
  * A builder for Course Sources to play with in testing.
@@ -49,6 +51,8 @@ export const CourseSourceBuilder = () => {
     dateClosed: defaultProperties.dateClosed,
   };
 
+  let source = config.defaults.primaryAccountSource;
+
   return {
     funkyChars() {
       overrides.name = "I'm gonna be a dancer!";
@@ -67,7 +71,17 @@ export const CourseSourceBuilder = () => {
       return this;
     },
 
+    alternateSource() {
+      source = 'COMMUNITY';
+      return this;
+    },
+
     noMatchingSource() {
+      return this;
+    },
+
+    invalid() {
+      overrides.id = '';
       return this;
     },
 
@@ -105,6 +119,18 @@ export const CourseSourceBuilder = () => {
         ...defaultProperties,
         ...overrides,
       } as CourseSource;
+    },
+
+    buildFindByIdSourceValueCourseSourceDto(): FindCourseSourceDto {
+      const build = this.buildNoCheck();
+      return {
+        identifier: 'idSource',
+        value: {
+          id: build.id,
+          source,
+        },
+        source,
+      } as FindCourseSourceDto;
     },
   };
 };

@@ -1,6 +1,11 @@
 import { Array, Optional, Record, Static } from 'runtypes';
 
-import { Timestamp, ValueOf, YearMonth } from '@curioushuman/common';
+import {
+  prepareExternalIdSource,
+  Timestamp,
+  ValueOf,
+  YearMonth,
+} from '@curioushuman/common';
 
 import { CourseName } from '../value-objects/course-name';
 import { CourseStatus } from '../value-objects/course-status';
@@ -12,6 +17,8 @@ import {
   CourseSourceIdSource,
   CourseSourceIdSourceValue,
 } from '../value-objects/course-source-id-source';
+import { CourseSourceId } from '../value-objects/course-source-id';
+import { Source } from '../value-objects/source';
 
 /**
  * Runtypes constant for the (internal) Course entity
@@ -50,3 +57,12 @@ export type CourseIdentifiers = {
 };
 export type CourseIdentifier = keyof CourseIdentifiers;
 export type CourseIdentifierValue = ValueOf<CourseIdentifier>;
+
+/**
+ * Convenience function to prepare a GroupMemberSourceIdSource
+ */
+export function prepareCourseExternalIdSource(
+  idSourceValue: string
+): CourseSourceIdSource {
+  return prepareExternalIdSource(idSourceValue, CourseSourceId, Source);
+}

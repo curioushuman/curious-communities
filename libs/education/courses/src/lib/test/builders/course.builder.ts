@@ -205,8 +205,8 @@ export const CourseBuilder = () => {
     },
 
     buildCreateCourseDto(): CreateCourseDto {
-      const sourceId = this.build().sourceIds[0];
-      return sourceId as CreateCourseDto;
+      const courseSource = CourseSourceBuilder().alpha().build();
+      return { courseSource } as CreateCourseDto;
     },
 
     buildCreateCourseRequestDto(): CreateCourseRequestDto {

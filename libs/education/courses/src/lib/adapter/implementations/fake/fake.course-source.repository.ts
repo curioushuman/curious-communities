@@ -3,10 +3,16 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
-import { CourseSource } from '../../../domain/entities/course-source';
-import { CourseSourceRepository } from '../../ports/course-source.repository';
+import {
+  CourseSource,
+  CourseSourceIdentifier,
+} from '../../../domain/entities/course-source';
+import {
+  CourseSourceFindMethod,
+  CourseSourceRepository,
+} from '../../ports/course-source.repository';
 import { CourseSourceBuilder } from '../../../test/builders/course-source.builder';
-import { FindCourseSourceDto } from '../../../application/queries/find-course-source/find-course-source.dto';
+import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
 
 @Injectable()
 export class FakeCourseSourceRepository implements CourseSourceRepository {
@@ -24,10 +30,10 @@ export class FakeCourseSourceRepository implements CourseSourceRepository {
     );
   }
 
-  findOne = (dto: FindCourseSourceDto): TE.TaskEither<Error, CourseSource> => {
-    const { id } = dto;
+  findOneById = (value: CourseSourceId): TE.TaskEither<Error, CourseSource> => {
     return TE.tryCatch(
       async () => {
+        const id = CourseSourceId.check(value);
         const courseSource = this.courseSources.find((cs) => cs.id === id);
         return pipe(
           courseSource,
@@ -48,6 +54,17 @@ export class FakeCourseSourceRepository implements CourseSourceRepository {
       },
       (reason: unknown) => reason as Error
     );
+  };
+
+  /**
+   * Object lookup for findOneBy methods
+   */
+  findOneBy: Record<CourseSourceIdentifier, CourseSourceFindMethod> = {
+    idSource: this.findOneById,
+  };
+
+  findOne = (identifier: CourseSourceIdentifier): CourseSourceFindMethod => {
+    return this.findOneBy[identifier];
   };
 
   save = (courseSource: CourseSource): TE.TaskEither<Error, void> => {

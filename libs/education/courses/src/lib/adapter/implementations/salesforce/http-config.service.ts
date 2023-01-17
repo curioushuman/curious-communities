@@ -16,7 +16,6 @@ import {
   SalesforceApiRepositoryErrorFactory,
 } from './repository.error-factory';
 import { SalesforceApiAuthResponse } from './types/auth-response';
-import { CourseSourceRepositoryErrorFactory } from '../../ports/course-source.repository.error-factory';
 
 /**
  * Setting up Authorization header and other HTTP config options
@@ -37,7 +36,7 @@ export class SalesforceApiHttpConfigService
   implements HttpModuleOptionsFactory
 {
   private logger: LoggableLogger;
-  private errorFactory: CourseSourceRepositoryErrorFactory;
+  private errorFactory: SalesforceApiRepositoryErrorFactory;
   private authURL: string;
   private baseURL: string;
 

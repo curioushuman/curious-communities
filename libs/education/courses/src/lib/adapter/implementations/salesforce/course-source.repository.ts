@@ -5,12 +5,18 @@ import * as TE from 'fp-ts/lib/TaskEither';
 
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { CourseSource } from '../../../domain/entities/course-source';
-import { CourseSourceRepository } from '../../ports/course-source.repository';
-import { FindCourseSourceDto } from '../../../application/queries/find-course-source/find-course-source.dto';
+import {
+  CourseSource,
+  CourseSourceIdentifier,
+} from '../../../domain/entities/course-source';
+import {
+  CourseSourceFindMethod,
+  CourseSourceRepository,
+} from '../../ports/course-source.repository';
 import { SalesforceApiCourseSourceResponse } from './types/course-source.response';
 import { SalesforceApiCourseSourceMapper } from './course-source.mapper';
 import { SalesforceApiRepositoryError } from './repository.error-factory';
+import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
 
 @Injectable()
 export class SalesforceApiCourseSourceRepository
@@ -27,20 +33,21 @@ export class SalesforceApiCourseSourceRepository
     this.logger.setContext(SalesforceApiCourseSourceRepository.name);
   }
 
-  // private fields<T>(salesforceResponseRuntype: Record<T>): string[] {
   private fields(): string {
     const rawRunType = this.responseType.omit('attributes');
     return Object.keys(rawRunType.fields).join(',');
   }
 
-  findOne = (dto: FindCourseSourceDto): TE.TaskEither<Error, CourseSource> => {
-    const { id } = dto;
-    const endpoint = `sobjects/${this.sourceName}/${id}`;
-    this.logger.debug(`Finding ${this.sourceName} with endpoint ${endpoint}`);
-    const fields = this.fields();
-    this.logger.verbose(fields);
+  findOneById = (value: CourseSourceId): TE.TaskEither<Error, CourseSource> => {
     return TE.tryCatch(
       async () => {
+        const id = CourseSourceId.check(value);
+        const endpoint = `sobjects/${this.sourceName}/${id}`;
+        this.logger.debug(
+          `Finding ${this.sourceName} with endpoint ${endpoint}`
+        );
+        const fields = this.fields();
+        this.logger.verbose(fields);
         const request$ =
           this.httpService.get<SalesforceApiCourseSourceResponse>(endpoint, {
             params: {
@@ -58,6 +65,17 @@ export class SalesforceApiCourseSourceRepository
       // NOTE: we don't use an error factory here, it is one level up
       (reason: SalesforceApiRepositoryError) => reason as Error
     );
+  };
+
+  /**
+   * Object lookup for findOneBy methods
+   */
+  findOneBy: Record<CourseSourceIdentifier, CourseSourceFindMethod> = {
+    idSource: this.findOneById,
+  };
+
+  findOne = (identifier: CourseSourceIdentifier): CourseSourceFindMethod => {
+    return this.findOneBy[identifier];
   };
 
   save = (courseSource: CourseSource): TE.TaskEither<Error, void> => {

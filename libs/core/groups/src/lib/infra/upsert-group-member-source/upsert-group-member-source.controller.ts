@@ -66,7 +66,7 @@ export class UpsertGroupMemberSourceController {
       parseData(checkUpsertGroupMemberSourceRequestDto, this.logger)
     );
 
-    // #2. find a group
+    // #2. find source
     const groupMemberSource = await this.find(validDto);
 
     // #3. based on whether or not we find anything, take the appropriate action

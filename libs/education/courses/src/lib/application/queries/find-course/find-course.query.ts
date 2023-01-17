@@ -2,7 +2,6 @@ import { QueryHandler, IQueryHandler, IQuery } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 
-import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
@@ -13,6 +12,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { CourseRepository } from '../../../adapter/ports/course.repository';
 import { FindCourseDto, parseDto } from './find-course.dto';
 import { Course } from '../../../domain/entities/course';
+import { CourseRepositoryErrorFactory } from '../../../adapter/ports/course.repository.error-factory';
 
 export class FindCourseQuery implements IQuery {
   constructor(public readonly findCourseDto: FindCourseDto) {}
@@ -26,7 +26,7 @@ export class FindCourseHandler implements IQueryHandler<FindCourseQuery> {
   constructor(
     private readonly courseRepository: CourseRepository,
     private logger: LoggableLogger,
-    private errorFactory: ErrorFactory
+    private courseErrorFactory: CourseRepositoryErrorFactory
   ) {
     this.logger.setContext(FindCourseHandler.name);
   }
@@ -46,7 +46,7 @@ export class FindCourseHandler implements IQueryHandler<FindCourseQuery> {
         performAction(
           parsedDtOValue,
           this.courseRepository.findOne(findCourseDto.identifier),
-          this.errorFactory,
+          this.courseErrorFactory,
           this.logger,
           `find course: ${parsedDtOValue}`
         )

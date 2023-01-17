@@ -5,7 +5,6 @@ import {
   CourseIdentifier,
   CourseIdentifierValue,
 } from '../../domain/entities/course';
-import { CourseSourceId } from '../../domain/value-objects/course-source-id';
 import { CourseSlug } from '../../domain/value-objects/course-slug';
 import { CourseSourceIdSourceValue } from '../../domain/value-objects/course-source-id-source';
 import { CourseId } from '../../domain/value-objects/course-id';
@@ -50,7 +49,7 @@ export abstract class CourseRepository {
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findOneById(id: CourseSourceId): TaskEither<Error, Course>;
+  abstract findOneById(id: CourseId): TaskEither<Error, Course>;
 
   /**
    * Find a course by the given ID and source value

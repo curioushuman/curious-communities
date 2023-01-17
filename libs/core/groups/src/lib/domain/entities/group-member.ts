@@ -102,6 +102,7 @@ export type GroupMemberIdentifiers = {
 };
 export type GroupMemberIdentifier = keyof GroupMemberIdentifiers;
 export type GroupMemberIdentifierValue = ValueOf<GroupMemberIdentifiers>;
+
 /**
  * Convenience function to prepare a GroupMemberSourceIdSource
  */

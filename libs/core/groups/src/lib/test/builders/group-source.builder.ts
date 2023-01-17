@@ -8,7 +8,6 @@ import { GroupName } from '../../domain/value-objects/group-name';
 import { GroupSourceStatus } from '../../domain/value-objects/group-source-status';
 import { UpsertGroupSourceRequestDto } from '../../infra/upsert-group-source/dto/upsert-group-source.request.dto';
 import config from '../../static/config';
-import { GroupMemberBuilder } from './group-member.builder';
 import { GroupBuilder } from './group.builder';
 
 /**

@@ -3,7 +3,6 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 import { sequenceT } from 'fp-ts/lib/Apply';
 
-import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
@@ -17,6 +16,8 @@ import { UpdateCourseMapper } from './update-course.mapper';
 import { CourseSourceRepository } from '../../../adapter/ports/course-source.repository';
 import { CourseSource } from '../../../domain/entities/course-source';
 import { Course } from '../../../domain/entities/course';
+import { CourseRepositoryErrorFactory } from '../../../adapter/ports/course.repository.error-factory';
+import { CourseSourceRepositoryErrorFactory } from '../../../adapter/ports/course-source.repository.error-factory';
 
 export class UpdateCourseCommand implements ICommand {
   constructor(public readonly updateCourseDto: UpdateCourseDto) {}
@@ -36,7 +37,8 @@ export class UpdateCourseHandler
     private readonly courseRepository: CourseRepository,
     private readonly courseSourceRepository: CourseSourceRepository,
     private logger: LoggableLogger,
-    private errorFactory: ErrorFactory
+    private courseErrorFactory: CourseRepositoryErrorFactory,
+    private courseSourceErrorFactory: CourseSourceRepositoryErrorFactory
   ) {
     this.logger.setContext(UpdateCourseHandler.name);
   }
@@ -66,14 +68,14 @@ export class UpdateCourseHandler
           performAction(
             findCourseSourceDto,
             this.courseSourceRepository.findOne,
-            this.errorFactory,
+            this.courseSourceErrorFactory,
             this.logger,
             `find course source: ${findCourseSourceDto.id}`
           ),
           performAction(
             findCourseDto.value,
             this.courseRepository.findOne(findCourseDto.identifier),
-            this.errorFactory,
+            this.courseErrorFactory,
             this.logger,
             `find course: ${findCourseDto.value}`
           )
@@ -104,7 +106,7 @@ export class UpdateCourseHandler
         performAction(
           course,
           this.courseRepository.save,
-          this.errorFactory,
+          this.courseErrorFactory,
           this.logger,
           `save course from source`
         )

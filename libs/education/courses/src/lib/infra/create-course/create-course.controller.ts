@@ -23,6 +23,8 @@ import {
 } from '@curioushuman/error-factory';
 import { Course } from '../../domain/entities/course';
 import { CreateCourseDto } from '../../application/commands/create-course/create-course.dto';
+import { FindCourseSourceMapper } from '../../application/queries/find-course-source/find-course-source.mapper';
+import { FindCourseSourceQuery } from '../../application/queries/find-course-source/find-course-source.query';
 
 /**
  * Controller for create course operations

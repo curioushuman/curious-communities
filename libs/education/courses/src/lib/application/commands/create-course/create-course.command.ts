@@ -5,6 +5,7 @@ import { pipe } from 'fp-ts/lib/function';
 import {
   executeTask,
   parseActionData,
+  parseData,
   performAction,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -38,17 +39,20 @@ export class CreateCourseHandler
   }
 
   async execute(command: CreateCourseCommand): Promise<Course> {
-    const {
-      createCourseDto: { courseSource },
-    } = command;
+    const { createCourseDto } = command;
 
-    // dto will have been validated prior to this
-    // so we can safely destructure
+    // #1. validate the dto
+    const validDto = pipe(
+      createCourseDto,
+      parseData(CreateCourseDto.check, this.logger, 'SourceInvalidError')
+    );
+
+    const { courseSource } = validDto;
 
     const task = pipe(
       courseSource,
 
-      // #1. transform from dto to entity
+      // #2. transform from dto to entity
       parseActionData(
         CreateCourseMapper.fromSourceToCourse,
         this.logger,

@@ -127,7 +127,8 @@ export const CourseBuilder = () => {
     invalidSource() {
       const source = CourseSourceBuilder().invalidSource().buildNoCheck();
       this.setSource(source);
-      overrides.slug = createCourseSlug(source);
+      // don't set the slug, as the source has no name
+      // overrides.slug = createCourseSlug(source);
       return this;
     },
 
@@ -204,8 +205,8 @@ export const CourseBuilder = () => {
       } as Course;
     },
 
-    buildCreateCourseDto(): CreateCourseDto {
-      const courseSource = CourseSourceBuilder().alpha().build();
+    buildCreateCourseDto(cs?: CourseSource): CreateCourseDto {
+      const courseSource = cs || CourseSourceBuilder().alpha().build();
       return { courseSource } as CreateCourseDto;
     },
 
@@ -225,8 +226,9 @@ export const CourseBuilder = () => {
     },
 
     buildUpdateCourseDto(): UpdateCourseDto {
-      const sourceId = this.build().sourceIds[0];
-      return sourceId as UpdateCourseDto;
+      const courseSource = CourseSourceBuilder().exists().build();
+      const course = this.buildNoCheck();
+      return { courseSource, course } as UpdateCourseDto;
     },
 
     buildUpdateCourseRequestDto(): UpdateCourseRequestDto {

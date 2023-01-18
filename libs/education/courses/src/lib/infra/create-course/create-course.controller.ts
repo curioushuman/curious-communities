@@ -9,6 +9,10 @@ import {
   parseData,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
+import {
+  RepositoryItemConflictError,
+  RepositoryItemNotFoundError,
+} from '@curioushuman/error-factory';
 
 import { CreateCourseRequestDto } from './dto/create-course.request.dto';
 import { CreateCourseCommand } from '../../application/commands/create-course/create-course.command';
@@ -17,10 +21,6 @@ import { CourseMapper } from '../course.mapper';
 import { CourseSource } from '../../domain/entities/course-source';
 import { FindCourseMapper } from '../../application/queries/find-course/find-course.mapper';
 import { FindCourseQuery } from '../../application/queries/find-course/find-course.query';
-import {
-  RepositoryItemConflictError,
-  RepositoryItemNotFoundError,
-} from '@curioushuman/error-factory';
 import { Course } from '../../domain/entities/course';
 import { CreateCourseDto } from '../../application/commands/create-course/create-course.dto';
 import { FindCourseSourceMapper } from '../../application/queries/find-course-source/find-course-source.mapper';
@@ -77,6 +77,9 @@ export class CreateCourseController {
       createDto,
 
       // #3. validate the dto
+      // NOTE: this will also occur in the command itself
+      // but the Runtype.check function is such a useful way to
+      // also make sure the types are correct. Better than typecasting
       parseActionData(CreateCourseDto.check, this.logger),
 
       // #4. call the command
@@ -105,7 +108,11 @@ export class CreateCourseController {
       requestDto,
 
       // #1. transform dto
-      parseActionData(FindCourseMapper.fromCreateCourseRequestDto, this.logger),
+      parseActionData(
+        FindCourseMapper.fromCreateCourseRequestDto,
+        this.logger,
+        'SourceInvalidError'
+      ),
 
       // #2. call the query
       TE.chain((findDto) =>

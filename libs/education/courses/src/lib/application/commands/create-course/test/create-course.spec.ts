@@ -1,11 +1,8 @@
-import { NotFoundException } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
-  RepositoryItemConflictError,
   SourceInvalidError,
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
@@ -22,6 +19,9 @@ import { FakeCourseSourceRepository } from '../../../../adapter/implementations/
 import { Course } from '../../../../domain/entities/course';
 import { CourseBuilder } from '../../../../test/builders/course.builder';
 import { CreateCourseDto } from '../create-course.dto';
+import { CourseSourceRepositoryErrorFactory } from '../../../../adapter/ports/course-source.repository.error-factory';
+import { CourseRepositoryErrorFactory } from '../../../../adapter/ports/course.repository.error-factory';
+import { CourseSourceBuilder } from '../../../../test/builders/course-source.builder';
 
 /**
  * UNIT TEST
@@ -53,7 +53,11 @@ defineFeature(feature, (test) => {
           useClass: FakeCourseSourceRepository,
         },
         {
-          provide: ErrorFactory,
+          provide: CourseRepositoryErrorFactory,
+          useClass: FakeRepositoryErrorFactory,
+        },
+        {
+          provide: CourseSourceRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -101,28 +105,6 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; Source not found for ID provided', ({ given, when, then }) => {
-    let error: Error;
-
-    given('no record exists that matches our request', () => {
-      createCourseDto = CourseBuilder()
-        .noMatchingSource()
-        .buildCreateCourseDto();
-    });
-
-    when('I attempt to create a course', async () => {
-      try {
-        await handler.execute(new CreateCourseCommand(createCourseDto));
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive a RepositoryItemNotFoundError', () => {
-      expect(error).toBeInstanceOf(NotFoundException);
-    });
-  });
-
   test('Fail; Source does not translate into a valid Course', ({
     given,
     and,
@@ -132,73 +114,15 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('a matching record is found at the source', () => {
-      createCourseDto = CourseBuilder().invalidSource().buildCreateCourseDto();
+      const invalidSource = CourseSourceBuilder().invalid().buildNoCheck();
+      createCourseDto = CourseBuilder()
+        .invalidSource()
+        .buildCreateCourseDto(invalidSource);
+      console.log(createCourseDto);
     });
 
     and('the returned source does not populate a valid Course', () => {
       // this occurs during
-    });
-
-    when('I attempt to create a course', async () => {
-      try {
-        await handler.execute(new CreateCourseCommand(createCourseDto));
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive a SourceInvalidError', () => {
-      expect(error).toBeInstanceOf(SourceInvalidError);
-    });
-  });
-
-  test('Fail; Source already exists in our DB', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      // confirmed
-    });
-
-    and('the returned source populates a valid course', () => {
-      // known
-    });
-
-    and('the source DOES already exist in our DB', () => {
-      createCourseDto = CourseBuilder().exists().buildCreateCourseDto();
-    });
-
-    when('I attempt to create a course', async () => {
-      try {
-        await handler.execute(new CreateCourseCommand(createCourseDto));
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive an RepositoryItemConflictError', () => {
-      expect(error).toBeInstanceOf(RepositoryItemConflictError);
-    });
-  });
-
-  test('Fail; Source is an invalid status to be created in admin', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      // we know this
-    });
-
-    and('the returned source has an invalid status', () => {
-      createCourseDto = CourseBuilder().invalidStatus().buildCreateCourseDto();
     });
 
     when('I attempt to create a course', async () => {

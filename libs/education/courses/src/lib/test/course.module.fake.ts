@@ -16,6 +16,7 @@ import { FindCourseController } from '../infra/find-course/find-course.controlle
 import { FindCourseHandler } from '../application/queries/find-course/find-course.query';
 import { CourseSourceRepositoryErrorFactory } from '../adapter/ports/course-source.repository.error-factory';
 import { CourseRepositoryErrorFactory } from '../adapter/ports/course.repository.error-factory';
+import { FindCourseSourceHandler } from '../application/queries/find-course-source/find-course-source.query';
 
 const controllers = [
   CreateCourseController,
@@ -23,7 +24,12 @@ const controllers = [
   FindCourseController,
 ];
 
-const handlers = [CreateCourseHandler, UpdateCourseHandler, FindCourseHandler];
+const handlers = [
+  CreateCourseHandler,
+  UpdateCourseHandler,
+  FindCourseHandler,
+  FindCourseSourceHandler,
+];
 
 const repositories = [
   {

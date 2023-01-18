@@ -2,7 +2,12 @@ import { INestApplication } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
-import { RequestInvalidError } from '@curioushuman/error-factory';
+import {
+  RepositoryItemConflictError,
+  RepositoryItemNotFoundError,
+  RequestInvalidError,
+  SourceInvalidError,
+} from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { CourseModule } from '../../../test/course.module.fake';
@@ -98,21 +103,17 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; Invalid request', ({ given, and, when, then }) => {
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
+  test('Fail; Invalid request', ({ given, when, then }) => {
     let createCourseDto: CreateCourseRequestDto;
     let error: Error;
 
     given('the request contains invalid data', () => {
-      // we know this to exist in our fake repo
       createCourseDto = CourseBuilder().invalid().buildCreateCourseRequestDto();
     });
 
     when('I attempt to create a course', async () => {
       try {
-        result = await controller.create(createCourseDto);
+        await controller.create(createCourseDto);
       } catch (err) {
         error = err as Error;
       }
@@ -121,9 +122,90 @@ defineFeature(feature, (test) => {
     then('I should receive a RequestInvalidError', () => {
       expect(error).toBeInstanceOf(RequestInvalidError);
     });
+  });
 
-    and('no result is returned', () => {
-      expect(result).toEqual(undefined);
+  test('Fail; Source not found for ID provided', ({ given, when, then }) => {
+    let createCourseDto: CreateCourseRequestDto;
+    let error: Error;
+
+    given('no record exists that matches our request', () => {
+      createCourseDto = CourseBuilder()
+        .noMatchingSource()
+        .buildCreateCourseRequestDto();
+    });
+
+    when('I attempt to create a course', async () => {
+      try {
+        await controller.create(createCourseDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
+    });
+  });
+
+  test('Fail; Source does not translate into a valid Course', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    let createCourseDto: CreateCourseRequestDto;
+    let error: Error;
+
+    given('a matching record is found at the source', () => {
+      createCourseDto = CourseBuilder()
+        .invalidSource()
+        .buildCreateCourseRequestDto();
+    });
+
+    and('the returned source does not populate a valid Course', () => {
+      // above
+    });
+
+    when('I attempt to create a course', async () => {
+      try {
+        await controller.create(createCourseDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a SourceInvalidError', () => {
+      expect(error).toBeInstanceOf(SourceInvalidError);
+    });
+  });
+
+  test('Fail; Source already exists in our DB', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    let createCourseDto: CreateCourseRequestDto;
+    let error: Error;
+
+    given('a matching record is found at the source', () => {
+      // see next
+    });
+
+    and('the source DOES already exist in our DB', () => {
+      createCourseDto = CourseBuilder().exists().buildCreateCourseRequestDto();
+    });
+
+    when('I attempt to create a course', async () => {
+      try {
+        await controller.create(createCourseDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a RepositoryItemConflictError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemConflictError);
     });
   });
 });

@@ -92,6 +92,7 @@ export const CourseSourceBuilder = () => {
     },
 
     invalidSource() {
+      overrides.id = '5008s1234519CHHHHH';
       overrides.name = '';
       return this;
     },

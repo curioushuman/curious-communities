@@ -1,16 +1,26 @@
 import { Controller } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 
-import { executeTask, parseActionData } from '@curioushuman/fp-ts-utils';
+import {
+  executeTask,
+  parseActionData,
+  parseData,
+} from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import { UpdateCourseRequestDto } from './dto/update-course.request.dto';
-import { UpdateCourseMapper } from '../../application/commands/update-course/update-course.mapper';
 import { UpdateCourseCommand } from '../../application/commands/update-course/update-course.command';
-import { CourseMapper } from '../course.mapper';
 import { CourseResponseDto } from '../dto/course.response.dto';
+import { CourseMapper } from '../course.mapper';
+import { CourseSource } from '../../domain/entities/course-source';
+import { FindCourseMapper } from '../../application/queries/find-course/find-course.mapper';
+import { FindCourseQuery } from '../../application/queries/find-course/find-course.query';
+import { Course } from '../../domain/entities/course';
+import { UpdateCourseDto } from '../../application/commands/update-course/update-course.dto';
+import { FindCourseSourceMapper } from '../../application/queries/find-course-source/find-course-source.mapper';
+import { FindCourseSourceQuery } from '../../application/queries/find-course-source/find-course-source.query';
 
 /**
  * Controller for update course operations
@@ -27,7 +37,8 @@ import { CourseResponseDto } from '../dto/course.response.dto';
 export class UpdateCourseController {
   constructor(
     private logger: LoggableLogger,
-    private readonly commandBus: CommandBus
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus
   ) {
     this.logger.setContext(UpdateCourseController.name);
   }
@@ -35,16 +46,36 @@ export class UpdateCourseController {
   public async update(
     requestDto: UpdateCourseRequestDto
   ): Promise<CourseResponseDto> {
-    const task = pipe(
+    // #1. validate the dto
+    const validDto = pipe(
       requestDto,
+      parseData(UpdateCourseRequestDto.check, this.logger)
+    );
 
-      // #1. parse the dto
-      parseActionData(UpdateCourseRequestDto.check, this.logger),
+    // #2. find source and course
+    // NOTE: These will error if they need to
+    // including NotFound for either
+    const [course, courseSource] = await Promise.all([
+      this.findCourse(validDto),
+      this.findCourseSource(validDto),
+    ]);
 
-      // #2. transform the dto
-      TE.chain(parseActionData(UpdateCourseMapper.fromRequestDto, this.logger)),
+    // set up the command dto
+    const updateDto = {
+      course,
+      courseSource,
+    };
 
-      // #3. call the command
+    const task = pipe(
+      updateDto,
+
+      // #3. validate the dto
+      // NOTE: this will also occur in the command itself
+      // but the Runtype.check function is such a useful way to
+      // also make sure the types are correct. Better than typecasting
+      parseActionData(UpdateCourseDto.check, this.logger, 'SourceInvalidError'),
+
+      // #4. call the command
       // NOTE: proper error handling within the command itself
       TE.chain((commandDto) =>
         TE.tryCatch(
@@ -56,8 +87,63 @@ export class UpdateCourseController {
         )
       ),
 
-      // #4. transform to the response DTO
+      // #5. transform to the response DTO
       TE.chain(parseActionData(CourseMapper.toResponseDto, this.logger))
+    );
+
+    return executeTask(task);
+  }
+
+  private findCourse(
+    requestDto: UpdateCourseRequestDto
+  ): Promise<Course | undefined> {
+    const task = pipe(
+      requestDto,
+
+      // #1. transform dto
+      parseActionData(FindCourseMapper.fromUpdateCourseRequestDto, this.logger),
+
+      // #2. call the query
+      TE.chain((findDto) =>
+        pipe(
+          TE.tryCatch(
+            async () => {
+              const query = new FindCourseQuery(findDto);
+              return await this.queryBus.execute<FindCourseQuery>(query);
+            },
+            (error: unknown) => error as Error
+          )
+        )
+      )
+    );
+
+    return executeTask(task);
+  }
+
+  private findCourseSource(
+    requestDto: UpdateCourseRequestDto
+  ): Promise<CourseSource | undefined> {
+    const task = pipe(
+      requestDto,
+
+      // #1. transform dto
+      parseActionData(
+        FindCourseSourceMapper.fromUpdateCourseRequestDto,
+        this.logger
+      ),
+
+      // #2. call the query
+      TE.chain((findDto) =>
+        pipe(
+          TE.tryCatch(
+            async () => {
+              const query = new FindCourseSourceQuery(findDto);
+              return await this.queryBus.execute<FindCourseSourceQuery>(query);
+            },
+            (error: unknown) => error as Error
+          )
+        )
+      )
     );
 
     return executeTask(task);

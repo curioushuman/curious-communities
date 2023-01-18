@@ -17,6 +17,7 @@ import { CourseId } from '../../../domain/value-objects/course-id';
 import { Source } from '../../../domain/value-objects/source';
 import { CourseSourceIdSourceValue } from '../../../domain/value-objects/course-source-id-source';
 import { CourseSlug } from '../../../domain/value-objects/course-slug';
+import { CourseName } from '../../../domain/value-objects/course-name';
 
 @Injectable()
 export class FakeCourseRepository implements CourseRepository {
@@ -24,6 +25,9 @@ export class FakeCourseRepository implements CourseRepository {
 
   constructor() {
     this.courses.push(CourseBuilder().exists().build());
+    const invalidSource = CourseBuilder().invalidSource().buildNoCheck();
+    invalidSource.name = 'Invalid Source' as CourseName;
+    this.courses.push(invalidSource);
   }
 
   findOneById = (id: CourseSourceId): TE.TaskEither<Error, Course> => {

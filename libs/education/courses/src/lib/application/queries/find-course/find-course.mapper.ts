@@ -10,6 +10,7 @@ import { CourseId } from '../../../domain/value-objects/course-id';
 import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
 import { Source } from '../../../domain/value-objects/source';
 import { CreateCourseRequestDto } from '../../../infra/create-course/dto/create-course.request.dto';
+import { UpdateCourseRequestDto } from '../../../infra/update-course/dto/update-course.request.dto';
 
 /**
  * TODO
@@ -56,6 +57,15 @@ export class FindCourseMapper {
 
   public static fromCreateCourseRequestDto(
     dto: CreateCourseRequestDto
+  ): FindCourseDto {
+    return {
+      identifier: 'idSourceValue',
+      value: dto.idSourceValue,
+    } as FindCourseDto;
+  }
+
+  public static fromUpdateCourseRequestDto(
+    dto: UpdateCourseRequestDto
   ): FindCourseDto {
     return {
       identifier: 'idSourceValue',

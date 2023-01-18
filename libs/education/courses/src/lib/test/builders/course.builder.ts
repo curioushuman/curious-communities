@@ -127,6 +127,7 @@ export const CourseBuilder = () => {
     invalidSource() {
       const source = CourseSourceBuilder().invalidSource().buildNoCheck();
       this.setSource(source);
+      overrides.id = '9yu25369-7dd5-4d92-b2a0-fba16384ce80';
       // don't set the slug, as the source has no name
       // overrides.slug = createCourseSlug(source);
       return this;
@@ -161,6 +162,14 @@ export const CourseBuilder = () => {
 
     exists() {
       const source = CourseSourceBuilder().exists().build();
+      this.setSource(source);
+      overrides.name = source.name;
+      overrides.slug = createCourseSlug(source);
+      return this;
+    },
+
+    updated() {
+      const source = CourseSourceBuilder().updated().build();
       this.setSource(source);
       overrides.name = source.name;
       overrides.slug = createCourseSlug(source);
@@ -206,8 +215,16 @@ export const CourseBuilder = () => {
     },
 
     buildCreateCourseDto(cs?: CourseSource): CreateCourseDto {
+      // default is successful path
       const courseSource = cs || CourseSourceBuilder().alpha().build();
       return { courseSource } as CreateCourseDto;
+    },
+
+    buildUpdateCourseDto(cs?: CourseSource): UpdateCourseDto {
+      // default is successful path
+      const courseSource = cs || CourseSourceBuilder().updated().build();
+      const course = this.buildNoCheck();
+      return { courseSource, course } as UpdateCourseDto;
     },
 
     buildCreateCourseRequestDto(): CreateCourseRequestDto {
@@ -223,12 +240,6 @@ export const CourseBuilder = () => {
           sourceIds[0].source
         ),
       } as CreateCourseRequestDto;
-    },
-
-    buildUpdateCourseDto(): UpdateCourseDto {
-      const courseSource = CourseSourceBuilder().exists().build();
-      const course = this.buildNoCheck();
-      return { courseSource, course } as UpdateCourseDto;
     },
 
     buildUpdateCourseRequestDto(): UpdateCourseRequestDto {

@@ -63,7 +63,7 @@ defineFeature(feature, (test) => {
 
     given('the request is valid', async () => {
       updateCourseGroupDto = GroupBuilder()
-        .exists()
+        .updated()
         .buildUpdateCourseGroupDto();
     });
 

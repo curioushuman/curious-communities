@@ -155,7 +155,6 @@ export const GroupBuilder = () => {
       const source = GroupSourceBuilder().exists().build();
       this.setSource(source);
       overrides.name = source.name;
-      courseGroupOverrides.courseId = '388d5e82-a931-4092-bff2-591f3c4c65c1';
       return this;
     },
 
@@ -171,7 +170,6 @@ export const GroupBuilder = () => {
       const source = GroupSourceBuilder().exists().build();
       this.setSource(source);
       overrides.name = source.name;
-      courseGroupOverrides.courseId = '388d5e82-a931-4092-bff2-591f3c4c65c1';
       return this;
     },
 
@@ -319,10 +317,10 @@ export const GroupBuilder = () => {
       const group = this.buildCourseGroupNoCheck();
       return {
         course: {
-          id: group.courseId as string,
-          status: group.status as string,
+          id: group.courseId,
+          status: group.status as GroupStatus,
           name: 'An updated name',
-          accountOwner: group.accountOwner as string,
+          accountOwner: group.accountOwner,
         } as CourseDto,
       } as UpdateCourseGroupDto;
     },

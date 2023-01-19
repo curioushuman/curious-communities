@@ -69,6 +69,8 @@ defineFeature(feature, (test) => {
 
     and('the group does exist in our DB', async () => {
       const groups = await executeTask(repository.all());
+      console.log('groups', groups);
+      console.log('updateCourseGroupDto', updateCourseGroupDto);
       const groupBefore = groups.find(
         (group) => group.courseId === updateCourseGroupDto.course.id
       );

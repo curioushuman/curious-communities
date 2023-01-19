@@ -92,6 +92,7 @@ defineFeature(feature, (test) => {
 
     given('the request contains invalid data', () => {
       createCourseGroupDto = GroupBuilder()
+        .doesntExist()
         .invalidOther()
         .buildCreateCourseGroupDto();
     });

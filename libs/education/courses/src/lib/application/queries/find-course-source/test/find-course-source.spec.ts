@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import {
   FakeRepositoryErrorFactory,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -78,6 +79,32 @@ defineFeature(feature, (test) => {
 
     and('a record should have been returned', () => {
       expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Fail; course-source not found', ({ given, and, when, then }) => {
+    let error: Error;
+
+    given('the request is valid', () => {
+      findCourseSourceDto = CourseSourceBuilder()
+        .doesntExist()
+        .buildFindByIdSourceValueCourseSourceDto();
+    });
+
+    and('the course-source does NOT exist in the DB', () => {
+      // above
+    });
+
+    when('I attempt to find a course-source', async () => {
+      try {
+        await handler.execute(new FindCourseSourceQuery(findCourseSourceDto));
+      } catch (err) {
+        error = err;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
     });
   });
 

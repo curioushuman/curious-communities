@@ -2,8 +2,8 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -13,6 +13,7 @@ import { CourseRepository } from '../../../../adapter/ports/course.repository';
 import { FakeCourseRepository } from '../../../../adapter/implementations/fake/fake.course.repository';
 import { CourseBuilder } from '../../../../test/builders/course.builder';
 import { FindCourseDto } from '../find-course.dto';
+import { CourseRepositoryErrorFactory } from '../../../../adapter/ports/course.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -39,7 +40,7 @@ defineFeature(feature, (test) => {
         LoggableLogger,
         { provide: CourseRepository, useClass: FakeCourseRepository },
         {
-          provide: ErrorFactory,
+          provide: CourseRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -85,6 +86,32 @@ defineFeature(feature, (test) => {
 
     and('a record should have been returned', () => {
       expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Fail; course not found', ({ given, and, when, then }) => {
+    let error: Error;
+
+    given('the request is valid', () => {
+      findCourseDto = CourseBuilder()
+        .doesntExist()
+        .buildFindByIdSourceValueCourseDto();
+    });
+
+    and('the course does NOT exist in the DB', () => {
+      // above
+    });
+
+    when('I attempt to find a course', async () => {
+      try {
+        await handler.execute(new FindCourseQuery(findCourseDto));
+      } catch (err) {
+        error = err;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
     });
   });
 

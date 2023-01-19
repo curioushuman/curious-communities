@@ -104,6 +104,11 @@ export const CourseSourceBuilder = () => {
       return this;
     },
 
+    doesntExist() {
+      overrides.id = ExternalId.check('NothingExistsForThisId');
+      return this;
+    },
+
     updated() {
       overrides.id = ExternalId.check('ThisSourceExists');
       overrides.name = 'Updated course';

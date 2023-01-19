@@ -2,10 +2,10 @@ import { CommandHandler, ICommandHandler, ICommand } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 
-import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
+  parseData,
   performAction,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -14,6 +14,7 @@ import { ParticipantRepository } from '../../../adapter/ports/participant.reposi
 import { CreateParticipantDto } from './create-participant.dto';
 import { CreateParticipantMapper } from './create-participant.mapper';
 import { Participant } from '../../../domain/entities/participant';
+import { ParticipantRepositoryErrorFactory } from '../../../adapter/ports/participant.repository.error-factory';
 
 export class CreateParticipantCommand implements ICommand {
   constructor(public readonly createParticipantDto: CreateParticipantDto) {}
@@ -32,15 +33,24 @@ export class CreateParticipantHandler
   constructor(
     private readonly participantRepository: ParticipantRepository,
     private logger: LoggableLogger,
-    private errorFactory: ErrorFactory
+    private participantErrorFactory: ParticipantRepositoryErrorFactory
   ) {
     this.logger.setContext(CreateParticipantHandler.name);
   }
 
   async execute(command: CreateParticipantCommand): Promise<Participant> {
-    const {
-      createParticipantDto: { participantSource, course, member },
-    } = command;
+    const { createParticipantDto } = command;
+
+    // #1. validate the dto
+    // NOTE: we have decided to do this here, no matter if it is a double
+    // up in some instances. It is one of the responsibilities of the command handler
+    // to validate the data it receives.
+    const validDto = pipe(
+      createParticipantDto,
+      parseData(CreateParticipantDto.check, this.logger, 'SourceInvalidError')
+    );
+
+    const { participantSource, course, member } = validDto;
 
     const task = pipe(
       // #1. parse the dto and prepare the participant record
@@ -70,7 +80,7 @@ export class CreateParticipantHandler
         performAction(
           participant,
           this.participantRepository.save,
-          this.errorFactory,
+          this.participantErrorFactory,
           this.logger,
           `save participant from source`
         )

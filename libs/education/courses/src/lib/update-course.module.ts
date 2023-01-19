@@ -15,6 +15,8 @@ import { CourseRepositoryErrorFactory } from './adapter/ports/course.repository.
 import { CourseSourceRepositoryErrorFactory } from './adapter/ports/course-source.repository.error-factory';
 import { SalesforceApiRepositoryErrorFactory } from './adapter/implementations/salesforce/repository.error-factory';
 import { SalesforceApiHttpConfigService } from './adapter/implementations/salesforce/http-config.service';
+import { FindCourseHandler } from './application/queries/find-course/find-course.query';
+import { FindCourseSourceHandler } from './application/queries/find-course-source/find-course-source.query';
 
 const imports = [
   CqrsModule,
@@ -26,7 +28,11 @@ const imports = [
 
 const controllers = [UpdateCourseController];
 
-const handlers = [UpdateCourseHandler];
+const handlers = [
+  UpdateCourseHandler,
+  FindCourseHandler,
+  FindCourseSourceHandler,
+];
 
 const repositories = [
   {

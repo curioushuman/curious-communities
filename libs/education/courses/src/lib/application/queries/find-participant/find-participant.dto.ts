@@ -20,6 +20,7 @@ type FindParticipantDtoTypes = {
   [I in ParticipantIdentifier]: {
     identifier: I;
     value: ParticipantIdentifiers[I];
+    source: Source;
   };
 };
 

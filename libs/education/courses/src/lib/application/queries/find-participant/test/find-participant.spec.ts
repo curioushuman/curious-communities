@@ -2,8 +2,8 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -16,6 +16,8 @@ import { ParticipantRepository } from '../../../../adapter/ports/participant.rep
 import { FakeParticipantRepository } from '../../../../adapter/implementations/fake/fake.participant.repository';
 import { ParticipantBuilder } from '../../../../test/builders/participant.builder';
 import { FindParticipantDto } from '../find-participant.dto';
+import { ParticipantSourceRepositoryErrorFactory } from '../../../../adapter/ports/participant-source.repository.error-factory';
+import { ParticipantRepositoryErrorFactory } from '../../../../adapter/ports/participant.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -42,7 +44,11 @@ defineFeature(feature, (test) => {
         LoggableLogger,
         { provide: ParticipantRepository, useClass: FakeParticipantRepository },
         {
-          provide: ErrorFactory,
+          provide: ParticipantSourceRepositoryErrorFactory,
+          useClass: FakeRepositoryErrorFactory,
+        },
+        {
+          provide: ParticipantRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -98,6 +104,32 @@ defineFeature(feature, (test) => {
 
     and('a record should have been returned', () => {
       expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Fail; participant not found', ({ given, and, when, then }) => {
+    let error: Error;
+
+    given('the request is valid', () => {
+      findParticipantDto = ParticipantBuilder()
+        .doesntExist()
+        .buildFindByIdSourceValueParticipantDto();
+    });
+
+    and('the participant does NOT exist in the DB', () => {
+      // above
+    });
+
+    when('I attempt to find a participant', async () => {
+      try {
+        await handler.execute(new FindParticipantQuery(findParticipantDto));
+      } catch (err) {
+        error = err;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
     });
   });
 

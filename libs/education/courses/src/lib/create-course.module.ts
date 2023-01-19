@@ -15,6 +15,8 @@ import { SalesforceApiRepositoryErrorFactory } from './adapter/implementations/s
 import { SalesforceApiCourseSourceRepository } from './adapter/implementations/salesforce/course-source.repository';
 import { CourseSourceRepositoryErrorFactory } from './adapter/ports/course-source.repository.error-factory';
 import { CourseRepositoryErrorFactory } from './adapter/ports/course.repository.error-factory';
+import { FindCourseHandler } from './application/queries/find-course/find-course.query';
+import { FindCourseSourceHandler } from './application/queries/find-course-source/find-course-source.query';
 
 const imports = [
   CqrsModule,
@@ -26,7 +28,11 @@ const imports = [
 
 const controllers = [CreateCourseController];
 
-const handlers = [CreateCourseHandler];
+const handlers = [
+  CreateCourseHandler,
+  FindCourseHandler,
+  FindCourseSourceHandler,
+];
 
 const repositories = [
   {

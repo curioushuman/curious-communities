@@ -31,7 +31,7 @@ export class FindParticipantSourceController {
     const task = pipe(
       requestDto,
 
-      // #1. parse the dto
+      // #1. validate the dto
       parseActionData(FindParticipantSourceRequestDto.check, this.logger),
 
       // #2. transform the dto

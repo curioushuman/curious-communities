@@ -118,7 +118,6 @@ defineFeature(feature, (test) => {
       createCourseDto = CourseBuilder()
         .invalidSource()
         .buildCreateCourseDto(invalidSource);
-      console.log(createCourseDto);
     });
 
     and('the returned source does not populate a valid Course', () => {

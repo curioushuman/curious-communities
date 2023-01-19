@@ -59,7 +59,7 @@ export type CourseIdentifier = keyof CourseIdentifiers;
 export type CourseIdentifierValue = ValueOf<CourseIdentifier>;
 
 /**
- * Convenience function to prepare a GroupMemberSourceIdSource
+ * Convenience function to prepare a CourseSourceIdSource
  */
 export function prepareCourseExternalIdSource(
   idSourceValue: string

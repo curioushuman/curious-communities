@@ -2,7 +2,6 @@ import { QueryHandler, IQueryHandler, IQuery } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 
-import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
@@ -13,6 +12,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { ParticipantRepository } from '../../../adapter/ports/participant.repository';
 import { FindParticipantDto, parseDto } from './find-participant.dto';
 import { Participant } from '../../../domain/entities/participant';
+import { ParticipantRepositoryErrorFactory } from '../../../adapter/ports/participant.repository.error-factory';
 
 export class FindParticipantQuery implements IQuery {
   constructor(public readonly findParticipantDto: FindParticipantDto) {}
@@ -28,7 +28,7 @@ export class FindParticipantHandler
   constructor(
     private readonly participantRepository: ParticipantRepository,
     private logger: LoggableLogger,
-    private errorFactory: ErrorFactory
+    private participantErrorFactory: ParticipantRepositoryErrorFactory
   ) {
     this.logger.setContext(FindParticipantHandler.name);
   }
@@ -48,7 +48,7 @@ export class FindParticipantHandler
         performAction(
           parsedDtOValue,
           this.participantRepository.findOne(findParticipantDto.identifier),
-          this.errorFactory,
+          this.participantErrorFactory,
           this.logger,
           `find participant: ${parsedDtOValue}`
         )

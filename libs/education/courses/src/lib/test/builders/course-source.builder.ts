@@ -72,6 +72,8 @@ export const CourseSourceBuilder = () => {
     },
 
     alternateSource() {
+      // NOTE: this is not a valid source
+      // we only have a single source for courses ATM
       source = 'COMMUNITY';
       return this;
     },

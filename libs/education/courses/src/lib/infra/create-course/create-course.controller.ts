@@ -76,7 +76,7 @@ export class CreateCourseController {
     const task = pipe(
       createDto,
 
-      // #3. validate the dto
+      // #3. validate the command dto
       // NOTE: this will also occur in the command itself
       // but the Runtype.check function is such a useful way to
       // also make sure the types are correct. Better than typecasting

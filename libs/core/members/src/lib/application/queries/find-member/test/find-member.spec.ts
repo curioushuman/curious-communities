@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   ErrorFactory,
   FakeRepositoryErrorFactory,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -104,6 +105,32 @@ defineFeature(feature, (test) => {
 
     and('a record should have been returned', () => {
       expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Fail; member not found', ({ given, and, when, then }) => {
+    let error: Error;
+
+    given('the request is valid', () => {
+      findMemberDto = MemberBuilder()
+        .doesntExist()
+        .buildFindByIdSourceValueMemberDto();
+    });
+
+    and('the member does NOT exist in the DB', () => {
+      // above
+    });
+
+    when('I attempt to find a member', async () => {
+      try {
+        await handler.execute(new FindMemberQuery(findMemberDto));
+      } catch (err) {
+        error = err;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
     });
   });
 

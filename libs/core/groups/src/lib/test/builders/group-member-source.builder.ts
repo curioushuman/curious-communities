@@ -129,6 +129,14 @@ export const GroupMemberSourceBuilder = () => {
       return this;
     },
 
+    doesntExist() {
+      overrides.id = ExternalId.check('NothingExistsHere');
+      overrides.groupId = ExternalId.check('ThisSourceExists');
+      overrides.name = 'Nothing Exists';
+      overrides.email = 'nothing@exists.com';
+      return this;
+    },
+
     build(): GroupMemberSource {
       return GroupMemberSource.check({
         ...defaultProperties,

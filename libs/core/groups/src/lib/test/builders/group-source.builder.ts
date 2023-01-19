@@ -106,6 +106,12 @@ export const GroupSourceBuilder = () => {
       return this;
     },
 
+    doesntExist() {
+      overrides.id = ExternalId.check('NothingExistsHere');
+      overrides.name = "I'm not here... Shhhh";
+      return this;
+    },
+
     build(): GroupSource {
       return GroupSource.check({
         ...defaultProperties,

@@ -15,6 +15,12 @@ Scenario: Successfully finding a group by slug
   When I attempt to find a group
   Then a record should have been returned
 
+Scenario: Fail; group not found
+  Given the request is valid
+  And the group does NOT exist in the DB
+  When I attempt to find a group
+  Then I should receive a RepositoryItemNotFoundError
+
 Scenario: Fail; Invalid request
   Given the request contains invalid data
   When I attempt to find a group

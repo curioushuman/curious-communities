@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   ErrorFactory,
   FakeRepositoryErrorFactory,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -51,7 +52,7 @@ defineFeature(feature, (test) => {
     handler = moduleRef.get<FindGroupMemberHandler>(FindGroupMemberHandler);
   });
 
-  test('Successfully finding a group by Id', ({ given, and, when }) => {
+  test('Successfully finding a group member by Id', ({ given, and, when }) => {
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
@@ -63,7 +64,7 @@ defineFeature(feature, (test) => {
         .buildFindByIdGroupMemberDto();
     });
 
-    when('I attempt to find a group', async () => {
+    when('I attempt to find a group member', async () => {
       result = await handler.execute(
         new FindGroupMemberQuery(findGroupMemberDto)
       );
@@ -74,7 +75,11 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Successfully finding a group by Source Id', ({ given, and, when }) => {
+  test('Successfully finding a group member by Source Id', ({
+    given,
+    and,
+    when,
+  }) => {
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
@@ -86,7 +91,7 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupMemberDto();
     });
 
-    when('I attempt to find a group', async () => {
+    when('I attempt to find a group member', async () => {
       result = await handler.execute(
         new FindGroupMemberQuery(findGroupMemberDto)
       );
@@ -97,7 +102,11 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Successfully finding a group by entity', ({ given, and, when }) => {
+  test('Successfully finding a group member by entity', ({
+    given,
+    and,
+    when,
+  }) => {
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
@@ -109,7 +118,7 @@ defineFeature(feature, (test) => {
         .buildFindByEntityGroupMemberDto();
     });
 
-    when('I attempt to find a group', async () => {
+    when('I attempt to find a group member', async () => {
       result = await handler.execute(
         new FindGroupMemberQuery(findGroupMemberDto)
       );
@@ -117,6 +126,32 @@ defineFeature(feature, (test) => {
 
     and('a record should have been returned', () => {
       expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Fail; group member not found', ({ given, and, when, then }) => {
+    let error: Error;
+
+    given('the request is valid', () => {
+      findGroupMemberDto = GroupMemberBuilder()
+        .doesntExist()
+        .buildFindByIdSourceValueGroupMemberDto();
+    });
+
+    and('the group member does NOT exist in the DB', () => {
+      // above
+    });
+
+    when('I attempt to find a group member', async () => {
+      try {
+        await handler.execute(new FindGroupMemberQuery(findGroupMemberDto));
+      } catch (err) {
+        error = err;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
     });
   });
 
@@ -129,7 +164,7 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupMemberDto();
     });
 
-    when('I attempt to find a group', async () => {
+    when('I attempt to find a group member', async () => {
       try {
         await handler.execute(new FindGroupMemberQuery(findGroupMemberDto));
       } catch (err) {

@@ -1,5 +1,6 @@
 import { Array, Null, Optional, Record, Static, String } from 'runtypes';
 import { CourseSourceId } from '../../../../domain/value-objects/course-source-id';
+import { CourseSourceName } from '../../../../domain/value-objects/course-source-name';
 import { SalesforceApiResponse } from './base-response';
 
 /**
@@ -14,7 +15,7 @@ import { SalesforceApiResponse } from './base-response';
  */
 export const SalesforceApiCourseSourceResponse = SalesforceApiResponse.extend({
   Id: CourseSourceId,
-  Summary_quick_year__c: String,
+  Summary_quick_year__c: CourseSourceName,
   Date_start__c: Optional(String.Or(Null)),
   Date_end__c: Optional(String.Or(Null)),
 });

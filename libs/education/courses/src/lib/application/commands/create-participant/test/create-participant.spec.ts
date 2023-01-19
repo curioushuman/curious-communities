@@ -2,7 +2,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
@@ -20,6 +19,8 @@ import { FakeParticipantSourceRepository } from '../../../../adapter/implementat
 import { Participant } from '../../../../domain/entities/participant';
 import { ParticipantBuilder } from '../../../../test/builders/participant.builder';
 import { CreateParticipantDto } from '../create-participant.dto';
+import { ParticipantRepositoryErrorFactory } from '../../../../adapter/ports/participant.repository.error-factory';
+import { ParticipantSourceRepositoryErrorFactory } from '../../../../adapter/ports/participant-source.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -50,7 +51,11 @@ defineFeature(feature, (test) => {
           useClass: FakeParticipantSourceRepository,
         },
         {
-          provide: ErrorFactory,
+          provide: ParticipantRepositoryErrorFactory,
+          useClass: FakeRepositoryErrorFactory,
+        },
+        {
+          provide: ParticipantSourceRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],

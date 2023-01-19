@@ -132,6 +132,7 @@ export const ParticipantBuilder = () => {
 
     invalidOther() {
       overrides.status = 'happy';
+      overrides.id = '1e72ef98-f21e-4e0a-aff1-a45ed7328456';
       return this;
     },
 
@@ -141,10 +142,15 @@ export const ParticipantBuilder = () => {
       return this;
     },
 
+    updated() {
+      const source = ParticipantSourceBuilder().updated().build();
+      this.setSource(source);
+      return this;
+    },
+
     doesntExist() {
-      overrides.id = '9f7aeaf9-b258-4099-b23b-6c0e48c52a34';
-      delete defaultProperties.id;
-      delete overrides.id;
+      const source = ParticipantSourceBuilder().doesntExist().build();
+      this.setSource(source);
       return this;
     },
 
@@ -243,9 +249,12 @@ export const ParticipantBuilder = () => {
       } as FindByIdSourceValueParticipantRequestDto;
     },
 
-    buildUpdateParticipantDto(): UpdateParticipantDto {
-      const sourceId = this.buildNoCheck().sourceIds[0];
-      return sourceId as UpdateParticipantDto;
+    buildUpdateParticipantDto(ps?: ParticipantSource): UpdateParticipantDto {
+      // default is successful path
+      const participantSource =
+        ps || ParticipantSourceBuilder().updated().build();
+      const participant = this.buildNoCheck();
+      return { participantSource, participant } as UpdateParticipantDto;
     },
 
     buildUpdateParticipantRequestDto(): UpdateParticipantRequestDto {

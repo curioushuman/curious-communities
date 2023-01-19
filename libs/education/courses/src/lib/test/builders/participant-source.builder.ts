@@ -48,6 +48,8 @@ export const ParticipantSourceBuilder = () => {
     organisationName: defaultProperties.organisationName,
   };
 
+  let source = config.defaults.primaryAccountSource;
+
   return {
     alpha() {
       overrides.id = '5000K1234567GEYQA3';
@@ -58,6 +60,13 @@ export const ParticipantSourceBuilder = () => {
     beta() {
       overrides.id = '5008s000000y7LUAAY';
       overrides.name = 'June Brown';
+      return this;
+    },
+
+    alternateSource() {
+      // NOTE: this is not a valid source
+      // we only have a single source for courses ATM
+      source = 'COMMUNITY';
       return this;
     },
 
@@ -77,7 +86,8 @@ export const ParticipantSourceBuilder = () => {
     },
 
     invalidSource() {
-      overrides.name = '';
+      overrides.id = ExternalId.check('InvalidSourceId');
+      overrides.email = '';
       return this;
     },
 
@@ -89,6 +99,11 @@ export const ParticipantSourceBuilder = () => {
     updated() {
       overrides.id = ExternalId.check('ThisSourceExists');
       overrides.status = 'registered';
+      return this;
+    },
+
+    doesntExist() {
+      overrides.id = ExternalId.check('DoesntExist');
       return this;
     },
 
@@ -119,7 +134,12 @@ export const ParticipantSourceBuilder = () => {
     buildFindParticipantSourceDto(): FindParticipantSourceDto {
       const build = this.buildNoCheck();
       return {
-        id: build.id,
+        identifier: 'idSource',
+        value: {
+          id: build.id,
+          source,
+        },
+        source,
       } as FindParticipantSourceDto;
     },
   };

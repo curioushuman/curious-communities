@@ -9,6 +9,7 @@ import {
 import { ParticipantId } from '../../../domain/value-objects/participant-id';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
 import { Source } from '../../../domain/value-objects/source';
+import { UpdateParticipantRequestDto } from '../../../infra/update-participant/dto/update-participant.request.dto';
 
 /**
  * TODO
@@ -52,6 +53,15 @@ export class FindParticipantMapper {
     return {
       identifier: 'idSourceValue',
       value,
+    } as FindParticipantDto;
+  }
+
+  public static fromUpdateParticipantRequestDto(
+    dto: UpdateParticipantRequestDto
+  ): FindParticipantDto {
+    return {
+      identifier: 'idSourceValue',
+      value: dto.idSourceValue,
     } as FindParticipantDto;
   }
 }

@@ -1,9 +1,7 @@
-import { NotFoundException } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
   SourceInvalidError,
 } from '@curioushuman/error-factory';
@@ -20,8 +18,9 @@ import { ParticipantSourceRepository } from '../../../../adapter/ports/participa
 import { FakeParticipantSourceRepository } from '../../../../adapter/implementations/fake/fake.participant-source.repository';
 import { ParticipantBuilder } from '../../../../test/builders/participant.builder';
 import { UpdateParticipantDto } from '../update-participant.dto';
-import { ParticipantSource } from '../../../../domain/entities/participant-source';
 import { ParticipantSourceBuilder } from '../../../../test/builders/participant-source.builder';
+import { ParticipantRepositoryErrorFactory } from '../../../../adapter/ports/participant.repository.error-factory';
+import { ParticipantSourceRepositoryErrorFactory } from '../../../../adapter/ports/participant-source.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -39,7 +38,6 @@ const feature = loadFeature('./update-participant.feature', {
 
 defineFeature(feature, (test) => {
   let repository: FakeParticipantRepository;
-  let participantSourceRepository: FakeParticipantSourceRepository;
   let handler: UpdateParticipantHandler;
   let updateParticipantDto: UpdateParticipantDto;
 
@@ -54,7 +52,11 @@ defineFeature(feature, (test) => {
           useClass: FakeParticipantSourceRepository,
         },
         {
-          provide: ErrorFactory,
+          provide: ParticipantRepositoryErrorFactory,
+          useClass: FakeRepositoryErrorFactory,
+        },
+        {
+          provide: ParticipantSourceRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -63,14 +65,10 @@ defineFeature(feature, (test) => {
     repository = moduleRef.get<ParticipantRepository>(
       ParticipantRepository
     ) as FakeParticipantRepository;
-    participantSourceRepository = moduleRef.get<ParticipantSourceRepository>(
-      ParticipantSourceRepository
-    ) as FakeParticipantSourceRepository;
     handler = moduleRef.get<UpdateParticipantHandler>(UpdateParticipantHandler);
   });
 
   test('Successfully updating a participant', ({ given, and, when, then }) => {
-    let updatedParticipantSource: ParticipantSource;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
@@ -78,34 +76,35 @@ defineFeature(feature, (test) => {
     given('a matching record is found at the source', () => {
       // we know this to exist in our fake repo
       updateParticipantDto = ParticipantBuilder()
-        .exists()
+        .updated()
         .buildUpdateParticipantDto();
     });
 
     and('the returned source populates a valid participant', async () => {
-      // this is an updated version of the `exists()` participantSource
-      updatedParticipantSource = ParticipantSourceBuilder().updated().build();
-      // save it to our fake repo, we know it is valid
-      executeTask(participantSourceRepository.save(updatedParticipantSource));
+      // above
     });
 
     and('the source does exist in our DB', async () => {
       const participants = await executeTask(repository.all());
       const participantBefore = participants.find(
-        (participant) => participant.sourceIds[0].id === updateParticipantDto.id
+        (participant) => participant.id === updateParticipantDto.participant.id
       );
       expect(participantBefore).toBeDefined();
       if (participantBefore) {
         expect(participantBefore.status).not.toEqual(
-          updatedParticipantSource.status
+          updateParticipantDto.participantSource.status
         );
       }
     });
 
     when('I attempt to update a participant', async () => {
-      result = await handler.execute(
-        new UpdateParticipantCommand(updateParticipantDto)
-      );
+      try {
+        result = await handler.execute(
+          new UpdateParticipantCommand(updateParticipantDto)
+        );
+      } catch (err) {
+        expect(err).toBeUndefined();
+      }
     });
 
     then(
@@ -114,12 +113,12 @@ defineFeature(feature, (test) => {
         const participants = await executeTask(repository.all());
         const participantAfter = participants.find(
           (participant) =>
-            participant.sourceIds[0].id === updateParticipantDto.id
+            participant.id === updateParticipantDto.participant.id
         );
         expect(participantAfter).toBeDefined();
         if (participantAfter) {
           expect(participantAfter.status).toEqual(
-            updatedParticipantSource.status
+            updateParticipantDto.participantSource.status
           );
         }
       }
@@ -127,67 +126,6 @@ defineFeature(feature, (test) => {
 
     and('saved participant is returned', () => {
       expect(result.id).toBeDefined();
-    });
-  });
-
-  test('Fail; Source not found for ID provided', ({ given, when, then }) => {
-    let error: Error;
-
-    given('no record exists that matches our request', () => {
-      updateParticipantDto = ParticipantBuilder()
-        .noMatchingSource()
-        .buildUpdateParticipantDto();
-    });
-
-    when('I attempt to update a participant', async () => {
-      try {
-        await handler.execute(
-          new UpdateParticipantCommand(updateParticipantDto)
-        );
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive a RepositoryItemNotFoundError', () => {
-      expect(error).toBeInstanceOf(NotFoundException);
-    });
-  });
-
-  test('Fail; Participant not found for ID provided', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      updateParticipantDto = ParticipantBuilder()
-        .alpha()
-        .buildUpdateParticipantDto();
-    });
-
-    and('the returned source populates a valid participant', () => {
-      // we know this to be true
-    });
-
-    and('the source does NOT exist in our DB', () => {
-      // we know this to be true
-    });
-
-    when('I attempt to update a participant', async () => {
-      try {
-        await handler.execute(
-          new UpdateParticipantCommand(updateParticipantDto)
-        );
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive a RepositoryItemNotFoundError', () => {
-      expect(error).toBeInstanceOf(NotFoundException);
     });
   });
 
@@ -200,9 +138,12 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('a matching record is found at the source', () => {
+      const participantSource = ParticipantSourceBuilder()
+        .invalidSource()
+        .buildNoCheck();
       updateParticipantDto = ParticipantBuilder()
         .invalidSource()
-        .buildUpdateParticipantDto();
+        .buildUpdateParticipantDto(participantSource);
     });
 
     and('the returned source does not populate a valid Participant', () => {
@@ -238,7 +179,7 @@ defineFeature(feature, (test) => {
 
     and('the returned source has an invalid status', () => {
       updateParticipantDto = ParticipantBuilder()
-        .invalidStatus()
+        .invalidOther()
         .buildUpdateParticipantDto();
     });
 

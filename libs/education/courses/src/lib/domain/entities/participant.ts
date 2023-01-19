@@ -12,7 +12,9 @@ import {
   ParticipantSourceIdSource,
   ParticipantSourceIdSourceValue,
 } from '../value-objects/participant-source-id-source';
-import { ValueOf } from '@curioushuman/common';
+import { prepareExternalIdSource, ValueOf } from '@curioushuman/common';
+import { ParticipantSourceId } from '../value-objects/participant-source-id';
+import { Source } from '../value-objects/source';
 
 /**
  * Runtypes constant for the (internal) Participant entity
@@ -101,3 +103,12 @@ export const ParticipantFromMember = Participant.pick(
  * This is the information we receive from the member
  */
 export type ParticipantFromMember = Static<typeof ParticipantFromMember>;
+
+/**
+ * Convenience function to prepare a ParticipantSourceIdSource
+ */
+export function prepareParticipantExternalIdSource(
+  idSourceValue: string
+): ParticipantSourceIdSource {
+  return prepareExternalIdSource(idSourceValue, ParticipantSourceId, Source);
+}

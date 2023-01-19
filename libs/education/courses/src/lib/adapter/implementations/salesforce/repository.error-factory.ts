@@ -101,8 +101,8 @@ export class SalesforceApiRepositoryErrorFactory extends CourseSourceRepositoryE
     errorResponse: SalesforceApiRepositoryErrorResponse
   ): string {
     const description = Array.isArray(errorResponse.data)
-      ? errorResponse.data.map((d) => d.message).join('\n')
-      : errorResponse.data.error_description;
+      ? errorResponse.data?.map((d) => d.message).join('\n')
+      : errorResponse.data?.error_description;
     return description ?? 'unknown error';
   }
 }

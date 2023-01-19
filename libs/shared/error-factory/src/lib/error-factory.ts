@@ -15,6 +15,11 @@ export interface ErrorMessageComponents {
 }
 
 /**
+ * Constants
+ */
+const ERROR_CODE_UNKNOWN = 1;
+
+/**
  * Responsible for returning the error we want our users to see
  * based on what occurs when we interact with external resources
  *
@@ -38,7 +43,13 @@ type ExtractInstanceType<T> = T extends new () => infer R ? R : never;
 export abstract class ErrorFactory<
   AllowedErrorTypeName extends AllErrorTypeNames = AllErrorTypeNames
 > {
-  constructor(protected errorMap: Record<number, ErrorType>) {}
+  protected errorMap: Record<number, ErrorType>;
+  constructor(errorMap: Record<number, ErrorType>) {
+    this.errorMap = {
+      ...errorMap,
+      [ERROR_CODE_UNKNOWN]: UnknownError,
+    };
+  }
 
   public error(error: Error, asErrorType?: AllowedErrorTypeName): Error {
     const err = this.isKnown(error) ? error : this.newError(error, asErrorType);
@@ -65,9 +76,8 @@ export abstract class ErrorFactory<
    * A mapped error is one that exists in our error map
    */
   private isMapped(error: Error): boolean {
-    return Object.keys(this.errorMap).includes(
-      this.errorStatusCode(error).toString()
-    );
+    const statusCode = this.errorStatusCode(error) || ERROR_CODE_UNKNOWN;
+    return Object.keys(this.errorMap).includes(statusCode.toString());
   }
 
   private newMappedError(error: Error): ExtractInstanceType<ErrorType> {

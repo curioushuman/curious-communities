@@ -7,7 +7,6 @@ import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { CourseSourceRepository } from '../../../ports/course-source.repository';
 import { CourseSource } from '../../../../domain/entities/course-source';
-import { FindCourseSourceDto } from '../../../../application/queries/find-course-source/find-course-source.dto';
 import { CourseSourceId } from '../../../../domain/value-objects/course-source-id';
 import { SalesforceApiHttpConfigService } from '../http-config.service';
 import { SalesforceApiCourseSourceRepository } from '../course-source.repository';
@@ -32,7 +31,7 @@ const feature = loadFeature('./course-source.find-one.infra.feature', {
 
 defineFeature(feature, (test) => {
   let repository: SalesforceApiCourseSourceRepository;
-  let findCourseSourceDto: FindCourseSourceDto;
+  let courseSourceId: CourseSourceId;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -70,14 +69,12 @@ defineFeature(feature, (test) => {
     and('a matching record exists at the source', async () => {
       // this is the simpler version
       // I know this ID exists, it'll do for now
-      findCourseSourceDto = {
-        id: '5009s000001uq8iAAA' as CourseSourceId,
-      };
+      courseSourceId = '5009s000001uq8iAAA' as CourseSourceId;
     });
 
     when('I request the source by ID', async () => {
       try {
-        result = await executeTask(repository.findOne(findCourseSourceDto));
+        result = await executeTask(repository.findOneById(courseSourceId));
       } catch (err) {
         error = err;
         expect(error).toBeUndefined();
@@ -85,7 +82,7 @@ defineFeature(feature, (test) => {
     });
 
     then('a source corresponding to that ID should be returned', () => {
-      expect(result.id).toEqual(findCourseSourceDto.id);
+      expect(result.id).toEqual(courseSourceId);
     });
   });
 
@@ -103,14 +100,12 @@ defineFeature(feature, (test) => {
     });
 
     and('a matching record DOES NOT exist at the source', () => {
-      findCourseSourceDto = {
-        id: CourseSourceBuilder().noMatchingSource().build().id,
-      };
+      courseSourceId = CourseSourceBuilder().noMatchingSource().build().id;
     });
 
     when('I request the source by ID', async () => {
       try {
-        result = await executeTask(repository.findOne(findCourseSourceDto));
+        result = await executeTask(repository.findOneById(courseSourceId));
       } catch (err) {
         error = err;
       }

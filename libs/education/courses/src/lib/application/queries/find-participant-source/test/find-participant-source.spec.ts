@@ -2,8 +2,8 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -16,6 +16,8 @@ import { ParticipantSourceRepository } from '../../../../adapter/ports/participa
 import { FakeParticipantSourceRepository } from '../../../../adapter/implementations/fake/fake.participant-source.repository';
 import { ParticipantSourceBuilder } from '../../../../test/builders/participant-source.builder';
 import { FindParticipantSourceDto } from '../find-participant-source.dto';
+import { ParticipantSourceRepositoryErrorFactory } from '../../../../adapter/ports/participant-source.repository.error-factory';
+import { ParticipantRepositoryErrorFactory } from '../../../../adapter/ports/participant.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -45,7 +47,11 @@ defineFeature(feature, (test) => {
           useClass: FakeParticipantSourceRepository,
         },
         {
-          provide: ErrorFactory,
+          provide: ParticipantSourceRepositoryErrorFactory,
+          useClass: FakeRepositoryErrorFactory,
+        },
+        {
+          provide: ParticipantRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -80,6 +86,34 @@ defineFeature(feature, (test) => {
 
     and('a record should have been returned', () => {
       expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Fail; participant source not found', ({ given, and, when, then }) => {
+    let error: Error;
+
+    given('the request is valid', () => {
+      findParticipantSourceDto = ParticipantSourceBuilder()
+        .doesntExist()
+        .buildFindParticipantSourceDto();
+    });
+
+    and('the participant source does NOT exist in the DB', () => {
+      // above
+    });
+
+    when('I attempt to find a participant source', async () => {
+      try {
+        await handler.execute(
+          new FindParticipantSourceQuery(findParticipantSourceDto)
+        );
+      } catch (err) {
+        error = err;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
     });
   });
 

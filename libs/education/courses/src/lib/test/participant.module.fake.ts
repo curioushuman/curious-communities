@@ -18,7 +18,6 @@ import { FindParticipantSourceHandler } from '../application/queries/find-partic
 import { FindParticipantSourceController } from '../infra/find-participant-source/find-participant-source.controller';
 import { ParticipantSourceRepositoryErrorFactory } from '../adapter/ports/participant-source.repository.error-factory';
 import { ParticipantRepositoryErrorFactory } from '../adapter/ports/participant.repository.error-factory';
-import { SalesforceApiRepositoryErrorFactory } from '../adapter/implementations/salesforce/repository.error-factory';
 
 const controllers = [
   CreateParticipantController,
@@ -45,7 +44,7 @@ const repositories = [
 const services = [
   {
     provide: ParticipantSourceRepositoryErrorFactory,
-    useClass: SalesforceApiRepositoryErrorFactory,
+    useClass: FakeRepositoryErrorFactory,
   },
   {
     provide: ParticipantRepositoryErrorFactory,

@@ -3,16 +3,13 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
 import {
-  //   ErrorFactory,
-  //   FakeRepositoryErrorFactory,
-  //   RepositoryItemConflictError,
-  //   SourceInvalidError,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
+  SourceInvalidError,
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { ParticipantModule } from '../../../test/participant.module.fake';
-import { UpdateParticipantModule } from '../../../update-participant.module';
 import { UpdateParticipantRequestDto } from '../dto/update-participant.request.dto';
 import { ParticipantBuilder } from '../../../test/builders/participant.builder';
 import { UpdateParticipantController } from '../update-participant.controller';
@@ -58,7 +55,7 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    UpdateParticipantModule.applyDefaults(app);
+    ParticipantModule.applyDefaults(app);
     repository = moduleRef.get<ParticipantRepository>(
       ParticipantRepository
     ) as FakeParticipantRepository;
@@ -145,10 +142,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; Invalid request', ({ given, and, when, then }) => {
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
+  test('Fail; Invalid request', ({ given, when, then }) => {
     let updateParticipantDto: UpdateParticipantRequestDto;
     let error: Error;
 
@@ -161,7 +155,7 @@ defineFeature(feature, (test) => {
 
     when('I attempt to update a participant', async () => {
       try {
-        result = await controller.update(updateParticipantDto);
+        await controller.update(updateParticipantDto);
       } catch (err) {
         error = err as Error;
       }
@@ -170,9 +164,105 @@ defineFeature(feature, (test) => {
     then('I should receive a RequestInvalidError', () => {
       expect(error).toBeInstanceOf(RequestInvalidError);
     });
+  });
 
-    and('no result is returned', () => {
+  test('Fail; Source not found for ID provided', ({ given, when, then }) => {
+    let updateParticipantDto: UpdateParticipantRequestDto;
+    let error: Error;
+
+    given('no record exists that matches our request', () => {
+      // we know this to exist in our fake repo
+      updateParticipantDto = ParticipantBuilder()
+        .noMatchingSource()
+        .buildUpdateParticipantRequestDto();
+    });
+
+    when('I attempt to update a participant', async () => {
+      try {
+        await controller.update(updateParticipantDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
+    });
+  });
+
+  test('Fail; Participant not found for ID provided', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    // disabling no-explicit-any for testing purposes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
+    let updateParticipantDto: UpdateParticipantRequestDto;
+    let error: Error;
+
+    given('a matching record is found at the source', () => {
+      // we know this to exist in our fake repo
+      updateParticipantDto = ParticipantBuilder()
+        .doesntExist()
+        .buildUpdateParticipantRequestDto();
+    });
+
+    and('the returned source populates a valid participant', () => {
       expect(result).toEqual(undefined);
+    });
+
+    and('the source does NOT exist in our DB', () => {
+      expect(result).toEqual(undefined);
+    });
+
+    when('I attempt to update a participant', async () => {
+      try {
+        result = await controller.update(updateParticipantDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
+    });
+  });
+
+  test('Fail; Source is an invalid status to be updated in admin', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    // disabling no-explicit-any for testing purposes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
+    let updateParticipantDto: UpdateParticipantRequestDto;
+    let error: Error;
+
+    given('a matching record is found at the source', () => {
+      // we know this to exist in our fake repo
+      updateParticipantDto = ParticipantBuilder()
+        .invalidOther()
+        .buildUpdateParticipantRequestDto();
+    });
+
+    and('the returned source has an invalid status', () => {
+      expect(result).toEqual(undefined);
+    });
+
+    when('I attempt to update a participant', async () => {
+      try {
+        result = await controller.update(updateParticipantDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a SourceInvalidError', () => {
+      expect(error).toBeInstanceOf(SourceInvalidError);
     });
   });
 });

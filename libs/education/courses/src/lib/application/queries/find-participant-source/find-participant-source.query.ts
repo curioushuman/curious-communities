@@ -2,7 +2,6 @@ import { QueryHandler, IQueryHandler, IQuery } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 
-import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
@@ -11,8 +10,12 @@ import {
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import { ParticipantSourceRepository } from '../../../adapter/ports/participant-source.repository';
-import { FindParticipantSourceDto } from './find-participant-source.dto';
+import {
+  FindParticipantSourceDto,
+  parseDto,
+} from './find-participant-source.dto';
 import { ParticipantSource } from '../../../domain/entities/participant-source';
+import { ParticipantSourceRepositoryErrorFactory } from '../../../adapter/ports/participant-source.repository.error-factory';
 
 export class FindParticipantSourceQuery implements IQuery {
   constructor(
@@ -21,7 +24,7 @@ export class FindParticipantSourceQuery implements IQuery {
 }
 
 /**
- * Query handler for find participant-source
+ * Query handler for find participant
  */
 @QueryHandler(FindParticipantSourceQuery)
 export class FindParticipantSourceHandler
@@ -30,7 +33,7 @@ export class FindParticipantSourceHandler
   constructor(
     private readonly participantSourceRepository: ParticipantSourceRepository,
     private logger: LoggableLogger,
-    private errorFactory: ErrorFactory
+    private participantSourceErrorFactory: ParticipantSourceRepositoryErrorFactory
   ) {
     this.logger.setContext(FindParticipantSourceHandler.name);
   }
@@ -41,20 +44,20 @@ export class FindParticipantSourceHandler
     const task = pipe(
       findParticipantSourceDto,
       // #1. parse the dto
-      parseActionData(
-        FindParticipantSourceDto.check,
-        this.logger,
-        'RequestInvalidError'
-      ),
+      // NOTE: this uses a dynamic parser that will parse the dto based on the
+      //       identifier within the dto
+      parseActionData(parseDto, this.logger, 'RequestInvalidError'),
 
-      // #2. Find the participantSource
+      // #2. Find the participant
       TE.chain((parsedDtOValue) =>
         performAction(
           parsedDtOValue,
-          this.participantSourceRepository.findOne,
-          this.errorFactory,
+          this.participantSourceRepository.findOne(
+            findParticipantSourceDto.identifier
+          ),
+          this.participantSourceErrorFactory,
           this.logger,
-          `find participantSource: ${parsedDtOValue}`
+          `find participant: ${parsedDtOValue}`
         )
       )
     );

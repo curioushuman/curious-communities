@@ -25,6 +25,10 @@ import { FindCourseSourceQuery } from '../../application/queries/find-course-sou
 /**
  * Controller for update course operations
  *
+ * NOTES
+ * - we initially returned void for create/update actions
+ *   see create controller for more info
+ *
  * TODO
  * - [ ] should this actually be a service?
  * - [ ] should we be doing auth. here as well?

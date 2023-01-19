@@ -3,10 +3,16 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
-import { ParticipantSource } from '../../../domain/entities/participant-source';
-import { ParticipantSourceRepository } from '../../ports/participant-source.repository';
+import {
+  ParticipantSource,
+  ParticipantSourceIdentifier,
+} from '../../../domain/entities/participant-source';
+import {
+  ParticipantSourceFindMethod,
+  ParticipantSourceRepository,
+} from '../../ports/participant-source.repository';
 import { ParticipantSourceBuilder } from '../../../test/builders/participant-source.builder';
-import { FindParticipantSourceDto } from '../../../application/queries/find-participant-source/find-participant-source.dto';
+import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
 
 @Injectable()
 export class FakeParticipantSourceRepository
@@ -26,12 +32,12 @@ export class FakeParticipantSourceRepository
     );
   }
 
-  findOne = (
-    dto: FindParticipantSourceDto
+  findOneById = (
+    value: ParticipantSourceId
   ): TE.TaskEither<Error, ParticipantSource> => {
-    const { id } = dto;
     return TE.tryCatch(
       async () => {
+        const id = ParticipantSourceId.check(value);
         const participantSource = this.participantSources.find(
           (cs) => cs.id === id
         );
@@ -54,6 +60,20 @@ export class FakeParticipantSourceRepository
       },
       (reason: unknown) => reason as Error
     );
+  };
+
+  /**
+   * Object lookup for findOneBy methods
+   */
+  findOneBy: Record<ParticipantSourceIdentifier, ParticipantSourceFindMethod> =
+    {
+      idSource: this.findOneById,
+    };
+
+  findOne = (
+    identifier: ParticipantSourceIdentifier
+  ): ParticipantSourceFindMethod => {
+    return this.findOneBy[identifier];
   };
 
   save = (participantSource: ParticipantSource): TE.TaskEither<Error, void> => {

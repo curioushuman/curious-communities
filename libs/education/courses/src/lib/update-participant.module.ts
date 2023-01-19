@@ -11,10 +11,18 @@ import { UpdateParticipantController } from './infra/update-participant/update-p
 import { ParticipantSourceRepository } from './adapter/ports/participant-source.repository';
 import { FakeParticipantSourceRepository } from './adapter/implementations/fake/fake.participant-source.repository';
 import { ParticipantRepositoryErrorFactory } from './adapter/ports/participant.repository.error-factory';
+import { FindParticipantHandler } from './application/queries/find-participant/find-participant.query';
+import { FindParticipantSourceHandler } from './application/queries/find-participant-source/find-participant-source.query';
+import { ParticipantSourceRepositoryErrorFactory } from './adapter/ports/participant-source.repository.error-factory';
+import { SalesforceApiRepositoryErrorFactory } from './adapter/implementations/salesforce/repository.error-factory';
 
 const controllers = [UpdateParticipantController];
 
-const handlers = [UpdateParticipantHandler];
+const handlers = [
+  UpdateParticipantHandler,
+  FindParticipantHandler,
+  FindParticipantSourceHandler,
+];
 
 const repositories = [
   {
@@ -28,6 +36,10 @@ const repositories = [
 ];
 
 const services = [
+  {
+    provide: ParticipantSourceRepositoryErrorFactory,
+    useClass: SalesforceApiRepositoryErrorFactory,
+  },
   {
     provide: ParticipantRepositoryErrorFactory,
     useClass: FakeRepositoryErrorFactory,

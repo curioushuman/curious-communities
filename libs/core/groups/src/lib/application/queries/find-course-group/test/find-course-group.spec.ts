@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   ErrorFactory,
   FakeRepositoryErrorFactory,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -117,6 +118,32 @@ defineFeature(feature, (test) => {
 
     and('a record should have been returned', () => {
       expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Fail; group not found', ({ given, and, when, then }) => {
+    let error: Error;
+
+    given('the request is valid', () => {
+      findCourseGroupDto = GroupBuilder()
+        .doesntExist()
+        .buildFindByIdSourceValueCourseGroupDto();
+    });
+
+    and('the group does NOT exist in the DB', () => {
+      // above
+    });
+
+    when('I attempt to find a group', async () => {
+      try {
+        await handler.execute(new FindCourseGroupQuery(findCourseGroupDto));
+      } catch (err) {
+        error = err;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
     });
   });
 

@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   ErrorFactory,
   FakeRepositoryErrorFactory,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -64,7 +65,7 @@ defineFeature(feature, (test) => {
     );
   });
 
-  test('Successfully finding a group source by Source Id', ({
+  test('Successfully finding a group member source by Source Id', ({
     given,
     and,
     when,
@@ -80,7 +81,7 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupMemberSourceDto();
     });
 
-    when('I attempt to find a group source', async () => {
+    when('I attempt to find a group member source', async () => {
       result = await handler.execute(
         new FindGroupMemberSourceQuery(findGroupMemberSourceDto)
       );
@@ -91,7 +92,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Successfully finding a group source from non-primary source', ({
+  test('Successfully finding a group member source from non-primary source', ({
     given,
     and,
     when,
@@ -108,7 +109,7 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupMemberSourceDto();
     });
 
-    when('I attempt to find a group source', async () => {
+    when('I attempt to find a group member source', async () => {
       result = await handler.execute(
         new FindGroupMemberSourceQuery(findGroupMemberSourceDto)
       );
@@ -116,6 +117,34 @@ defineFeature(feature, (test) => {
 
     and('a record should have been returned', () => {
       expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Fail; group member source not found', ({ given, and, when, then }) => {
+    let error: Error;
+
+    given('the request is valid', () => {
+      findGroupMemberSourceDto = GroupMemberSourceBuilder()
+        .doesntExist()
+        .buildFindByIdSourceValueGroupMemberSourceDto();
+    });
+
+    and('the group member source does NOT exist in the DB', () => {
+      // above
+    });
+
+    when('I attempt to find a group member source', async () => {
+      try {
+        await handler.execute(
+          new FindGroupMemberSourceQuery(findGroupMemberSourceDto)
+        );
+      } catch (err) {
+        error = err;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
     });
   });
 
@@ -128,7 +157,7 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupMemberSourceDto();
     });
 
-    when('I attempt to find a group source', async () => {
+    when('I attempt to find a group member source', async () => {
       try {
         await handler.execute(
           new FindGroupMemberSourceQuery(findGroupMemberSourceDto)

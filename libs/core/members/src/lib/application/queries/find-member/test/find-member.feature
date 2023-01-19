@@ -15,6 +15,12 @@ Scenario: Successfully finding a member by email
   When I attempt to find a member
   Then a record should have been returned
 
+Scenario: Fail; member not found
+  Given the request is valid
+  And the member does NOT exist in the DB
+  When I attempt to find a member
+  Then I should receive a RepositoryItemNotFoundError
+
 Scenario: Fail; Invalid request
   Given the request contains invalid data
   When I attempt to find a member

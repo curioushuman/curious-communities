@@ -111,6 +111,13 @@ export const MemberSourceBuilder = () => {
       return this;
     },
 
+    doesntExist() {
+      overrides.id = ExternalId.check('NothingExistsHere');
+      overrides.name = 'Nothing Exists';
+      overrides.email = 'nothing@exists.com';
+      return this;
+    },
+
     build(): MemberSource {
       return MemberSource.check({
         ...defaultProperties,

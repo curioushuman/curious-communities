@@ -161,6 +161,12 @@ export const MemberBuilder = () => {
       return this;
     },
 
+    doesntExist() {
+      const source = MemberSourceBuilder().doesntExist().build();
+      this.setSource(source);
+      return this;
+    },
+
     fromSource(source: MemberSource) {
       this.setSource(source);
       return this;

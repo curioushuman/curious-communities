@@ -28,6 +28,9 @@ export class ValidationErrorFactory extends ErrorFactory<ValidationAllowedErrorT
   }
 
   public errorDescription(error: Error): string {
-    return error.toString();
+    if ('toString' in error) {
+      return error.toString();
+    }
+    return 'Unknown validation error';
   }
 }

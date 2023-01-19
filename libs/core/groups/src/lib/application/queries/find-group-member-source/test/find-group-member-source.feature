@@ -10,10 +10,10 @@ Scenario: Successfully finding a group member source from non-primary source
   When I attempt to find a group member source
   Then a record should have been returned
 
-Scenario: Fail; group member not found
+Scenario: Fail; group member source not found
   Given the request is valid
-  And the group member does NOT exist in the DB
-  When I attempt to find a group member
+  And the group member source does NOT exist in the DB
+  When I attempt to find a group member source
   Then I should receive a RepositoryItemNotFoundError
 
 Scenario: Fail; Invalid request

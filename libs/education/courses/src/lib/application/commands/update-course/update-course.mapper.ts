@@ -1,3 +1,5 @@
+import isEqual from 'lodash.isequal';
+
 import { CourseSource } from '../../../domain/entities/course-source';
 import { Course } from '../../../domain/entities/course';
 import { createCourseSlug } from '../../../domain/value-objects/course-slug';
@@ -22,6 +24,18 @@ export class UpdateCourseMapper {
         id: course.id,
         slug: createCourseSlug(source),
       });
+    };
+  }
+
+  /**
+   * Returning an anonymous function here so we can combine the values
+   * from both an existing course, and the source that will be overriding it
+   */
+  public static isCourseUpdated(
+    course: Course
+  ): (updatedCourse: Course) => Course | undefined {
+    return (updatedCourse: Course) => {
+      return isEqual(course, updatedCourse) ? undefined : updatedCourse;
     };
   }
 }

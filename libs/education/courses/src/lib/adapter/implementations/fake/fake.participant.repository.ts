@@ -116,24 +116,6 @@ export class FakeParticipantRepository implements ParticipantRepository {
     return this.findOneBy[identifier];
   };
 
-  checkById = (id: ParticipantId): TE.TaskEither<Error, boolean> => {
-    return TE.tryCatch(
-      async () => {
-        const participant = this.participants.find((cs) => cs.id === id);
-        return pipe(
-          participant,
-          O.fromNullable,
-          O.fold(
-            () => false,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            (_) => true
-          )
-        );
-      },
-      (reason: unknown) => reason as Error
-    );
-  };
-
   save = (participant: Participant): TE.TaskEither<Error, Participant> => {
     return TE.tryCatch(
       async () => {

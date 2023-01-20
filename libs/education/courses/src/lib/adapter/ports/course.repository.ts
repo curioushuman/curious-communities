@@ -21,13 +21,6 @@ export type CourseFindMethod = (
   value: CourseIdentifierValue
 ) => TaskEither<Error, Course>;
 
-/**
- * Type for the check method interface within repository
- */
-export type CourseCheckMethod = (
-  value: CourseIdentifierValue
-) => TaskEither<Error, boolean>;
-
 export abstract class CourseRepository {
   /**
    * Object lookup for findMethods
@@ -66,38 +59,6 @@ export abstract class CourseRepository {
    * NOTE: will throw NotFoundException if not found
    */
   abstract findOneBySlug(slug: CourseSlug): TaskEither<Error, Course>;
-
-  /**
-   * Object lookup for checkMethods
-   */
-  abstract checkBy: Record<CourseIdentifier, CourseCheckMethod>;
-
-  /**
-   * Check a course exists
-   *
-   * This method will accept a course identifier and value
-   * and then determine which checker method to use.
-   *
-   * * NOTE: will NOT throw NotFoundException if not found
-   */
-  abstract check(identifier: CourseIdentifier): CourseCheckMethod;
-
-  /**
-   * Check for existence of course by given ID
-   */
-  abstract checkById(id: CourseId): TaskEither<Error, boolean>;
-
-  /**
-   * Check for existence of course by given ID and source value
-   */
-  abstract checkByIdSourceValue(
-    value: CourseSourceIdSourceValue
-  ): TaskEither<Error, boolean>;
-
-  /**
-   * Check for existence of course by slug
-   */
-  abstract checkBySlug(slug: CourseSlug): TaskEither<Error, boolean>;
 
   /**
    * Create/update a course

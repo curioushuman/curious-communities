@@ -48,11 +48,6 @@ export abstract class ParticipantRepository {
   ): TaskEither<Error, Participant>;
 
   /**
-   * Check for existence of participant by given ID
-   */
-  abstract checkById(id: ParticipantId): TaskEither<Error, boolean>;
-
-  /**
    * Create/update a participant
    */
   abstract save(participant: Participant): TaskEither<Error, Participant>;

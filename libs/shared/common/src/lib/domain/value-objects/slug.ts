@@ -1,5 +1,5 @@
 import { Static, String } from 'runtypes';
-import * as slug from 'slug';
+import slug from 'slug';
 
 /**
  * Heavily inspired by: https://github.com/VincentJouanne/nest-clean-architecture

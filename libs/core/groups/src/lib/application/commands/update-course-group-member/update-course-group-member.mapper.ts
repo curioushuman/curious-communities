@@ -1,3 +1,5 @@
+import { UpdateMapper } from '@curioushuman/common';
+
 import { UpdateCourseGroupMemberDto } from './update-course-group-member.dto';
 import { CourseGroup } from '../../../domain/entities/course-group';
 import { MutateCourseGroupMemberRequestDto } from '../../../infra/dto/mutate-course-group-member.request.dto';
@@ -7,7 +9,7 @@ import {
   GroupMemberForIdentify,
 } from '../../../domain/entities/group-member';
 
-export class UpdateCourseGroupMemberMapper {
+export class UpdateCourseGroupMemberMapper extends UpdateMapper {
   public static fromRequestDto(
     group: CourseGroup
   ): (dto: MutateCourseGroupMemberRequestDto) => UpdateCourseGroupMemberDto {

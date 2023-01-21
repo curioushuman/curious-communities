@@ -1,10 +1,12 @@
+import { UpdateMapper } from '@curioushuman/common';
+
 import { UpdateCourseGroupDto } from './update-course-group.dto';
 import { UpdateCourseGroupRequestDto } from '../../../infra/update-course-group/dto/update-course-group.request.dto';
 import { CourseGroup } from '../../../domain/entities/course-group';
 import { CourseDto } from '../../../infra/dto/course.dto';
 import { createGroupSlug } from '../../../domain/value-objects/group-slug';
 
-export class UpdateCourseGroupMapper {
+export class UpdateCourseGroupMapper extends UpdateMapper {
   public static fromRequestDto(
     dto: UpdateCourseGroupRequestDto
   ): UpdateCourseGroupDto {

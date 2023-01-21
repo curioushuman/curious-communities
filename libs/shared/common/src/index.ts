@@ -1,4 +1,9 @@
 /**
+ * Application
+ */
+export * from './lib/application/commands/update.mapper';
+
+/**
  * Domain objects
  */
 export * from './lib/domain/value-objects/email';

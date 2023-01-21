@@ -47,7 +47,7 @@ export class CreateParticipantHandler
     // to validate the data it receives.
     const validDto = pipe(
       createParticipantDto,
-      parseData(CreateParticipantDto.check, this.logger, 'SourceInvalidError')
+      parseData(CreateParticipantDto.check, this.logger, 'RequestInvalidError')
     );
 
     const { participantSource, course, member } = validDto;
@@ -55,24 +55,20 @@ export class CreateParticipantHandler
     const task = pipe(
       // #1. parse the dto and prepare the participant record
       participantSource,
-      parseActionData(
+      parseData(
         CreateParticipantMapper.fromSourceToParticipant,
         this.logger,
         'RequestInvalidError'
       ),
-      TE.chain((participantFromSource) =>
-        parseActionData(
-          CreateParticipantMapper.fromCourseToParticipant(course),
-          this.logger,
-          'RequestInvalidError'
-        )(participantFromSource)
+      parseData(
+        CreateParticipantMapper.fromMemberToParticipant(member),
+        this.logger,
+        'RequestInvalidError'
       ),
-      TE.chain((participantWithSourceAndCourse) =>
-        parseActionData(
-          CreateParticipantMapper.fromMemberToParticipant(member),
-          this.logger,
-          'RequestInvalidError'
-        )(participantWithSourceAndCourse)
+      parseActionData(
+        CreateParticipantMapper.fromCourseToParticipant(course),
+        this.logger,
+        'RequestInvalidError'
       ),
 
       // #2. create the participant

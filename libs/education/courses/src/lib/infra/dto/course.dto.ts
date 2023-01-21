@@ -10,6 +10,15 @@ import { Record, Static, String } from 'runtypes';
  */
 export const CourseDto = Record({
   id: String,
+  slug: String,
+  status: String,
+  sourceIds: Array(String),
+  supportType: String,
+  name: String,
+  dateOpen: Optional(Number),
+  dateClosed: Optional(Number),
+  yearMonthOpen: Optional(String),
+  accountOwner: String,
 });
 
 /**

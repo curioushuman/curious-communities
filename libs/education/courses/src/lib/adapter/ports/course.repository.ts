@@ -2,6 +2,7 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
   Course,
+  CourseBase,
   CourseIdentifier,
   CourseIdentifierValue,
 } from '../../domain/entities/course';
@@ -62,6 +63,9 @@ export abstract class CourseRepository {
 
   /**
    * Create/update a course
+   *
+   * NOTE: just the base, not the full course
+   * * This will be the pattern for parents, just the base
    */
-  abstract save(course: Course): TaskEither<Error, Course>;
+  abstract save(course: CourseBase): TaskEither<Error, Course>;
 }

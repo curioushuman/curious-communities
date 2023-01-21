@@ -1,5 +1,5 @@
 import { CourseSource } from '../../../domain/entities/course-source';
-import { Course } from '../../../domain/entities/course';
+import { CourseBase } from '../../../domain/entities/course';
 import { createCourseId } from '../../../domain/value-objects/course-id';
 import { createCourseSlug } from '../../../domain/value-objects/course-slug';
 import { CourseMapper } from '../../../domain/mappers/course.mapper';
@@ -9,10 +9,10 @@ import { CourseMapper } from '../../../domain/mappers/course.mapper';
  * - create base abstract class for mappers
  */
 export class CreateCourseMapper {
-  public static fromSourceToCourse(source: CourseSource): Course {
-    const course = CourseMapper.fromSourceToCourse(source);
-    return Course.check({
-      ...course,
+  public static fromSourceToCourse(source: CourseSource): CourseBase {
+    const courseBase = CourseMapper.fromSourceToCourseBase(source);
+    return CourseBase.check({
+      ...courseBase,
       id: createCourseId(),
       slug: createCourseSlug(source),
     });

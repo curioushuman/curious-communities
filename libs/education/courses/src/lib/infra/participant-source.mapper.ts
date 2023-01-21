@@ -1,15 +1,11 @@
 import { ParticipantSourceResponseDto } from './dto/participant-source.response.dto';
 import { ParticipantSource } from '../domain/entities/participant-source';
 
-/**
- * TODO
- * - Should we do more checking of ParticipantSourceResponseDto?
- */
 export class ParticipantSourceMapper {
   public static toResponseDto(
     participantSource: ParticipantSource
   ): ParticipantSourceResponseDto {
-    return {
+    return ParticipantSourceResponseDto.check({
       id: participantSource.id,
       courseId: participantSource.courseId,
       status: participantSource.status,
@@ -17,6 +13,20 @@ export class ParticipantSourceMapper {
       name: participantSource.name,
       email: participantSource.email,
       organisationName: participantSource.organisationName,
-    } as ParticipantSourceResponseDto;
+    });
+  }
+
+  public static fromResponseDto(
+    dto: ParticipantSourceResponseDto
+  ): ParticipantSource {
+    return ParticipantSource.check({
+      id: dto.id,
+      courseId: dto.courseId,
+      status: dto.status,
+
+      name: dto.name,
+      email: dto.email,
+      organisationName: dto.organisationName,
+    });
   }
 }

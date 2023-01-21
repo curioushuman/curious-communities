@@ -12,10 +12,6 @@ import { Source } from '../../../domain/value-objects/source';
 import { CreateCourseRequestDto } from '../../../infra/create-course/dto/create-course.request.dto';
 import { UpdateCourseRequestDto } from '../../../infra/update-course/dto/update-course.request.dto';
 
-/**
- * TODO
- * - find base abstract class for mappers
- */
 export class FindCourseMapper {
   public static fromFindRequestDto(dto: FindCourseRequestDto): FindCourseDto {
     // NOTE: at least one of the two will be defined

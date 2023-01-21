@@ -59,7 +59,7 @@ export class UpdateCourseHandler
 
       // #3. make sure an update is required
       parseData(
-        UpdateCourseMapper.isCourseUpdated(course),
+        UpdateCourseMapper.requiresUpdate<Course>(course),
         this.logger,
         'SourceInvalidError'
       ),

@@ -1,10 +1,10 @@
 import { CommandHandler, ICommandHandler, ICommand } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
+import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
 import {
   executeTask,
-  parseActionData,
   parseData,
   performAction,
 } from '@curioushuman/fp-ts-utils';
@@ -51,21 +51,33 @@ export class UpdateParticipantHandler
 
     const task = pipe(
       // #2. prepare entity for update
-      parseActionData(
+      parseData(
         UpdateParticipantMapper.fromSourceToParticipant(participant),
         this.logger,
         'SourceInvalidError'
       )(participantSource),
 
-      // #3. update the entity, from the source
-      TE.chain((participant) =>
-        performAction(
-          participant,
-          this.participantRepository.save,
-          this.participantErrorFactory,
-          this.logger,
-          `save participant from source`
-        )
+      // #3. make sure an update is required
+      parseData(
+        UpdateParticipantMapper.requiresUpdate<Participant>(participant),
+        this.logger,
+        'SourceInvalidError'
+      ),
+
+      // #4. update the entity, from the source; if required
+      O.fromNullable,
+      O.fold(
+        // if null, return the original participant
+        () => TE.right(participant),
+        // otherwise, update and return
+        (uc) =>
+          performAction(
+            uc,
+            this.participantRepository.save,
+            this.participantErrorFactory,
+            this.logger,
+            `save participant from source`
+          )
       )
     );
 

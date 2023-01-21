@@ -1,3 +1,5 @@
+import { UpdateMapper } from '@curioushuman/common';
+
 import { UpdateMemberDto } from './update-member.dto';
 import { UpdateMemberRequestDto } from '../../../infra/update-member/dto/update-member.request.dto';
 import { FindMemberSourceDto } from '../../queries/find-member-source/find-member-source.dto';
@@ -13,7 +15,7 @@ import {
  * TODO
  * - create base abstract class for mappers
  */
-export class UpdateMemberMapper {
+export class UpdateMemberMapper extends UpdateMapper {
   public static fromRequestDto(dto: UpdateMemberRequestDto): UpdateMemberDto {
     const idSource = prepareMemberExternalIdSource(dto.idSourceValue);
     return UpdateMemberDto.check(idSource);

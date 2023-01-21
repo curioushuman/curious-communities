@@ -1,3 +1,5 @@
+import { UpdateMapper } from '@curioushuman/common';
+
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 import { Participant } from '../../../domain/entities/participant';
 
@@ -5,7 +7,7 @@ import { Participant } from '../../../domain/entities/participant';
  * TODO
  * - create base abstract class for mappers
  */
-export class UpdateParticipantMapper {
+export class UpdateParticipantMapper extends UpdateMapper {
   /**
    * Returning an anonymous function here so we can combine the values
    * from both an existing course, and the source that will be overriding it

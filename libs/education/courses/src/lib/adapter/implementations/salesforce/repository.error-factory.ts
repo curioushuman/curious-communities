@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-
-import { CourseSourceRepositoryErrorFactory } from '../../ports/course-source.repository.error-factory';
+import { RepositoryErrorFactory } from '@curioushuman/error-factory';
 
 interface SalesforceApiRepositoryErrorDataObject {
   error?: string;
@@ -37,7 +36,7 @@ type SalesforceApiRepositoryErrorOrArray =
  */
 
 @Injectable()
-export class SalesforceApiRepositoryErrorFactory extends CourseSourceRepositoryErrorFactory {
+export class SalesforceApiRepositoryErrorFactory extends RepositoryErrorFactory {
   private sfErrorCodes: Record<string, number> = {
     NOT_FOUND: 404,
     SERVER_ERROR: 500,

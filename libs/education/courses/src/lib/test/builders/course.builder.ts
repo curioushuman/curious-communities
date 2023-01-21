@@ -4,7 +4,7 @@ import {
   Timestamp,
 } from '@curioushuman/common';
 
-import { Course } from '../../domain/entities/course';
+import { Course, CourseBase } from '../../domain/entities/course';
 import { CourseSource } from '../../domain/entities/course-source';
 import { CourseResponseDto } from '../../infra/dto/course.response.dto';
 import { CreateCourseRequestDto } from '../../infra/create-course/dto/create-course.request.dto';
@@ -20,6 +20,8 @@ import {
   FindByIdCourseRequestDto,
   FindByIdSourceValueCourseRequestDto,
 } from '../../infra/find-course/dto/find-course.request.dto';
+import { ParticipantBuilder } from './participant.builder';
+import { CourseSourceIdSource } from '../../domain/value-objects/course-source-id-source';
 
 /**
  * A builder for Courses to play with in testing.
@@ -200,18 +202,36 @@ export const CourseBuilder = () => {
       return this;
     },
 
-    build(): Course {
-      return Course.check({
+    buildBase(): CourseBase {
+      return CourseBase.check({
         ...defaultProperties,
         ...overrides,
       });
     },
 
-    buildNoCheck(): Course {
+    buildBaseNoCheck(): CourseBase {
       return {
         ...defaultProperties,
         ...overrides,
-      } as Course;
+      } as CourseBase;
+    },
+
+    build(): Course {
+      const course = {
+        ...defaultProperties,
+        ...overrides,
+      };
+      course.participants = [ParticipantBuilder().exists().buildBase()];
+      return Course.check(course);
+    },
+
+    buildNoCheck(): Course {
+      const course = {
+        ...defaultProperties,
+        ...overrides,
+      };
+      course.participants = [ParticipantBuilder().exists().buildBase()];
+      return course as Course;
     },
 
     buildCreateCourseDto(cs?: CourseSource): CreateCourseDto {
@@ -302,9 +322,27 @@ export const CourseBuilder = () => {
     },
 
     buildCourseResponseDto(): CourseResponseDto {
+      const sourceIds = overrides.sourceIds as CourseSourceIdSource[];
       return {
         ...defaultProperties,
         ...overrides,
+        sourceIds: sourceIds.map((idSource) =>
+          prepareExternalIdSourceValue(idSource.id, idSource.source)
+        ),
+        participants: [
+          ParticipantBuilder().exists().buildParticipantBaseResponseDto(),
+        ],
+      } as CourseResponseDto;
+    },
+
+    buildCourseBaseResponseDto(): CourseResponseDto {
+      const sourceIds = overrides.sourceIds as CourseSourceIdSource[];
+      return {
+        ...defaultProperties,
+        ...overrides,
+        sourceIds: sourceIds.map((idSource) =>
+          prepareExternalIdSourceValue(idSource.id, idSource.source)
+        ),
       } as CourseResponseDto;
     },
   };

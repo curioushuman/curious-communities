@@ -49,6 +49,9 @@ export abstract class ParticipantRepository {
 
   /**
    * Create/update a participant
+   *
+   * NOTE: full participant, not just the base
+   * * This will be the pattern for children, i.e. we need that relation to save
    */
   abstract save(participant: Participant): TaskEither<Error, Participant>;
 }

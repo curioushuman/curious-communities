@@ -1,18 +1,44 @@
+import { Array, Number, Optional, Record, Static, String } from 'runtypes';
+import { ParticipantBaseResponseDto } from './participant.response.dto';
+
 /**
- * This is the structure of data the world will receive
+ * Base type for response DTO
  *
- * TODO
- * - Add swagger ApiProperty to all
- * - later, if/when necessary, add underlying interface
+ * i.e. just the fields
  */
-export class CourseResponseDto {
-  id!: string;
-  slug!: string;
-  status!: string;
-  sourceIds!: string[];
-  supportType!: string;
-  name!: string;
-  dateOpen?: number;
-  dateClosed?: number;
-  yearMonthOpen!: string;
-}
+export const CourseBaseResponseDto = Record({
+  id: String,
+  slug: String,
+  status: String,
+  sourceIds: Array(String),
+  supportType: String,
+  name: String,
+  dateOpen: Optional(Number),
+  dateClosed: Optional(Number),
+  yearMonthOpen: Optional(String),
+  accountOwner: String,
+});
+
+/**
+ * Base type for response DTO
+ *
+ * i.e. just the fields
+ */
+export type CourseBaseResponseDto = Static<typeof CourseBaseResponseDto>;
+
+/**
+ * This is the structure of data the rest of our applications will receive.
+ * When it comes to stripping out data for the public, we'll do that in the
+ * API (i.e. API Gateway) layer, not here.
+ *
+ * i.e. fields + relationships
+ */
+
+export const CourseResponseDto = CourseBaseResponseDto.extend({
+  participants: Array(ParticipantBaseResponseDto),
+});
+
+/**
+ * DTO that accepts any of the identifiers
+ */
+export type CourseResponseDto = Static<typeof CourseResponseDto>;

@@ -1,33 +1,45 @@
+import { Array, Record, Static, String } from 'runtypes';
+import { CourseBaseResponseDto } from './course.response.dto';
+
 /**
- * This is the structure of data the world will receive
+ * Base type for response DTO
  *
- * UPDATE
+ * i.e. just the fields
+ */
+export const ParticipantBaseResponseDto = Record({
+  id: String,
+  memberId: String,
+  courseId: String,
+  status: String,
+  sourceIds: Array(String),
+  name: String,
+  email: String,
+  organisationName: String,
+  accountOwner: String,
+});
+
+/**
+ * Base type for response DTO
  *
+ * i.e. just the fields
+ */
+export type ParticipantBaseResponseDto = Static<
+  typeof ParticipantBaseResponseDto
+>;
+
+/**
  * This is the structure of data the rest of our applications will receive.
  * When it comes to stripping out data for the public, we'll do that in the
  * API (i.e. API Gateway) layer, not here.
  *
- * I think it is still worth including a layer of abstraction between the
- * core Participant entity and the DTO we hand around to other applications.
- *
- * TODO
- * - [*] Unnecessary - Somehow strip out some elements for admin only
- * - [*] Unnecessary - Add swagger ApiProperty to all
- * - [ ] later, if/when necessary, add underlying interface
- *
- * ? QUESTIONS
- * ? [*] Should we expose the externalIdentifiers?
- *       Yes, we'll expose this as admin only. Moved to TODO
+ * i.e. fields + relationships
  */
-export class ParticipantResponseDto {
-  id!: string;
-  memberId!: string;
-  courseId!: string;
-  status!: string;
 
-  sourceIds!: string[];
+export const ParticipantResponseDto = ParticipantBaseResponseDto.extend({
+  course: CourseBaseResponseDto,
+});
 
-  name!: string;
-  email!: string;
-  organisationName!: string;
-}
+/**
+ * DTO that accepts any of the identifiers
+ */
+export type ParticipantResponseDto = Static<typeof ParticipantResponseDto>;

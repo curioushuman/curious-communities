@@ -1,6 +1,12 @@
-import { Participant } from '../../domain/entities/participant';
+import {
+  Participant,
+  ParticipantBase,
+} from '../../domain/entities/participant';
 import { ParticipantSource } from '../../domain/entities/participant-source';
-import { ParticipantResponseDto } from '../../infra/dto/participant.response.dto';
+import {
+  ParticipantBaseResponseDto,
+  ParticipantResponseDto,
+} from '../../infra/dto/participant.response.dto';
 import { CreateParticipantRequestDto } from '../../infra/create-participant/dto/create-participant.request.dto';
 import { CreateParticipantDto } from '../../application/commands/create-participant/create-participant.dto';
 import { ParticipantSourceBuilder } from './participant-source.builder';
@@ -14,6 +20,8 @@ import {
   FindByIdSourceValueParticipantRequestDto,
 } from '../../infra/find-participant/dto/find-participant.request.dto';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import { CourseBuilder } from './course.builder';
+import { ParticipantSourceIdSource } from '../../domain/value-objects/participant-source-id-source';
 import { ParticipantSourceStatus } from '../../domain/value-objects/participant-source-status';
 
 /**
@@ -166,30 +174,55 @@ export const ParticipantBuilder = () => {
       return this;
     },
 
-    build(): Participant {
-      return Participant.check({
+    buildBase(): ParticipantBase {
+      return ParticipantBase.check({
         ...defaultProperties,
         ...overrides,
       });
     },
 
-    buildNoCheck(): Participant {
-      return {
+    buildBaseNoCheck(): Participant {
+      const participant = {
         ...defaultProperties,
         ...overrides,
+      };
+      return participant as Participant;
+    },
+
+    build(): Participant {
+      const participantBase = ParticipantBase.check({
+        ...defaultProperties,
+        ...overrides,
+      });
+      const course = CourseBuilder().exists().buildBase();
+      // the above two checks are sufficient
+      const p = {
+        ...participantBase,
+        course,
       } as Participant;
+      console.log('p', p);
+      return p as Participant;
+    },
+
+    buildNoCheck(): Participant {
+      const participant = {
+        ...defaultProperties,
+        ...overrides,
+      };
+      participant.course = CourseBuilder().exists().buildBase();
+      return participant as Participant;
     },
 
     buildCreateParticipantDto(): CreateParticipantDto {
-      const build = this.buildNoCheck();
+      const build = this.buildBaseNoCheck();
+      console.log('build', build);
+      const participantSource = ParticipantSourceBuilder().exists().build();
+      const course = CourseBuilder().exists().buildBaseNoCheck();
+      // supports the invalid request tests
+      participantSource.status = build.status as ParticipantSourceStatus;
       return {
-        participantSource: {
-          id: build.sourceIds[0].id,
-          status: build.status as ParticipantSourceStatus,
-        },
-        course: {
-          id: build.courseId,
-        },
+        participantSource,
+        course,
         member: {
           id: build.memberId,
           email: build.email,
@@ -200,15 +233,16 @@ export const ParticipantBuilder = () => {
     },
 
     buildCreateParticipantRequestDto(): CreateParticipantRequestDto {
-      const build = this.buildNoCheck();
+      const build = this.buildBaseNoCheck();
+      const participantSource = ParticipantSourceBuilder()
+        .exists()
+        .buildParticipantSourceResponseDto();
+      const course = CourseBuilder().exists().buildCourseBaseResponseDto();
+      // this supports the invalid request tests
+      participantSource.status = build.status;
       return {
-        participantSource: {
-          id: build.sourceIds[0].id,
-          status: build.status,
-        },
-        course: {
-          id: build.courseId,
-        },
+        participantSource,
+        course,
         member: {
           id: build.memberId,
           email: build.email,
@@ -272,11 +306,33 @@ export const ParticipantBuilder = () => {
       } as UpdateParticipantRequestDto;
     },
 
-    buildParticipantResponseDto(): ParticipantResponseDto {
-      return {
+    buildParticipantBaseResponseDto(): ParticipantBaseResponseDto {
+      const sourceIds = overrides.sourceIds as ParticipantSourceIdSource[];
+      const dto = {
         ...defaultProperties,
         ...overrides,
-      } as ParticipantResponseDto;
+        sourceIds: sourceIds.map((idSource) =>
+          prepareExternalIdSourceValue(idSource.id, idSource.source)
+        ),
+      };
+      delete dto.course;
+      return dto as ParticipantBaseResponseDto;
+    },
+
+    buildParticipantResponseDto(): ParticipantResponseDto {
+      const sourceIds = overrides.sourceIds as ParticipantSourceIdSource[];
+      const courseResponseDto = CourseBuilder()
+        .exists()
+        .buildCourseBaseResponseDto();
+      const dto = {
+        ...defaultProperties,
+        ...overrides,
+        sourceIds: sourceIds.map((idSource) =>
+          prepareExternalIdSourceValue(idSource.id, idSource.source)
+        ),
+        course: courseResponseDto,
+      };
+      return dto as ParticipantResponseDto;
     },
   };
 };

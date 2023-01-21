@@ -1,7 +1,7 @@
 import { UpdateMapper } from '@curioushuman/common';
 
 import { CourseSource } from '../../../domain/entities/course-source';
-import { Course } from '../../../domain/entities/course';
+import { Course, CourseBase } from '../../../domain/entities/course';
 import { createCourseSlug } from '../../../domain/value-objects/course-slug';
 import { CourseMapper } from '../../../domain/mappers/course.mapper';
 
@@ -16,11 +16,11 @@ export class UpdateCourseMapper extends UpdateMapper {
    */
   public static fromSourceToCourse(
     course: Course
-  ): (source: CourseSource) => Course {
+  ): (source: CourseSource) => CourseBase {
     return (source: CourseSource) => {
-      const mappedCourse = CourseMapper.fromSourceToCourse(source);
-      return Course.check({
-        ...mappedCourse,
+      const mappedCourseBase = CourseMapper.fromSourceToCourseBase(source);
+      return CourseBase.check({
+        ...mappedCourseBase,
         id: course.id,
         slug: createCourseSlug(source),
       });

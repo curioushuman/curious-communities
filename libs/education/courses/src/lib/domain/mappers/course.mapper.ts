@@ -1,6 +1,6 @@
 import { createYearMonth } from '@curioushuman/common';
 import config from '../../static/config';
-import { Course } from '../entities/course';
+import { CourseBase } from '../entities/course';
 import { CourseSource } from '../entities/course-source';
 import { AccountSlug } from '../value-objects/account-slug';
 import { CourseName } from '../value-objects/course-name';
@@ -20,9 +20,9 @@ import { CourseStatus } from '../value-objects/course-status';
  * - at some point you may need to include a status mapping function
  */
 export class CourseMapper {
-  public static fromSourceToCourse(
+  public static fromSourceToCourseBase(
     source: CourseSource
-  ): Omit<Course, 'id' | 'slug'> {
+  ): Omit<CourseBase, 'id' | 'slug'> {
     return {
       status: source.status as CourseStatus,
 

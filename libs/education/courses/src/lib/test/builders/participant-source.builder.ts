@@ -3,7 +3,9 @@ import { FindParticipantSourceDto } from '../../application/queries/find-partici
 
 import { ParticipantSource } from '../../domain/entities/participant-source';
 import { ParticipantSourceStatus } from '../../domain/value-objects/participant-source-status';
+import { ParticipantSourceResponseDto } from '../../infra/dto/participant-source.response.dto';
 import { FindParticipantSourceRequestDto } from '../../infra/find-participant-source/dto/find-participant-source.request.dto';
+import { ParticipantSourceMapper } from '../../infra/participant-source.mapper';
 import config from '../../static/config';
 
 /**
@@ -81,7 +83,7 @@ export const ParticipantSourceBuilder = () => {
 
     invalidStatus() {
       overrides.name = 'Jones Invalid';
-      overrides.status = 'this is invalid';
+      overrides.status = 'this is invalid' as ParticipantSourceStatus;
       return this;
     },
 
@@ -98,7 +100,7 @@ export const ParticipantSourceBuilder = () => {
 
     updated() {
       overrides.id = ExternalId.check('ThisSourceExists');
-      overrides.status = 'registered';
+      overrides.status = 'registered' as ParticipantSourceStatus;
       return this;
     },
 
@@ -119,6 +121,11 @@ export const ParticipantSourceBuilder = () => {
         ...defaultProperties,
         ...overrides,
       } as ParticipantSource;
+    },
+
+    buildParticipantSourceResponseDto(): ParticipantSourceResponseDto {
+      const p = this.buildNoCheck();
+      return ParticipantSourceMapper.toResponseDto(p);
     },
 
     buildFindParticipantSourceRequestDto(): FindParticipantSourceRequestDto {

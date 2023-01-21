@@ -1,22 +1,27 @@
 import { Record, Static } from 'runtypes';
-import { CourseDto } from '../../dto/course.dto';
+import { CourseBaseResponseDto } from '../../dto/course.response.dto';
 import { MemberDto } from '../../dto/member.dto';
-import { ParticipantSourceDto } from '../../dto/participant-source.dto';
+import { ParticipantSourceResponseDto } from '../../dto/participant-source.response.dto';
 
 /**
  * This is the form of data we expect as input into our application
  *
- * NOTE: this has been updated to accept strings. As this is the external
- * facing DTO, this will be OK. We then need to validate as we proceed
- * further into application layers.
+ * NOTE: for course and participant we use this microservice's own response DTOs
+ * as it is know, and will always be known, by this application that is what is
+ * sent and therefore received.
+ *
+ * For member, to keep coupling low, we only define what we need in this context.
+ * Hence why it get's it own DTO.
  */
-
 export const CreateParticipantRequestDto = Record({
-  participantSource: ParticipantSourceDto,
-  course: CourseDto,
+  participantSource: ParticipantSourceResponseDto,
+  course: CourseBaseResponseDto,
   member: MemberDto,
 });
 
+/**
+ * This is the form of data we expect as input into our application
+ */
 export type CreateParticipantRequestDto = Static<
   typeof CreateParticipantRequestDto
 >;

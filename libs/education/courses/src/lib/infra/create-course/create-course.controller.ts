@@ -28,15 +28,7 @@ import { FindCourseSourceQuery } from '../../application/queries/find-course-sou
 
 /**
  * Controller for create course operations
- *
- * TODO
- * - [ ] should this actually be a service?
- * - [ ] should we be doing auth. here as well?
- *       OR is it ok that we're assuming it is done at higher levels?
- *       AKA it seems like a waste of resources to repeat the same task
- *       ONLY if auth. at this level differs from higher ups should we implement
  */
-
 @Controller()
 export class CreateCourseController {
   constructor(

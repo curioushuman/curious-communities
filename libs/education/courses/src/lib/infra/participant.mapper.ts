@@ -1,28 +1,82 @@
-import { ParticipantResponseDto } from './dto/participant.response.dto';
-import { Participant } from '../domain/entities/participant';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
 
-/**
- * TODO
- * - Should we do more checking of ParticipantResponseDto?
- */
+import {
+  ParticipantBaseResponseDto,
+  ParticipantResponseDto,
+} from './dto/participant.response.dto';
+import {
+  Participant,
+  ParticipantBase,
+  prepareParticipantExternalIdSource,
+} from '../domain/entities/participant';
+import { ParticipantSourceIdSource } from '../domain/value-objects/participant-source-id-source';
+import { CourseMapper } from './course.mapper';
+
 export class ParticipantMapper {
+  public static toResponseDtoIdSource(idSource: ParticipantSourceIdSource) {
+    return prepareExternalIdSourceValue(idSource.id, idSource.source);
+  }
+
   public static toResponseDto(
     participant: Participant
   ): ParticipantResponseDto {
-    return {
+    const baseDto: ParticipantBaseResponseDto =
+      ParticipantMapper.toBaseResponseDto(participant);
+    const dto = {
+      ...baseDto,
+      course: CourseMapper.toBaseResponseDto(participant.course),
+    };
+    return dto;
+  }
+
+  public static toBaseResponseDto(
+    participant: Participant | ParticipantBase
+  ): ParticipantBaseResponseDto {
+    const dto: ParticipantBaseResponseDto = {
       id: participant.id,
       memberId: participant.memberId,
       courseId: participant.courseId,
       status: participant.status,
 
-      sourceIds: participant.sourceIds.map((idSource) =>
-        prepareExternalIdSourceValue(idSource.id, idSource.source)
+      sourceIds: participant.sourceIds.map(
+        ParticipantMapper.toResponseDtoIdSource
       ),
 
       name: participant.name,
       email: participant.email,
       organisationName: participant.organisationName,
-    } as ParticipantResponseDto;
+
+      accountOwner: participant.accountOwner,
+    };
+    return ParticipantBaseResponseDto.check(dto);
+  }
+
+  public static fromResponseDto(dto: ParticipantResponseDto): Participant {
+    const base: ParticipantBase = ParticipantMapper.fromResponseDtoToBase(dto);
+    const participant = {
+      ...base,
+      course: CourseMapper.fromResponseDtoToBase(dto.course),
+    };
+    return Participant.check(participant);
+  }
+
+  public static fromResponseDtoToBase(
+    dto: ParticipantResponseDto | ParticipantBaseResponseDto
+  ): ParticipantBase {
+    const participant = {
+      id: dto.id,
+      status: dto.status,
+      memberId: dto.memberId,
+      courseId: dto.courseId,
+
+      sourceIds: dto.sourceIds.map(prepareParticipantExternalIdSource),
+
+      name: dto.name,
+      email: dto.email,
+      organisationName: dto.organisationName,
+
+      accountOwner: dto.accountOwner,
+    };
+    return ParticipantBase.check(participant);
   }
 }

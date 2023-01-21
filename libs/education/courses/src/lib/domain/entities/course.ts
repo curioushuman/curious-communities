@@ -7,24 +7,26 @@ import {
   YearMonth,
 } from '@curioushuman/common';
 
-import { CourseName } from '../value-objects/course-name';
-import { CourseStatus } from '../value-objects/course-status';
-import { CourseSupportType } from '../value-objects/course-support-type';
-import { AccountSlug } from '../value-objects/account-slug';
-import { CourseSlug } from '../value-objects/course-slug';
 import { CourseId } from '../value-objects/course-id';
+import { CourseStatus } from '../value-objects/course-status';
+import { AccountSlug } from '../value-objects/account-slug';
+import { CourseName } from '../value-objects/course-name';
 import {
   CourseSourceIdSource,
   CourseSourceIdSourceValue,
 } from '../value-objects/course-source-id-source';
 import { CourseSourceId } from '../value-objects/course-source-id';
 import { Source } from '../value-objects/source';
+import { CourseSlug } from '../value-objects/course-slug';
+import { ParticipantBase } from './participant';
+import { CourseSupportType } from '../value-objects/course-support-type';
 
 /**
- * Runtypes constant for the (internal) Course entity
- * Used for type checking and validation
+ * Base type for internal course entity
+ *
+ * i.e. just the fields
  */
-export const Course = Record({
+export const CourseBase = Record({
   id: CourseId,
   slug: CourseSlug,
   status: CourseStatus,
@@ -41,7 +43,27 @@ export const Course = Record({
 });
 
 /**
- * Type for the (internal) course entity
+ * Base type for internal course entity
+ *
+ * i.e. just the fields
+ */
+export type CourseBase = Static<typeof CourseBase>;
+
+/**
+ * Type for internal course entity
+ *
+ * i.e. fields + relationships
+ *
+ * * NOTE: I've had to duplicate this extension over at CourseCourse
+ */
+export const Course = CourseBase.extend({
+  participants: Array(ParticipantBase),
+});
+
+/**
+ * Type for internal course entity
+ *
+ * i.e. fields + relationships
  */
 export type Course = Static<typeof Course>;
 
@@ -50,13 +72,13 @@ export type Course = Static<typeof Course>;
  * NOTE: this is utilized in find-course.dto.ts and course.repository.ts
  * to define parsers and finders.
  */
-export type CourseIdentifiers = {
+export interface CourseIdentifiers {
   id: CourseId;
   idSourceValue: CourseSourceIdSourceValue;
   slug: CourseSlug;
-};
+}
 export type CourseIdentifier = keyof CourseIdentifiers;
-export type CourseIdentifierValue = ValueOf<CourseIdentifier>;
+export type CourseIdentifierValue = ValueOf<CourseIdentifiers>;
 
 /**
  * Convenience function to prepare a CourseSourceIdSource

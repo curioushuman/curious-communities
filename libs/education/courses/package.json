@@ -4,6 +4,8 @@
   "type": "commonjs",
   "main": "src/index.js",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.252.0",
+    "@aws-sdk/lib-dynamodb": "^3.252.0",
     "@curioushuman/common": "workspace:^0.0.1",
     "@curioushuman/error-factory": "workspace:^0.0.1",
     "@curioushuman/fp-ts-utils": "workspace:^0.0.1",
@@ -20,7 +22,6 @@
   },
   "devDependencies": {
     "@nestjs/testing": "^8.4.7",
-    "@types/axios": "^0.14.0",
     "@types/jsonwebtoken": "^8.5.1"
   }
 }

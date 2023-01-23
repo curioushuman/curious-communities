@@ -13,7 +13,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { CourseRepository } from '../../../adapter/ports/course.repository';
 import { CreateCourseDto } from './create-course.dto';
 import { CreateCourseMapper } from './create-course.mapper';
-import { Course } from '../../../domain/entities/course';
+import { CourseBase } from '../../../domain/entities/course';
 import { CourseRepositoryErrorFactory } from '../../../adapter/ports/course.repository.error-factory';
 
 export class CreateCourseCommand implements ICommand {
@@ -38,7 +38,7 @@ export class CreateCourseHandler
     this.logger.setContext(CreateCourseHandler.name);
   }
 
-  async execute(command: CreateCourseCommand): Promise<Course> {
+  async execute(command: CreateCourseCommand): Promise<CourseBase> {
     const { createCourseDto } = command;
 
     // #1. validate the dto

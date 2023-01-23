@@ -5,7 +5,11 @@ import { pipe } from 'fp-ts/lib/function';
 
 import { prepareExternalIdSource } from '@curioushuman/common';
 
-import { Course, CourseIdentifier } from '../../../domain/entities/course';
+import {
+  Course,
+  CourseBase,
+  CourseIdentifier,
+} from '../../../domain/entities/course';
 import {
   CourseFindMethod,
   CourseRepository,
@@ -125,15 +129,24 @@ export class FakeCourseRepository implements CourseRepository {
     return this.findOneBy[identifier];
   };
 
-  save = (course: Course): TE.TaskEither<Error, Course> => {
+  save = (courseBase: CourseBase): TE.TaskEither<Error, Course> => {
     return TE.tryCatch(
       async () => {
-        const courseExists = this.courses.find((cs) => cs.id === course.id);
+        const courseExists = this.courses.find((cs) => cs.id === courseBase.id);
+        let course: Course;
         if (courseExists) {
+          course = {
+            ...courseBase,
+            participants: courseExists.participants,
+          };
           this.courses = this.courses.map((cs) =>
             cs.id === course.id ? course : cs
           );
         } else {
+          course = {
+            ...courseBase,
+            participants: [],
+          };
           this.courses.push(course);
         }
         return course;

@@ -15,6 +15,12 @@ export type ParticipantFindMethod = (
   value: ParticipantIdentifierValue
 ) => TaskEither<Error, Participant>;
 
+/**
+ * A repository for participants
+ *
+ * NOTES:
+ * - repos for child entities, by default, ALWAYS include the parent
+ */
 export abstract class ParticipantRepository {
   /**
    * Object lookup for findMethods
@@ -51,7 +57,7 @@ export abstract class ParticipantRepository {
    * Create/update a participant
    *
    * NOTE: full participant, not just the base
-   * * This will be the pattern for children, i.e. we need that relation to save
+   * * This will be the pattern for children, i.e. we need entity.parent to save
    */
   abstract save(participant: Participant): TaskEither<Error, Participant>;
 }

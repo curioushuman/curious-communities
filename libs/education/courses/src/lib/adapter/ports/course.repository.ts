@@ -1,7 +1,6 @@
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
-  Course,
   CourseBase,
   CourseIdentifier,
   CourseIdentifierValue,
@@ -13,6 +12,8 @@ import { CourseId } from '../../domain/value-objects/course-id';
 /**
  * TODO:
  * - [ ] move the find and check method types to generics
+ * - [ ] add functions (or flags) to find course with children
+ * - [ ] queryBy are for searches not based on identifiers
  */
 
 /**
@@ -20,8 +21,14 @@ import { CourseId } from '../../domain/value-objects/course-id';
  */
 export type CourseFindMethod = (
   value: CourseIdentifierValue
-) => TaskEither<Error, Course>;
+) => TaskEither<Error, CourseBase>;
 
+/**
+ * A repository for courses
+ *
+ * NOTES:
+ * - repos for parent entities, by default, do not return children
+ */
 export abstract class CourseRepository {
   /**
    * Object lookup for findMethods
@@ -43,7 +50,7 @@ export abstract class CourseRepository {
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findOneById(id: CourseId): TaskEither<Error, Course>;
+  abstract findOneById(id: CourseId): TaskEither<Error, CourseBase>;
 
   /**
    * Find a course by the given ID and source value
@@ -52,14 +59,14 @@ export abstract class CourseRepository {
    */
   abstract findOneByIdSourceValue(
     value: CourseSourceIdSourceValue
-  ): TaskEither<Error, Course>;
+  ): TaskEither<Error, CourseBase>;
 
   /**
    * Find a course by the given ID
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findOneBySlug(slug: CourseSlug): TaskEither<Error, Course>;
+  abstract findOneBySlug(slug: CourseSlug): TaskEither<Error, CourseBase>;
 
   /**
    * Create/update a course
@@ -67,5 +74,5 @@ export abstract class CourseRepository {
    * NOTE: just the base, not the full course
    * * This will be the pattern for parents, just the base
    */
-  abstract save(course: CourseBase): TaskEither<Error, Course>;
+  abstract save(course: CourseBase): TaskEither<Error, CourseBase>;
 }

@@ -16,7 +16,7 @@ import {
 
 import { CreateCourseRequestDto } from './dto/create-course.request.dto';
 import { CreateCourseCommand } from '../../application/commands/create-course/create-course.command';
-import { CourseResponseDto } from '../dto/course.response.dto';
+import { CourseBaseResponseDto } from '../dto/course.response.dto';
 import { CourseMapper } from '../course.mapper';
 import { CourseSource } from '../../domain/entities/course-source';
 import { FindCourseMapper } from '../../application/queries/find-course/find-course.mapper';
@@ -41,7 +41,7 @@ export class CreateCourseController {
 
   public async create(
     requestDto: CreateCourseRequestDto
-  ): Promise<CourseResponseDto> {
+  ): Promise<CourseBaseResponseDto> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -87,7 +87,7 @@ export class CreateCourseController {
       ),
 
       // #5. transform to the response DTO
-      TE.chain(parseActionData(CourseMapper.toResponseDto, this.logger))
+      TE.chain(parseActionData(CourseMapper.toBaseResponseDto, this.logger))
     );
 
     return executeTask(task);

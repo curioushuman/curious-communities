@@ -95,3 +95,32 @@ export function parseExternalIdSourceValue(
     sourceType.check(source)
   );
 }
+
+/**
+ * A type used solely for these helper functions
+ */
+type SourceOfSourceId<SID extends ExternalIdSource> = SID['source'];
+
+/**
+ * Helper function to find the sourceId object for a given source
+ */
+export function findSourceId<SID extends ExternalIdSource>(
+  sourceIds: SID[],
+  source: SourceOfSourceId<SID>
+): SID | undefined {
+  return sourceIds.find((sourceId) => sourceId.source === source);
+}
+
+/**
+ * Helper function to find the sourceId object for a given source
+ * and return the id value
+ */
+export function findSourceIdAsValue<SID extends ExternalIdSource>(
+  sourceIds: SID[],
+  source: SourceOfSourceId<SID>
+): ExternalIdSourceValue | undefined {
+  const sourceId = sourceIds.find((sourceId) => sourceId.source === source);
+  return sourceId
+    ? prepareExternalIdSourceValue(sourceId.id, sourceId.source)
+    : undefined;
+}

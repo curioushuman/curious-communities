@@ -2,6 +2,7 @@
  * Functions used for consistent naming of resources
  */
 
+import { dashToCamelCase } from '@curioushuman/common';
 import {
   ResourceId,
   ResourceNameTitle,
@@ -33,7 +34,7 @@ export const transformIdToResourceTitle = (
   resourceId: ResourceId,
   resourceType: SupportedResourceType
 ): string => {
-  return `${camelCase(ResourceId.check(resourceId))}${resourceType}`;
+  return `${dashToCamelCase(ResourceId.check(resourceId))}${resourceType}`;
 };
 export const transformIdToTestResourceTitle = (
   resourceId: ResourceId,
@@ -63,13 +64,3 @@ export const testResourceNameTitle = (
     transformIdToTestResourceTitle(resourceId, resourceType),
   ];
 };
-
-/**
- * Converting a dashed string to camelCase
- */
-function camelCase(str: string): string {
-  return str
-    .split('-')
-    .map((word) => word[0].toUpperCase() + word.slice(1))
-    .join('');
-}

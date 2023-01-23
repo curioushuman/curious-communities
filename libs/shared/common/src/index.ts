@@ -21,4 +21,5 @@ export * from './lib/domain/value-objects/year-month';
 /**
  * Utils
  */
+export * from './lib/utils/functions';
 export * from './lib/utils/types';

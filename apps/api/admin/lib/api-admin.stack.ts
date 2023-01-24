@@ -7,6 +7,7 @@ import * as events from 'aws-cdk-lib/aws-events';
 import {
   ChEventBusFrom,
   CoApiConstruct,
+  generateCompositeResourceId,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -27,8 +28,8 @@ import {
  * - [ ] hook construct could very easily be moved to cdk-utils
  */
 export class ApiAdminStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+  constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
+    super(scope, stackId, props);
 
     /**
      * Over-arching API structure for admin api
@@ -58,7 +59,7 @@ export class ApiAdminStack extends cdk.Stack {
     /**
      * API Gateway
      */
-    const apiAdmin = new CoApiConstruct(this, 'cc-api-admin', {
+    const apiAdmin = new CoApiConstruct(this, stackId, {
       description: 'Education Admin API',
       stageName: 'dev',
     });
@@ -123,7 +124,7 @@ export class ApiAdminStack extends cdk.Stack {
      */
     const coursesExternalEventHookConstruct = new CoursesHookConstruct(
       this,
-      'cc-courses-hook-external-event-course',
+      generateCompositeResourceId(stackId, 'hook-external-event-course'),
       {
         apiConstruct: apiAdmin,
         rootResource: courseSourceIdResource,
@@ -155,7 +156,7 @@ export class ApiAdminStack extends cdk.Stack {
      */
     const participantExternalEventHookConstruct = new ParticipantsHookConstruct(
       this,
-      'participants-hook',
+      generateCompositeResourceId(stackId, 'hook-external-event-participant'),
       {
         apiConstruct: apiAdmin,
         rootResource: participantSourceIdResource,

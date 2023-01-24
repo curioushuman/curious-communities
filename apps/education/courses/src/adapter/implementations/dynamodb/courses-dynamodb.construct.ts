@@ -6,9 +6,9 @@ import { Construct } from 'constructs';
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
 import {
+  generateCompositeResourceId,
   resourceNameTitle,
   transformIdToResourceName,
-  transformIdToResourceTitle,
 } from '../../../../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -48,7 +48,7 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     // Local secondary index - course.slug
     // Identifier
-    const byCourseSlugLsiId = `${id}-course-slug`;
+    const byCourseSlugLsiId = generateCompositeResourceId(id, 'course-slug');
     const byCourseSlugLsiName = transformIdToResourceName(
       byCourseSlugLsiId,
       'DynamoDbLSI'
@@ -61,7 +61,10 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     // Local secondary index - participant.SourceIdValue
     // Identifier
-    const byCourseSourceIdValueLsiId = `${id}-course-source-id-value`;
+    const byCourseSourceIdValueLsiId = generateCompositeResourceId(
+      id,
+      'course-source-id-value'
+    );
     const byCourseSourceIdValueLsiName = transformIdToResourceName(
       byCourseSourceIdValueLsiId,
       'DynamoDbLSI'
@@ -77,7 +80,10 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     // Local secondary index - participant.SourceIdValue
     // Identifier
-    const byParticipantSourceIdValueLsiId = `${id}-participant-source-id-value`;
+    const byParticipantSourceIdValueLsiId = generateCompositeResourceId(
+      id,
+      'participant-source-id-value'
+    );
     const byParticipantSourceIdValueLsiName = transformIdToResourceName(
       byParticipantSourceIdValueLsiId,
       'DynamoDbLSI'
@@ -93,7 +99,10 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     // Local secondary index - EMAIL
     // Queryable
-    const byParticipantEmailLsiId = `${id}-participant-email`;
+    const byParticipantEmailLsiId = generateCompositeResourceId(
+      id,
+      'participant-email'
+    );
     const byParticipantEmailLsiName = transformIdToResourceName(
       byParticipantEmailLsiId,
       'DynamoDbLSI'
@@ -109,7 +118,10 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     // Local secondary index - LAST NAME
     // Sort by
-    const byParticipantLastNameLsiId = `${id}-participant-last-name`;
+    const byParticipantLastNameLsiId = generateCompositeResourceId(
+      id,
+      'participant-last-name'
+    );
     const byParticipantLastNameLsiName = transformIdToResourceName(
       byParticipantLastNameLsiId,
       'DynamoDbLSI'

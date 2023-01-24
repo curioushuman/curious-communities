@@ -12,6 +12,7 @@ import {
   LambdaEventSubscription,
   ChEventBusFrom,
   LambdaConstruct,
+  generateCompositeResourceId,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -30,8 +31,8 @@ export class CoursesStack extends cdk.Stack {
     layers: [] as lambda.ILayerVersion[],
   };
 
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+  constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
+    super(scope, stackId, props);
 
     /**
      * Other AWS services this stack needs pay attention to
@@ -44,10 +45,7 @@ export class CoursesStack extends cdk.Stack {
      * - this has been abstracted into a construct just to keep this file tidy
      * - all LSI and GSI details can be found in the construct
      */
-    const coursesTableConstruct = new CoursesDynamoDbConstruct(
-      this,
-      'cc-courses'
-    );
+    const coursesTableConstruct = new CoursesDynamoDbConstruct(this, stackId);
 
     /**
      * External events eventBus
@@ -87,7 +85,10 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Required layers, additional to normal defaults
      */
-    const chLayerCourses = new ChLayerFrom(this, 'cc-courses-service');
+    const chLayerCourses = new ChLayerFrom(
+      this,
+      generateCompositeResourceId(stackId, 'service')
+    );
     this.lambdaProps.layers?.push(chLayerCourses.layer);
 
     /**
@@ -95,7 +96,7 @@ export class CoursesStack extends cdk.Stack {
      */
     const createCourseLambdaConstruct = new LambdaEventSubscription(
       this,
-      'cc-courses-course-create',
+      generateCompositeResourceId(stackId, 'course-create'),
       {
         lambdaEntry: pathResolve(
           __dirname,
@@ -124,7 +125,7 @@ export class CoursesStack extends cdk.Stack {
      */
     const updateCourseLambdaConstruct = new LambdaEventSubscription(
       this,
-      'cc-courses-course-update',
+      generateCompositeResourceId(stackId, 'course-update'),
       {
         lambdaEntry: pathResolve(
           __dirname,
@@ -149,11 +150,11 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
-     * Find Participant
+     * Find Course
      */
     const findCourseLambdaConstruct = new LambdaConstruct(
       this,
-      'cc-courses-course-find',
+      generateCompositeResourceId(stackId, 'course-find'),
       {
         lambdaEntry: pathResolve(__dirname, '../src/infra/find-course/main.ts'),
         lambdaProps: this.lambdaProps,
@@ -180,7 +181,7 @@ export class CoursesStack extends cdk.Stack {
      */
     // const createParticipantConstruct = new CreateParticipantConstruct(
     //   this,
-    //   'cc-courses-participant-create',
+    //   generateCompositeResourceId(stackId, 'participant-create'),
     //   {
     //     lambdaProps: lambdaPropsWithDestination,
     //     externalEventBus: externalEventBusConstruct.eventBus,
@@ -193,7 +194,7 @@ export class CoursesStack extends cdk.Stack {
      */
     // const updateParticipantFunction = new LambdaEventSubscription(
     //   this,
-    //   'cc-courses-participant-update',
+    //   generateCompositeResourceId(stackId, 'participant-update'),
     //   {
     //     lambdaEntry: pathResolve(
     //       __dirname,
@@ -222,7 +223,7 @@ export class CoursesStack extends cdk.Stack {
      */
     // const findPaxLambdaConstruct = new LambdaConstruct(
     //   this,
-    //   'cc-courses-participant-find',
+    //   generateCompositeResourceId(stackId, 'participant-find'),
     //   {
     //     lambdaEntry: pathResolve(
     //       __dirname,
@@ -242,7 +243,7 @@ export class CoursesStack extends cdk.Stack {
      */
     // const findPaxSourceLambdaConstruct = new LambdaConstruct(
     //   this,
-    //   'cc-courses-participant-source-find',
+    //   generateCompositeResourceId(stackId, 'participant-source-find'),
     //   {
     //     lambdaEntry: pathResolve(
     //       __dirname,

@@ -3,10 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
-import {
-  getAccountAndRegion,
-  transformIdToResourceTitle,
-} from '../../../../dist/local/@curioushuman/cdk-utils/src';
+import { getAccountAndRegion } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
@@ -16,7 +13,8 @@ const [account, region] = getAccountAndRegion();
 
 // creating an app in cloud or local
 const app = new cdk.App();
-new LayersStack(app, transformIdToResourceTitle('layers', 'Stack'), {
+const stackId = 'cc-layers';
+new LayersStack(app, stackId, {
   env: {
     account,
     region,

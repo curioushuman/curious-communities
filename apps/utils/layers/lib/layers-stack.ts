@@ -7,12 +7,14 @@ import { ChLayer } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 export class LayersStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+  constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
+    super(scope, stackId, props);
 
     const fileLocation = '../../../dist/utils/layers';
 
-    new ChLayer(this, 'node-modules', { fileLocation });
-    new ChLayer(this, 'shared', { fileLocation });
+    const nodeModulesLayerId = 'node-modules';
+    new ChLayer(this, nodeModulesLayerId, { fileLocation });
+    const sharedLayerId = 'shared';
+    new ChLayer(this, sharedLayerId, { fileLocation });
   }
 }

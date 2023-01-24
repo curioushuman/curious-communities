@@ -5,7 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import {
   CreateCourseModule,
   CreateCourseController,
-  CourseResponseDto,
+  type CourseBaseResponseDto,
 } from '@curioushuman/cc-courses-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -57,14 +57,13 @@ async function waitForApp() {
  * * We receive our own requestDto format, and not the usual AWS resource event.
  *   This will allow us most flexibility in invoking this function from multiple
  *   triggers. It reverses the dependency from invoked > invoker, to invoker > invoked.
- * * We return void
- *   Which basically indicates success.
+ * * We NOW return CourseBaseResponseDto
  */
 export const handler = async (
   requestDtoOrEvent:
     | CreateCourseRequestDto
     | EventBridgeEvent<'putEvent', CreateCourseRequestDto>
-): Promise<CourseResponseDto> => {
+): Promise<CourseBaseResponseDto> => {
   // grab the dto
   const requestDto =
     'detail' in requestDtoOrEvent

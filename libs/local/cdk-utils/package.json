@@ -4,7 +4,8 @@
   "type": "commonjs",
   "main": "src/index.js",
   "TODO-dependencies": {
-    "@curioushuman/error-factory": "file:../../../dist/utils/layers/shared/nodejs/node_modules/@curioushuman/error-factory/src/index.js"
+    "@curioushuman/error-factory": "file:../../../dist/utils/layers/shared/nodejs/node_modules/@curioushuman/error-factory/src/index.js",
+    "@curioushuman/common": "workspace:^0.0.1"
   },
   "dependencies": {
     "aws-cdk-lib": "^2.55.1",

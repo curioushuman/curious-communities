@@ -2,12 +2,23 @@
  * Functions used for consistent naming of resources
  */
 
-import { dashToCamelCase } from '@curioushuman/common';
+// TODO - get this working when you move this to a package
+// import { dashToCamelCase } from '@curioushuman/common';
 import {
   ResourceId,
   ResourceNameTitle,
   SupportedResourceType,
 } from './name.types';
+
+/**
+ * ! DUPLICATE: also in @curioushuman/common
+ */
+export function dashToCamelCase(str: string): string {
+  return str
+    .split('-')
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join('');
+}
 
 /**
  * A resource name needs to be unique across AWS, so is prefixed with the API name,

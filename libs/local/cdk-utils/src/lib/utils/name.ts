@@ -77,6 +77,13 @@ export const testResourceNameTitle = (
 };
 
 /**
+ * Convenience function to create a test resource Id
+ */
+export const testResourceId = (resourceId: ResourceId): ResourceId => {
+  return `test-${ResourceId.check(resourceId)}`;
+};
+
+/**
  * Function to generate a composite Id from a resource Id and a sub-resource Id
  */
 export const generateCompositeResourceId = (

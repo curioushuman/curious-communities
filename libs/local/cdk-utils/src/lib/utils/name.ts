@@ -64,3 +64,13 @@ export const testResourceNameTitle = (
     transformIdToTestResourceTitle(resourceId, resourceType),
   ];
 };
+
+/**
+ * Function to generate a composite Id from a resource Id and a sub-resource Id
+ */
+export const generateCompositeResourceId = (
+  resourceId: ResourceId,
+  subResourceId: ResourceId
+): ResourceId => {
+  return `${ResourceId.check(resourceId)}-${ResourceId.check(subResourceId)}`;
+};

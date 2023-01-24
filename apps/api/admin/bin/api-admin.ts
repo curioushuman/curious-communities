@@ -17,7 +17,7 @@ const [account, region] = getAccountAndRegion();
 // creating an app in cloud or local
 const app = new cdk.App();
 const stackId = 'cc-api-admin';
-new ApiAdminStack(app, transformIdToResourceTitle(stackId, 'Stack'), {
+new ApiAdminStack(app, stackId, {
   env: {
     account,
     region,

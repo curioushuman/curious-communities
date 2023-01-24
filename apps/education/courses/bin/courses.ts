@@ -16,7 +16,8 @@ const [account, region] = getAccountAndRegion();
 
 // creating an app in cloud or local
 const app = new cdk.App();
-new CoursesStack(app, transformIdToResourceTitle('cc-courses', 'Stack'), {
+const stackId = 'cc-courses';
+new CoursesStack(app, stackId, {
   env: {
     account,
     region,

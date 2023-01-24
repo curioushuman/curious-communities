@@ -1,32 +1,29 @@
-import { RepositoryErrorFactory } from '@curioushuman/error-factory';
+import { DynamoDBServiceException } from '@aws-sdk/client-dynamodb';
 import { Injectable } from '@nestjs/common';
+import { RepositoryErrorFactory } from '@curioushuman/error-factory';
 
 /**
- * Factory to interpret and produce consistent errors from the riddled mess
- * that is returned from Salesforce. Two types of individual error, or maybe
- * even an array of errors.
+ * Factory to interpret and produce consistent errors from ASW DynamoDB.
+ *
+ * References
+ * - https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html
+ * - https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-dynamodb/classes/dynamodbserviceexception.html#message
  */
 
 @Injectable()
 export class DynamoDbRepositoryErrorFactory extends RepositoryErrorFactory {
-  private dynamoDbErrorCodes: Record<string, number> = {
-    NOT_FOUND: 404,
-    SERVER_ERROR: 500,
-  };
-
   /**
-   * Abstract function we need to include to allow our error factory
-   * to interpret the errors returned from Salesforce.
+   * Return the status code based on the AWS DDB exception
    */
-  public errorStatusCode(error: Error): number {
-    return 400;
+  public errorStatusCode(error: DynamoDBServiceException): number {
+    return error?.$response?.statusCode || 500;
   }
 
   /**
    * Abstract function we need to include to be able to return a
    * consistent error message from Salesforce.
    */
-  public errorDescription(error: Error): string {
-    return 'Temporary error message';
+  public errorDescription(error: DynamoDBServiceException): string {
+    return error?.message || 'Unknown AWS error';
   }
 }

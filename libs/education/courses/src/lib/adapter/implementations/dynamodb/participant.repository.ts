@@ -1,6 +1,9 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import * as TE from 'fp-ts/lib/TaskEither';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
   GetCommand,
@@ -201,7 +204,7 @@ export class DynamoDbParticipantRepository
         return this.processFindOne(response.Item, params);
       },
       // NOTE: we don't use an error factory here, it is one level up
-      (reason: unknown) => reason as Error
+      (exception: DynamoDBServiceException) => exception as Error
     );
   };
 
@@ -218,7 +221,7 @@ export class DynamoDbParticipantRepository
         return this.processFindOne(response.Items?.[0], params);
       },
       // NOTE: we don't use an error factory here, it is one level up
-      (reason: unknown) => reason as Error
+      (exception: DynamoDBServiceException) => exception as Error
     );
   };
 
@@ -287,7 +290,7 @@ export class DynamoDbParticipantRepository
 
         return participant;
       },
-      (reason: unknown) => reason as Error
+      (exception: DynamoDBServiceException) => exception as Error
     );
   };
 }

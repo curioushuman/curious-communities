@@ -11,7 +11,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 
 import { CourseRepository } from '../../../adapter/ports/course.repository';
 import { FindCourseDto, parseDto } from './find-course.dto';
-import { Course } from '../../../domain/entities/course';
+import { CourseBase } from '../../../domain/entities/course';
 import { CourseRepositoryErrorFactory } from '../../../adapter/ports/course.repository.error-factory';
 
 export class FindCourseQuery implements IQuery {
@@ -31,7 +31,7 @@ export class FindCourseHandler implements IQueryHandler<FindCourseQuery> {
     this.logger.setContext(FindCourseHandler.name);
   }
 
-  async execute(query: FindCourseQuery): Promise<Course> {
+  async execute(query: FindCourseQuery): Promise<CourseBase> {
     const { findCourseDto } = query;
 
     const task = pipe(

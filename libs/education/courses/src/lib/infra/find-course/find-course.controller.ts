@@ -13,7 +13,7 @@ import {
 } from './dto/find-course.request.dto';
 import { FindCourseMapper } from '../../application/queries/find-course/find-course.mapper';
 import { FindCourseQuery } from '../../application/queries/find-course/find-course.query';
-import { CourseResponseDto } from '../dto/course.response.dto';
+import { CourseBaseResponseDto } from '../dto/course.response.dto';
 import { CourseMapper } from '../course.mapper';
 
 /**
@@ -31,7 +31,7 @@ export class FindCourseController {
 
   public async find(
     requestDto: FindCourseRequestDto
-  ): Promise<CourseResponseDto> {
+  ): Promise<CourseBaseResponseDto> {
     const task = pipe(
       requestDto,
 
@@ -56,7 +56,7 @@ export class FindCourseController {
       ),
 
       // #4. transform to the response DTO
-      TE.chain(parseActionData(CourseMapper.toResponseDto, this.logger))
+      TE.chain(parseActionData(CourseMapper.toBaseResponseDto, this.logger))
     );
 
     return executeTask(task);
@@ -64,7 +64,7 @@ export class FindCourseController {
 
   public async findById(
     requestDto: FindByIdCourseRequestDto
-  ): Promise<CourseResponseDto> {
+  ): Promise<CourseBaseResponseDto> {
     const task = pipe(
       requestDto,
 
@@ -89,7 +89,7 @@ export class FindCourseController {
       ),
 
       // #4. transform to the response DTO
-      TE.chain(parseActionData(CourseMapper.toResponseDto, this.logger))
+      TE.chain(parseActionData(CourseMapper.toBaseResponseDto, this.logger))
     );
 
     return executeTask(task);
@@ -97,7 +97,7 @@ export class FindCourseController {
 
   public async findByIdSourceValue(
     requestDto: FindByIdSourceValueCourseRequestDto
-  ): Promise<CourseResponseDto> {
+  ): Promise<CourseBaseResponseDto> {
     const task = pipe(
       requestDto,
 
@@ -125,7 +125,7 @@ export class FindCourseController {
       ),
 
       // #4. transform to the response DTO
-      TE.chain(parseActionData(CourseMapper.toResponseDto, this.logger))
+      TE.chain(parseActionData(CourseMapper.toBaseResponseDto, this.logger))
     );
 
     return executeTask(task);

@@ -2,16 +2,20 @@ import * as cdk from 'aws-cdk-lib';
 
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
-import { ChLayer } from '../../../../dist/local/@curioushuman/cdk-utils/src';
+import {
+  ChLayer,
+  generateCompositeResourceId,
+} from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 export class CcEducationLayersStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+  constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
+    super(scope, stackId, props);
 
     const fileLocation = '../../../dist/utils/layers';
 
-    new ChLayer(this, 'cc-courses-service', { fileLocation });
+    const coursesServiceLayerId = 'cc-courses-service';
+    new ChLayer(this, coursesServiceLayerId, { fileLocation });
   }
 }

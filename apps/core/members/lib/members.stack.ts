@@ -51,12 +51,18 @@ export class MembersStack extends cdk.Stack {
     /**
      * External events eventBus
      */
-    const externalEventBusConstruct = new ChEventBusFrom(this, 'cc-external');
+    const externalEventBusConstruct = new ChEventBusFrom(
+      this,
+      'cc-events-external'
+    );
 
     /**
      * Internal events eventBus
      */
-    const internalEventBusConstruct = new ChEventBusFrom(this, 'cc-internal');
+    const internalEventBusConstruct = new ChEventBusFrom(
+      this,
+      'cc-events-internal'
+    );
 
     /**
      * Eventbridge destination for our lambdas

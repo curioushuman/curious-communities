@@ -17,7 +17,7 @@ const [account, region] = getAccountAndRegion();
 // creating an app in cloud or local
 const app = new cdk.App();
 const stackId = 'cc-api-test';
-new CcTestStack(app, transformIdToResourceTitle(stackId, 'Stack'), {
+new CcTestStack(app, stackId, {
   env: {
     account,
     region,

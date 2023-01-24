@@ -14,20 +14,26 @@ import {
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 export class CcTestStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+  constructor(scope: Construct, stackId: string, props?: cdk.StackProps) {
+    super(scope, stackId, props);
 
     /**
      * External events eventBus
      */
-    const externalEventsEventBusId = 'cc-external';
-    const externalEventBusConstruct = new ChEventBusFrom(this, 'cc-external');
+    const externalEventsEventBusId = 'cc-events-external';
+    const externalEventBusConstruct = new ChEventBusFrom(
+      this,
+      'cc-events-external'
+    );
 
     /**
      * Internal events eventBus
      */
-    const internalEventsEventBusId = 'cc-internal';
-    const internalEventBusConstruct = new ChEventBusFrom(this, 'cc-internal');
+    const internalEventsEventBusId = 'cc-events-internal';
+    const internalEventBusConstruct = new ChEventBusFrom(
+      this,
+      'cc-events-internal'
+    );
 
     /**
      * SQS queue that we will subscribe to all external events
@@ -50,7 +56,7 @@ export class CcTestStack extends cdk.Stack {
     const externalEventsRule = new events.Rule(this, externalEventsRuleTitle, {
       ruleName: externalEventsRuleName,
       eventBus: externalEventBusConstruct.eventBus,
-      description: 'Listen for all events from cc-external event bus.',
+      description: 'Listen for all events from cc-events-external event bus.',
       eventPattern: {
         detailType: ['putEvent'],
       },
@@ -78,7 +84,7 @@ export class CcTestStack extends cdk.Stack {
     const internalEventsRule = new events.Rule(this, internalEventsRuleTitle, {
       ruleName: internalEventsRuleName,
       eventBus: internalEventBusConstruct.eventBus,
-      description: 'Listen for all events from cc-internal event bus.',
+      description: 'Listen for all events from cc-events-internal event bus.',
       eventPattern: {
         detailType: ['putEvent'],
       },

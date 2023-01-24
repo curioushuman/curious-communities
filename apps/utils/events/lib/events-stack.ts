@@ -3,18 +3,21 @@ import * as events from 'aws-cdk-lib/aws-events';
 
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
-import { resourceNameTitle } from '../../../../dist/local/@curioushuman/cdk-utils/src';
+import {
+  generateCompositeResourceId,
+  resourceNameTitle,
+} from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 export class CcEventsStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+  constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
+    super(scope, stackId, props);
 
     /**
      * Event Bus to handle all external events
      */
-    const externalEventBusId = 'cc-external';
+    const externalEventBusId = generateCompositeResourceId(stackId, 'external');
     const [externalEventBusName, externalEventBusTitle] = resourceNameTitle(
       externalEventBusId,
       'EventBus'
@@ -30,7 +33,7 @@ export class CcEventsStack extends cdk.Stack {
     /**
      * Event Bus to handle all internal events
      */
-    const internalEventBusId = 'cc-internal';
+    const internalEventBusId = generateCompositeResourceId(stackId, 'internal');
     const [internalEventBusName, internalEventBusTitle] = resourceNameTitle(
       internalEventBusId,
       'EventBus'

@@ -13,7 +13,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { CourseRepository } from '../../../adapter/ports/course.repository';
 import { UpdateCourseDto } from './update-course.dto';
 import { UpdateCourseMapper } from './update-course.mapper';
-import { Course } from '../../../domain/entities/course';
+import { CourseBase } from '../../../domain/entities/course';
 import { CourseRepositoryErrorFactory } from '../../../adapter/ports/course.repository.error-factory';
 
 export class UpdateCourseCommand implements ICommand {
@@ -38,7 +38,7 @@ export class UpdateCourseHandler
     this.logger.setContext(UpdateCourseHandler.name);
   }
 
-  async execute(command: UpdateCourseCommand): Promise<Course> {
+  async execute(command: UpdateCourseCommand): Promise<CourseBase> {
     const { updateCourseDto } = command;
 
     // #1. validate the dto
@@ -59,7 +59,7 @@ export class UpdateCourseHandler
 
       // #3. make sure an update is required
       parseData(
-        UpdateCourseMapper.requiresUpdate<Course>(course),
+        UpdateCourseMapper.requiresUpdate<CourseBase>(course),
         this.logger,
         'SourceInvalidError'
       ),

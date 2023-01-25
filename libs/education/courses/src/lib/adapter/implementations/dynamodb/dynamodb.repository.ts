@@ -1,9 +1,6 @@
 import { OnModuleDestroy } from '@nestjs/common';
 import * as TE from 'fp-ts/lib/TaskEither';
-import {
-  DynamoDBClient,
-  DynamoDBServiceException,
-} from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
   GetCommand,
@@ -111,6 +108,10 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
    * receives a termination signal (SIGINT, SIGTERM, etc.)
    *
    * https://docs.nestjs.com/fundamentals/lifecycle-events#application-shutdown
+   *
+   * TODO:
+   * - [ ] is there a way to throw an error if the module does not include the
+   *       correct listeners?
    */
   onModuleDestroy() {
     this.client.destroy();
@@ -178,7 +179,7 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
         return processResult(response.Item, params);
       },
       // NOTE: we don't use an error factory here, it is one level up
-      (exception: DynamoDBServiceException) => exception as Error
+      (reason: unknown) => reason as Error
     );
   };
 
@@ -198,7 +199,7 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
         return processResult(response.Items?.[0], params);
       },
       // NOTE: we don't use an error factory here, it is one level up
-      (exception: DynamoDBServiceException) => exception as Error
+      (reason: unknown) => reason as Error
     );
   };
 
@@ -233,7 +234,7 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
 
         return processResult(response.Attributes);
       },
-      (exception: DynamoDBServiceException) => exception as Error
+      (reason: unknown) => reason as Error
     );
   };
 }

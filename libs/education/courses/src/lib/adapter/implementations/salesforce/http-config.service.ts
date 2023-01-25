@@ -5,7 +5,7 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import * as jwt from 'jsonwebtoken';
 import { pipe } from 'fp-ts/lib/function';
 import { URLSearchParams } from 'url';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve as pathResolve } from 'path';
 
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -129,11 +129,7 @@ export class SalesforceApiHttpConfigService
    * Specific JWT preparation for this API
    */
   private prepareJwt(): string {
-    const keyPath = pathResolve(
-      __dirname,
-      '../../../../../../../../env/jwtRS256.key'
-    );
-    const privateKey = readFileSync(keyPath);
+    const privateKey = this.preparePrivateKey();
     // NOTE: auth URL already confirmed in constructor
     const requiredEnvVars = ['SALESFORCE_CONSUMER_KEY', 'SALESFORCE_USER'];
     this.confirmEnvVars(requiredEnvVars);
@@ -154,6 +150,23 @@ export class SalesforceApiHttpConfigService
         },
       }
     );
+  }
+
+  private preparePrivateKey(): Buffer {
+    if (process.env.SALESFORCE_PRIVATE_KEY) {
+      return Buffer.from(process.env.SALESFORCE_PRIVATE_KEY, 'utf-8');
+    }
+    const keyPath = pathResolve(
+      __dirname,
+      '../../../../../../../../env/jwtRS256.key'
+    );
+    if (!existsSync(keyPath)) {
+      throw new RepositoryAuthenticationError(
+        'SALESFORCE_PRIVATE_KEY file missing'
+      );
+    }
+
+    return readFileSync(keyPath);
   }
 
   /**

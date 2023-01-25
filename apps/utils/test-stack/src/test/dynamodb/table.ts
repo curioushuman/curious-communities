@@ -10,6 +10,7 @@ import { resolve as pathResolve } from 'path';
 // Initially we're going to import from local sources
 import {
   ChDynamoDbTableFrom,
+  generateCompositeResourceId,
   LambdaConstruct,
   testResourceId,
   testResourceNameTitle,
@@ -36,8 +37,9 @@ export class TestDynamoDbTableConstruct extends Construct {
      * SQS queue that we will subscribe to all events from this table.
      * We use this to test that events have been fired via the API.
      */
+    const queueId = generateCompositeResourceId(tableId, 'dynamodb-stream');
     const [tableQueueName, tableQueueTitle] = testResourceNameTitle(
-      tableId,
+      queueId,
       'Queue'
     );
     const tableQueue = new sqs.Queue(this, tableQueueTitle, {

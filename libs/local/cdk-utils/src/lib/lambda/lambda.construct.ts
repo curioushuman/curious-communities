@@ -38,6 +38,7 @@ export class LambdaConstruct extends Construct {
     handler: 'handler',
     layers: [] as lambda.ILayerVersion[],
     timeout: cdk.Duration.minutes(1),
+    tracing: lambda.Tracing.ACTIVE,
   };
 
   constructor(scope: Construct, id: string, props: LambdaProps) {

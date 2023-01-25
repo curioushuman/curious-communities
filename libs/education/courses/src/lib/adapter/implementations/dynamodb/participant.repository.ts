@@ -35,10 +35,11 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
 
     // set up the repository
     this.dynamoDbRepository = new DynamoDbRepository(
+      this.logger,
       'participant',
       'participants',
       ['slug', 'source-id-value'],
-      this.logger
+      'cc'
     );
   }
 

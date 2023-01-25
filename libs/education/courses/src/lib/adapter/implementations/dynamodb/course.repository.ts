@@ -33,10 +33,11 @@ export class DynamoDbCourseRepository implements CourseRepository {
 
     // set up the repository
     this.dynamoDbRepository = new DynamoDbRepository(
+      this.logger,
       'course',
       'courses',
       ['slug', 'source-id-value'],
-      this.logger
+      'cc'
     );
   }
 

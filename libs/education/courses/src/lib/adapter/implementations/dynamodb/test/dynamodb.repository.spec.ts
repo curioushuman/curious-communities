@@ -33,16 +33,17 @@ defineFeature(feature, (test) => {
 
     when('I instantiate the repository', async () => {
       dynamoDbRepository = new DynamoDbRepository(
+        new LoggableLogger('TEST'),
         'course',
         'courses',
         ['slug', 'source-id-value'],
-        new LoggableLogger('TEST')
+        'cc'
       );
     });
 
     then('I should receive a valid repository instance', () => {
       // allow for missing env var
-      const prefix = process.env.AWS_NAME_PREFIX || '';
+      const prefix = 'Cc';
       expect(dynamoDbRepository.getEntityName()).toEqual('Course');
       expect(dynamoDbRepository.getTableName()).toEqual(
         `${prefix}CoursesDynamoDbTable`

@@ -303,6 +303,7 @@ importers:
       '@nestjs/cqrs': ^8.0.5
       '@nestjs/testing': ^8.4.7
       '@types/jsonwebtoken': ^8.5.1
+      aws-xray-sdk-core: ^3.4.1
       axios: ^1.2.2
       fp-ts: ^2.13.1
       jsonwebtoken: ^8.5.1
@@ -319,6 +320,7 @@ importers:
       '@nestjs/common': 8.4.7_mnr6j2del53muneqly5h4y27ai
       '@nestjs/core': 8.4.7_q6tehokzwy3z4akuawpn6kiwbe
       '@nestjs/cqrs': 8.0.5_qtdbiooqzr6sqttunn4vo2car4
+      aws-xray-sdk-core: 3.4.1
       axios: 1.2.2
       fp-ts: 2.13.1
       jsonwebtoken: 8.5.1
@@ -4358,6 +4360,12 @@ packages:
       '@types/node': 16.11.7
     dev: true
 
+  /@types/cls-hooked/4.3.3:
+    resolution: {integrity: sha512-gNstDTb/ty5h6gJd6YpSPgsLX9LmRpaKJqGFp7MRlYxhwp4vXXKlJ9+bt1TZ9KbVNXE+Mbxy2AYXcpY21DDtJw==}
+    dependencies:
+      '@types/node': 16.11.7
+    dev: false
+
   /@types/connect-history-api-fallback/1.3.5:
     resolution: {integrity: sha512-h8QJa8xSb1WD4fpKBDcATDNGXghFj6/3GRWG6dhmRcu0RX1Ubasur2Uvx5aeEwlf0MwblEC2bMzzMQntxnw/Cw==}
     dependencies:
@@ -4515,7 +4523,6 @@ packages:
 
   /@types/node/16.11.7:
     resolution: {integrity: sha512-QB5D2sqfSjCmTuWcBWyJ+/44bcjO7VbjSbOE0ucoVbAsSNQc4Lt6QkgkVXkTDwkL4z/beecZNDvVX15D4P8Jbw==}
-    dev: true
 
   /@types/normalize-package-data/2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
@@ -5134,6 +5141,13 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
+  /async-hook-jl/1.7.6:
+    resolution: {integrity: sha512-gFaHkFfSxTjvoxDMYqDuGHlcRyUuamF8s+ZTtJdDzqjws4mCt7v0vuV79/E2Wr2/riMQgtG4/yUtXWs1gZ7JMg==}
+    engines: {node: ^4.7 || >=6.9 || >=7.3}
+    dependencies:
+      stack-chain: 1.3.7
+    dev: false
+
   /async/2.6.4:
     resolution: {integrity: sha512-mzo5dfJYwAn29PeiJ0zvwTo04zj8HDJj0Mn8TD7sno7q12prdbnasKJHhkm2c1LgrhlJ0teaea8860oxi51mGA==}
     dependencies:
@@ -5156,6 +5170,10 @@ packages:
     engines: {node: '>= 4.5.0'}
     hasBin: true
     dev: true
+
+  /atomic-batcher/1.0.2:
+    resolution: {integrity: sha512-EFGCRj4kLX1dHv1cDzTk+xbjBFj1GnJDpui52YmEcxxHHEWjYyT6l51U7n6WQ28osZH4S9gSybxe56Vm7vB61Q==}
+    dev: false
 
   /autoprefixer/10.4.13_postcss@8.4.20:
     resolution: {integrity: sha512-49vKpMqcZYsJjwotvt4+h/BCjJVnhGwcLpDt5xkcaOG3eLrG/HUYLagrihYsQ+qrIBgIzX1Rw7a6L8I/ZA1Atg==}
@@ -5248,6 +5266,18 @@ packages:
       uuid: 8.0.0
       xml2js: 0.4.19
     dev: true
+
+  /aws-xray-sdk-core/3.4.1:
+    resolution: {integrity: sha512-HPQ+9GMF+yhDDXNKPp6HGAIv2yVapKTI7WRs2aN3TT+RxQkbmgO+3JlcMvRL2/lu0RqTVWoYCIhmF9/H/zRL1A==}
+    engines: {node: '>= 14.x'}
+    dependencies:
+      '@aws-sdk/service-error-classification': 3.229.0
+      '@aws-sdk/types': 3.226.0
+      '@types/cls-hooked': 4.3.3
+      atomic-batcher: 1.0.2
+      cls-hooked: 4.2.2
+      semver: 5.7.1
+    dev: false
 
   /axios/0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
@@ -5919,6 +5949,15 @@ packages:
     resolution: {integrity: sha512-JQHZ2QMW6l3aH/j6xCqQThY/9OH4D/9ls34cgkUBiEeocRTU04tHfKPBsUK1PqZCUQM7GiA0IIXJSuXHI64Kbg==}
     engines: {node: '>=0.8'}
     dev: true
+
+  /cls-hooked/4.2.2:
+    resolution: {integrity: sha512-J4Xj5f5wq/4jAvcdgoGsL3G103BtWpZrMo8NEinRltN+xpTZdI+M38pyQqhuFU/P792xkMFvnKSf+Lm81U1bxw==}
+    engines: {node: ^4.7 || >=6.9 || >=7.3 || >=8.2.1}
+    dependencies:
+      async-hook-jl: 1.7.6
+      emitter-listener: 1.1.2
+      semver: 5.7.1
+    dev: false
 
   /co/4.6.0:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
@@ -6618,6 +6657,12 @@ packages:
   /electron-to-chromium/1.4.284:
     resolution: {integrity: sha512-M8WEXFuKXMYMVr45fo8mq0wUrrJHheiKZf6BArTKk9ZBYCKJEOU5H8cdWgDT+qCVZf7Na4lVUaZsA+h6uA9+PA==}
     dev: true
+
+  /emitter-listener/1.1.2:
+    resolution: {integrity: sha512-Bt1sBAGFHY9DKY+4/2cV6izcKJUf5T7/gkdmkxzX/qv9CcGH8xSwVRW5mtX03SWJtRTWSOpzCuWN9rBFYZepZQ==}
+    dependencies:
+      shimmer: 1.2.1
+    dev: false
 
   /emittery/0.7.2:
     resolution: {integrity: sha512-A8OG5SR/ij3SsJdWDJdkkSYUjQdCUx6APQXem0SaEePBSRg4eymGYwBkKo1Y6DU+af/Jn2dBQqDBvjnr9Vi8nQ==}
@@ -11734,6 +11779,10 @@ packages:
     dev: true
     optional: true
 
+  /shimmer/1.2.1:
+    resolution: {integrity: sha512-sQTKC1Re/rM6XyFM6fIAGHRPVGvyXfgzIDvzoq608vM+jeyVD0Tu1E6Np0Kc2zAIFWIj963V2800iF/9LPieQw==}
+    dev: false
+
   /side-channel/1.0.4:
     resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==}
     dependencies:
@@ -11950,6 +11999,10 @@ packages:
     resolution: {integrity: sha512-ji9qxRnOVfcuLDySj9qzhGSEFVobyt1kIOSkj1qZzYLzq7Tos/oUUWvotUPQLlrsidqsK6tBH89Bc9kL5zHA6w==}
     deprecated: 'Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility'
     dev: true
+
+  /stack-chain/1.3.7:
+    resolution: {integrity: sha512-D8cWtWVdIe/jBA7v5p5Hwl5yOSOrmZPWDPe2KxQ5UAGD+nxbxU0lKXA4h85Ta6+qgdKVL3vUxsbIZjc1kBG7ug==}
+    dev: false
 
   /stack-utils/2.0.6:
     resolution: {integrity: sha512-XlkWvfIm6RmsWtNJx+uqtKLS8eqFbxUg0ZzLXqY0caEy9l7hruX8IpiDnjsLavoBgqCCR71TqWO8MaXYheJ3RQ==}

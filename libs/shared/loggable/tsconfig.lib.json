@@ -12,6 +12,7 @@
     "**/*.test.ts",
     "**/*.fake.ts",
     "**/fake/**/*.ts",
-    "**/*.builder.ts"
+    "**/*.builder.ts",
+    "**/*.spec.infra.ts"
   ]
 }

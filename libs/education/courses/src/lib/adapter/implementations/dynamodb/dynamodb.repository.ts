@@ -24,8 +24,8 @@ import {
  * A base repository for DynamoDb
  */
 export class DynamoDbRepository<T> implements OnModuleDestroy {
-  protected client: DynamoDBClient;
-  protected docClient: DynamoDBDocumentClient;
+  private client: DynamoDBClient;
+  private docClient: DynamoDBDocumentClient;
 
   /**
    * This stuff must mirror what's in the CDK stack and cdk-utils
@@ -72,12 +72,12 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
     let prefix = process.env.AWS_NAME_PREFIX || '';
     prefix += `${this.prepareName(this.tableId)}${this.entityName}`;
     const suffix = this.awsResourceTypeLsi;
+    const indexes: Record<string, string> = {};
     indexIds.forEach(
       (indexId) =>
-        (this.localIndexes[indexId] = `${prefix}${this.prepareName(
-          indexId
-        )}${suffix}`)
+        (indexes[indexId] = `${prefix}${this.prepareName(indexId)}${suffix}`)
     );
+    this.localIndexes = indexes;
   }
 
   constructor(
@@ -237,4 +237,19 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
       (reason: unknown) => reason as Error
     );
   };
+
+  /**
+   * Some getters, mostly for testing purposes
+   */
+  public getTableName(): string {
+    return this.tableName;
+  }
+
+  public getLocalIndexes(): Record<string, string> {
+    return this.localIndexes;
+  }
+
+  public getEntityName(): string {
+    return this.entityName;
+  }
 }

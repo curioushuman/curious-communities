@@ -4,7 +4,8 @@
     "lib": ["es2021"],
     "moduleResolution": "node",
     "types": ["jest", "node"],
-    "allowJs": true
+    "allowJs": true,
+    "esModuleInterop": true
   },
   "include": ["**/*.infra.spec.ts"]
 }

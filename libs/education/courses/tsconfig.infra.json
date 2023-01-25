@@ -7,5 +7,5 @@
     "allowJs": true,
     "esModuleInterop": true
   },
-  "include": ["**/*.infra.spec.ts"]
+  "include": ["**/*.spec.infra.ts"]
 }

@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": ["es2021"],
     "moduleResolution": "node",
-    "types": ["node"]
+    "types": ["node"],
+    "esModuleInterop": true
   },
   "include": ["**/*.ts"],
   "exclude": [

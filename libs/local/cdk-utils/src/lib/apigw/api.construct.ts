@@ -77,6 +77,7 @@ export class CoApiConstruct extends Construct {
         metricsEnabled: true,
         loggingLevel: apigw.MethodLoggingLevel.INFO,
         dataTraceEnabled: true,
+        tracingEnabled: true,
         stageName: props.stageName || 'dev',
       },
       defaultCorsPreflightOptions: {

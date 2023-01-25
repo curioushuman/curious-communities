@@ -1,5 +1,6 @@
 import { OnModuleDestroy } from '@nestjs/common';
 import * as TE from 'fp-ts/lib/TaskEither';
+import { captureAWSv3Client } from 'aws-xray-sdk-core';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
@@ -31,9 +32,10 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
    * This stuff must mirror what's in the CDK stack and cdk-utils
    */
   private awsResourceTable = 'DynamoDbTable';
-  private awsResourceTypeLsi = 'DynamoDbLsi';
-  // private gsiAwsResourceType = 'DynamoDbGsi';
+  private awsResourceTypeLsi = 'DynamoDbLSI';
+  // private gsiAwsResourceType = 'DynamoDbGSI';
 
+  private prefix!: string;
   private entityName!: string;
   private tableId!: string;
   private tableName!: string;
@@ -57,20 +59,28 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
     return dashToCamelCase(id);
   }
 
+  private preparePrefix(prefix: string | undefined): void {
+    const envPrefix = process.env.AWS_NAME_PREFIX || '';
+    this.prefix = this.prepareName(prefix || envPrefix);
+  }
+
   private prepareEntity(id: string): void {
     this.entityName = this.prepareName(id);
   }
 
   private prepareTable(id: string): void {
     this.tableId = id;
-    const prefix = process.env.AWS_NAME_PREFIX || '';
     const suffix = this.awsResourceTable;
-    this.tableName = `${prefix}${this.prepareName(id)}${suffix}`;
+    this.tableName = `${this.prefix}${this.prepareName(id)}${suffix}`;
   }
 
   private prepareLocalIndexes(indexIds: string[]): void {
-    let prefix = process.env.AWS_NAME_PREFIX || '';
-    prefix += `${this.prepareName(this.tableId)}${this.entityName}`;
+    const prefixes = [
+      this.prefix,
+      this.prepareName(this.tableId),
+      this.entityName,
+    ];
+    const prefix = prefixes.join('');
     const suffix = this.awsResourceTypeLsi;
     const indexes: Record<string, string> = {};
     indexIds.forEach(
@@ -81,18 +91,22 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
   }
 
   constructor(
+    private logger: LoggableLogger,
     entityId: string,
     tableId: string,
     indexIds: string[],
-    private logger: LoggableLogger
+    prefix?: string
   ) {
     // set the resources, in order
+    this.preparePrefix(prefix);
     this.prepareEntity(entityId);
     this.prepareTable(tableId);
     this.prepareLocalIndexes(indexIds);
 
     // prepare the DDB clients
-    this.client = new DynamoDBClient({ region: process.env.CDK_DEPLOY_REGION });
+    this.client = captureAWSv3Client(
+      new DynamoDBClient({ region: process.env.CDK_DEPLOY_REGION })
+    );
     // NOTE: this is a wrapper of the above that is designed to be simpler to use
     this.docClient = DynamoDBDocumentClient.from(this.client, {
       marshallOptions: this.marshallOptions,

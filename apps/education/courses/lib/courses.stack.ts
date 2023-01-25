@@ -61,6 +61,7 @@ export class CoursesStack extends cdk.Stack {
       layers: [] as lambda.ILayerVersion[],
       environment: {
         NODE_ENV: process.env.NODE_ENV || 'test',
+        AWS_NAME_PREFIX: process.env.AWS_NAME_PREFIX || '',
         SALESFORCE_CONSUMER_KEY:
           process.env.SALESFORCE_CONSUMER_KEY || 'BROKEN',
         SALESFORCE_CONSUMER_SECRET:
@@ -86,6 +87,11 @@ export class CoursesStack extends cdk.Stack {
      * - all LSI and GSI details can be found in the construct
      */
     const coursesTableConstruct = new CoursesDynamoDbConstruct(this, stackId);
+    // const coursesTableReadActions = ['dynamodb:GetItem', 'dynamodb:Query'];
+    // const coursesTableWriteActions = [
+    //   'dynamodb:PutItem',
+    //   'dynamodb:UpdateItem',
+    // ];
 
     /**
      * External events eventBus
@@ -156,6 +162,12 @@ export class CoursesStack extends cdk.Stack {
     );
 
     // allow the lambda access to the table
+    // NOTE: we use grant because grantRead does not include query
+    // coursesTableConstruct.table.grant(
+    //   createCourseLambdaConstruct.lambdaFunction,
+    //   ...coursesTableReadActions,
+    //   ...coursesTableWriteActions
+    // );
     coursesTableConstruct.table.grantReadData(
       createCourseLambdaConstruct.lambdaFunction
     );
@@ -185,6 +197,12 @@ export class CoursesStack extends cdk.Stack {
     );
 
     // allow the lambda access to the table
+    // NOTE: we use grant because grantRead does not include query
+    // coursesTableConstruct.table.grant(
+    //   updateCourseLambdaConstruct.lambdaFunction,
+    //   ...coursesTableReadActions,
+    //   ...coursesTableWriteActions
+    // );
     coursesTableConstruct.table.grantReadData(
       updateCourseLambdaConstruct.lambdaFunction
     );
@@ -205,6 +223,11 @@ export class CoursesStack extends cdk.Stack {
     );
 
     // allow the lambda access to the table
+    // NOTE: we use grant because grantRead does not include query
+    // coursesTableConstruct.table.grant(
+    //   findCourseLambdaConstruct.lambdaFunction,
+    //   ...coursesTableReadActions
+    // );
     coursesTableConstruct.table.grantReadData(
       findCourseLambdaConstruct.lambdaFunction
     );

@@ -344,18 +344,20 @@ importers:
 
   libs/shared/common:
     specifiers:
+      '@types/lodash': ^4.14.191
       '@types/lodash.isequal': ^4.5.6
       '@types/slug': ^5.0.3
-      lodash.isequal: ^4.5.0
+      lodash: ^4.17.21
       runtypes: ^6.6.0
       slug: ^5.3.0
       uuid: ^8.3.2
     dependencies:
-      lodash.isequal: 4.5.0
+      lodash: 4.17.21
       runtypes: 6.6.0
       slug: 5.3.0
       uuid: 8.3.2
     devDependencies:
+      '@types/lodash': 4.14.191
       '@types/lodash.isequal': 4.5.6
       '@types/slug': 5.0.3
 
@@ -9695,10 +9697,6 @@ packages:
     resolution: {integrity: sha512-Bz5mupy2SVbPHURB98VAcw+aHh4vRV5IPNhILUCsOzRmsTmSQ17jIuqopAentWoehktxGd9e/hbIXq980/1QJg==}
     dev: false
 
-  /lodash.isequal/4.5.0:
-    resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
-    dev: false
-
   /lodash.isinteger/4.0.4:
     resolution: {integrity: sha512-DBwtEWN2caHQ9/imiNeEA5ys1JoRtRfY3d7V9wkqtbycnAmTvRRmbHKDV4a0EYc678/dia0jrte4tjYwVBaZUA==}
     dev: false
@@ -9750,7 +9748,6 @@ packages:
 
   /lodash/4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
-    dev: true
 
   /log-symbols/4.1.0:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}

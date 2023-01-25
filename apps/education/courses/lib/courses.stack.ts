@@ -3,6 +3,7 @@ import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve as pathResolve } from 'path';
 
 // Importing utilities for use in infrastructure processes
@@ -24,15 +25,54 @@ import { CreateParticipantConstruct } from '../src/infra/create-participant/crea
  * These are the components required for the courses stack
  */
 export class CoursesStack extends cdk.Stack {
-  private lambdaProps: NodejsFunctionProps = {
-    bundling: {
-      externalModules: ['@curioushuman/cc-courses-service'],
-    },
-    layers: [] as lambda.ILayerVersion[],
-  };
+  private lambdaProps: NodejsFunctionProps;
 
   constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
     super(scope, stackId, props);
+
+    /**
+     * If we don't have the appropriate environment variables set,
+     * throw an error
+     */
+    if (!process.env.SALESFORCE_CONSUMER_KEY) {
+      throw new Error('SALESFORCE_CONSUMER_KEY is not set');
+    }
+
+    /**
+     * Here, we are going to set the SF private key env var
+     * from the local file we have.
+     */
+    const privateKeyPath = pathResolve(
+      __dirname,
+      '../../../../env/jwtRS256.key'
+    );
+    if (!existsSync(privateKeyPath)) {
+      throw new Error('SALESFORCE_PRIVATE_KEY file missing');
+    }
+    const privateKeyBuffer = readFileSync(privateKeyPath);
+    if (!privateKeyBuffer) {
+      throw new Error('SALESFORCE_PRIVATE_KEY file is empty');
+    }
+
+    this.lambdaProps = {
+      bundling: {
+        externalModules: ['@curioushuman/cc-courses-service'],
+      },
+      layers: [] as lambda.ILayerVersion[],
+      environment: {
+        NODE_ENV: process.env.NODE_ENV || 'test',
+        SALESFORCE_CONSUMER_KEY:
+          process.env.SALESFORCE_CONSUMER_KEY || 'BROKEN',
+        SALESFORCE_CONSUMER_SECRET:
+          process.env.SALESFORCE_CONSUMER_SECRET || 'BROKEN',
+        SALESFORCE_USER: process.env.SALESFORCE_USER || 'BROKEN',
+        SALESFORCE_URL_AUTH: process.env.SALESFORCE_URL_AUTH || 'BROKEN',
+        SALESFORCE_URL_DATA: process.env.SALESFORCE_URL_DATA || 'BROKEN',
+        SALESFORCE_URL_DATA_VERSION:
+          process.env.SALESFORCE_URL_DATA_VERSION || 'BROKEN',
+        SALESFORCE_PRIVATE_KEY: privateKeyBuffer.toString(),
+      },
+    };
 
     /**
      * Other AWS services this stack needs pay attention to
@@ -91,10 +131,7 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Required layers, additional to normal defaults
      */
-    const chLayerCourses = new ChLayerFrom(
-      this,
-      generateCompositeResourceId(stackId, 'service')
-    );
+    const chLayerCourses = new ChLayerFrom(this, 'cc-courses-service');
     this.lambdaProps.layers?.push(chLayerCourses.layer);
 
     /**

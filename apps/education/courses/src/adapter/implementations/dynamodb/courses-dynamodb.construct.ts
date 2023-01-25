@@ -25,6 +25,12 @@ export class CoursesDynamoDbConstruct extends Construct {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
+    // for now, we're going to use streams for testing
+    const stream = dynamodb.StreamViewType.NEW_AND_OLD_IMAGES;
+    process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'test'
+      ? dynamodb.StreamViewType.NEW_AND_OLD_IMAGES
+      : undefined;
+
     /**
      * Courses table
      */
@@ -34,6 +40,7 @@ export class CoursesDynamoDbConstruct extends Construct {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+      stream,
       // pointInTimeRecovery: true,
     });
 
@@ -42,6 +49,16 @@ export class CoursesDynamoDbConstruct extends Construct {
     if (process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'test') {
       this.table.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
     }
+
+    /**
+     * DynamoDb table arn output
+     */
+    new cdk.CfnOutput(this, `dynamoDbTableArn for ${tableTitle}`, {
+      value: this.table.tableArn,
+    });
+    new cdk.CfnOutput(this, `dynamoDbTableStreamArn for ${tableTitle}`, {
+      value: this.table.tableStreamArn || 'No stream',
+    });
 
     // allow root to read
     this.table.grantReadData(new iam.AccountRootPrincipal());

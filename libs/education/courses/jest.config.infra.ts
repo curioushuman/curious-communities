@@ -26,6 +26,6 @@ export default {
     '^.+\\.jsx?$': 'babel-jest',
     '^.+\\.tsx?$': 'ts-jest',
   },
-  testMatch: ['**/?(*.)+(infra.spec).[jt]s?(x)'],
+  testMatch: ['**/?(*.)+(spec.infra).[jt]s?(x)'],
   moduleFileExtensions: ['ts', 'js', 'html'],
 };

@@ -2,15 +2,15 @@ import { INestApplication } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
+import { RequestInvalidError } from '@curioushuman/error-factory';
+
 import { CourseModule } from '../../../test/course.module.fake';
-import { FindCourseModule } from '../../../find-course.module';
 import {
   FindByIdCourseRequestDto,
   FindByIdSourceValueCourseRequestDto,
 } from '../dto/find-course.request.dto';
 import { CourseBuilder } from '../../../test/builders/course.builder';
 import { FindCourseController } from '../../../infra/find-course/find-course.controller';
-import { RequestInvalidError } from '@curioushuman/error-factory';
 
 /**
  * INTEGRATION TEST
@@ -44,7 +44,7 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    FindCourseModule.applyDefaults(app);
+    CourseModule.applyDefaults(app);
     controller = moduleRef.get<FindCourseController>(FindCourseController);
   });
 

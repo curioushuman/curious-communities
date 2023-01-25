@@ -6,5 +6,5 @@
     "types": ["jest", "node"],
     "allowJs": true
   },
-  "include": ["**/*.infra-spec.ts"]
+  "include": ["**/*.spec.infra.ts"]
 }

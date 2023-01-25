@@ -9,7 +9,8 @@
     "jest.config.ts",
     "**/*.spec.ts",
     "**/*.test.ts",
-    "**/*.builder.ts"
+    "**/*.builder.ts",
+    "**/*.spec.infra.ts"
   ],
   "include": ["**/*.ts"]
 }

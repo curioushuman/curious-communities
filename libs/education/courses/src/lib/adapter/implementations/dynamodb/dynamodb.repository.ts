@@ -18,6 +18,9 @@ import { dashToCamelCase } from '@curioushuman/common';
 import { DynamoDbItem } from './types/item';
 import {
   DynamoDBFindOneProcessMethod,
+  DynamoDbRepositoryGetOneProps,
+  DynamoDbRepositoryProps,
+  DynamoDbRepositoryQueryOneProps,
   DynamoDBSaveProcessMethod,
 } from './dynamodb.repository.types';
 
@@ -33,14 +36,14 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
    */
   private awsResourceTable = 'DynamoDbTable';
   private awsResourceTypeLsi = 'DynamoDbLSI';
-  // private gsiAwsResourceType = 'DynamoDbGSI';
+  private awsResourceTypeGsi = 'DynamoDbGSI';
 
   private prefix!: string;
   private entityName!: string;
   private tableId!: string;
   private tableName!: string;
   private localIndexes!: Record<string, string>;
-  // private globalIndexes: string[];
+  private globalIndexes!: Record<string, string>;
 
   private marshallOptions = {
     // Whether to automatically convert empty strings, blobs, and sets to `null`.
@@ -74,36 +77,50 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
     this.tableName = `${this.prefix}${this.prepareName(id)}${suffix}`;
   }
 
-  private prepareLocalIndexes(indexIds: string[]): void {
+  private prepareIndexes(
+    indexIds: string[],
+    indexType: string
+  ): Record<string, string> {
     const prefixes = [
       this.prefix,
       this.prepareName(this.tableId),
       this.entityName,
     ];
     const prefix = prefixes.join('');
-    const suffix = this.awsResourceTypeLsi;
+    const suffix = indexType;
     const indexes: Record<string, string> = {};
     indexIds.forEach(
       (indexId) =>
         (indexes[indexId] = `${prefix}${this.prepareName(indexId)}${suffix}`)
     );
-    this.localIndexes = indexes;
+    return indexes;
   }
 
-  constructor(
-    private logger: LoggableLogger,
-    entityId: string,
-    tableId: string,
-    indexIds: string[],
-    prefix?: string
-  ) {
+  private prepareLocalIndexes(indexIds: string[] | undefined): void {
+    if (!indexIds) {
+      return;
+    }
+    this.localIndexes = this.prepareIndexes(indexIds, this.awsResourceTypeLsi);
+  }
+
+  private prepareGlobalIndexes(indexIds: string[] | undefined): void {
+    if (!indexIds) {
+      return;
+    }
+    this.globalIndexes = this.prepareIndexes(indexIds, this.awsResourceTypeGsi);
+  }
+
+  constructor(props: DynamoDbRepositoryProps, private logger: LoggableLogger) {
+    const { entityId, tableId, localIndexIds, globalIndexIds, prefix } = props;
     // set the resources, in order
     this.preparePrefix(prefix);
     this.prepareEntity(entityId);
     this.prepareTable(tableId);
-    this.prepareLocalIndexes(indexIds);
+    this.prepareLocalIndexes(localIndexIds);
+    this.prepareGlobalIndexes(globalIndexIds);
 
     // prepare the DDB clients
+    // wrap it in the AWS X-Ray SDK
     this.client = captureAWSv3Client(
       new DynamoDBClient({ region: process.env.CDK_DEPLOY_REGION })
     );
@@ -135,9 +152,9 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
    * Convenience function to build params for the get command
    */
   public prepareParamsGet(
-    primaryKey: string,
-    sortKey?: string
+    props: DynamoDbRepositoryGetOneProps
   ): GetCommandInput {
+    const { primaryKey, sortKey } = props;
     return {
       TableName: this.tableName,
       Key: {
@@ -148,32 +165,29 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
   }
 
   /**
-   * Converts a scalar value into a DDB query param attribute value
-   */
-  private prepareParamAttributeQuery(value: string | number) {
-    return typeof value === 'number' ? { N: value } : { S: value };
-  }
-
-  /**
    * Convenience function to build params for the query command when
    * used in a findOne context. i.e. we're querying with the knowledge
    * there will be only one result.
    *
-   * NOTE: this function relies on the fact you'll have set up LSI's
+   * NOTE: this function relies on the fact you'll have set up GSI's
    * for each of the identifiers.
    */
   public prepareParamsQueryOne(
-    lsiId: string,
-    sortKeyName: string,
-    value: string | number
+    props: DynamoDbRepositoryQueryOneProps
   ): QueryCommandInput {
+    const { indexId, keyName, value } = props;
+    const kName = keyName || this.prepareName(indexId);
+    const primaryKey = `${this.entityName}_${kName}`;
+    const sortKey = `Sk_${this.entityName}_${kName}`;
+    // because we just want the one record returned, we match to pk and sk
+    const KeyConditionExpression = `${primaryKey} = :v AND ${sortKey} = :v`;
     return {
-      KeyConditionExpression: `${this.entityName}_${sortKeyName} = :v`,
+      KeyConditionExpression,
       ExpressionAttributeValues: {
-        ':v': this.prepareParamAttributeQuery(value),
+        ':v': value,
       },
       TableName: this.tableName,
-      IndexName: this.localIndexes[lsiId],
+      IndexName: this.globalIndexes[indexId],
     };
   }
 
@@ -261,6 +275,10 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
 
   public getLocalIndexes(): Record<string, string> {
     return this.localIndexes;
+  }
+
+  public getGlobalIndexes(): Record<string, string> {
+    return this.globalIndexes;
   }
 
   public getEntityName(): string {

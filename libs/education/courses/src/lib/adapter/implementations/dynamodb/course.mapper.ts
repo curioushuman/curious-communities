@@ -38,9 +38,16 @@ export class DynamoDbCourseMapper {
    * TODO: later we could get fancier with this
    */
   public static toPersistenceKeys(course: CourseBase): DynamoDbCourseKeys {
+    const sourceIdValue = findSourceIdAsValue<CourseSourceIdSource>(
+      course.sourceIds,
+      config.defaults.primaryAccountSource
+    );
     return DynamoDbCourseKeys.check({
       primaryKey: course.id,
       sortKey: course.id,
+
+      Sk_Course_Slug: course.slug,
+      Sk_Course_SourceIdCOURSE: sourceIdValue,
     });
   }
 

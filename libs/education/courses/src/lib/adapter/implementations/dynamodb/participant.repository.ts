@@ -17,7 +17,10 @@ import { DynamoDbParticipantMapper } from './participant.mapper';
 import { ParticipantSourceIdSourceValue } from '../../../domain/value-objects/participant-source-id-source';
 import { DynamoDbParticipant } from './types/participant';
 import { DynamoDbRepository } from './dynamodb.repository';
-import { DynamoDbFindOneParams } from './dynamodb.repository.types';
+import {
+  DynamoDbFindOneParams,
+  DynamoDbRepositoryProps,
+} from './dynamodb.repository.types';
 
 /**
  * A repository for participants
@@ -34,13 +37,13 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
     this.logger.setContext(DynamoDbParticipantRepository.name);
 
     // set up the repository
-    this.dynamoDbRepository = new DynamoDbRepository(
-      this.logger,
-      'participant',
-      'participants',
-      ['slug', 'source-id-value'],
-      'cc'
-    );
+    const props: DynamoDbRepositoryProps = {
+      entityId: 'participant',
+      tableId: 'participants',
+      globalIndexIds: ['source-id-COURSE'],
+      prefix: 'cc',
+    };
+    this.dynamoDbRepository = new DynamoDbRepository(props, this.logger);
   }
 
   processFindOne(
@@ -68,7 +71,9 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
   findOneById = (value: ParticipantId): TE.TaskEither<Error, Participant> => {
     // Set the parameters.
     // Participant in DDB has the same PK and SK as the parent of a one-to-many relationship
-    const params = this.dynamoDbRepository.prepareParamsGet(value, value);
+    const params = this.dynamoDbRepository.prepareParamsGet({
+      primaryKey: value,
+    });
     return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   };
 
@@ -76,11 +81,13 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
     value: ParticipantSourceIdSourceValue
   ): TE.TaskEither<Error, Participant> => {
     // Set the parameters.
-    const params = this.dynamoDbRepository.prepareParamsQueryOne(
-      'source-id-value',
-      'SourceIdCOURSE',
-      value
-    );
+    const params = this.dynamoDbRepository.prepareParamsQueryOne({
+      indexId: 'source-id-COURSE',
+      value,
+    });
+    // NOTE: if you didn't want a GSI with an item per participant
+    // you would use a different method to obtain the participant here
+    // e.g. query the course first, and then the participant
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);
   };
 

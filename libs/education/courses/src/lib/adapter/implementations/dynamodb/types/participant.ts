@@ -9,9 +9,11 @@ import { DynamoDbItemKeys } from './item';
  *
  * NOTE: when you do include them, extend() DynamoDbItemKeys rather than brand it.
  */
-export const DynamoDbParticipantKeys = DynamoDbItemKeys.withBrand(
-  'DynamoDbParticipantKeys'
-);
+export const DynamoDbParticipantKeys = DynamoDbItemKeys.extend({
+  Sk_Course_Slug: String,
+  Sk_Course_SourceIdCOURSE: String,
+  Sk_Participant_SourceIdCOURSE: String,
+});
 /**
  * Keys for the participant
  */

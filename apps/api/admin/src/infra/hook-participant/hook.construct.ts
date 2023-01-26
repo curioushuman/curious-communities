@@ -45,12 +45,6 @@ export class ParticipantsHookConstruct extends Construct {
     this.eventBus = props.eventBus;
 
     /**
-     * Resources
-     * GET /hook/{sourceKey}/external-event/{sourceEvent}/course/{courseSourceId}/participant/{participantSourceId}?{updatedStatus?}
-     */
-    const paramType = this.rootResource.addResource('{sourceEvent}');
-
-    /**
      * hook: request mapping template
      * to convert API input/params/body, into acceptable lambda input
      */
@@ -145,6 +139,6 @@ export class ParticipantsHookConstruct extends Construct {
      * hook: method definition
      * - AWS integration
      */
-    paramType.addMethod('GET', this.awsIntegration, this.methodOptions);
+    this.rootResource.addMethod('GET', this.awsIntegration, this.methodOptions);
   }
 }

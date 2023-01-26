@@ -15,7 +15,10 @@ import { CourseSlug } from '../../../domain/value-objects/course-slug';
 import { CourseSourceIdSourceValue } from '../../../domain/value-objects/course-source-id-source';
 import { DynamoDbCourse } from './types/course';
 import { DynamoDbRepository } from './dynamodb.repository';
-import { DynamoDbFindOneParams } from './dynamodb.repository.types';
+import {
+  DynamoDbFindOneParams,
+  DynamoDbRepositoryProps,
+} from './dynamodb.repository.types';
 
 /**
  * A repository for courses
@@ -32,13 +35,13 @@ export class DynamoDbCourseRepository implements CourseRepository {
     this.logger.setContext(DynamoDbCourseRepository.name);
 
     // set up the repository
-    this.dynamoDbRepository = new DynamoDbRepository(
-      this.logger,
-      'course',
-      'courses',
-      ['slug', 'source-id-value'],
-      'cc'
-    );
+    const props: DynamoDbRepositoryProps = {
+      entityId: 'course',
+      tableId: 'courses',
+      globalIndexIds: ['slug', 'source-id-COURSE'],
+      prefix: 'cc',
+    };
+    this.dynamoDbRepository = new DynamoDbRepository(props, this.logger);
   }
 
   processFindOne(
@@ -66,17 +69,18 @@ export class DynamoDbCourseRepository implements CourseRepository {
   findOneById = (value: CourseId): TE.TaskEither<Error, CourseBase> => {
     // Set the parameters.
     // Course in DDB has the same PK and SK as the parent of a one-to-many relationship
-    const params = this.dynamoDbRepository.prepareParamsGet(value, value);
+    const params = this.dynamoDbRepository.prepareParamsGet({
+      primaryKey: value,
+    });
     return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   };
 
   findOneBySlug = (value: CourseSlug): TE.TaskEither<Error, CourseBase> => {
     // Set the parameters.
-    const params = this.dynamoDbRepository.prepareParamsQueryOne(
-      'slug',
-      'Slug',
-      value
-    );
+    const params = this.dynamoDbRepository.prepareParamsQueryOne({
+      indexId: 'slug',
+      value,
+    });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);
   };
 
@@ -84,11 +88,10 @@ export class DynamoDbCourseRepository implements CourseRepository {
     value: CourseSourceIdSourceValue
   ): TE.TaskEither<Error, CourseBase> => {
     // Set the parameters.
-    const params = this.dynamoDbRepository.prepareParamsQueryOne(
-      'source-id-value',
-      'SourceIdCOURSE',
-      value
-    );
+    const params = this.dynamoDbRepository.prepareParamsQueryOne({
+      indexId: 'source-id-COURSE',
+      value,
+    });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);
   };
 

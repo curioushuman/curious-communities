@@ -9,8 +9,12 @@ import { DynamoDbItemKeys } from './item';
  *
  * NOTE: when you do include them, extend() DynamoDbItemKeys rather than brand it.
  */
-export const DynamoDbCourseKeys =
-  DynamoDbItemKeys.withBrand('DynamoDbCourseKeys');
+export const DynamoDbCourseKeys = DynamoDbItemKeys.extend({
+  Sk_Course_Slug: String,
+  Sk_Course_SourceIdCOURSE: String,
+  // NOTE: does not include Sk_Participant_SourceIdCOURSE
+  // this means these rows will not appear in that GSI
+});
 /**
  * Keys for the course
  */

@@ -33,11 +33,14 @@ defineFeature(feature, (test) => {
 
     when('I instantiate the repository', async () => {
       dynamoDbRepository = new DynamoDbRepository(
-        new LoggableLogger('TEST'),
-        'course',
-        'courses',
-        ['slug', 'source-id-value'],
-        'cc'
+        {
+          entityId: 'course',
+          tableId: 'courses',
+          localIndexIds: ['name'],
+          globalIndexIds: ['slug', 'source-id-value'],
+          prefix: 'cc',
+        },
+        new LoggableLogger('TEST')
       );
     });
 
@@ -49,8 +52,11 @@ defineFeature(feature, (test) => {
         `${prefix}CoursesDynamoDbTable`
       );
       expect(dynamoDbRepository.getLocalIndexes()).toMatchObject({
-        slug: `${prefix}CoursesCourseSlugDynamoDbLsi`,
-        'source-id-value': `${prefix}CoursesCourseSourceIdValueDynamoDbLsi`,
+        name: `${prefix}CoursesCourseNameDynamoDbLSI`,
+      });
+      expect(dynamoDbRepository.getGlobalIndexes()).toMatchObject({
+        slug: `${prefix}CoursesCourseSlugDynamoDbGSI`,
+        'source-id-value': `${prefix}CoursesCourseSourceIdValueDynamoDbGSI`,
       });
     });
   });

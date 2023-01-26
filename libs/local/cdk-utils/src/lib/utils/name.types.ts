@@ -8,7 +8,7 @@ export type StageName = 'dev' | 'prod';
 /**
  * Regex check for our resource ID
  */
-export const ResourceIdRegex = /^[0-9a-z-]+$/;
+export const ResourceIdRegex = /^([0-9a-z-])+|([0-9A-Z-])+$/;
 
 /**
  * Runtype definition for our resource IDs

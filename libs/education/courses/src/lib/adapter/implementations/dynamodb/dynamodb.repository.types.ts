@@ -3,6 +3,34 @@ import { GetCommandInput, QueryCommandInput } from '@aws-sdk/lib-dynamodb';
 export type DynamoDbFindOneParams = GetCommandInput | QueryCommandInput;
 
 /**
+ * Props for DynamoDbRepository
+ */
+export interface DynamoDbRepositoryProps {
+  entityId: string;
+  tableId: string;
+  localIndexIds?: string[];
+  globalIndexIds?: string[];
+  prefix?: string;
+}
+
+/**
+ * Props for DynamoDbRepository.getOne
+ */
+export interface DynamoDbRepositoryGetOneProps {
+  primaryKey: string;
+  sortKey?: string;
+}
+
+/**
+ * Props for DynamoDbRepository.queryOne
+ */
+export interface DynamoDbRepositoryQueryOneProps {
+  indexId: string;
+  keyName?: string;
+  value: string | number;
+}
+
+/**
  * Type contract for processing findOne results from DynamoDB
  */
 export type DynamoDBFindOneProcessMethod<T> = (

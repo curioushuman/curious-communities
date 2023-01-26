@@ -1,5 +1,5 @@
 import { Record, Static } from 'runtypes';
-import { Course } from '../../../domain/entities/course';
+import { CourseBase } from '../../../domain/entities/course';
 import { CourseSource } from '../../../domain/entities/course-source';
 
 /**
@@ -7,7 +7,7 @@ import { CourseSource } from '../../../domain/entities/course-source';
  */
 
 export const UpdateCourseDto = Record({
-  course: Course,
+  course: CourseBase,
   courseSource: CourseSource,
 });
 

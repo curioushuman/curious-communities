@@ -162,12 +162,6 @@ export class CoursesStack extends cdk.Stack {
     );
 
     // allow the lambda access to the table
-    // NOTE: we use grant because grantRead does not include query
-    // coursesTableConstruct.table.grant(
-    //   createCourseLambdaConstruct.lambdaFunction,
-    //   ...coursesTableReadActions,
-    //   ...coursesTableWriteActions
-    // );
     coursesTableConstruct.table.grantReadData(
       createCourseLambdaConstruct.lambdaFunction
     );
@@ -197,12 +191,6 @@ export class CoursesStack extends cdk.Stack {
     );
 
     // allow the lambda access to the table
-    // NOTE: we use grant because grantRead does not include query
-    // coursesTableConstruct.table.grant(
-    //   updateCourseLambdaConstruct.lambdaFunction,
-    //   ...coursesTableReadActions,
-    //   ...coursesTableWriteActions
-    // );
     coursesTableConstruct.table.grantReadData(
       updateCourseLambdaConstruct.lambdaFunction
     );
@@ -223,11 +211,6 @@ export class CoursesStack extends cdk.Stack {
     );
 
     // allow the lambda access to the table
-    // NOTE: we use grant because grantRead does not include query
-    // coursesTableConstruct.table.grant(
-    //   findCourseLambdaConstruct.lambdaFunction,
-    //   ...coursesTableReadActions
-    // );
     coursesTableConstruct.table.grantReadData(
       findCourseLambdaConstruct.lambdaFunction
     );

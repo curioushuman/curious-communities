@@ -43,9 +43,17 @@ export class DynamoDbParticipantMapper {
   public static toPersistenceKeys(
     participant: Participant
   ): DynamoDbParticipantKeys {
+    const sourceIdValue = findSourceIdAsValue<ParticipantSourceIdSource>(
+      participant.sourceIds,
+      config.defaults.primaryAccountSource
+    );
     return DynamoDbParticipantKeys.check({
       primaryKey: participant.courseId,
       sortKey: participant.id,
+
+      Sk_Course_Slug: participant.id,
+      Sk_Course_SourceIdCOURSE: participant.id,
+      Sk_Participant_SourceIdCOURSE: sourceIdValue,
     });
   }
 

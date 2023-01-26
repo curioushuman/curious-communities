@@ -68,7 +68,12 @@ export class UpdateParticipantHandler
       O.fromNullable,
       O.fold(
         // if null, return the original participant
-        () => TE.right(participant),
+        () => {
+          this.logger.log(
+            `Participant ${participant.id} does not need to be updated from source`
+          );
+          return TE.right(participant);
+        },
         // otherwise, update and return
         (uc) =>
           performAction(

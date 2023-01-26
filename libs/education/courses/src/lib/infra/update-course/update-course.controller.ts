@@ -17,7 +17,7 @@ import { CourseMapper } from '../course.mapper';
 import { CourseSource } from '../../domain/entities/course-source';
 import { FindCourseMapper } from '../../application/queries/find-course/find-course.mapper';
 import { FindCourseQuery } from '../../application/queries/find-course/find-course.query';
-import { Course } from '../../domain/entities/course';
+import { CourseBase } from '../../domain/entities/course';
 import { UpdateCourseDto } from '../../application/commands/update-course/update-course.dto';
 import { FindCourseSourceMapper } from '../../application/queries/find-course-source/find-course-source.mapper';
 import { FindCourseSourceQuery } from '../../application/queries/find-course-source/find-course-source.query';
@@ -28,13 +28,6 @@ import { FindCourseSourceQuery } from '../../application/queries/find-course-sou
  * NOTES
  * - we initially returned void for create/update actions
  *   see create controller for more info
- *
- * TODO
- * - [ ] should this actually be a service?
- * - [ ] should we be doing auth. here as well?
- *       OR is it ok that we're assuming it is done at higher levels?
- *       AKA it seems like a waste of resources to repeat the same task
- *       ONLY if auth. at this level differs from higher ups should we implement
  */
 
 @Controller()
@@ -100,7 +93,7 @@ export class UpdateCourseController {
 
   private findCourse(
     requestDto: UpdateCourseRequestDto
-  ): Promise<Course | undefined> {
+  ): Promise<CourseBase | undefined> {
     const task = pipe(
       requestDto,
 

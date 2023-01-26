@@ -68,7 +68,12 @@ export class UpdateCourseHandler
       O.fromNullable,
       O.fold(
         // if null, return the original course
-        () => TE.right(course),
+        () => {
+          this.logger.log(
+            `Course ${course.id} does not need to be updated from source`
+          );
+          return TE.right(course);
+        },
         // otherwise, update and return
         (uc) =>
           performAction(

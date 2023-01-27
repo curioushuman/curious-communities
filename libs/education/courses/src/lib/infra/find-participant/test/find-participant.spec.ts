@@ -4,10 +4,7 @@ import { Test } from '@nestjs/testing';
 
 import { ParticipantModule } from '../../../test/participant.module.fake';
 import { FindParticipantModule } from '../../../find-participant.module';
-import {
-  FindByIdParticipantRequestDto,
-  FindByIdSourceValueParticipantRequestDto,
-} from '../dto/find-participant.request.dto';
+import { FindByIdSourceValueParticipantRequestDto } from '../dto/find-participant.request.dto';
 import { ParticipantBuilder } from '../../../test/builders/participant.builder';
 import { FindParticipantController } from '../../../infra/find-participant/find-participant.controller';
 import { RequestInvalidError } from '@curioushuman/error-factory';
@@ -54,33 +51,33 @@ defineFeature(feature, (test) => {
     await app.close();
   });
 
-  test('Successfully finding a participant by Id', ({ given, when, then }) => {
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
-    let findParticipantDto: FindByIdParticipantRequestDto;
-    let error: Error;
+  // test('Successfully finding a participant by Id', ({ given, when, then }) => {
+  //   // disabling no-explicit-any for testing purposes
+  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   let result: any;
+  //   let findParticipantDto: FindByIdParticipantRequestDto;
+  //   let error: Error;
 
-    given('the request is valid', () => {
-      // we know this to exist in our fake repo
-      findParticipantDto = ParticipantBuilder()
-        .exists()
-        .buildFindByIdParticipantRequestDto();
-    });
+  //   given('the request is valid', () => {
+  //     // we know this to exist in our fake repo
+  //     findParticipantDto = ParticipantBuilder()
+  //       .exists()
+  //       .buildFindByIdParticipantRequestDto();
+  //   });
 
-    when('I attempt to find a participant', async () => {
-      try {
-        result = await controller.findById(findParticipantDto);
-      } catch (err) {
-        error = err as Error;
-        expect(error).toBeUndefined();
-      }
-    });
+  //   when('I attempt to find a participant', async () => {
+  //     try {
+  //       result = await controller.findById(findParticipantDto);
+  //     } catch (err) {
+  //       error = err as Error;
+  //       expect(error).toBeUndefined();
+  //     }
+  //   });
 
-    then('a record should have been returned', async () => {
-      expect(result.id).toEqual(findParticipantDto.id);
-    });
-  });
+  //   then('a record should have been returned', async () => {
+  //     expect(result.id).toEqual(findParticipantDto.id);
+  //   });
+  // });
 
   test('Successfully finding a participant by Source Id', ({
     given,

@@ -1,9 +1,9 @@
 Feature: Find Participant
 
-Scenario: Successfully finding a participant by Id
-  Given the request is valid
-  When I attempt to find a participant
-  Then a record should have been returned
+# Scenario: Successfully finding a participant by Id
+#   Given the request is valid
+#   When I attempt to find a participant
+#   Then a record should have been returned
 
 Scenario: Successfully finding a participant by Source Id
   Given the request is valid

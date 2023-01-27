@@ -6,8 +6,11 @@ importers:
     specifiers:
       '@aws-cdk/assert': ^1.183.0
       '@aws-sdk/client-api-gateway': ^3.235.0
+      '@aws-sdk/client-dynamodb': ^3.252.0
+      '@aws-sdk/lib-dynamodb': ^3.252.0
       '@babel/core': ^7.20.5
       '@babel/preset-env': ^7.20.2
+      '@nestjs/axios': ^1.0.1
       '@nestjs/common': ^8.4.7
       '@nestjs/core': ^8.4.7
       '@nestjs/cqrs': ^8.0.5
@@ -26,6 +29,8 @@ importers:
       '@otterdev/nx-cdk': ^0.0.14
       '@types/aws-lambda': ^8.10.109
       '@types/jest': 27.4.1
+      '@types/jsonwebtoken': ^8.5.1
+      '@types/lodash': ^4.14.191
       '@types/node': 16.11.7
       '@types/slug': ^5.0.3
       '@types/uuid': ^8.3.4
@@ -35,6 +40,8 @@ importers:
       aws-cdk-lib: ^2.55.1
       aws-cdk-local: ^2.15.0
       aws-lambda: ^1.0.7
+      aws-xray-sdk-core: ^3.4.1
+      axios: ^1.2.2
       babel-jest: 27.5.1
       cdkp: ^0.7.0
       constructs: ^10.1.196
@@ -46,6 +53,8 @@ importers:
       husky: ^7.0.4
       jest: 27.5.1
       jest-cucumber: ^3.0.1
+      jsonwebtoken: ^8.5.1
+      lodash: ^4.17.21
       nx: 14.3.6
       prettier: ^2.8.1
       reflect-metadata: ^0.1.13
@@ -65,11 +74,18 @@ importers:
       webpack-merge: ^5.8.0
       webpack-node-externals: ^3.0.0
     dependencies:
+      '@aws-sdk/client-dynamodb': 3.252.0
+      '@aws-sdk/lib-dynamodb': 3.252.0_dbduobrdh4slluu63zujov5bpu
+      '@nestjs/axios': 1.0.1_q6tehokzwy3z4akuawpn6kiwbe
       '@nestjs/common': 8.4.7_mnr6j2del53muneqly5h4y27ai
       '@nestjs/core': 8.4.7_tdkocbskemo2uwka4xhsbznrba
       '@nestjs/cqrs': 8.0.5_qtdbiooqzr6sqttunn4vo2car4
       '@nestjs/platform-express': 8.4.7_7tsmhnugyerf5okgqzer2mfqme
+      aws-xray-sdk-core: 3.4.1
+      axios: 1.2.2
       fp-ts: 2.13.1
+      jsonwebtoken: 8.5.1
+      lodash: 4.17.21
       runtypes: 6.6.0
       rxjs: 7.8.0
       slug: 5.3.0
@@ -93,6 +109,8 @@ importers:
       '@otterdev/nx-cdk': 0.0.14
       '@types/aws-lambda': 8.10.109
       '@types/jest': 27.4.1
+      '@types/jsonwebtoken': 8.5.9
+      '@types/lodash': 4.14.191
       '@types/node': 16.11.7
       '@types/slug': 5.0.3
       '@types/uuid': 8.3.4
@@ -347,20 +365,20 @@ importers:
   libs/shared/common:
     specifiers:
       '@types/lodash': ^4.14.191
-      '@types/lodash.isequal': ^4.5.6
       '@types/slug': ^5.0.3
+      fp-ts: ^2.13.1
       lodash: ^4.17.21
       runtypes: ^6.6.0
       slug: ^5.3.0
       uuid: ^8.3.2
     dependencies:
+      fp-ts: 2.13.1
       lodash: 4.17.21
       runtypes: 6.6.0
       slug: 5.3.0
       uuid: 8.3.2
     devDependencies:
       '@types/lodash': 4.14.191
-      '@types/lodash.isequal': 4.5.6
       '@types/slug': 5.0.3
 
   libs/shared/error-factory:
@@ -4489,12 +4507,6 @@ packages:
     resolution: {integrity: sha512-272FMnFGzAVMGtu9tkr29hRL6bZj4Zs1KZNeHLnKqAvp06tAIcarTMwOh8/8bz4FmKRcMxZhZNeUAQsNLoiPhg==}
     dependencies:
       '@types/node': 16.11.7
-    dev: true
-
-  /@types/lodash.isequal/4.5.6:
-    resolution: {integrity: sha512-Ww4UGSe3DmtvLLJm2F16hDwEQSv7U0Rr8SujLUA2wHI2D2dm8kPu6Et+/y303LfjTIwSBKXB/YTUcAKpem/XEg==}
-    dependencies:
-      '@types/lodash': 4.14.191
     dev: true
 
   /@types/lodash/4.14.191:

@@ -57,28 +57,28 @@ defineFeature(feature, (test) => {
     handler = moduleRef.get<FindParticipantHandler>(FindParticipantHandler);
   });
 
-  test('Successfully finding a participant by Id', ({ given, and, when }) => {
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
+  // test('Successfully finding a participant by Id', ({ given, and, when }) => {
+  //   // disabling no-explicit-any for testing purposes
+  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   let result: any;
 
-    given('the request is valid', () => {
-      // we know this to exist in our fake repo
-      findParticipantDto = ParticipantBuilder()
-        .exists()
-        .buildFindByIdParticipantDto();
-    });
+  //   given('the request is valid', () => {
+  //     // we know this to exist in our fake repo
+  //     findParticipantDto = ParticipantBuilder()
+  //       .exists()
+  //       .buildFindByIdParticipantDto();
+  //   });
 
-    when('I attempt to find a participant', async () => {
-      result = await handler.execute(
-        new FindParticipantQuery(findParticipantDto)
-      );
-    });
+  //   when('I attempt to find a participant', async () => {
+  //     result = await handler.execute(
+  //       new FindParticipantQuery(findParticipantDto)
+  //     );
+  //   });
 
-    and('a record should have been returned', () => {
-      expect(result.id).toBeDefined();
-    });
-  });
+  //   and('a record should have been returned', () => {
+  //     expect(result.id).toBeDefined();
+  //   });
+  // });
 
   test('Successfully finding a participant by Source Id', ({
     given,

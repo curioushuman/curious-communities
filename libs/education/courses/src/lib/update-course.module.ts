@@ -3,6 +3,7 @@ import { HttpModule } from '@nestjs/axios';
 import { CqrsModule } from '@nestjs/cqrs';
 
 import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
+import { DynamoDbRepositoryErrorFactory } from '@curioushuman/common';
 
 import { CourseRepository } from './adapter/ports/course.repository';
 import { UpdateCourseHandler } from './application/commands/update-course/update-course.command';
@@ -16,7 +17,6 @@ import { FindCourseHandler } from './application/queries/find-course/find-course
 import { FindCourseSourceHandler } from './application/queries/find-course-source/find-course-source.query';
 import { DynamoDbCourseRepository } from './adapter/implementations/dynamodb/course.repository';
 import { SalesforceApiCourseSourceRepository } from './adapter/implementations/salesforce/course-source.repository';
-import { DynamoDbRepositoryErrorFactory } from './adapter/implementations/dynamodb/repository.error-factory';
 
 const imports = [
   CqrsModule,

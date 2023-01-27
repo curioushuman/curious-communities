@@ -1,20 +1,7 @@
-import { Record, Static, String } from 'runtypes';
+import { DynamoDbItem } from '@curioushuman/common';
 
 import { DynamoDbCourseAttributes } from './course';
 import { DynamoDbParticipantAttributes } from './participant';
-
-/**
- * Common Keys for the all items
- */
-export const DynamoDbItemKeys = Record({
-  primaryKey: String,
-  sortKey: String,
-});
-
-/**
- * Keys for the item
- */
-export type DynamoDbItemKeys = Static<typeof DynamoDbItemKeys>;
 
 /**
  * Complete item that is returned from the DynamoDb query
@@ -25,6 +12,7 @@ export type DynamoDbItemKeys = Static<typeof DynamoDbItemKeys>;
  *
  * TODO: there is probably a more elegant way of doing this.
  */
-export type DynamoDbItem = DynamoDbItemKeys &
-  Partial<DynamoDbParticipantAttributes> &
+export type CoursesItem = Partial<DynamoDbParticipantAttributes> &
   Omit<Partial<DynamoDbCourseAttributes>, 'AccountOwner'>;
+
+export type CoursesDynamoDbItem = DynamoDbItem<CoursesItem>;

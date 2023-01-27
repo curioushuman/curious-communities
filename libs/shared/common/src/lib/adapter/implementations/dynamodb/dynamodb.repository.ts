@@ -13,9 +13,8 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 
 import { LoggableLogger } from '@curioushuman/loggable';
-import { dashToCamelCase } from '@curioushuman/common';
 
-import { DynamoDbItem } from './types/item';
+import { DynamoDbItem } from './entities/item';
 import {
   DynamoDBFindOneProcessMethod,
   DynamoDbRepositoryGetOneProps,
@@ -23,11 +22,14 @@ import {
   DynamoDbRepositoryQueryOneProps,
   DynamoDBSaveProcessMethod,
 } from './dynamodb.repository.types';
+import { dashToCamelCase } from '../../../utils/functions';
 
 /**
  * A base repository for DynamoDb
  */
-export class DynamoDbRepository<T> implements OnModuleDestroy {
+export class DynamoDbRepository<DomainT, PersistenceT>
+  implements OnModuleDestroy
+{
   private client: DynamoDBClient;
   private docClient: DynamoDBDocumentClient;
 
@@ -193,8 +195,8 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
 
   public tryGetOne = (
     params: GetCommandInput,
-    processResult: DynamoDBFindOneProcessMethod<T>
-  ): TE.TaskEither<Error, T> => {
+    processResult: DynamoDBFindOneProcessMethod<DomainT>
+  ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
         // get the item
@@ -213,8 +215,8 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
 
   public tryQueryOne = (
     params: QueryCommandInput,
-    processResult: DynamoDBFindOneProcessMethod<T>
-  ): TE.TaskEither<Error, T> => {
+    processResult: DynamoDBFindOneProcessMethod<DomainT>
+  ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
         // get the item
@@ -234,7 +236,9 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
   /**
    * Convenience function to build params for the put command
    */
-  public preparePutParams(item: DynamoDbItem): PutCommandInput {
+  public preparePutParams(
+    item: DynamoDbItem<PersistenceT> | undefined
+  ): PutCommandInput {
     return {
       TableName: this.tableName,
       Item: item,
@@ -249,8 +253,8 @@ export class DynamoDbRepository<T> implements OnModuleDestroy {
    */
   public trySave = (
     params: PutCommandInput,
-    processResult: DynamoDBSaveProcessMethod<T>
-  ): TE.TaskEither<Error, T> => {
+    processResult: DynamoDBSaveProcessMethod<DomainT>
+  ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
         // put the item

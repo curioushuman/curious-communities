@@ -1,5 +1,5 @@
+import { DynamoDbItemKeys } from '@curioushuman/common';
 import { Null, Optional, Record, Static, String } from 'runtypes';
-import { DynamoDbItemKeys } from './item';
 
 /**
  * Keys for the participant

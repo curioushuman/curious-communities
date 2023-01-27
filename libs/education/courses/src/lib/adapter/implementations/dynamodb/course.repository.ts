@@ -3,6 +3,11 @@ import * as TE from 'fp-ts/lib/TaskEither';
 
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
+import {
+  DynamoDbFindOneParams,
+  DynamoDbRepository,
+  DynamoDbRepositoryProps,
+} from '@curioushuman/common';
 
 import {
   CourseFindMethod,
@@ -13,12 +18,8 @@ import { CourseBase, CourseIdentifier } from '../../../domain/entities/course';
 import { DynamoDbCourseMapper } from './course.mapper';
 import { CourseSlug } from '../../../domain/value-objects/course-slug';
 import { CourseSourceIdSourceValue } from '../../../domain/value-objects/course-source-id-source';
-import { DynamoDbCourse } from './types/course';
-import { DynamoDbRepository } from './dynamodb.repository';
-import {
-  DynamoDbFindOneParams,
-  DynamoDbRepositoryProps,
-} from './dynamodb.repository.types';
+import { DynamoDbCourse } from './entities/course';
+import { CoursesItem } from './entities/item';
 
 /**
  * A repository for courses
@@ -29,7 +30,7 @@ import {
  */
 @Injectable()
 export class DynamoDbCourseRepository implements CourseRepository {
-  private dynamoDbRepository: DynamoDbRepository<CourseBase>;
+  private dynamoDbRepository: DynamoDbRepository<CourseBase, CoursesItem>;
 
   constructor(private logger: LoggableLogger) {
     this.logger.setContext(DynamoDbCourseRepository.name);
@@ -66,11 +67,15 @@ export class DynamoDbCourseRepository implements CourseRepository {
     return DynamoDbCourseMapper.toDomain(courseItem);
   }
 
+  /**
+   * NOTE: Currently does not return participants
+   */
   findOneById = (value: CourseId): TE.TaskEither<Error, CourseBase> => {
     // Set the parameters.
-    // Course in DDB has the same PK and SK as the parent of a one-to-many relationship
+    // Course in DDB has PK = courseId and SK = courseId
     const params = this.dynamoDbRepository.prepareParamsGet({
       primaryKey: value,
+      sortKey: value,
     });
     return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   };

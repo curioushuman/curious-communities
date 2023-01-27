@@ -53,11 +53,12 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
   ): Participant {
     // did we find anything?
     if (!item) {
-      let errorMsg = 'Participant not found';
-      if (params) {
-        errorMsg += `: ${JSON.stringify(params)}`;
-      }
-      throw new RepositoryItemNotFoundError(errorMsg);
+      throw new RepositoryItemNotFoundError(
+        this.dynamoDbRepository.prepareErrorMessage(
+          'Participant not found',
+          params
+        )
+      );
     }
 
     // is it what we expected?

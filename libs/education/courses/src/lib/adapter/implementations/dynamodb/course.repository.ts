@@ -51,11 +51,9 @@ export class DynamoDbCourseRepository implements CourseRepository {
   ): CourseBase {
     // did we find anything?
     if (!item) {
-      let errorMsg = 'Course not found';
-      if (params) {
-        errorMsg += `: ${JSON.stringify(params)}`;
-      }
-      throw new RepositoryItemNotFoundError(errorMsg);
+      throw new RepositoryItemNotFoundError(
+        this.dynamoDbRepository.prepareErrorMessage('Course not found', params)
+      );
     }
 
     // is it what we expected?

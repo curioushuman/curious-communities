@@ -1,7 +1,7 @@
 import { Timestamp } from '@curioushuman/common';
 import { CourseSource } from '../../../domain/entities/course-source';
 import { CourseSourceStatus } from '../../../domain/value-objects/course-source-status';
-import { SalesforceApiCourseSourceResponse } from './types/course-source.response';
+import { SalesforceApiCourseSourceResponse } from './entities/course-source.response';
 
 export class SalesforceApiCourseSourceMapper {
   /**

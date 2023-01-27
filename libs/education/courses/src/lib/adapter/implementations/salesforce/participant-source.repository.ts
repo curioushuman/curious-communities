@@ -17,7 +17,7 @@ import {
   ParticipantSourceFindMethod,
   ParticipantSourceRepository,
 } from '../../ports/participant-source.repository';
-import { SalesforceApiParticipantSourceResponse } from './types/participant-source.response';
+import { SalesforceApiParticipantSourceResponse } from './entities/participant-source.response';
 import { SalesforceApiParticipantSourceMapper } from './participant-source.mapper';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
 

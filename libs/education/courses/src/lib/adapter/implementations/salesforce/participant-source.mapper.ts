@@ -1,7 +1,7 @@
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 import { ParticipantSourceStatus } from '../../../domain/value-objects/participant-source-status';
-import { SalesforceApiParticipantSourceStatus } from './types/participant-source-status';
-import { SalesforceApiParticipantSourceResponse } from './types/participant-source.response';
+import { SalesforceApiParticipantSourceStatus } from './entities/participant-source-status';
+import { SalesforceApiParticipantSourceResponse } from './entities/participant-source.response';
 
 export class SalesforceApiParticipantSourceMapper {
   /**

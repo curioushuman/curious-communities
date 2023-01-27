@@ -7,7 +7,6 @@ import { executeTask, parseActionData } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import {
-  FindByIdParticipantRequestDto,
   FindByIdSourceValueParticipantRequestDto,
   FindParticipantRequestDto,
 } from './dto/find-participant.request.dto';
@@ -62,41 +61,41 @@ export class FindParticipantController {
     return executeTask(task);
   }
 
-  public async findById(
-    requestDto: FindByIdParticipantRequestDto
-  ): Promise<ParticipantResponseDto> {
-    const task = pipe(
-      requestDto,
+  // public async findById(
+  //   requestDto: FindByIdParticipantRequestDto
+  // ): Promise<ParticipantResponseDto> {
+  //   const task = pipe(
+  //     requestDto,
 
-      // #1. parse the dto
-      parseActionData(FindByIdParticipantRequestDto.check, this.logger),
+  //     // #1. parse the dto
+  //     parseActionData(FindByIdParticipantRequestDto.check, this.logger),
 
-      // #2. transform the dto
-      TE.chain(
-        parseActionData(
-          FindParticipantMapper.fromFindByIdRequestDto,
-          this.logger
-        )
-      ),
+  //     // #2. transform the dto
+  //     TE.chain(
+  //       parseActionData(
+  //         FindParticipantMapper.fromFindByIdRequestDto,
+  //         this.logger
+  //       )
+  //     ),
 
-      // #3. call the query
-      // NOTE: proper error handling within the query itself
-      TE.chain((queryDto) =>
-        TE.tryCatch(
-          async () => {
-            const query = new FindParticipantQuery(queryDto);
-            return await this.queryBus.execute<FindParticipantQuery>(query);
-          },
-          (error: unknown) => error as Error
-        )
-      ),
+  //     // #3. call the query
+  //     // NOTE: proper error handling within the query itself
+  //     TE.chain((queryDto) =>
+  //       TE.tryCatch(
+  //         async () => {
+  //           const query = new FindParticipantQuery(queryDto);
+  //           return await this.queryBus.execute<FindParticipantQuery>(query);
+  //         },
+  //         (error: unknown) => error as Error
+  //       )
+  //     ),
 
-      // #4. transform to the response DTO
-      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger))
-    );
+  //     // #4. transform to the response DTO
+  //     TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger))
+  //   );
 
-    return executeTask(task);
-  }
+  //   return executeTask(task);
+  // }
 
   public async findByIdSourceValue(
     requestDto: FindByIdSourceValueParticipantRequestDto

@@ -252,12 +252,12 @@ export const ParticipantBuilder = () => {
       } as CreateParticipantRequestDto;
     },
 
-    buildFindByIdParticipantDto(): FindParticipantDto {
-      return {
-        identifier: 'id',
-        value: this.buildNoCheck().id,
-      } as FindParticipantDto;
-    },
+    // buildFindByIdParticipantDto(): FindParticipantDto {
+    //   return {
+    //     identifier: 'id',
+    //     value: this.buildNoCheck().id,
+    //   } as FindParticipantDto;
+    // },
 
     buildFindByIdSourceValueParticipantDto(): FindParticipantDto {
       const sourceId = this.buildNoCheck().sourceIds[0];

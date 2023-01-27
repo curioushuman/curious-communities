@@ -1,6 +1,5 @@
 import { parseExternalIdSourceValue } from '@curioushuman/common';
 
-import { ParticipantId } from '../../../domain/value-objects/participant-id';
 import {
   ParticipantIdentifier,
   ParticipantIdentifiers,
@@ -43,7 +42,6 @@ type FindParticipantDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindParticipantDtoParsers = {
-  id: (dto) => ParticipantId.check(dto.value),
   idSourceValue: (dto) =>
     parseExternalIdSourceValue(dto.value, ParticipantSourceId, Source),
 };

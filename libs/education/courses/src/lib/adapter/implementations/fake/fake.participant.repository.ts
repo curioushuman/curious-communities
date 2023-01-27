@@ -12,7 +12,6 @@ import {
   ParticipantRepository,
 } from '../../ports/participant.repository';
 import { ParticipantBuilder } from '../../../test/builders/participant.builder';
-import { ParticipantId } from '../../../domain/value-objects/participant-id';
 import { ParticipantSourceIdSourceValue } from '../../../domain/value-objects/participant-source-id-source';
 import { prepareExternalIdSource } from '@curioushuman/common';
 import { Source } from '../../../domain/value-objects/source';
@@ -35,31 +34,31 @@ export class FakeParticipantRepository implements ParticipantRepository {
    *
    * ? Should the value check be extracted into it's own (functional) step?
    */
-  findOneById = (value: ParticipantId): TE.TaskEither<Error, Participant> => {
-    return TE.tryCatch(
-      async () => {
-        const id = ParticipantId.check(value);
-        const participant = this.participants.find((cs) => cs.id === id);
-        return pipe(
-          participant,
-          O.fromNullable,
-          O.fold(
-            () => {
-              // this mimics an API or DB call throwing an error
-              throw new NotFoundException(
-                `Participant with id ${id} not found`
-              );
-            },
-            // this mimics the fact that all non-fake adapters
-            // will come with a mapper, which will perform a check
-            // prior to return
-            (participant) => Participant.check(participant)
-          )
-        );
-      },
-      (reason: unknown) => reason as Error
-    );
-  };
+  // findOneById = (value: ParticipantId): TE.TaskEither<Error, Participant> => {
+  //   return TE.tryCatch(
+  //     async () => {
+  //       const id = ParticipantId.check(value);
+  //       const participant = this.participants.find((cs) => cs.id === id);
+  //       return pipe(
+  //         participant,
+  //         O.fromNullable,
+  //         O.fold(
+  //           () => {
+  //             // this mimics an API or DB call throwing an error
+  //             throw new NotFoundException(
+  //               `Participant with id ${id} not found`
+  //             );
+  //           },
+  //           // this mimics the fact that all non-fake adapters
+  //           // will come with a mapper, which will perform a check
+  //           // prior to return
+  //           (participant) => Participant.check(participant)
+  //         )
+  //       );
+  //     },
+  //     (reason: unknown) => reason as Error
+  //   );
+  // };
 
   /**
    * Find by ID from a particular source
@@ -108,7 +107,7 @@ export class FakeParticipantRepository implements ParticipantRepository {
    * Object lookup for findOneBy methods
    */
   findOneBy: Record<ParticipantIdentifier, ParticipantFindMethod> = {
-    id: this.findOneById,
+    // id: this.findOneById,
     idSourceValue: this.findOneByIdSourceValue,
   };
 

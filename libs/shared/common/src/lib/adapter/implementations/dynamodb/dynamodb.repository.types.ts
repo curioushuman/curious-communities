@@ -1,6 +1,11 @@
-import { GetCommandInput, QueryCommandInput } from '@aws-sdk/lib-dynamodb';
+import {
+  GetCommandInput,
+  PutCommandInput,
+  QueryCommandInput,
+} from '@aws-sdk/lib-dynamodb';
 
 export type DynamoDbFindOneParams = GetCommandInput | QueryCommandInput;
+export type DynamoDbSaveParams = PutCommandInput;
 
 /**
  * Props for DynamoDbRepository

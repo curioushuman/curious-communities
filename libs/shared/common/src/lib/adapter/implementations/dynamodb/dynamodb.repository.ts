@@ -16,10 +16,12 @@ import { LoggableLogger } from '@curioushuman/loggable';
 
 import { DynamoDbItem } from './entities/item';
 import {
+  DynamoDbFindOneParams,
   DynamoDBFindOneProcessMethod,
   DynamoDbRepositoryGetOneProps,
   DynamoDbRepositoryProps,
   DynamoDbRepositoryQueryOneProps,
+  DynamoDbSaveParams,
   DynamoDBSaveProcessMethod,
 } from './dynamodb.repository.types';
 import { dashToCamelCase } from '../../../utils/functions';
@@ -148,6 +150,17 @@ export class DynamoDbRepository<DomainT, PersistenceT>
    */
   onModuleDestroy() {
     this.client.destroy();
+  }
+
+  public prepareErrorMessage(
+    errorMsg: string,
+    params?: DynamoDbFindOneParams | DynamoDbSaveParams
+  ) {
+    let msg = errorMsg;
+    if (params) {
+      msg += `: ${JSON.stringify(params)}`;
+    }
+    return msg;
   }
 
   /**

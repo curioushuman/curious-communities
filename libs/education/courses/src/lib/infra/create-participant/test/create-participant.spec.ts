@@ -12,7 +12,6 @@ import {
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { ParticipantModule } from '../../../test/participant.module.fake';
-import { CreateParticipantModule } from '../../../create-participant.module';
 import { CreateParticipantRequestDto } from '../dto/create-participant.request.dto';
 import { Participant } from '../../../domain/entities/participant';
 import { ParticipantBuilder } from '../../../test/builders/participant.builder';
@@ -53,7 +52,7 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    CreateParticipantModule.applyDefaults(app);
+    ParticipantModule.applyDefaults(app);
     repository = moduleRef.get<ParticipantRepository>(
       ParticipantRepository
     ) as FakeParticipantRepository;

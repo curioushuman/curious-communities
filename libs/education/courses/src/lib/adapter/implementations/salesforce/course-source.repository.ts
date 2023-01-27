@@ -17,7 +17,7 @@ import {
   CourseSourceFindMethod,
   CourseSourceRepository,
 } from '../../ports/course-source.repository';
-import { SalesforceApiCourseSourceResponse } from './types/course-source.response';
+import { SalesforceApiCourseSourceResponse } from './entities/course-source.response';
 import { SalesforceApiCourseSourceMapper } from './course-source.mapper';
 import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
 

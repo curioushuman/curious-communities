@@ -2,22 +2,30 @@
 const esModules = ['aws-testing-library', 'filter-obj'].join('|');
 
 export default {
-  displayName: 'cc-members-service',
+  displayName: 'cc-members:infra',
   preset: '../../../jest.preset.js',
+  collectCoverage: false,
   globals: {
     'ts-jest': {
-      tsconfig: '<rootDir>/tsconfig.spec.json',
+      tsconfig: '<rootDir>/tsconfig.infra.json',
     },
   },
+  // setupFiles: ['<rootDir>/tools/jest/infra.prep.ts'],
+  // setupFilesAfterEnv: [
+  //   '<rootDir>/../../../tools/jest/aws-testing-library.setup.ts',
+  // ],
   testEnvironment: 'node',
   testEnvironmentOptions: {
     '--require': 'dotenv/config',
   },
+  // transform: {
+  //   '^.+\\.[tj]s$': 'ts-jest',
+  // },
   transformIgnorePatterns: [`<rootDir>/../../../node_modules/(?!${esModules})`],
   transform: {
     '^.+\\.jsx?$': 'babel-jest',
     '^.+\\.tsx?$': 'ts-jest',
   },
+  testMatch: ['**/?(*.)+(spec.infra).[jt]s?(x)'],
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../../coverage/libs/core/members',
 };

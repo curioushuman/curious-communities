@@ -3,7 +3,6 @@ import { Array, Optional, Record, Static } from 'runtypes';
 import {
   prepareExternalIdSource,
   Timestamp,
-  ValueOf,
   YearMonth,
 } from '@curioushuman/common';
 
@@ -78,7 +77,6 @@ export interface CourseIdentifiers {
   slug: CourseSlug;
 }
 export type CourseIdentifier = keyof CourseIdentifiers;
-export type CourseIdentifierValue = ValueOf<CourseIdentifiers>;
 
 /**
  * Convenience function to prepare a CourseSourceIdSource

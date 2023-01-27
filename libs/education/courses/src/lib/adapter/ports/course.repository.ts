@@ -3,11 +3,12 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 import {
   CourseBase,
   CourseIdentifier,
-  CourseIdentifierValue,
+  CourseIdentifiers,
 } from '../../domain/entities/course';
 import { CourseSlug } from '../../domain/value-objects/course-slug';
 import { CourseSourceIdSourceValue } from '../../domain/value-objects/course-source-id-source';
 import { CourseId } from '../../domain/value-objects/course-id';
+import { RepositoryFindBy, RepositoryFindMethod } from '@curioushuman/common';
 
 /**
  * TODO:
@@ -19,9 +20,10 @@ import { CourseId } from '../../domain/value-objects/course-id';
 /**
  * Type for the findOne method interface within repository
  */
-export type CourseFindMethod = (
-  value: CourseIdentifierValue
-) => TaskEither<Error, CourseBase>;
+export type CourseFindMethod = RepositoryFindMethod<
+  CourseIdentifiers,
+  CourseBase
+>;
 
 /**
  * A repository for courses
@@ -29,20 +31,13 @@ export type CourseFindMethod = (
  * NOTES:
  * - repos for parent entities, by default, do not return children
  */
-export abstract class CourseRepository {
+export abstract class CourseRepository
+  implements RepositoryFindBy<CourseIdentifiers, CourseBase>
+{
   /**
-   * Object lookup for findMethods
+   * FindBy interface
    */
   abstract findOneBy: Record<CourseIdentifier, CourseFindMethod>;
-
-  /**
-   * Find a course
-   *
-   * This method will accept a course identifier and value
-   * and then determine which finder method to use.
-   *
-   * NOTE: will throw NotFoundException if not found
-   */
   abstract findOne(identifier: CourseIdentifier): CourseFindMethod;
 
   /**

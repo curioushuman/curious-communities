@@ -26,6 +26,3 @@ export type CourseSourceIdentifiers = {
   idSource: CourseSourceIdSource;
 };
 export type CourseSourceIdentifier = keyof CourseSourceIdentifiers;
-// NOTE: the ValueOf utility type doesn't work when there is only a single identifier
-// export type CourseSourceIdentifierValue = ValueOf<CourseSourceIdentifier>;
-export type CourseSourceIdentifierValue = CourseSourceIdSource;

@@ -39,6 +39,14 @@
         "jestConfig": "libs/shared/common/jest.config.ts",
         "passWithNoTests": true
       }
+    },
+    "test-infra": {
+      "executor": "@nrwl/jest:jest",
+      "options": {
+        "jestConfig": "libs/shared/common/jest.config.infra.ts",
+        "passWithNoTests": true,
+        "cwd": "libs/shared/common"
+      }
     }
   },
   "tags": ["scope:layers"]

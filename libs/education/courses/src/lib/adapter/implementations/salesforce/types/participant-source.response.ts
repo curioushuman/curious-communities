@@ -1,11 +1,11 @@
 import { Array, Null, Optional, Record, Static } from 'runtypes';
+import { SalesforceApiResponse } from '@curioushuman/common';
 import { CourseSourceId } from '../../../../domain/value-objects/course-source-id';
 import { ParticipantEmail } from '../../../../domain/value-objects/participant-email';
 import { ParticipantName } from '../../../../domain/value-objects/participant-name';
 import { ParticipantOrganisationName } from '../../../../domain/value-objects/participant-organisation-name';
 import { ParticipantSourceId } from '../../../../domain/value-objects/participant-source-id';
 import { ParticipantSourceStatus } from '../../../../domain/value-objects/participant-source-status';
-import { SalesforceApiResponse } from './base-response';
 
 /**
  * TODO

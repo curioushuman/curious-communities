@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": ["es2021"],
     "moduleResolution": "node",
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "esModuleInterop": true
   },
   "include": [
     "jest.config.ts",

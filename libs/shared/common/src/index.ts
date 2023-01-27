@@ -7,6 +7,12 @@ export * from './lib/adapter/implementations/dynamodb/dynamodb.repository';
 export * from './lib/adapter/implementations/dynamodb/dynamodb.repository.types';
 export * from './lib/adapter/implementations/dynamodb/repository.error-factory';
 
+export * from './lib/adapter/implementations/salesforce/salesforce.repository';
+export * from './lib/adapter/implementations/salesforce/repository.error-factory';
+export * from './lib/adapter/implementations/salesforce/http-config.service';
+export * from './lib/adapter/implementations/salesforce/types/auth-response';
+export * from './lib/adapter/implementations/salesforce/types/base-response';
+
 /**
  * Application
  */

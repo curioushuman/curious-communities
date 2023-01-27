@@ -1,18 +1,30 @@
 import { INestApplicationContext, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import { FakeRepositoryErrorFactory } from '@curioushuman/error-factory';
 import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
+import {
+  DynamoDbRepositoryErrorFactory,
+  SalesforceApiHttpConfigService,
+  SalesforceApiRepositoryErrorFactory,
+} from '@curioushuman/common';
 
 import { ParticipantRepository } from './adapter/ports/participant.repository';
-import { FakeParticipantRepository } from './adapter/implementations/fake/fake.participant.repository';
 import { CreateParticipantHandler } from './application/commands/create-participant/create-participant.command';
 import { CreateParticipantController } from './infra/create-participant/create-participant.controller';
 import { ParticipantSourceRepository } from './adapter/ports/participant-source.repository';
-import { FakeParticipantSourceRepository } from './adapter/implementations/fake/fake.participant-source.repository';
 import { ParticipantSourceRepositoryErrorFactory } from './adapter/ports/participant-source.repository.error-factory';
-import { SalesforceApiRepositoryErrorFactory } from './adapter/implementations/salesforce/repository.error-factory';
 import { ParticipantRepositoryErrorFactory } from './adapter/ports/participant.repository.error-factory';
+import { DynamoDbParticipantRepository } from './adapter/implementations/dynamodb/participant.repository';
+import { SalesforceApiParticipantSourceRepository } from './adapter/implementations/salesforce/participant-source.repository';
+
+const imports = [
+  CqrsModule,
+  LoggableModule,
+  HttpModule.registerAsync({
+    useClass: SalesforceApiHttpConfigService,
+  }),
+];
 
 const controllers = [CreateParticipantController];
 
@@ -21,27 +33,27 @@ const handlers = [CreateParticipantHandler];
 const repositories = [
   {
     provide: ParticipantRepository,
-    useClass: FakeParticipantRepository,
+    useClass: DynamoDbParticipantRepository,
   },
   {
     provide: ParticipantSourceRepository,
-    useClass: FakeParticipantSourceRepository,
+    useClass: SalesforceApiParticipantSourceRepository,
   },
 ];
 
 const services = [
   {
-    provide: ParticipantSourceRepositoryErrorFactory,
-    useClass: SalesforceApiRepositoryErrorFactory,
+    provide: ParticipantRepositoryErrorFactory,
+    useClass: DynamoDbRepositoryErrorFactory,
   },
   {
-    provide: ParticipantRepositoryErrorFactory,
-    useClass: FakeRepositoryErrorFactory,
+    provide: ParticipantSourceRepositoryErrorFactory,
+    useClass: SalesforceApiRepositoryErrorFactory,
   },
 ];
 
 @Module({
-  imports: [CqrsModule, LoggableModule],
+  imports: [...imports],
   controllers: [...controllers],
   providers: [...handlers, ...repositories, ...services],
   exports: [],

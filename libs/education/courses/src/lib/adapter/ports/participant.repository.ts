@@ -1,19 +1,17 @@
+import { RepositoryFindBy, RepositoryFindMethod } from '@curioushuman/common';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
   Participant,
   ParticipantIdentifier,
-  ParticipantIdentifierValue,
+  ParticipantIdentifiers,
 } from '../../domain/entities/participant';
-import { ParticipantId } from '../../domain/value-objects/participant-id';
 import { ParticipantSourceIdSourceValue } from '../../domain/value-objects/participant-source-id-source';
 
-/**
- * Type for the findOne method interface within repository
- */
-export type ParticipantFindMethod = (
-  value: ParticipantIdentifierValue
-) => TaskEither<Error, Participant>;
+export type ParticipantFindMethod = RepositoryFindMethod<
+  ParticipantIdentifiers,
+  Participant
+>;
 
 /**
  * A repository for participants
@@ -21,28 +19,24 @@ export type ParticipantFindMethod = (
  * NOTES:
  * - repos for child entities, by default, ALWAYS include the parent
  */
-export abstract class ParticipantRepository {
+export abstract class ParticipantRepository
+  implements RepositoryFindBy<ParticipantIdentifiers, Participant>
+{
   /**
-   * Object lookup for findMethods
+   * FindBy interface
    */
   abstract findOneBy: Record<ParticipantIdentifier, ParticipantFindMethod>;
-
-  /**
-   * Find a participant
-   *
-   * This method will accept a participant identifier and value
-   * and then determine which finder method to use.
-   *
-   * NOTE: will throw NotFoundException if not found
-   */
   abstract findOne(identifier: ParticipantIdentifier): ParticipantFindMethod;
 
   /**
    * Find a participant by the given ID
    *
    * NOTE: will throw NotFoundException if not found
+   *
+   * ! UPDATE: removing until we've decided what to do about the fact
+   * we need the courseId as well as the participantId for DynamoDb
    */
-  abstract findOneById(id: ParticipantId): TaskEither<Error, Participant>;
+  // abstract findOneById(id: ParticipantId): TaskEither<Error, Participant>;
 
   /**
    * Find a participant by the given ID and source value

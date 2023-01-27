@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "main": "src/index.js",
   "dependencies": {
+    "fp-ts": "^2.13.1",
     "lodash": "^4.17.21",
     "runtypes": "^6.6.0",
     "slug": "^5.3.0",

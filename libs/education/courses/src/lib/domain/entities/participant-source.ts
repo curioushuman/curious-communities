@@ -28,6 +28,3 @@ export type ParticipantSourceIdentifiers = {
   idSource: ParticipantSourceIdSource;
 };
 export type ParticipantSourceIdentifier = keyof ParticipantSourceIdentifiers;
-// NOTE: the ValueOf utility type doesn't work when there is only a single identifier
-// export type ParticipantSourceIdentifierValue = ValueOf<ParticipantSourceIdentifier>;
-export type ParticipantSourceIdentifierValue = ParticipantSourceIdSource;

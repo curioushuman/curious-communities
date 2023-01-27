@@ -11,7 +11,7 @@ import {
   ParticipantSourceIdSource,
   ParticipantSourceIdSourceValue,
 } from '../value-objects/participant-source-id-source';
-import { prepareExternalIdSource, ValueOf } from '@curioushuman/common';
+import { prepareExternalIdSource } from '@curioushuman/common';
 import { ParticipantSourceId } from '../value-objects/participant-source-id';
 import { Source } from '../value-objects/source';
 import { CourseId } from '../value-objects/course-id';
@@ -100,14 +100,13 @@ export type ParticipantForSourceIdentify = Static<
  * Type that defines all the possible identifiers for a member
  * NOTE: this is utilized in find-member.dto.ts and member.repository.ts
  * to define parsers and finders.
+ *
+ * UPDATE: removed id and entity until they are required and we have more context
  */
 export type ParticipantIdentifiers = {
-  id: ParticipantId;
   idSourceValue: ParticipantSourceIdSourceValue;
-  // entity: ParticipantForIdentify;
 };
 export type ParticipantIdentifier = keyof ParticipantIdentifiers;
-export type ParticipantIdentifierValue = ValueOf<ParticipantIdentifiers>;
 
 /**
  * ----

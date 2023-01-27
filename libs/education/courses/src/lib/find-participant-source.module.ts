@@ -1,14 +1,26 @@
 import { INestApplicationContext, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { CqrsModule } from '@nestjs/cqrs';
 
 import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
+import {
+  SalesforceApiHttpConfigService,
+  SalesforceApiRepositoryErrorFactory,
+} from '@curioushuman/common';
 
 import { FindParticipantSourceHandler } from './application/queries/find-participant-source/find-participant-source.query';
 import { FindParticipantSourceController } from './infra/find-participant-source/find-participant-source.controller';
 import { ParticipantSourceRepository } from './adapter/ports/participant-source.repository';
-import { FakeParticipantSourceRepository } from './adapter/implementations/fake/fake.participant-source.repository';
 import { ParticipantSourceRepositoryErrorFactory } from './adapter/ports/participant-source.repository.error-factory';
-import { SalesforceApiRepositoryErrorFactory } from './adapter/implementations/salesforce/repository.error-factory';
+import { SalesforceApiParticipantSourceRepository } from './adapter/implementations/salesforce/participant-source.repository';
+
+const imports = [
+  CqrsModule,
+  LoggableModule,
+  HttpModule.registerAsync({
+    useClass: SalesforceApiHttpConfigService,
+  }),
+];
 
 const controllers = [FindParticipantSourceController];
 
@@ -17,7 +29,7 @@ const handlers = [FindParticipantSourceHandler];
 const repositories = [
   {
     provide: ParticipantSourceRepository,
-    useClass: FakeParticipantSourceRepository,
+    useClass: SalesforceApiParticipantSourceRepository,
   },
 ];
 
@@ -29,7 +41,7 @@ const services = [
 ];
 
 @Module({
-  imports: [CqrsModule, LoggableModule],
+  imports: [...imports],
   controllers: [...controllers],
   providers: [...handlers, ...repositories, ...services],
   exports: [],

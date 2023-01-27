@@ -1,16 +1,14 @@
 import { INestApplicationContext, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import { FakeRepositoryErrorFactory } from '@curioushuman/error-factory';
 import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
+import { DynamoDbRepositoryErrorFactory } from '@curioushuman/common';
 
 import { ParticipantRepository } from './adapter/ports/participant.repository';
-import { FakeParticipantRepository } from './adapter/implementations/fake/fake.participant.repository';
 import { FindParticipantHandler } from './application/queries/find-participant/find-participant.query';
 import { FindParticipantController } from './infra/find-participant/find-participant.controller';
-import { ParticipantSourceRepository } from './adapter/ports/participant-source.repository';
-import { FakeParticipantSourceRepository } from './adapter/implementations/fake/fake.participant-source.repository';
 import { ParticipantRepositoryErrorFactory } from './adapter/ports/participant.repository.error-factory';
+import { DynamoDbParticipantRepository } from './adapter/implementations/dynamodb/participant.repository';
 
 const controllers = [FindParticipantController];
 
@@ -19,18 +17,14 @@ const handlers = [FindParticipantHandler];
 const repositories = [
   {
     provide: ParticipantRepository,
-    useClass: FakeParticipantRepository,
-  },
-  {
-    provide: ParticipantSourceRepository,
-    useClass: FakeParticipantSourceRepository,
+    useClass: DynamoDbParticipantRepository,
   },
 ];
 
 const services = [
   {
     provide: ParticipantRepositoryErrorFactory,
-    useClass: FakeRepositoryErrorFactory,
+    useClass: DynamoDbRepositoryErrorFactory,
   },
 ];
 

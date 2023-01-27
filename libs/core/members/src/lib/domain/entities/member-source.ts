@@ -14,8 +14,8 @@ import { MemberSourceIdSource } from '../value-objects/member-source-id-source';
  */
 export const MemberSource = Record({
   id: MemberSourceId,
-  status: MemberSourceStatus,
 
+  status: MemberSourceStatus,
   name: MemberName,
   email: MemberEmail,
   organisationName: MemberOrganisationName,

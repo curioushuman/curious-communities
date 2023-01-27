@@ -1,5 +1,9 @@
 import { LoggableLogger } from '@curioushuman/loggable';
 import { HttpService } from '@nestjs/axios';
+import {
+  SalesforceApiQueryField,
+  SalesforceApiQueryOperator,
+} from './salesforce.repository.types';
 
 /**
  * Dirty little type hack that emulates just those parts of Runtype.Record that we need
@@ -34,7 +38,24 @@ export abstract class SalesforceApiSourceRepository {
 
   protected prepareFindOneUri(id: string): string {
     const endpoint = `sobjects/${this.sourceName}/${id}`;
-    this.logger.debug(`Finding ${this.sourceName} with endpoint ${endpoint}`);
+    this.logger.debug(`Finding ${this.sourceName} with uri ${endpoint}`);
+    return endpoint;
+  }
+
+  /**
+   * Only supports AND | OR
+   */
+  protected prepareQueryUri(
+    values: SalesforceApiQueryField[],
+    operator: SalesforceApiQueryOperator = 'AND'
+  ): string {
+    const whereClause = values
+      .map((value) => `${value.field}='${value.value}'`)
+      .join(` ${operator} `);
+    const endpoint = `query/?q=SELECT+${this.fields()}+FROM+${
+      this.sourceName
+    }+WHERE+${whereClause}`;
+    this.logger.debug(`Querying ${this.sourceName} with uri ${endpoint}`);
     return endpoint;
   }
 }

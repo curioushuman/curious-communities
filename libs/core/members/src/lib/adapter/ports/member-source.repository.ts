@@ -1,10 +1,11 @@
+import { RepositoryFindBy, RepositoryFindMethod } from '@curioushuman/common';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
   MemberSource,
   MemberSourceForCreate,
   MemberSourceIdentifier,
-  MemberSourceIdentifierValue,
+  MemberSourceIdentifiers,
 } from '../../domain/entities/member-source';
 import { MemberEmail } from '../../domain/value-objects/member-email';
 import { MemberSourceId } from '../../domain/value-objects/member-source-id';
@@ -12,24 +13,18 @@ import { MemberSourceId } from '../../domain/value-objects/member-source-id';
 /**
  * Type for the findOne method interface within repository
  */
-export type MemberSourceFindMethod = (
-  value: MemberSourceIdentifierValue
-) => TaskEither<Error, MemberSource>;
+export type MemberSourceFindMethod = RepositoryFindMethod<
+  MemberSourceIdentifiers,
+  MemberSource
+>;
 
-export abstract class MemberSourceRepository {
+export abstract class MemberSourceRepository
+  implements RepositoryFindBy<MemberSourceIdentifiers, MemberSource>
+{
   /**
-   * Object lookup for findMethods
+   * FindBy interface
    */
   abstract findOneBy: Record<MemberSourceIdentifier, MemberSourceFindMethod>;
-
-  /**
-   * Find a member
-   *
-   * This method will accept a member identifier and value
-   * and then determine which finder method to use.
-   *
-   * NOTE: will throw NotFoundException if not found
-   */
   abstract findOne(identifier: MemberSourceIdentifier): MemberSourceFindMethod;
 
   /**

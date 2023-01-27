@@ -3,7 +3,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
 import { ParticipantModule } from '../../../test/participant.module.fake';
-import { FindParticipantSourceModule } from '../../../find-participant-source.module';
 import { FindParticipantSourceRequestDto } from '../dto/find-participant-source.request.dto';
 import { ParticipantSourceBuilder } from '../../../test/builders/participant-source.builder';
 import { FindParticipantSourceController } from '../../../infra/find-participant-source/find-participant-source.controller';
@@ -43,7 +42,7 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    FindParticipantSourceModule.applyDefaults(app);
+    ParticipantModule.applyDefaults(app);
     controller = moduleRef.get<FindParticipantSourceController>(
       FindParticipantSourceController
     );

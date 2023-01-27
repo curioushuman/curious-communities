@@ -1,4 +1,6 @@
-/* eslint-disable */
+/* eslint-env node */
+const esModules = ['aws-testing-library', 'filter-obj'].join('|');
+
 export default {
   displayName: 'cc-courses-service',
   preset: '../../../jest.preset.js',
@@ -8,8 +10,13 @@ export default {
     },
   },
   testEnvironment: 'node',
+  testEnvironmentOptions: {
+    '--require': 'dotenv/config',
+  },
+  transformIgnorePatterns: [`<rootDir>/../../../node_modules/(?!${esModules})`],
   transform: {
-    '^.+\\.[tj]s$': 'ts-jest',
+    '^.+\\.jsx?$': 'babel-jest',
+    '^.+\\.tsx?$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../../coverage/libs/education/courses',

@@ -309,41 +309,27 @@ importers:
 
   libs/education/courses:
     specifiers:
-      '@aws-sdk/client-dynamodb': ^3.252.0
-      '@aws-sdk/lib-dynamodb': ^3.252.0
       '@curioushuman/common': workspace:^0.0.1
       '@curioushuman/error-factory': workspace:^0.0.1
       '@curioushuman/fp-ts-utils': workspace:^0.0.1
       '@curioushuman/loggable': workspace:^0.0.1
-      '@nestjs/axios': ^1.0.1
       '@nestjs/common': ^8.4.7
       '@nestjs/core': ^8.4.7
       '@nestjs/cqrs': ^8.0.5
       '@nestjs/testing': ^8.4.7
       '@types/jsonwebtoken': ^8.5.1
-      aws-xray-sdk-core: ^3.4.1
-      axios: ^1.2.2
       fp-ts: ^2.13.1
-      jsonwebtoken: ^8.5.1
       runtypes: ^6.6.0
-      rxjs: ^7.8.0
     dependencies:
-      '@aws-sdk/client-dynamodb': 3.252.0
-      '@aws-sdk/lib-dynamodb': 3.252.0_dbduobrdh4slluu63zujov5bpu
       '@curioushuman/common': link:../../shared/common
       '@curioushuman/error-factory': link:../../shared/error-factory
       '@curioushuman/fp-ts-utils': link:../../shared/fp-ts-utils
       '@curioushuman/loggable': link:../../shared/loggable
-      '@nestjs/axios': 1.0.1_q6tehokzwy3z4akuawpn6kiwbe
       '@nestjs/common': 8.4.7_mnr6j2del53muneqly5h4y27ai
       '@nestjs/core': 8.4.7_q6tehokzwy3z4akuawpn6kiwbe
       '@nestjs/cqrs': 8.0.5_qtdbiooqzr6sqttunn4vo2car4
-      aws-xray-sdk-core: 3.4.1
-      axios: 1.2.2
       fp-ts: 2.13.1
-      jsonwebtoken: 8.5.1
       runtypes: 6.6.0
-      rxjs: 7.8.0
     devDependencies:
       '@nestjs/testing': 8.4.7_7tsmhnugyerf5okgqzer2mfqme
       '@types/jsonwebtoken': 8.5.9
@@ -364,17 +350,35 @@ importers:
 
   libs/shared/common:
     specifiers:
+      '@aws-sdk/client-dynamodb': ^3.252.0
+      '@aws-sdk/lib-dynamodb': ^3.252.0
+      '@curioushuman/error-factory': workspace:^0.0.1
+      '@curioushuman/loggable': workspace:^0.0.1
+      '@nestjs/axios': ^1.0.1
       '@types/lodash': ^4.14.191
       '@types/slug': ^5.0.3
+      aws-xray-sdk-core: ^3.4.1
+      axios: ^1.2.2
       fp-ts: ^2.13.1
+      jsonwebtoken: ^8.5.1
       lodash: ^4.17.21
       runtypes: ^6.6.0
+      rxjs: ^7.8.0
       slug: ^5.3.0
       uuid: ^8.3.2
     dependencies:
+      '@aws-sdk/client-dynamodb': 3.252.0
+      '@aws-sdk/lib-dynamodb': 3.252.0_dbduobrdh4slluu63zujov5bpu
+      '@curioushuman/error-factory': link:../error-factory
+      '@curioushuman/loggable': link:../loggable
+      '@nestjs/axios': 1.0.1_q6tehokzwy3z4akuawpn6kiwbe
+      aws-xray-sdk-core: 3.4.1
+      axios: 1.2.2
       fp-ts: 2.13.1
+      jsonwebtoken: 8.5.1
       lodash: 4.17.21
       runtypes: 6.6.0
+      rxjs: 7.8.0
       slug: 5.3.0
       uuid: 8.3.2
     devDependencies:

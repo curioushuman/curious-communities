@@ -4,6 +4,10 @@ import { firstValueFrom } from 'rxjs';
 import * as TE from 'fp-ts/lib/TaskEither';
 
 import { LoggableLogger } from '@curioushuman/loggable';
+import {
+  SalesforceApiRepositoryError,
+  SalesforceApiSourceRepository,
+} from '@curioushuman/common';
 
 import {
   CourseSource,
@@ -15,39 +19,24 @@ import {
 } from '../../ports/course-source.repository';
 import { SalesforceApiCourseSourceResponse } from './types/course-source.response';
 import { SalesforceApiCourseSourceMapper } from './course-source.mapper';
-import { SalesforceApiRepositoryError } from './repository.error-factory';
 import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
 
 @Injectable()
 export class SalesforceApiCourseSourceRepository
+  extends SalesforceApiSourceRepository
   implements CourseSourceRepository
 {
-  private sourceName: string;
-  private responseType = SalesforceApiCourseSourceResponse;
-
-  constructor(
-    private httpService: HttpService,
-    private logger: LoggableLogger
-  ) {
-    this.sourceName = 'Case';
+  constructor(public httpService: HttpService, public logger: LoggableLogger) {
+    super('Case', SalesforceApiCourseSourceResponse);
     this.logger.setContext(SalesforceApiCourseSourceRepository.name);
-  }
-
-  private fields(): string {
-    const rawRunType = this.responseType.omit('attributes');
-    return Object.keys(rawRunType.fields).join(',');
   }
 
   findOneById = (value: CourseSourceId): TE.TaskEither<Error, CourseSource> => {
     return TE.tryCatch(
       async () => {
         const id = CourseSourceId.check(value);
-        const endpoint = `sobjects/${this.sourceName}/${id}`;
-        this.logger.debug(
-          `Finding ${this.sourceName} with endpoint ${endpoint}`
-        );
+        const endpoint = this.prepareFindOneUri(id);
         const fields = this.fields();
-        this.logger.verbose(fields);
         const request$ =
           this.httpService.get<SalesforceApiCourseSourceResponse>(endpoint, {
             params: {

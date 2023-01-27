@@ -4,14 +4,16 @@ import { HttpModule } from '@nestjs/axios';
 
 import { LoggableLogger } from '@curioushuman/loggable';
 import { executeTask } from '@curioushuman/fp-ts-utils';
+import {
+  SalesforceApiHttpConfigService,
+  SalesforceApiRepositoryErrorFactory,
+} from '@curioushuman/common';
 
 import { ParticipantSourceRepository } from '../../../ports/participant-source.repository';
 import { ParticipantSource } from '../../../../domain/entities/participant-source';
 import { ParticipantSourceId } from '../../../../domain/value-objects/participant-source-id';
-import { SalesforceApiHttpConfigService } from '../http-config.service';
 import { SalesforceApiParticipantSourceRepository } from '../participant-source.repository';
 import { ParticipantSourceRepositoryErrorFactory } from '../../../ports/participant-source.repository.error-factory';
-import { SalesforceApiRepositoryErrorFactory } from '../repository.error-factory';
 import { ParticipantSourceBuilder } from '../../../../test/builders/participant-source.builder';
 
 /**

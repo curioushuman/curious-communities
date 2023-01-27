@@ -4,15 +4,8 @@
     "lib": ["es2021"],
     "moduleResolution": "node",
     "types": ["jest", "node"],
+    "allowJs": true,
     "esModuleInterop": true
   },
-  "include": [
-    "jest.config.ts",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "**/*.d.ts",
-    "**/*.fake.ts",
-    "**/fake/**/*.ts",
-    "**/*.builder.ts"
-  ]
+  "include": ["**/*.spec.infra.ts"]
 }

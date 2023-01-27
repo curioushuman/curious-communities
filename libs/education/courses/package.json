@@ -4,25 +4,19 @@
   "type": "commonjs",
   "main": "src/index.js",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.252.0",
-    "@aws-sdk/lib-dynamodb": "^3.252.0",
     "@curioushuman/common": "workspace:^0.0.1",
     "@curioushuman/error-factory": "workspace:^0.0.1",
     "@curioushuman/fp-ts-utils": "workspace:^0.0.1",
     "@curioushuman/loggable": "workspace:^0.0.1",
-    "@nestjs/axios": "^1.0.1",
     "@nestjs/common": "^8.4.7",
     "@nestjs/core": "^8.4.7",
     "@nestjs/cqrs": "^8.0.5",
-    "aws-xray-sdk-core": "^3.4.1",
-    "axios": "^1.2.2",
     "fp-ts": "^2.13.1",
-    "jsonwebtoken": "^8.5.1",
-    "runtypes": "^6.6.0",
-    "rxjs": "^7.8.0"
+    "runtypes": "^6.6.0"
   },
   "devDependencies": {
     "@nestjs/testing": "^8.4.7",
-    "@types/jsonwebtoken": "^8.5.1"
+    "jest": "27.5.1",
+    "jest-cucumber": "^3.0.1"
   }
 }

@@ -4,6 +4,10 @@ import { firstValueFrom } from 'rxjs';
 import * as TE from 'fp-ts/lib/TaskEither';
 
 import { LoggableLogger } from '@curioushuman/loggable';
+import {
+  SalesforceApiRepositoryError,
+  SalesforceApiSourceRepository,
+} from '@curioushuman/common';
 
 import {
   ParticipantSource,
@@ -15,27 +19,16 @@ import {
 } from '../../ports/participant-source.repository';
 import { SalesforceApiParticipantSourceResponse } from './types/participant-source.response';
 import { SalesforceApiParticipantSourceMapper } from './participant-source.mapper';
-import { SalesforceApiRepositoryError } from './repository.error-factory';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
 
 @Injectable()
 export class SalesforceApiParticipantSourceRepository
+  extends SalesforceApiSourceRepository
   implements ParticipantSourceRepository
 {
-  private sourceName: string;
-  private responseType = SalesforceApiParticipantSourceResponse;
-
-  constructor(
-    private httpService: HttpService,
-    private logger: LoggableLogger
-  ) {
-    this.sourceName = 'Participant__c';
+  constructor(public httpService: HttpService, public logger: LoggableLogger) {
+    super('Participant__c', SalesforceApiParticipantSourceResponse);
     this.logger.setContext(SalesforceApiParticipantSourceRepository.name);
-  }
-
-  private fields(): string {
-    const rawRunType = this.responseType.omit('attributes');
-    return Object.keys(rawRunType.fields).join(',');
   }
 
   findOneById = (
@@ -44,12 +37,8 @@ export class SalesforceApiParticipantSourceRepository
     return TE.tryCatch(
       async () => {
         const id = ParticipantSourceId.check(value);
-        const endpoint = `sobjects/${this.sourceName}/${id}`;
-        this.logger.debug(
-          `Finding ${this.sourceName} with endpoint ${endpoint}`
-        );
+        const endpoint = this.prepareFindOneUri(id);
         const fields = this.fields();
-        this.logger.verbose(fields);
         const request$ =
           this.httpService.get<SalesforceApiParticipantSourceResponse>(
             endpoint,

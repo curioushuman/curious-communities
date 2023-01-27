@@ -1,7 +1,7 @@
 import { Array, Null, Optional, Record, Static, String } from 'runtypes';
+import { SalesforceApiResponse } from '@curioushuman/common';
 import { CourseSourceId } from '../../../../domain/value-objects/course-source-id';
 import { CourseSourceName } from '../../../../domain/value-objects/course-source-name';
-import { SalesforceApiResponse } from './base-response';
 
 /**
  * TODO

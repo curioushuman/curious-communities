@@ -4,14 +4,16 @@ import { HttpModule } from '@nestjs/axios';
 
 import { LoggableLogger } from '@curioushuman/loggable';
 import { executeTask } from '@curioushuman/fp-ts-utils';
+import {
+  SalesforceApiHttpConfigService,
+  SalesforceApiRepositoryErrorFactory,
+} from '@curioushuman/common';
 
 import { CourseSourceRepository } from '../../../ports/course-source.repository';
 import { CourseSource } from '../../../../domain/entities/course-source';
 import { CourseSourceId } from '../../../../domain/value-objects/course-source-id';
-import { SalesforceApiHttpConfigService } from '../http-config.service';
 import { SalesforceApiCourseSourceRepository } from '../course-source.repository';
 import { CourseSourceRepositoryErrorFactory } from '../../../ports/course-source.repository.error-factory';
-import { SalesforceApiRepositoryErrorFactory } from '../repository.error-factory';
 import { CourseSourceBuilder } from '../../../../test/builders/course-source.builder';
 
 /**

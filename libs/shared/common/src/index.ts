@@ -1,4 +1,13 @@
 /**
+ * Adapter
+ */
+export * from './lib/adapter/ports/repository.types';
+export * from './lib/adapter/implementations/dynamodb/entities/item';
+export * from './lib/adapter/implementations/dynamodb/dynamodb.repository';
+export * from './lib/adapter/implementations/dynamodb/dynamodb.repository.types';
+export * from './lib/adapter/implementations/dynamodb/repository.error-factory';
+
+/**
  * Application
  */
 export * from './lib/application/commands/update.mapper';

@@ -6,14 +6,14 @@ import {
 import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
 import config from '../../../static/config';
 import { DynamoDbCourseMapper } from './course.mapper';
-import { DynamoDbItem } from './types/item';
+import { CoursesDynamoDbItem } from './entities/item';
 import {
   DynamoDbParticipantAttributes,
   DynamoDbParticipantKeys,
-} from './types/participant';
+} from './entities/participant';
 
 export class DynamoDbParticipantMapper {
-  public static toDomain(item: DynamoDbItem): Participant {
+  public static toDomain(item: CoursesDynamoDbItem): Participant {
     const sourceId = item.Participant_SourceIdCOURSE
       ? prepareParticipantExternalIdSource(item.Participant_SourceIdCOURSE)
       : undefined;
@@ -88,7 +88,7 @@ export class DynamoDbParticipantMapper {
    * The reason is that DynamoDb needs a complete record in place, this is
    * just how it works.
    */
-  public static toPersistence(participant: Participant): DynamoDbItem {
+  public static toPersistence(participant: Participant): CoursesDynamoDbItem {
     const keys = DynamoDbParticipantMapper.toPersistenceKeys(participant);
     const attributes =
       DynamoDbParticipantMapper.toPersistenceAttributes(participant);

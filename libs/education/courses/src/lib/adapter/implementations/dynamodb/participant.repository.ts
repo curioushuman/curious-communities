@@ -3,24 +3,24 @@ import * as TE from 'fp-ts/lib/TaskEither';
 
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
+import {
+  DynamoDbFindOneParams,
+  DynamoDbRepository,
+  DynamoDbRepositoryProps,
+} from '@curioushuman/common';
 
 import {
   ParticipantFindMethod,
   ParticipantRepository,
 } from '../../ports/participant.repository';
-import { ParticipantId } from '../../../domain/value-objects/participant-id';
 import {
   Participant,
   ParticipantIdentifier,
 } from '../../../domain/entities/participant';
 import { DynamoDbParticipantMapper } from './participant.mapper';
 import { ParticipantSourceIdSourceValue } from '../../../domain/value-objects/participant-source-id-source';
-import { DynamoDbParticipant } from './types/participant';
-import { DynamoDbRepository } from './dynamodb.repository';
-import {
-  DynamoDbFindOneParams,
-  DynamoDbRepositoryProps,
-} from './dynamodb.repository.types';
+import { DynamoDbParticipant } from './entities/participant';
+import { CoursesItem } from './entities/item';
 
 /**
  * A repository for participants
@@ -31,7 +31,7 @@ import {
  */
 @Injectable()
 export class DynamoDbParticipantRepository implements ParticipantRepository {
-  private dynamoDbRepository: DynamoDbRepository<Participant>;
+  private dynamoDbRepository: DynamoDbRepository<Participant, CoursesItem>;
 
   constructor(private logger: LoggableLogger) {
     this.logger.setContext(DynamoDbParticipantRepository.name);
@@ -41,6 +41,7 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
       entityId: 'participant',
       tableId: 'participants',
       globalIndexIds: ['source-id-COURSE'],
+      localIndexIds: ['last-name'],
       prefix: 'cc',
     };
     this.dynamoDbRepository = new DynamoDbRepository(props, this.logger);
@@ -68,14 +69,16 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
     return DynamoDbParticipantMapper.toDomain(participantItem);
   }
 
-  findOneById = (value: ParticipantId): TE.TaskEither<Error, Participant> => {
-    // Set the parameters.
-    // Participant in DDB has the same PK and SK as the parent of a one-to-many relationship
-    const params = this.dynamoDbRepository.prepareParamsGet({
-      primaryKey: value,
-    });
-    return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
-  };
+  /**
+   * ! UPDATE: removed until we figure out the best way to do this
+   */
+  // findOneById = (value: ParticipantId): TE.TaskEither<Error, Participant> => {
+  //   const params = this.dynamoDbRepository.prepareParamsGet({
+  //     primaryKey: value,
+  //     sortKey: value,
+  //   });
+  //   return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
+  // };
 
   findOneByIdSourceValue = (
     value: ParticipantSourceIdSourceValue
@@ -85,9 +88,6 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
       indexId: 'source-id-COURSE',
       value,
     });
-    // NOTE: if you didn't want a GSI with an item per participant
-    // you would use a different method to obtain the participant here
-    // e.g. query the course first, and then the participant
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);
   };
 
@@ -95,7 +95,6 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
    * Object lookup for findOneBy methods
    */
   findOneBy: Record<ParticipantIdentifier, ParticipantFindMethod> = {
-    id: this.findOneById,
     idSourceValue: this.findOneByIdSourceValue,
   };
 

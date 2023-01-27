@@ -5,14 +5,17 @@ import {
 } from '../../../domain/entities/course';
 import { CourseSourceIdSource } from '../../../domain/value-objects/course-source-id-source';
 import config from '../../../static/config';
-import { DynamoDbCourseAttributes, DynamoDbCourseKeys } from './types/course';
-import { DynamoDbItem } from './types/item';
+import {
+  DynamoDbCourseAttributes,
+  DynamoDbCourseKeys,
+} from './entities/course';
+import { CoursesDynamoDbItem } from './entities/item';
 
 /**
  * Mapping between domain and dynamodb
  */
 export class DynamoDbCourseMapper {
-  public static toDomain(item: DynamoDbItem): CourseBase {
+  public static toDomain(item: CoursesDynamoDbItem): CourseBase {
     const sourceId = item.Course_SourceIdCOURSE
       ? prepareCourseExternalIdSource(item.Course_SourceIdCOURSE)
       : undefined;
@@ -78,7 +81,7 @@ export class DynamoDbCourseMapper {
   /**
    * Prepare Dynamodb record for saving
    */
-  public static toPersistence(course: CourseBase): DynamoDbItem {
+  public static toPersistence(course: CourseBase): CoursesDynamoDbItem {
     const keys = DynamoDbCourseMapper.toPersistenceKeys(course);
     const attributes = DynamoDbCourseMapper.toPersistenceAttributes(course);
     return {

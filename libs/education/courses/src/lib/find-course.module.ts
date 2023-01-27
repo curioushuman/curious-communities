@@ -2,6 +2,7 @@ import { INestApplicationContext, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
 import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
+import { DynamoDbRepositoryErrorFactory } from '@curioushuman/common';
 
 import { CourseRepository } from './adapter/ports/course.repository';
 import { FindCourseHandler } from './application/queries/find-course/find-course.query';
@@ -10,7 +11,6 @@ import { CourseSourceRepository } from './adapter/ports/course-source.repository
 import { CourseRepositoryErrorFactory } from './adapter/ports/course.repository.error-factory';
 import { DynamoDbCourseRepository } from './adapter/implementations/dynamodb/course.repository';
 import { SalesforceApiCourseSourceRepository } from './adapter/implementations/salesforce/course-source.repository';
-import { DynamoDbRepositoryErrorFactory } from './adapter/implementations/dynamodb/repository.error-factory';
 import { CourseSourceRepositoryErrorFactory } from './adapter/ports/course-source.repository.error-factory';
 import { SalesforceApiRepositoryErrorFactory } from './adapter/implementations/salesforce/repository.error-factory';
 

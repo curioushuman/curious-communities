@@ -2,7 +2,16 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 
 import { LoggableLogger } from '@curioushuman/loggable';
 import { DynamoDbRepository } from '../dynamodb.repository';
-import { CourseBase } from '../../../../domain/entities/course';
+
+type TestEntity = {
+  id: string;
+  name: string;
+};
+
+type TestEntityPersisted = {
+  id: string;
+  name: string;
+};
 
 /**
  * INTEGRATION TEST
@@ -20,7 +29,7 @@ const feature = loadFeature('./dynamodb.repository.feature', {
 });
 
 defineFeature(feature, (test) => {
-  let dynamoDbRepository: DynamoDbRepository<CourseBase>;
+  let dynamoDbRepository: DynamoDbRepository<TestEntity, TestEntityPersisted>;
 
   test('Successful instantiation of DynamoDb Repository', ({
     given,

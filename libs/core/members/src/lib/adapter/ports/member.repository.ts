@@ -3,45 +3,36 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 import {
   Member,
   MemberIdentifier,
-  MemberIdentifierValue,
+  MemberIdentifiers,
 } from '../../domain/entities/member';
 import { MemberEmail } from '../../domain/value-objects/member-email';
-import { MemberId } from '../../domain/value-objects/member-id';
 import { MemberSourceIdSourceValue } from '../../domain/value-objects/member-source-id-source';
+import { MemberId } from '../../domain/value-objects/member-id';
+import { RepositoryFindBy, RepositoryFindMethod } from '@curioushuman/common';
 
 /**
  * TODO:
- * - [ ] move the find and check method types to generics
+ * - [ ] queryBy are for searches not based on identifiers
  */
 
 /**
  * Type for the findOne method interface within repository
  */
-export type MemberFindMethod = (
-  value: MemberIdentifierValue
-) => TaskEither<Error, Member>;
+export type MemberFindMethod = RepositoryFindMethod<MemberIdentifiers, Member>;
 
 /**
- * Type for the check method interface within repository
+ * A repository for members
+ *
+ * NOTES:
+ * - repos for parent entities, by default, do not return children
  */
-export type MemberCheckMethod = (
-  value: MemberIdentifierValue
-) => TaskEither<Error, boolean>;
-
-export abstract class MemberRepository {
+export abstract class MemberRepository
+  implements RepositoryFindBy<MemberIdentifiers, Member>
+{
   /**
-   * Object lookup for findMethods
+   * FindBy interface
    */
   abstract findOneBy: Record<MemberIdentifier, MemberFindMethod>;
-
-  /**
-   * Find a member
-   *
-   * This method will accept a member identifier and value
-   * and then determine which finder method to use.
-   *
-   * NOTE: will throw NotFoundException if not found
-   */
   abstract findOne(identifier: MemberIdentifier): MemberFindMethod;
 
   /**
@@ -61,50 +52,17 @@ export abstract class MemberRepository {
   ): TaskEither<Error, Member>;
 
   /**
-   * Find a member by the given email
+   * Find a member by the given ID
    *
    * NOTE: will throw NotFoundException if not found
    */
   abstract findOneByEmail(email: MemberEmail): TaskEither<Error, Member>;
 
   /**
-   * Object lookup for checkMethods
-   */
-  abstract checkBy: Record<MemberIdentifier, MemberCheckMethod>;
-
-  /**
-   * Check a member exists
-   *
-   * This method will accept a member identifier and value
-   * and then determine which checker method to use.
-   *
-   * * NOTE: will NOT throw NotFoundException if not found
-   */
-  abstract check(identifier: MemberIdentifier): MemberCheckMethod;
-
-  /**
-   * Check for existence of member by given ID
-   */
-  abstract checkById(id: MemberId): TaskEither<Error, boolean>;
-
-  /**
-   * Find a member by the given ID and source value
-   *
-   * NOTE: will throw NotFoundException if not found
-   */
-  abstract checkByIdSourceValue(
-    value: MemberSourceIdSourceValue
-  ): TaskEither<Error, boolean>;
-
-  /**
-   * Find a member by the given email
-   *
-   * NOTE: will throw NotFoundException if not found
-   */
-  abstract checkByEmail(email: MemberEmail): TaskEither<Error, boolean>;
-
-  /**
    * Create/update a member
+   *
+   * NOTE: just the base, not the full member
+   * * This will be the pattern for parents, just the base
    */
   abstract save(member: Member): TaskEither<Error, Member>;
 }

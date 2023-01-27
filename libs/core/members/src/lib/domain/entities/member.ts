@@ -19,10 +19,9 @@ import { Source } from '../value-objects/source';
  */
 export const Member = Record({
   id: MemberId,
-  status: MemberStatus,
-
   sourceIds: Array(MemberSourceIdSource),
 
+  status: MemberStatus,
   name: MemberName,
   email: MemberEmail,
   organisationName: MemberOrganisationName,

@@ -1,11 +1,8 @@
-import { Module } from '@nestjs/common';
+import { INestApplicationContext, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import {
-  ErrorFactory,
-  FakeRepositoryErrorFactory,
-} from '@curioushuman/error-factory';
-import { LoggableModule } from '@curioushuman/loggable';
+import { FakeRepositoryErrorFactory } from '@curioushuman/error-factory';
+import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
 
 import { MemberRepository } from '../adapter/ports/member.repository';
 import { FakeMemberRepository } from '../adapter/implementations/fake/fake.member.repository';
@@ -17,19 +14,13 @@ import { FindMemberHandler } from '../application/queries/find-member/find-membe
 import { FindMemberController } from '../infra/find-member/find-member.controller';
 import { FindMemberSourceHandler } from '../application/queries/find-member-source/find-member-source.query';
 import { FindMemberSourceController } from '../infra/find-member-source/find-member-source.controller';
-import {
-  MemberSourceAuthRepository,
-  MemberSourceCommunityRepository,
-  MemberSourceCrmRepository,
-  MemberSourceMicroCourseRepository,
-} from '../adapter/ports/member-source.repository';
-import { FakeMemberSourceCommunityRepository } from '../adapter/implementations/fake/fake.member-source.community.repository';
-import { FakeMemberSourceMicroCourseRepository } from '../adapter/implementations/fake/fake.member-source.micro-course.repository';
 import { UpsertMemberSourceController } from '../infra/upsert-member-source/upsert-member-source.controller';
 import { CreateMemberSourceHandler } from '../application/commands/create-member-source/create-member-source.command';
 import { UpdateMemberSourceHandler } from '../application/commands/update-member-source/update-member-source.command';
-import { FakeMemberSourceAuthRepository } from '../adapter/implementations/fake/fake.member-source.auth.repository';
-import { FakeMemberSourceCrmRepository } from '../adapter/implementations/fake/fake.member-source.crm.repository';
+import { MemberSourceRepository } from '../adapter/ports/member-source.repository';
+import { FakeMemberSourceRepository } from '../adapter/implementations/fake/fake.member-source.repository';
+import { MemberRepositoryErrorFactory } from '../adapter/ports/member.repository.error-factory';
+import { MemberSourceRepositoryErrorFactory } from '../adapter/ports/member-source.repository.error-factory';
 
 const controllers = [
   CreateMemberController,
@@ -51,26 +42,18 @@ const handlers = [
 const repositories = [
   { provide: MemberRepository, useClass: FakeMemberRepository },
   {
-    provide: MemberSourceAuthRepository,
-    useClass: FakeMemberSourceAuthRepository,
-  },
-  {
-    provide: MemberSourceCommunityRepository,
-    useClass: FakeMemberSourceCommunityRepository,
-  },
-  {
-    provide: MemberSourceCrmRepository,
-    useClass: FakeMemberSourceCrmRepository,
-  },
-  {
-    provide: MemberSourceMicroCourseRepository,
-    useClass: FakeMemberSourceMicroCourseRepository,
+    provide: MemberSourceRepository,
+    useClass: FakeMemberSourceRepository,
   },
 ];
 
 const services = [
   {
-    provide: ErrorFactory,
+    provide: MemberRepositoryErrorFactory,
+    useClass: FakeRepositoryErrorFactory,
+  },
+  {
+    provide: MemberSourceRepositoryErrorFactory,
     useClass: FakeRepositoryErrorFactory,
   },
 ];
@@ -81,4 +64,8 @@ const services = [
   providers: [...handlers, ...repositories, ...services],
   exports: [],
 })
-export class MemberModule {}
+export class MemberModule {
+  public static applyDefaults(app: INestApplicationContext) {
+    app.useLogger(new LoggableLogger());
+  }
+}

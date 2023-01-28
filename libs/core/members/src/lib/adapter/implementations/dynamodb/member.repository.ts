@@ -13,7 +13,11 @@ import {
   MemberFindMethod,
   MemberRepository,
 } from '../../ports/member.repository';
-import { Member, MemberIdentifier } from '../../../domain/entities/member';
+import {
+  Member,
+  MemberIdentifier,
+  prepareMemberExternalIdSource,
+} from '../../../domain/entities/member';
 import { DynamoDbMemberMapper } from './member.mapper';
 import { MemberSourceIdSourceValue } from '../../../domain/value-objects/member-source-id-source';
 import { DynamoDbMember } from './entities/member';
@@ -73,12 +77,17 @@ export class DynamoDbMemberRepository implements MemberRepository {
     return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   };
 
+  /**
+   * Requires a GSI for each source
+   */
   findOneByIdSourceValue = (
     value: MemberSourceIdSourceValue
   ): TE.TaskEither<Error, Member> => {
+    // extract the source
+    const { source } = prepareMemberExternalIdSource(value);
     // Set the parameters.
     const params = this.dynamoDbRepository.prepareParamsQueryOne({
-      indexId: 'source-id-COURSE',
+      indexId: `source-id-${source}`,
       value,
     });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);

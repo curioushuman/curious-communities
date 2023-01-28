@@ -15,6 +15,9 @@ import {
 import { MemberSourceBuilder } from '../../../test/builders/member-source.builder';
 import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
+import config from '../../../static/config';
+import { Source } from '../../../domain/value-objects/source';
+import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
 
 @Injectable()
 export class FakeMemberSourceRepository implements MemberSourceRepository {
@@ -37,11 +40,15 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
    *
    * ? Should the value check be extracted into it's own (functional) step?
    */
-  findOneById = (value: MemberSourceId): TE.TaskEither<Error, MemberSource> => {
+  findOneByIdSource = (
+    value: MemberSourceIdSource
+  ): TE.TaskEither<Error, MemberSource> => {
     return TE.tryCatch(
       async () => {
-        const id = MemberSourceId.check(value);
-        const memberSource = this.memberSources.find((cs) => cs.id === id);
+        const idSource = MemberSourceIdSource.check(value);
+        const memberSource = this.memberSources.find(
+          (cs) => cs.id === idSource.id
+        );
         return pipe(
           memberSource,
           O.fromNullable,
@@ -49,7 +56,7 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
             () => {
               // this mimics an API or DB call throwing an error
               throw new NotFoundException(
-                `MemberSource with id ${id} not found`
+                `MemberSource with id ${idSource.id} not found`
               );
             },
             // this mimics the fact that all non-fake adapters
@@ -101,7 +108,7 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
    */
   findOneBy: Record<MemberSourceIdentifier, MemberSourceFindMethod> = {
     // NOTE: idSource is parsed to id in application layer
-    idSource: this.findOneById,
+    idSource: this.findOneByIdSource,
     email: this.findOneByEmail,
   };
 
@@ -116,6 +123,7 @@ export class FakeMemberSourceRepository implements MemberSourceRepository {
       async () => {
         const savedMemberSource = {
           ...memberSource,
+          source: config.defaults.primaryAccountSource as Source,
           id: MemberSourceId.check(`FakeId${Date.now()}`),
         };
         this.memberSources.push(savedMemberSource);

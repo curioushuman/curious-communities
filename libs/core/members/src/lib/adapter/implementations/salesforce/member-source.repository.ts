@@ -5,9 +5,11 @@ import * as TE from 'fp-ts/lib/TaskEither';
 
 import { LoggableLogger } from '@curioushuman/loggable';
 import {
+  confirmSourceId,
   SalesforceApiQueryField,
   SalesforceApiRepositoryError,
   SalesforceApiSourceRepository,
+  SourceRepository,
 } from '@curioushuman/common';
 
 import {
@@ -24,15 +26,21 @@ import {
   SalesforceApiMemberSourceResponses,
 } from './entities/member-source.response';
 import { SalesforceApiMemberSourceMapper } from './member-source.mapper';
-import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
 import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
+import { Source } from '../../../domain/value-objects/source';
+import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
 
 @Injectable()
 export class SalesforceApiMemberSourceRepository
   extends SalesforceApiSourceRepository
-  implements MemberSourceRepository
+  implements MemberSourceRepository, SourceRepository<Source>
 {
+  /**
+   * The key for this source
+   */
+  public readonly SOURCE = 'CRM';
+
   constructor(public httpService: HttpService, public logger: LoggableLogger) {
     super('Contact', SalesforceApiMemberSourceResponse);
     this.logger.setContext(SalesforceApiMemberSourceRepository.name);
@@ -53,13 +61,19 @@ export class SalesforceApiMemberSourceRepository
 
     // NOTE: if the response was invalid, an error would have been thrown
     // could this similarly be in a serialisation decorator?
-    return SalesforceApiMemberSourceMapper.toDomain(memberItem);
+    return SalesforceApiMemberSourceMapper.toDomain(memberItem, this.SOURCE);
   }
 
-  findOneById = (value: MemberSourceId): TE.TaskEither<Error, MemberSource> => {
+  findOneByIdSource = (
+    value: MemberSourceIdSource
+  ): TE.TaskEither<Error, MemberSource> => {
     return TE.tryCatch(
       async () => {
-        const id = MemberSourceId.check(value);
+        // NOTE: this will throw an error if the value is invalid
+        const id = confirmSourceId<MemberSourceIdSource>(
+          MemberSourceIdSource.check(value),
+          this.SOURCE
+        );
         const uri = this.prepareFindOneUri(id);
         const fields = this.fields();
         const request$ =
@@ -120,7 +134,7 @@ export class SalesforceApiMemberSourceRepository
    * Object lookup for findOneBy methods
    */
   findOneBy: Record<MemberSourceIdentifier, MemberSourceFindMethod> = {
-    idSource: this.findOneById,
+    idSource: this.findOneByIdSource,
     email: this.findOneByEmail,
   };
 

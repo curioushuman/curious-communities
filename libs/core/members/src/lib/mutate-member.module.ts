@@ -1,28 +1,32 @@
 import { INestApplicationContext, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { CqrsModule } from '@nestjs/cqrs';
 
-import {
-  ErrorFactory,
-  FakeRepositoryErrorFactory,
-} from '@curioushuman/error-factory';
 import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
+import {
+  DynamoDbRepositoryErrorFactory,
+  SalesforceApiHttpConfigService,
+  SalesforceApiRepositoryErrorFactory,
+} from '@curioushuman/common';
 
 import { MemberRepository } from './adapter/ports/member.repository';
-import { FakeMemberRepository } from './adapter/implementations/fake/fake.member.repository';
 import { CreateMemberHandler } from './application/commands/create-member/create-member.command';
 import { CreateMemberController } from './infra/create-member/create-member.controller';
 import { UpdateMemberHandler } from './application/commands/update-member/update-member.command';
 import { UpdateMemberController } from './infra/update-member/update-member.controller';
-import {
-  MemberSourceAuthRepository,
-  MemberSourceCommunityRepository,
-  MemberSourceCrmRepository,
-  MemberSourceMicroCourseRepository,
-} from './adapter/ports/member-source.repository';
-import { FakeMemberSourceAuthRepository } from './adapter/implementations/fake/fake.member-source.auth.repository';
-import { FakeMemberSourceCommunityRepository } from './adapter/implementations/fake/fake.member-source.community.repository';
-import { FakeMemberSourceCrmRepository } from './adapter/implementations/fake/fake.member-source.crm.repository';
-import { FakeMemberSourceMicroCourseRepository } from './adapter/implementations/fake/fake.member-source.micro-course.repository';
+import { MemberSourceRepository } from './adapter/ports/member-source.repository';
+import { DynamoDbMemberRepository } from './adapter/implementations/dynamodb/member.repository';
+import { SalesforceApiMemberSourceRepository } from './adapter/implementations/salesforce/member-source.repository';
+import { MemberRepositoryErrorFactory } from './adapter/ports/member.repository.error-factory';
+import { MemberSourceRepositoryErrorFactory } from './adapter/ports/member-source.repository.error-factory';
+
+const imports = [
+  CqrsModule,
+  LoggableModule,
+  HttpModule.registerAsync({
+    useClass: SalesforceApiHttpConfigService,
+  }),
+];
 
 const controllers = [UpdateMemberController, CreateMemberController];
 
@@ -31,35 +35,27 @@ const handlers = [UpdateMemberHandler, CreateMemberHandler];
 const repositories = [
   {
     provide: MemberRepository,
-    useClass: FakeMemberRepository,
+    useClass: DynamoDbMemberRepository,
   },
   {
-    provide: MemberSourceAuthRepository,
-    useClass: FakeMemberSourceAuthRepository,
-  },
-  {
-    provide: MemberSourceCommunityRepository,
-    useClass: FakeMemberSourceCommunityRepository,
-  },
-  {
-    provide: MemberSourceCrmRepository,
-    useClass: FakeMemberSourceCrmRepository,
-  },
-  {
-    provide: MemberSourceMicroCourseRepository,
-    useClass: FakeMemberSourceMicroCourseRepository,
+    provide: MemberSourceRepository,
+    useClass: SalesforceApiMemberSourceRepository,
   },
 ];
 
 const services = [
   {
-    provide: ErrorFactory,
-    useClass: FakeRepositoryErrorFactory,
+    provide: MemberRepositoryErrorFactory,
+    useClass: DynamoDbRepositoryErrorFactory,
+  },
+  {
+    provide: MemberSourceRepositoryErrorFactory,
+    useClass: SalesforceApiRepositoryErrorFactory,
   },
 ];
 
 @Module({
-  imports: [CqrsModule, LoggableModule],
+  imports: [...imports],
   controllers: [...controllers],
   providers: [...handlers, ...repositories, ...services],
   exports: [],

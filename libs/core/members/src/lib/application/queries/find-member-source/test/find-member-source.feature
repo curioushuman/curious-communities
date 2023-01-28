@@ -10,11 +10,6 @@ Scenario: Successfully finding a member source by email
   When I attempt to find a member source
   Then a record should have been returned
 
-Scenario: Successfully finding a member source from non-primary source
-  Given the request is valid
-  When I attempt to find a member source
-  Then a record should have been returned
-
 Scenario: Fail; member source not found
   Given the request is valid
   And the member source does NOT exist in the DB

@@ -103,6 +103,7 @@ export const MemberBuilder = () => {
     invalidSource() {
       const source = MemberSourceBuilder().invalidSource().buildNoCheck();
       this.setSource(source);
+      overrides.id = '9yu25369-7dd5-4d92-b2a0-fba16384ce80';
       return this;
     },
 
@@ -186,20 +187,6 @@ export const MemberBuilder = () => {
       } as Member;
     },
 
-    buildCreateByIdSourceValueMemberDto(): CreateMemberDto {
-      const sourceId = this.buildNoCheck().sourceIds[0];
-      return {
-        findMemberDto: {
-          identifier: 'idSourceValue',
-          value: prepareExternalIdSourceValue(sourceId.id, sourceId.source),
-        },
-        findMemberSourceDto: {
-          identifier: 'idSource',
-          value: sourceId,
-        },
-      } as CreateMemberDto;
-    },
-
     buildCreateByIdSourceValueMemberRequestDto(): CreateByIdSourceValueMemberRequestDto {
       const sourceId = this.buildNoCheck().sourceIds[0];
       return {
@@ -210,24 +197,16 @@ export const MemberBuilder = () => {
       } as CreateByIdSourceValueMemberRequestDto;
     },
 
-    buildCreateByEmailMemberDto(): CreateMemberDto {
-      const value = this.buildNoCheck().email;
-      return {
-        findMemberDto: {
-          identifier: 'email',
-          value,
-        },
-        findMemberSourceDto: {
-          identifier: 'email',
-          value,
-        },
-      } as CreateMemberDto;
-    },
-
     buildCreateByEmailMemberRequestDto(): CreateByEmailMemberRequestDto {
       return {
         email: this.buildNoCheck().email,
       } as CreateByEmailMemberRequestDto;
+    },
+
+    buildCreateMemberDto(ms?: MemberSource): CreateMemberDto {
+      // default is successful path
+      const memberSource = ms || MemberSourceBuilder().alpha().build();
+      return { memberSource } as CreateMemberDto;
     },
 
     buildFindByIdMemberDto(): FindMemberDto {
@@ -274,9 +253,11 @@ export const MemberBuilder = () => {
       } as FindByEmailMemberRequestDto;
     },
 
-    buildUpdateMemberDto(): UpdateMemberDto {
-      const sourceId = this.buildNoCheck().sourceIds[0];
-      return sourceId as UpdateMemberDto;
+    buildUpdateMemberDto(ms?: MemberSource): UpdateMemberDto {
+      // default is successful path
+      const memberSource = ms || MemberSourceBuilder().updated().build();
+      const member = this.buildNoCheck();
+      return { memberSource, member } as UpdateMemberDto;
     },
 
     buildUpdateMemberRequestDto(): UpdateMemberRequestDto {

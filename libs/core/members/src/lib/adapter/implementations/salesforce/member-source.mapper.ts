@@ -1,17 +1,20 @@
 import { MemberSource } from '../../../domain/entities/member-source';
+import { Source } from '../../../domain/value-objects/source';
 import config from '../../../static/config';
 import { SalesforceApiMemberSourceResponse } from './entities/member-source.response';
 
 export class SalesforceApiMemberSourceMapper {
   public static toDomain(
-    source: SalesforceApiMemberSourceResponse
+    sourceResponse: SalesforceApiMemberSourceResponse,
+    source: Source
   ): MemberSource {
     return MemberSource.check({
-      id: source.Id,
+      id: sourceResponse.Id,
+      source,
       status: config.defaults.memberStatus,
-      name: source.Full_name_custom__c,
-      email: source.Email,
-      organisationName: source.Organisation_name__c,
+      name: sourceResponse.Full_name_custom__c,
+      email: sourceResponse.Email,
+      organisationName: sourceResponse.Organisation_name__c,
     });
   }
 }

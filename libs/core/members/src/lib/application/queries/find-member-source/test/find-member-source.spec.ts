@@ -2,7 +2,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
   RepositoryItemNotFoundError,
   RequestInvalidError,
@@ -13,18 +12,11 @@ import {
   FindMemberSourceQuery,
   FindMemberSourceHandler,
 } from '../find-member-source.query';
-import {
-  MemberSourceAuthRepository,
-  MemberSourceCommunityRepository,
-  MemberSourceCrmRepository,
-  MemberSourceMicroCourseRepository,
-} from '../../../../adapter/ports/member-source.repository';
+import { MemberSourceRepository } from '../../../../adapter/ports/member-source.repository';
 import { MemberSourceBuilder } from '../../../../test/builders/member-source.builder';
 import { FindMemberSourceDto } from '../find-member-source.dto';
-import { FakeMemberSourceAuthRepository } from '../../../../adapter/implementations/fake/fake.member-source.auth.repository';
-import { FakeMemberSourceCrmRepository } from '../../../../adapter/implementations/fake/fake.member-source.crm.repository';
-import { FakeMemberSourceCommunityRepository } from '../../../../adapter/implementations/fake/fake.member-source.community.repository';
-import { FakeMemberSourceMicroCourseRepository } from '../../../../adapter/implementations/fake/fake.member-source.micro-course.repository';
+import { FakeMemberSourceRepository } from '../../../../adapter/implementations/fake/fake.member-source.repository';
+import { MemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/member-source.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -50,23 +42,11 @@ defineFeature(feature, (test) => {
         FindMemberSourceHandler,
         LoggableLogger,
         {
-          provide: MemberSourceCrmRepository,
-          useClass: FakeMemberSourceCrmRepository,
+          provide: MemberSourceRepository,
+          useClass: FakeMemberSourceRepository,
         },
         {
-          provide: MemberSourceAuthRepository,
-          useClass: FakeMemberSourceAuthRepository,
-        },
-        {
-          provide: MemberSourceCommunityRepository,
-          useClass: FakeMemberSourceCommunityRepository,
-        },
-        {
-          provide: MemberSourceMicroCourseRepository,
-          useClass: FakeMemberSourceMicroCourseRepository,
-        },
-        {
-          provide: ErrorFactory,
+          provide: MemberSourceRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -116,34 +96,6 @@ defineFeature(feature, (test) => {
       findMemberSourceDto = MemberSourceBuilder()
         .exists()
         .buildFindByEmailMemberSourceDto();
-    });
-
-    when('I attempt to find a member source', async () => {
-      result = await handler.execute(
-        new FindMemberSourceQuery(findMemberSourceDto)
-      );
-    });
-
-    and('a record should have been returned', () => {
-      expect(result.id).toBeDefined();
-    });
-  });
-
-  test('Successfully finding a member source from non-primary source', ({
-    given,
-    and,
-    when,
-  }) => {
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
-
-    given('the request is valid', () => {
-      // we know this to exist in our fake repo
-      findMemberSourceDto = MemberSourceBuilder()
-        .exists()
-        .alternateSource()
-        .buildFindByIdSourceValueMemberSourceDto();
     });
 
     when('I attempt to find a member source', async () => {

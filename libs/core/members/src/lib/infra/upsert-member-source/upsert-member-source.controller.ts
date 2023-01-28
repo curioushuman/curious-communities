@@ -4,7 +4,11 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
-import { executeTask, parseActionData } from '@curioushuman/fp-ts-utils';
+import {
+  executeTask,
+  parseActionData,
+  parseData,
+} from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import { UpsertMemberSourceRequestDto } from './dto/upsert-member-source.request.dto';
@@ -53,18 +57,18 @@ export class UpsertMemberSourceController {
   public async upsert(
     requestDto: UpsertMemberSourceRequestDto
   ): Promise<MemberSourceResponseDto> {
-    // find will
-    // - validate dto
-    // - find memberSource or undefined
-    const memberSource = await this.find(requestDto);
+    // #1. validate the dto
+    const validDto = pipe(
+      requestDto,
+      parseData(UpsertMemberSourceRequestDto.check, this.logger)
+    );
+
+    // #2. find memberSource or undefined
+    // NOTE: These will error if they need to
+    const memberSource = await this.find(validDto);
+
     const task = pipe(
       memberSource,
-
-      // #1. parse the dto
-      // handled in find
-
-      // #2. see if you can find a memberSource
-      // handled in find
 
       // #3. based on whether or not we find anything, take the appropriate action
       // memberSource could be null
@@ -125,21 +129,11 @@ export class UpsertMemberSourceController {
     const task = pipe(
       requestDto,
 
-      // #1. parse the dto
-      parseActionData(UpsertMemberSourceRequestDto.check, this.logger),
-
-      // #2. transform the dto
+      // #1. transform the dto
       // NOTE: it is within this mapper function that we look for idSource, if not email
-      TE.chain((dto) =>
-        pipe(
-          dto,
-          parseActionData(
-            FindMemberSourceMapper.fromUpsertRequestDto,
-            this.logger
-          )
-        )
-      ),
+      parseActionData(FindMemberSourceMapper.fromUpsertRequestDto, this.logger),
 
+      // #2. find the memberSource
       TE.chain((findDto) =>
         pipe(
           TE.tryCatch(

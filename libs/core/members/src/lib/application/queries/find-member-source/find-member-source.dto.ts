@@ -3,7 +3,7 @@ import {
   MemberSourceIdentifiers,
 } from '../../../domain/entities/member-source';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
-import { FindMemberSourceMapper } from './find-member-source.mapper';
+import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -39,8 +39,7 @@ type FindMemberSourceDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindMemberSourceDtoParsers = {
-  // * NOTE: the idSource parser will validate the idSource AND extract id
-  idSource: (dto) => FindMemberSourceMapper.fromIdSourceToId(dto.value),
+  idSource: (dto) => MemberSourceIdSource.check(dto.value),
   email: (dto) => MemberEmail.check(dto.value),
 };
 

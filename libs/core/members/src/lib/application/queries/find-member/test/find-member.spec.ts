@@ -2,7 +2,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
   RepositoryItemNotFoundError,
   RequestInvalidError,
@@ -14,6 +13,7 @@ import { MemberRepository } from '../../../../adapter/ports/member.repository';
 import { FakeMemberRepository } from '../../../../adapter/implementations/fake/fake.member.repository';
 import { MemberBuilder } from '../../../../test/builders/member.builder';
 import { FindMemberDto } from '../find-member.dto';
+import { MemberRepositoryErrorFactory } from '../../../../adapter/ports/member.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -40,7 +40,7 @@ defineFeature(feature, (test) => {
         LoggableLogger,
         { provide: MemberRepository, useClass: FakeMemberRepository },
         {
-          provide: ErrorFactory,
+          provide: MemberRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],

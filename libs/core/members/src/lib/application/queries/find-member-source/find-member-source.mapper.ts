@@ -10,9 +10,9 @@ import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
 import { Source } from '../../../domain/value-objects/source';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
 import { CreateMemberRequestDto } from '../../../infra/create-member/dto/create-member.request.dto';
-import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
 import { UpsertMemberSourceRequestDto } from '../../../infra/upsert-member-source/dto/upsert-member-source.request.dto';
 import { prepareMemberExternalIdSource } from '../../../domain/entities/member';
+import { UpdateMemberRequestDto } from '../../../infra/update-member/dto/update-member.request.dto';
 
 /**
  * TODO
@@ -23,7 +23,7 @@ export class FindMemberSourceMapper {
    * As we use a similar construct when creating our members,
    * we can share mapper functions.
    */
-  public static fromFindRequestDto(
+  public static fromFindOrCreateRequestDto(
     dto: FindMemberSourceRequestDto | CreateMemberRequestDto
   ): FindMemberSourceDto {
     // NOTE: at least one of the two will be defined
@@ -63,6 +63,10 @@ export class FindMemberSourceMapper {
     } as FindMemberSourceDto;
   }
 
+  /**
+   * TODO
+   * - [ ] find a better way for this module to know what source it uses
+   */
   public static fromUpsertRequestDto(
     dto: UpsertMemberSourceRequestDto
   ): FindMemberSourceDto {
@@ -85,12 +89,12 @@ export class FindMemberSourceMapper {
     } as FindMemberSourceDto;
   }
 
-  public static fromIdSourceToId(
-    idSource: MemberSourceIdSource
-  ): MemberSourceId {
-    // this will throw an error if the id is not valid
-    const parsedIdSource = MemberSourceIdSource.check(idSource);
-    // this pulls the id out so it can be used on it's own
-    return parsedIdSource.id as MemberSourceId;
+  public static fromUpdateMemberRequestDto(
+    dto: UpdateMemberRequestDto
+  ): FindMemberSourceDto {
+    return {
+      identifier: 'idSource',
+      value: prepareMemberExternalIdSource(dto.idSourceValue),
+    };
   }
 }

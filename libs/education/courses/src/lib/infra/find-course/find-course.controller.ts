@@ -62,6 +62,10 @@ export class FindCourseController {
     return executeTask(task);
   }
 
+  /**
+   * TODO:
+   * - [ ] deprecate
+   */
   public async findById(
     requestDto: FindByIdCourseRequestDto
   ): Promise<CourseBaseResponseDto> {
@@ -95,6 +99,10 @@ export class FindCourseController {
     return executeTask(task);
   }
 
+  /**
+   * TODO:
+   * - [ ] deprecate
+   */
   public async findByIdSourceValue(
     requestDto: FindByIdSourceValueCourseRequestDto
   ): Promise<CourseBaseResponseDto> {

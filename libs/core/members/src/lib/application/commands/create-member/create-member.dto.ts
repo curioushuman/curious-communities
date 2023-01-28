@@ -1,14 +1,12 @@
-import type { FindMemberDto } from '../../queries/find-member/find-member.dto';
-import type { FindMemberSourceDto } from '../../queries/find-member-source/find-member-source.dto';
+import { Record, Static } from 'runtypes';
+import { MemberSource } from '../../../domain/entities/member-source';
 
 /**
  * This is the form of data our repository will expect for the command
- *
- * It happens to re-use the MemberSourceIdSource type, but this is not
- * required. It is just a convenience.
  */
 
-export type CreateMemberDto = {
-  findMemberDto: FindMemberDto;
-  findMemberSourceDto: FindMemberSourceDto;
-};
+export const CreateMemberDto = Record({
+  memberSource: MemberSource,
+});
+
+export type CreateMemberDto = Static<typeof CreateMemberDto>;

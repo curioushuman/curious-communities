@@ -1,9 +1,7 @@
-import { NotFoundException } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
   SourceInvalidError,
 } from '@curioushuman/error-factory';
@@ -16,20 +14,14 @@ import {
 } from '../update-member.command';
 import { MemberRepository } from '../../../../adapter/ports/member.repository';
 import { FakeMemberRepository } from '../../../../adapter/implementations/fake/fake.member.repository';
-import {
-  MemberSourceAuthRepository,
-  MemberSourceCommunityRepository,
-  MemberSourceCrmRepository,
-  MemberSourceMicroCourseRepository,
-} from '../../../../adapter/ports/member-source.repository';
-import { FakeMemberSourceAuthRepository } from '../../../../adapter/implementations/fake/fake.member-source.auth.repository';
-import { FakeMemberSourceCrmRepository } from '../../../../adapter/implementations/fake/fake.member-source.crm.repository';
-import { FakeMemberSourceCommunityRepository } from '../../../../adapter/implementations/fake/fake.member-source.community.repository';
-import { FakeMemberSourceMicroCourseRepository } from '../../../../adapter/implementations/fake/fake.member-source.micro-course.repository';
 import { MemberBuilder } from '../../../../test/builders/member.builder';
 import { UpdateMemberDto } from '../update-member.dto';
 import { MemberSource } from '../../../../domain/entities/member-source';
 import { MemberSourceBuilder } from '../../../../test/builders/member-source.builder';
+import { MemberRepositoryErrorFactory } from '../../../../adapter/ports/member.repository.error-factory';
+import { FakeMemberSourceRepository } from '../../../../adapter/implementations/fake/fake.member-source.repository';
+import { MemberSourceRepository } from '../../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/member-source.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -47,7 +39,7 @@ const feature = loadFeature('./update-member.feature', {
 
 defineFeature(feature, (test) => {
   let repository: FakeMemberRepository;
-  let memberSourceRepository: FakeMemberSourceCrmRepository;
+  let memberSourceRepository: FakeMemberSourceRepository;
   let handler: UpdateMemberHandler;
   let updateMemberDto: UpdateMemberDto;
 
@@ -58,23 +50,15 @@ defineFeature(feature, (test) => {
         LoggableLogger,
         { provide: MemberRepository, useClass: FakeMemberRepository },
         {
-          provide: MemberSourceCrmRepository,
-          useClass: FakeMemberSourceCrmRepository,
+          provide: MemberSourceRepository,
+          useClass: FakeMemberSourceRepository,
         },
         {
-          provide: MemberSourceAuthRepository,
-          useClass: FakeMemberSourceAuthRepository,
+          provide: MemberRepositoryErrorFactory,
+          useClass: FakeRepositoryErrorFactory,
         },
         {
-          provide: MemberSourceCommunityRepository,
-          useClass: FakeMemberSourceCommunityRepository,
-        },
-        {
-          provide: MemberSourceMicroCourseRepository,
-          useClass: FakeMemberSourceMicroCourseRepository,
-        },
-        {
-          provide: ErrorFactory,
+          provide: MemberSourceRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -83,9 +67,9 @@ defineFeature(feature, (test) => {
     repository = moduleRef.get<MemberRepository>(
       MemberRepository
     ) as FakeMemberRepository;
-    memberSourceRepository = moduleRef.get<MemberSourceCrmRepository>(
-      MemberSourceCrmRepository
-    ) as FakeMemberSourceCrmRepository;
+    memberSourceRepository = moduleRef.get<MemberSourceRepository>(
+      MemberSourceRepository
+    ) as FakeMemberSourceRepository;
     handler = moduleRef.get<UpdateMemberHandler>(UpdateMemberHandler);
   });
 
@@ -110,7 +94,7 @@ defineFeature(feature, (test) => {
     and('the source does exist in our DB', async () => {
       const members = await executeTask(repository.all());
       const memberBefore = members.find(
-        (member) => member.sourceIds[0].id === updateMemberDto.id
+        (member) => member.sourceIds[0].id === updateMemberDto.memberSource.id
       );
       expect(memberBefore).toBeDefined();
       if (memberBefore) {
@@ -125,7 +109,7 @@ defineFeature(feature, (test) => {
     then('the related record should have been updated', async () => {
       const members = await executeTask(repository.all());
       const memberAfter = members.find(
-        (member) => member.sourceIds[0].id === updateMemberDto.id
+        (member) => member.sourceIds[0].id === updateMemberDto.memberSource.id
       );
       expect(memberAfter).toBeDefined();
       if (memberAfter) {
@@ -138,61 +122,6 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; Source not found for ID provided', ({ given, when, then }) => {
-    let error: Error;
-
-    given('no record exists that matches our request', () => {
-      updateMemberDto = MemberBuilder()
-        .noMatchingSource()
-        .buildUpdateMemberDto();
-    });
-
-    when('I attempt to update a member', async () => {
-      try {
-        await handler.execute(new UpdateMemberCommand(updateMemberDto));
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive a RepositoryItemNotFoundError', () => {
-      expect(error).toBeInstanceOf(NotFoundException);
-    });
-  });
-
-  test('Fail; Member not found for ID provided', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      updateMemberDto = MemberBuilder().alpha().buildUpdateMemberDto();
-    });
-
-    and('the returned source populates a valid member', () => {
-      // we know this to be true
-    });
-
-    and('the source does NOT exist in our DB', () => {
-      // we know this to be true
-    });
-
-    when('I attempt to update a member', async () => {
-      try {
-        await handler.execute(new UpdateMemberCommand(updateMemberDto));
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive a RepositoryItemNotFoundError', () => {
-      expect(error).toBeInstanceOf(NotFoundException);
-    });
-  });
-
   test('Fail; Source does not translate into a valid Member', ({
     given,
     and,
@@ -202,40 +131,14 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('a matching record is found at the source', () => {
-      updateMemberDto = MemberBuilder().invalidSource().buildUpdateMemberDto();
+      const memberSource = MemberSourceBuilder().invalidSource().buildNoCheck();
+      updateMemberDto = MemberBuilder()
+        .invalidSource()
+        .buildUpdateMemberDto(memberSource);
     });
 
     and('the returned source does not populate a valid Member', () => {
       // this occurs during
-    });
-
-    when('I attempt to update a member', async () => {
-      try {
-        await handler.execute(new UpdateMemberCommand(updateMemberDto));
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive a SourceInvalidError', () => {
-      expect(error).toBeInstanceOf(SourceInvalidError);
-    });
-  });
-
-  test('Fail; Source is an invalid status to be updated in admin', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      // we know this
-    });
-
-    and('the returned source has an invalid status', () => {
-      updateMemberDto = MemberBuilder().invalidStatus().buildUpdateMemberDto();
     });
 
     when('I attempt to update a member', async () => {

@@ -2,7 +2,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
@@ -13,19 +12,12 @@ import {
   CreateMemberSourceCommand,
   CreateMemberSourceHandler,
 } from '../create-member-source.command';
-import {
-  MemberSourceAuthRepository,
-  MemberSourceCommunityRepository,
-  MemberSourceCrmRepository,
-  MemberSourceMicroCourseRepository,
-} from '../../../../adapter/ports/member-source.repository';
-import { FakeMemberSourceAuthRepository } from '../../../../adapter/implementations/fake/fake.member-source.auth.repository';
-import { FakeMemberSourceCrmRepository } from '../../../../adapter/implementations/fake/fake.member-source.crm.repository';
-import { FakeMemberSourceCommunityRepository } from '../../../../adapter/implementations/fake/fake.member-source.community.repository';
-import { FakeMemberSourceMicroCourseRepository } from '../../../../adapter/implementations/fake/fake.member-source.micro-course.repository';
+import { MemberSourceRepository } from '../../../../adapter/ports/member-source.repository';
 import { MemberSource } from '../../../../domain/entities/member-source';
 import { MemberSourceBuilder } from '../../../../test/builders/member-source.builder';
 import { CreateMemberSourceDto } from '../create-member-source.dto';
+import { FakeMemberSourceRepository } from '../../../../adapter/implementations/fake/fake.member-source.repository';
+import { MemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/member-source.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -41,7 +33,7 @@ const feature = loadFeature('./create-member-source.feature', {
 });
 
 defineFeature(feature, (test) => {
-  let repository: FakeMemberSourceCrmRepository;
+  let repository: FakeMemberSourceRepository;
   let handler: CreateMemberSourceHandler;
   let createMemberSourceDto: CreateMemberSourceDto;
 
@@ -51,31 +43,19 @@ defineFeature(feature, (test) => {
         CreateMemberSourceHandler,
         LoggableLogger,
         {
-          provide: MemberSourceCrmRepository,
-          useClass: FakeMemberSourceCrmRepository,
+          provide: MemberSourceRepository,
+          useClass: FakeMemberSourceRepository,
         },
         {
-          provide: MemberSourceAuthRepository,
-          useClass: FakeMemberSourceAuthRepository,
-        },
-        {
-          provide: MemberSourceCommunityRepository,
-          useClass: FakeMemberSourceCommunityRepository,
-        },
-        {
-          provide: MemberSourceMicroCourseRepository,
-          useClass: FakeMemberSourceMicroCourseRepository,
-        },
-        {
-          provide: ErrorFactory,
+          provide: MemberSourceRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
     }).compile();
 
-    repository = moduleRef.get<MemberSourceCrmRepository>(
-      MemberSourceCrmRepository
-    ) as FakeMemberSourceCrmRepository;
+    repository = moduleRef.get<MemberSourceRepository>(
+      MemberSourceRepository
+    ) as FakeMemberSourceRepository;
     handler = moduleRef.get<CreateMemberSourceHandler>(
       CreateMemberSourceHandler
     );

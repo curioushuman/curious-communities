@@ -1,63 +1,80 @@
 import { Controller } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 
-import { executeTask, parseActionData } from '@curioushuman/fp-ts-utils';
+import {
+  executeTask,
+  parseActionData,
+  parseData,
+} from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
+import {
+  RepositoryItemConflictError,
+  RepositoryItemNotFoundError,
+} from '@curioushuman/error-factory';
 
 import { CreateMemberRequestDto } from './dto/create-member.request.dto';
-import { CreateMemberMapper } from '../../application/commands/create-member/create-member.mapper';
 import { CreateMemberCommand } from '../../application/commands/create-member/create-member.command';
 import { MemberResponseDto } from '../dto/member.response.dto';
 import { MemberMapper } from '../member.mapper';
+import { MemberSource } from '../../domain/entities/member-source';
+import { FindMemberMapper } from '../../application/queries/find-member/find-member.mapper';
+import { FindMemberQuery } from '../../application/queries/find-member/find-member.query';
+import { Member } from '../../domain/entities/member';
+import { CreateMemberDto } from '../../application/commands/create-member/create-member.dto';
+import { FindMemberSourceMapper } from '../../application/queries/find-member-source/find-member-source.mapper';
+import { FindMemberSourceQuery } from '../../application/queries/find-member-source/find-member-source.query';
 
 /**
  * Controller for create member operations
- *
- * NOTES
- * - we initially returned void for create/update actions but this made
- *   internal communication with other systems difficult. We now return
- *   the DTO for internal communication. When it comes to external communication
- *   we will only return Success 201 and the ID of the created/updated resource.
- *   https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design#post-methods
- *   https://softwareengineering.stackexchange.com/a/380430
- *
- * TODO
- * - [ ] should this actually be a service?
- * - [ ] should we be doing auth. here as well?
- *       OR is it ok that we're assuming it is done at higher levels?
- *       AKA it seems like a waste of resources to repeat the same task
- *       ONLY if auth. at this level differs from higher ups should we implement
  */
-
 @Controller()
 export class CreateMemberController {
   constructor(
     private logger: LoggableLogger,
-    private readonly commandBus: CommandBus
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus
   ) {
     this.logger.setContext(CreateMemberController.name);
   }
 
-  /**
-   * This version of create assumes it is coming from step functions
-   * that do a lot of the heavy lifting. It doesn't run any checks, apart
-   * from validating the request dto.
-   */
   public async create(
     requestDto: CreateMemberRequestDto
   ): Promise<MemberResponseDto> {
-    const task = pipe(
+    // #1. validate the dto
+    const validDto = pipe(
       requestDto,
+      parseData(CreateMemberRequestDto.check, this.logger)
+    );
 
-      // #1. parse the dto
-      parseActionData(CreateMemberRequestDto.check, this.logger),
+    // #2. find source and member
+    // NOTE: These will error if they need to
+    const [member, memberSource] = await Promise.all([
+      this.findMember(validDto),
+      this.findMemberSource(validDto),
+    ]);
 
-      // #2. transform the dto
-      TE.chain(parseActionData(CreateMemberMapper.fromRequestDto, this.logger)),
+    // if a member exists, throw an error, go no further
+    if (member) {
+      throw new RepositoryItemConflictError(`Member id: ${member.id}`);
+    }
 
-      // #3. call the command
+    // otherwise, crack on
+    const createDto = {
+      memberSource,
+    };
+
+    const task = pipe(
+      createDto,
+
+      // #3. validate the command dto
+      // NOTE: this will also occur in the command itself
+      // but the Runtype.check function is such a useful way to
+      // also make sure the types are correct. Better than typecasting
+      parseActionData(CreateMemberDto.check, this.logger),
+
+      // #4. call the command
       // NOTE: proper error handling within the command itself
       TE.chain((commandDto) =>
         TE.tryCatch(
@@ -69,8 +86,74 @@ export class CreateMemberController {
         )
       ),
 
-      // #4. transform to the response DTO
+      // #5. transform to the response DTO
       TE.chain(parseActionData(MemberMapper.toResponseDto, this.logger))
+    );
+
+    return executeTask(task);
+  }
+
+  private findMember(
+    requestDto: CreateMemberRequestDto
+  ): Promise<Member | undefined> {
+    const task = pipe(
+      requestDto,
+
+      // #1. transform dto
+      parseActionData(
+        FindMemberMapper.fromFindOrCreateRequestDto,
+        this.logger,
+        'SourceInvalidError'
+      ),
+
+      // #2. call the query
+      TE.chain((findDto) =>
+        pipe(
+          TE.tryCatch(
+            async () => {
+              const query = new FindMemberQuery(findDto);
+              return await this.queryBus.execute<FindMemberQuery>(query);
+            },
+            (error: unknown) => error as Error
+          ),
+          // check if it's a notFound error just return undefined
+          // otherwise, continue on the left path with the error
+          TE.orElse((err) => {
+            return err instanceof RepositoryItemNotFoundError
+              ? TE.right(undefined)
+              : TE.left(err);
+          })
+        )
+      )
+    );
+
+    return executeTask(task);
+  }
+
+  private findMemberSource(
+    requestDto: CreateMemberRequestDto
+  ): Promise<MemberSource | undefined> {
+    const task = pipe(
+      requestDto,
+
+      // #1. transform dto
+      parseActionData(
+        FindMemberSourceMapper.fromFindOrCreateRequestDto,
+        this.logger
+      ),
+
+      // #2. call the query
+      TE.chain((findDto) =>
+        pipe(
+          TE.tryCatch(
+            async () => {
+              const query = new FindMemberSourceQuery(findDto);
+              return await this.queryBus.execute<FindMemberSourceQuery>(query);
+            },
+            (error: unknown) => error as Error
+          )
+        )
+      )
     );
 
     return executeTask(task);

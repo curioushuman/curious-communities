@@ -2,7 +2,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
@@ -15,19 +14,14 @@ import {
 } from '../create-member.command';
 import { MemberRepository } from '../../../../adapter/ports/member.repository';
 import { FakeMemberRepository } from '../../../../adapter/implementations/fake/fake.member.repository';
-import {
-  MemberSourceAuthRepository,
-  MemberSourceCommunityRepository,
-  MemberSourceCrmRepository,
-  MemberSourceMicroCourseRepository,
-} from '../../../../adapter/ports/member-source.repository';
 import { Member } from '../../../../domain/entities/member';
 import { MemberBuilder } from '../../../../test/builders/member.builder';
 import { CreateMemberDto } from '../create-member.dto';
-import { FakeMemberSourceAuthRepository } from '../../../../adapter/implementations/fake/fake.member-source.auth.repository';
-import { FakeMemberSourceCrmRepository } from '../../../../adapter/implementations/fake/fake.member-source.crm.repository';
-import { FakeMemberSourceCommunityRepository } from '../../../../adapter/implementations/fake/fake.member-source.community.repository';
-import { FakeMemberSourceMicroCourseRepository } from '../../../../adapter/implementations/fake/fake.member-source.micro-course.repository';
+import { MemberRepositoryErrorFactory } from '../../../../adapter/ports/member.repository.error-factory';
+import { MemberSourceRepository } from '../../../../adapter/ports/member-source.repository';
+import { FakeMemberSourceRepository } from '../../../../adapter/implementations/fake/fake.member-source.repository';
+import { MemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/member-source.repository.error-factory';
+import { MemberSourceBuilder } from '../../../../test/builders/member-source.builder';
 
 /**
  * UNIT TEST
@@ -54,23 +48,15 @@ defineFeature(feature, (test) => {
         LoggableLogger,
         { provide: MemberRepository, useClass: FakeMemberRepository },
         {
-          provide: MemberSourceCrmRepository,
-          useClass: FakeMemberSourceCrmRepository,
+          provide: MemberSourceRepository,
+          useClass: FakeMemberSourceRepository,
         },
         {
-          provide: MemberSourceAuthRepository,
-          useClass: FakeMemberSourceAuthRepository,
+          provide: MemberRepositoryErrorFactory,
+          useClass: FakeRepositoryErrorFactory,
         },
         {
-          provide: MemberSourceCommunityRepository,
-          useClass: FakeMemberSourceCommunityRepository,
-        },
-        {
-          provide: MemberSourceMicroCourseRepository,
-          useClass: FakeMemberSourceMicroCourseRepository,
-        },
-        {
-          provide: ErrorFactory,
+          provide: MemberSourceRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -82,12 +68,7 @@ defineFeature(feature, (test) => {
     handler = moduleRef.get<CreateMemberHandler>(CreateMemberHandler);
   });
 
-  test('Successfully creating a member by Source Id', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
+  test('Successfully creating a member', ({ given, and, when, then }) => {
     let members: Member[];
     let membersBefore: number;
     // disabling no-explicit-any for testing purposes
@@ -95,44 +76,7 @@ defineFeature(feature, (test) => {
     let result: any;
 
     given('the request is valid', async () => {
-      // we know this to exist in our fake repo
-      createMemberDto = MemberBuilder()
-        .alpha()
-        .buildCreateByIdSourceValueMemberDto();
-
-      members = await executeTask(repository.all());
-      membersBefore = members.length;
-    });
-
-    when('I attempt to create a member', async () => {
-      result = await handler.execute(new CreateMemberCommand(createMemberDto));
-    });
-
-    then('a new record should have been created', async () => {
-      members = await executeTask(repository.all());
-      expect(members.length).toEqual(membersBefore + 1);
-    });
-
-    and('saved member is returned', () => {
-      expect(result.id).toBeDefined();
-    });
-  });
-
-  test('Successfully creating a member by email', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let members: Member[];
-    let membersBefore: number;
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
-
-    given('the request is valid', async () => {
-      // we know this to exist in our fake repo
-      createMemberDto = MemberBuilder().beta().buildCreateByEmailMemberDto();
+      createMemberDto = MemberBuilder().alpha().buildCreateMemberDto();
 
       members = await executeTask(repository.all());
       membersBefore = members.length;
@@ -156,9 +100,10 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request contains invalid data', () => {
+      const invalidSource = MemberSourceBuilder().invalid().buildNoCheck();
       createMemberDto = MemberBuilder()
-        .invalid()
-        .buildCreateByIdSourceValueMemberDto();
+        .invalidSource()
+        .buildCreateMemberDto(invalidSource);
     });
 
     when('I attempt to create a member', async () => {

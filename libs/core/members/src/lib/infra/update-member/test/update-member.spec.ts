@@ -3,16 +3,13 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
 import {
-  //   ErrorFactory,
-  //   FakeRepositoryErrorFactory,
-  //   RepositoryItemConflictError,
-  //   SourceInvalidError,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
+  SourceInvalidError,
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { MemberModule } from '../../../test/member.module.fake';
-import { MutateMemberModule } from '../../../mutate-member.module';
 import { UpdateMemberRequestDto } from '../dto/update-member.request.dto';
 import { MemberBuilder } from '../../../test/builders/member.builder';
 import { UpdateMemberController } from '../update-member.controller';
@@ -20,9 +17,9 @@ import { FakeMemberRepository } from '../../../adapter/implementations/fake/fake
 import { MemberRepository } from '../../../adapter/ports/member.repository';
 import { MemberSourceBuilder } from '../../../test/builders/member-source.builder';
 import { MemberSource } from '../../../domain/entities/member-source';
-import { MemberSourceCrmRepository } from '../../../adapter/ports/member-source.repository';
-import { FakeMemberSourceCrmRepository } from '../../../adapter/implementations/fake/fake.member-source.crm.repository';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import { FakeMemberSourceRepository } from '../../../adapter/implementations/fake/fake.member-source.repository';
+import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
 
 /**
  * INTEGRATION TEST
@@ -47,7 +44,7 @@ const feature = loadFeature('./update-member.feature', {
 defineFeature(feature, (test) => {
   let app: INestApplication;
   let repository: FakeMemberRepository;
-  let memberSourcerepository: FakeMemberSourceCrmRepository;
+  let memberSourceRepository: FakeMemberSourceRepository;
   let controller: UpdateMemberController;
 
   beforeAll(async () => {
@@ -58,13 +55,13 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    MutateMemberModule.applyDefaults(app);
+    MemberModule.applyDefaults(app);
     repository = moduleRef.get<MemberRepository>(
       MemberRepository
     ) as FakeMemberRepository;
-    memberSourcerepository = moduleRef.get<MemberSourceCrmRepository>(
-      MemberSourceCrmRepository
-    ) as FakeMemberSourceCrmRepository;
+    memberSourceRepository = moduleRef.get<MemberSourceRepository>(
+      MemberSourceRepository
+    ) as FakeMemberSourceRepository;
     controller = moduleRef.get<UpdateMemberController>(UpdateMemberController);
   });
 
@@ -88,7 +85,7 @@ defineFeature(feature, (test) => {
     and('a matching record is found at the source', async () => {
       updatedMemberSource = MemberSourceBuilder().updated().build();
       // save it to our fake repo
-      executeTask(memberSourcerepository.update(updatedMemberSource));
+      executeTask(memberSourceRepository.update(updatedMemberSource));
       const members = await executeTask(repository.all());
       const memberBefore = members.find(
         (member) =>
@@ -160,6 +157,97 @@ defineFeature(feature, (test) => {
 
     and('no result is returned', () => {
       expect(result).toEqual(undefined);
+    });
+  });
+
+  test('Fail; Source not found for ID provided', ({ given, when, then }) => {
+    let updateMemberDto: UpdateMemberRequestDto;
+    let error: Error;
+
+    given('no record exists that matches our request', () => {
+      updateMemberDto = MemberBuilder()
+        .noMatchingSource()
+        .buildUpdateMemberRequestDto();
+    });
+
+    when('I attempt to update a member', async () => {
+      try {
+        await controller.update(updateMemberDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
+    });
+  });
+
+  test('Fail; Member not found for ID provided', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    let updateMemberDto: UpdateMemberRequestDto;
+    let error: Error;
+
+    given('a matching record is found at the source', () => {
+      updateMemberDto = MemberBuilder()
+        .doesntExist()
+        .buildUpdateMemberRequestDto();
+    });
+
+    and('the returned source populates a valid member', () => {
+      // above
+    });
+
+    and('the source does NOT exist in our DB', () => {
+      // above
+    });
+
+    when('I attempt to update a member', async () => {
+      try {
+        await controller.update(updateMemberDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
+    });
+  });
+
+  test('Fail; Source does not translate into a valid Member', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    let updateMemberDto: UpdateMemberRequestDto;
+    let error: Error;
+
+    given('a matching record is found at the source', () => {
+      updateMemberDto = MemberBuilder()
+        .invalidSource()
+        .buildUpdateMemberRequestDto();
+    });
+
+    and('the returned source does not populate a valid Member', () => {
+      // above
+    });
+
+    when('I attempt to update a member', async () => {
+      try {
+        await controller.update(updateMemberDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a SourceInvalidError', () => {
+      expect(error).toBeInstanceOf(SourceInvalidError);
     });
   });
 });

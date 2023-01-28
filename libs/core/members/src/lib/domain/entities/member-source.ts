@@ -8,12 +8,14 @@ import { MemberEmail } from '../value-objects/member-email';
 import { MemberOrganisationName } from '../value-objects/member-organisation-name';
 import { MemberSourceId } from '../value-objects/member-source-id';
 import { MemberSourceIdSource } from '../value-objects/member-source-id-source';
+import { Source } from '../value-objects/source';
 
 /**
  * Type for external member entity
  */
 export const MemberSource = Record({
   id: MemberSourceId,
+  source: Source,
 
   status: MemberSourceStatus,
   name: MemberName,
@@ -30,7 +32,7 @@ export type MemberSource = Static<typeof MemberSource>;
  * Type for external member entity, minus Id
  * Used for creating a new member
  */
-export const MemberSourceForCreate = MemberSource.omit('id');
+export const MemberSourceForCreate = MemberSource.omit('id', 'source');
 /**
  * Type for external member entity, minus Id
  * Used for creating a new member

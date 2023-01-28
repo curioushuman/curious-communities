@@ -1,3 +1,4 @@
+import { NonMatchingSourceError } from '@curioushuman/error-factory';
 import { Record, Runtype, Static, Template } from 'runtypes';
 import { ExternalId } from './external-id';
 import { ExternalSource } from './external-source';
@@ -100,6 +101,7 @@ export function parseExternalIdSourceValue(
  * A type used solely for these helper functions
  */
 type SourceOfSourceId<SID extends ExternalIdSource> = SID['source'];
+type IdOfSourceId<SID extends ExternalIdSource> = SID['id'];
 
 /**
  * Helper function to find the sourceId object for a given source
@@ -123,4 +125,19 @@ export function findSourceIdAsValue<SID extends ExternalIdSource>(
   return sourceId
     ? prepareExternalIdSourceValue(sourceId.id, sourceId.source)
     : undefined;
+}
+
+/**
+ * Helper function to confirm the correct source, and return the id value
+ *
+ * If incorrect source, throw an error
+ */
+export function confirmSourceId<SID extends ExternalIdSource>(
+  sourceId: SID,
+  source: SourceOfSourceId<SID>
+): IdOfSourceId<SID> {
+  if (sourceId.source !== source) {
+    throw new NonMatchingSourceError();
+  }
+  return sourceId.id;
 }

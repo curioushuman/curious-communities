@@ -14,6 +14,7 @@ export * from './lib/errors/repository/authentication.error';
 export * from './lib/errors/repository/authentication-expired.error';
 export * from './lib/errors/repository/item-conflict.error';
 export * from './lib/errors/repository/item-not-found.error';
+export * from './lib/errors/repository/non-matching-source.error';
 export * from './lib/errors/repository/server-unavailable.error';
 export * from './lib/errors/repository/server.error';
 export * from './lib/errors/repository/source-invalid.error';

@@ -182,7 +182,7 @@ defineFeature(feature, (test) => {
         .buildCreateByIdSourceValueMemberRequestDto();
     });
 
-    when('I attempt to create a course', async () => {
+    when('I attempt to create a member', async () => {
       try {
         await controller.create(createMemberDto);
       } catch (err) {
@@ -214,7 +214,7 @@ defineFeature(feature, (test) => {
       // above
     });
 
-    when('I attempt to create a course', async () => {
+    when('I attempt to create a member', async () => {
       try {
         await controller.create(createMemberDto);
       } catch (err) {
@@ -246,7 +246,7 @@ defineFeature(feature, (test) => {
         .buildCreateByIdSourceValueMemberRequestDto();
     });
 
-    when('I attempt to create a course', async () => {
+    when('I attempt to create a member', async () => {
       try {
         await controller.create(createMemberDto);
       } catch (err) {

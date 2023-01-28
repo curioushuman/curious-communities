@@ -103,7 +103,7 @@ export class CreateMemberController {
       parseActionData(
         FindMemberMapper.fromFindOrCreateRequestDto,
         this.logger,
-        'SourceInvalidError'
+        'RequestInvalidError'
       ),
 
       // #2. call the query

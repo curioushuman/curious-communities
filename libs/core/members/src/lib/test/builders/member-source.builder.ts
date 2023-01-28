@@ -34,11 +34,14 @@ type MemberSourceLooseMimic = {
 };
 
 export const MemberSourceBuilder = () => {
+  const source = config.defaults.primaryAccountSource;
+
   /**
    * Default properties don't exist in source repository
    */
   const defaultProperties: MemberSourceLooseMimic = {
     id: '5008s1234519CjIPPU',
+    source,
     status: 'pending' as MemberSourceStatus,
 
     name: 'James Brown',
@@ -47,14 +50,13 @@ export const MemberSourceBuilder = () => {
   };
   const overrides: MemberSourceLooseMimic = {
     id: defaultProperties.id,
+    source: defaultProperties.source,
     status: defaultProperties.status,
 
     name: defaultProperties.name,
     email: defaultProperties.email,
     organisationName: defaultProperties.organisationName,
   };
-
-  let source = config.defaults.primaryAccountSource;
 
   return {
     alpha() {
@@ -68,11 +70,6 @@ export const MemberSourceBuilder = () => {
       overrides.id = '5008s000000y7LUAAY';
       overrides.name = 'June Brown';
       overrides.email = 'june@brown.com';
-      return this;
-    },
-
-    alternateSource() {
-      source = 'AUTH';
       return this;
     },
 
@@ -166,7 +163,7 @@ export const MemberSourceBuilder = () => {
     buildCreateMemberSourceDto(): CreateMemberSourceDto {
       const member = MemberBuilder().noSourceExists().buildNoCheck();
       return {
-        source: config.defaults.primaryAccountSource,
+        source,
         member,
       } as CreateMemberSourceDto;
     },
@@ -174,7 +171,7 @@ export const MemberSourceBuilder = () => {
     buildCreateUpsertMemberSourceRequestDto(): UpsertMemberSourceRequestDto {
       const member = MemberBuilder().noSourceExists().buildMemberResponseDto();
       return {
-        source: config.defaults.primaryAccountSource,
+        source,
         member,
       } as UpsertMemberSourceRequestDto;
     },
@@ -183,7 +180,7 @@ export const MemberSourceBuilder = () => {
       const member = MemberBuilder().noSourceExists().buildNoCheck();
       member.name = '' as MemberName;
       return {
-        source: config.defaults.primaryAccountSource,
+        source,
         member,
       } as CreateMemberSourceDto;
     },
@@ -192,7 +189,7 @@ export const MemberSourceBuilder = () => {
       const member = MemberBuilder().exists().buildMemberResponseDto();
       member.name = '' as MemberName;
       return {
-        source: config.defaults.primaryAccountSource,
+        source,
         member,
       } as UpsertMemberSourceRequestDto;
     },
@@ -201,7 +198,7 @@ export const MemberSourceBuilder = () => {
       const member = MemberBuilder().updated().buildNoCheck();
       const memberSource = this.exists().buildNoCheck();
       return {
-        source: config.defaults.primaryAccountSource,
+        source,
         member,
         memberSource,
       } as UpdateMemberSourceDto;
@@ -210,7 +207,7 @@ export const MemberSourceBuilder = () => {
     buildUpdateUpsertMemberSourceRequestDto(): UpsertMemberSourceRequestDto {
       const member = MemberBuilder().exists().buildMemberResponseDto();
       return {
-        source: config.defaults.primaryAccountSource,
+        source,
         member,
       } as UpsertMemberSourceRequestDto;
     },
@@ -219,7 +216,7 @@ export const MemberSourceBuilder = () => {
       const member = MemberBuilder().exists().buildMemberResponseDto();
       member.sourceIds = [];
       return {
-        source: config.defaults.primaryAccountSource,
+        source,
         member,
       } as UpsertMemberSourceRequestDto;
     },
@@ -229,7 +226,7 @@ export const MemberSourceBuilder = () => {
       const memberSource = this.exists().buildNoCheck();
       member.name = '' as MemberName;
       return {
-        source: config.defaults.primaryAccountSource,
+        source,
         member,
         memberSource,
       } as UpdateMemberSourceDto;

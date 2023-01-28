@@ -1,26 +1,20 @@
 import { CommandHandler, ICommandHandler, ICommand } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
-import { sequenceT } from 'fp-ts/lib/Apply';
 
-import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
+  parseData,
   performAction,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import {
-  MemberSourceAuthRepository,
-  MemberSourceCommunityRepository,
-  MemberSourceCrmRepository,
-  MemberSourceMicroCourseRepository,
-  MemberSourceRepository,
-} from '../../../adapter/ports/member-source.repository';
+import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
 import { MemberSource } from '../../../domain/entities/member-source';
 import { UpdateMemberSourceDto } from './update-member-source.dto';
 import { UpdateMemberSourceMapper } from './update-member-source.mapper';
+import { MemberSourceRepositoryErrorFactory } from '../../../adapter/ports/member-source.repository.error-factory';
 
 export class UpdateMemberSourceCommand implements ICommand {
   constructor(public readonly updateMemberSourceDto: UpdateMemberSourceDto) {}
@@ -38,12 +32,9 @@ export class UpdateMemberSourceHandler
   implements ICommandHandler<UpdateMemberSourceCommand>
 {
   constructor(
-    private readonly memberSourceAuthRepository: MemberSourceAuthRepository,
-    private readonly memberSourceCommunityRepository: MemberSourceCommunityRepository,
-    private readonly memberSourceCrmRepository: MemberSourceCrmRepository,
-    private readonly memberSourceMicroCourseRepository: MemberSourceMicroCourseRepository,
+    private readonly memberSourceRepository: MemberSourceRepository,
     private logger: LoggableLogger,
-    private errorFactory: ErrorFactory
+    private memberSourceErrorFactory: MemberSourceRepositoryErrorFactory
   ) {
     this.logger.setContext(UpdateMemberSourceHandler.name);
   }
@@ -51,50 +42,30 @@ export class UpdateMemberSourceHandler
   async execute(command: UpdateMemberSourceCommand): Promise<MemberSource> {
     const { updateMemberSourceDto } = command;
 
-    // TODO don't do this here, extract it in the fp destructuring below
-    const source = updateMemberSourceDto.source;
+    // #1. validate the dto
+    const validDto = pipe(
+      updateMemberSourceDto,
+      parseData(UpdateMemberSourceDto.check, this.logger, 'RequestInvalidError')
+    );
 
-    // TODO this must be improved/moved at some later point
-    const sourceRepositories: Record<string, MemberSourceRepository> = {
-      AUTH: this.memberSourceAuthRepository,
-      COMMUNITY: this.memberSourceCommunityRepository,
-      CRM: this.memberSourceCrmRepository,
-      'MICRO-COURSE': this.memberSourceMicroCourseRepository,
-    };
+    const { member, memberSource } = validDto;
 
     const task = pipe(
-      updateMemberSourceDto,
-      // #1. validate the DTO
+      member,
+
+      // #2. prepare the updated member source
       parseActionData(
-        UpdateMemberSourceDto.check,
+        UpdateMemberSourceMapper.fromMemberToSource(memberSource),
         this.logger,
-        'RequestInvalidError'
+        'SourceInvalidError'
       ),
 
-      // #2. destructure the DTO
-      // TODO improve/simplify
-      TE.chain((dto) =>
-        sequenceT(TE.ApplySeq)(TE.right(dto.member), TE.right(dto.memberSource))
-      ),
-
-      // #3. transform
-      TE.chain(([member, memberSource]) =>
-        pipe(
-          member,
-          parseActionData(
-            UpdateMemberSourceMapper.fromMemberToSource(memberSource),
-            this.logger,
-            'SourceInvalidError'
-          )
-        )
-      ),
-
-      // #4. update the member source
+      // #3. update the member source
       TE.chain((ms) =>
         performAction(
           ms,
-          sourceRepositories[source].update,
-          this.errorFactory,
+          this.memberSourceRepository.update,
+          this.memberSourceErrorFactory,
           this.logger,
           `update member source`
         )

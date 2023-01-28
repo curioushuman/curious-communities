@@ -11,7 +11,7 @@ import { Null, Optional, Record, Static, String } from 'runtypes';
  */
 export const DynamoDbMemberKeys = DynamoDbItemKeys.extend({
   Sk_Member_Email: String,
-  Sk_Member_SourceIdCOURSE: String,
+  Sk_Member_SourceIdCRM: String,
 });
 /**
  * Keys for the participant
@@ -22,7 +22,12 @@ export type DynamoDbMemberKeys = Static<typeof DynamoDbMemberKeys>;
  * Attributes for the participant
  */
 export const DynamoDbMemberAttributes = Record({
-  Member_SourceIdCOURSE: Optional(String.Or(Null)),
+  // primary source
+  Member_SourceIdCRM: Optional(String.Or(Null)),
+  // other sources
+  Member_SourceIdAUTH: Optional(String.Or(Null)),
+  Member_SourceIdCOMMUNITY: Optional(String.Or(Null)),
+  'Member_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
 
   Member_Status: String,
   Member_Name: String,

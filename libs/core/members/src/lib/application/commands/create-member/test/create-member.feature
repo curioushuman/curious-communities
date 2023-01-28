@@ -1,12 +1,6 @@
 Feature: Create Member
 
-Scenario: Successfully creating a member by Source Id
-  Given the request is valid
-  When I attempt to create a member
-  Then a new record should have been created
-  And saved member is returned
-
-Scenario: Successfully creating a member by email
+Scenario: Successfully creating a member
   Given the request is valid
   When I attempt to create a member
   Then a new record should have been created

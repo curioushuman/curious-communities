@@ -3,7 +3,6 @@ import { Member } from '../../../domain/entities/member';
 import { UpsertMemberSourceRequestDto } from '../../../infra/upsert-member-source/dto/upsert-member-source.request.dto';
 import { UpdateMemberSourceDto } from './update-member-source.dto';
 import { MemberMapper } from '../../../infra/member.mapper';
-import { Source } from '../../../domain/value-objects/source';
 
 /**
  * TODO
@@ -14,7 +13,6 @@ export class UpdateMemberSourceMapper {
     memberSource: MemberSource
   ): (dto: UpsertMemberSourceRequestDto) => UpdateMemberSourceDto {
     return (dto: UpsertMemberSourceRequestDto) => ({
-      source: Source.check(dto.source),
       member: MemberMapper.fromResponseDto(dto.member),
       memberSource,
     });
@@ -25,6 +23,7 @@ export class UpdateMemberSourceMapper {
   ): (member: Member) => MemberSource {
     return (member: Member) => ({
       id: memberSource.id,
+      source: memberSource.source,
       status: member.status,
       name: member.name,
       email: member.email,

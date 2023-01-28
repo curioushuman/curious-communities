@@ -9,7 +9,6 @@ import {
   prepareMemberExternalIdSource,
 } from '../../../domain/entities/member';
 import {
-  MemberCheckMethod,
   MemberFindMethod,
   MemberRepository,
 } from '../../ports/member.repository';
@@ -17,6 +16,7 @@ import { MemberBuilder } from '../../../test/builders/member.builder';
 import { MemberId } from '../../../domain/value-objects/member-id';
 import { MemberSourceIdSourceValue } from '../../../domain/value-objects/member-source-id-source';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
+import { MemberName } from '../../../domain/value-objects/member-name';
 
 @Injectable()
 export class FakeMemberRepository implements MemberRepository {
@@ -24,6 +24,9 @@ export class FakeMemberRepository implements MemberRepository {
 
   constructor() {
     this.members.push(MemberBuilder().exists().build());
+    const invalidSource = MemberBuilder().invalidSource().buildNoCheck();
+    invalidSource.name = 'Invalid Source' as MemberName;
+    this.members.push(invalidSource);
   }
 
   /**
@@ -136,82 +139,6 @@ export class FakeMemberRepository implements MemberRepository {
 
   findOne = (identifier: MemberIdentifier): MemberFindMethod => {
     return this.findOneBy[identifier];
-  };
-
-  checkById = (id: MemberId): TE.TaskEither<Error, boolean> => {
-    return TE.tryCatch(
-      async () => {
-        const member = this.members.find((cs) => cs.id === id);
-        return pipe(
-          member,
-          O.fromNullable,
-          O.fold(
-            () => false,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            (_) => true
-          )
-        );
-      },
-      (reason: unknown) => reason as Error
-    );
-  };
-
-  checkByIdSourceValue = (
-    value: MemberSourceIdSourceValue
-  ): TE.TaskEither<Error, boolean> => {
-    return TE.tryCatch(
-      async () => {
-        const idSourceValue = MemberSourceIdSourceValue.check(value);
-        const idSource = prepareMemberExternalIdSource(idSourceValue);
-        const member = this.members.find((cs) => {
-          const matches = cs.sourceIds.filter(
-            (sId) => sId.id === idSource.id && sId.source === idSource.source
-          );
-          return matches.length > 0;
-        });
-        return pipe(
-          member,
-          O.fromNullable,
-          O.fold(
-            () => false,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            (_) => true
-          )
-        );
-      },
-      (reason: unknown) => reason as Error
-    );
-  };
-
-  checkByEmail = (email: MemberEmail): TE.TaskEither<Error, boolean> => {
-    return TE.tryCatch(
-      async () => {
-        const member = this.members.find((cs) => cs.email === email);
-        return pipe(
-          member,
-          O.fromNullable,
-          O.fold(
-            () => false,
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            (_) => true
-          )
-        );
-      },
-      (reason: unknown) => reason as Error
-    );
-  };
-
-  /**
-   * Object lookup for checkBy methods
-   */
-  checkBy: Record<MemberIdentifier, MemberCheckMethod> = {
-    id: this.checkById,
-    idSourceValue: this.checkByIdSourceValue,
-    email: this.checkByEmail,
-  };
-
-  check = (identifier: MemberIdentifier): MemberCheckMethod => {
-    return this.checkBy[identifier];
   };
 
   save = (member: Member): TE.TaskEither<Error, Member> => {

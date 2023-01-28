@@ -16,6 +16,7 @@ import {
 import {
   Participant,
   ParticipantIdentifier,
+  prepareParticipantExternalIdSource,
 } from '../../../domain/entities/participant';
 import { DynamoDbParticipantMapper } from './participant.mapper';
 import { ParticipantSourceIdSourceValue } from '../../../domain/value-objects/participant-source-id-source';
@@ -85,8 +86,9 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
     value: ParticipantSourceIdSourceValue
   ): TE.TaskEither<Error, Participant> => {
     // Set the parameters.
+    const { source } = prepareParticipantExternalIdSource(value);
     const params = this.dynamoDbRepository.prepareParamsQueryOne({
-      indexId: 'source-id-COURSE',
+      indexId: `source-id-${source}`,
       value,
     });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);

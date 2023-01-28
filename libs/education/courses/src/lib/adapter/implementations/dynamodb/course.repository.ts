@@ -14,7 +14,11 @@ import {
   CourseRepository,
 } from '../../ports/course.repository';
 import { CourseId } from '../../../domain/value-objects/course-id';
-import { CourseBase, CourseIdentifier } from '../../../domain/entities/course';
+import {
+  CourseBase,
+  CourseIdentifier,
+  prepareCourseExternalIdSource,
+} from '../../../domain/entities/course';
 import { DynamoDbCourseMapper } from './course.mapper';
 import { CourseSlug } from '../../../domain/value-objects/course-slug';
 import { CourseSourceIdSourceValue } from '../../../domain/value-objects/course-source-id-source';
@@ -91,8 +95,9 @@ export class DynamoDbCourseRepository implements CourseRepository {
     value: CourseSourceIdSourceValue
   ): TE.TaskEither<Error, CourseBase> => {
     // Set the parameters.
+    const { source } = prepareCourseExternalIdSource(value);
     const params = this.dynamoDbRepository.prepareParamsQueryOne({
-      indexId: 'source-id-COURSE',
+      indexId: `source-id-${source}`,
       value,
     });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);

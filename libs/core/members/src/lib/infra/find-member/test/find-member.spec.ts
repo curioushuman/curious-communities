@@ -3,7 +3,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
 import { MemberModule } from '../../../test/member.module.fake';
-import { FindMemberModule } from '../../../find-member.module';
 import {
   FindByEmailMemberRequestDto,
   FindByIdMemberRequestDto,
@@ -45,7 +44,7 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    FindMemberModule.applyDefaults(app);
+    MemberModule.applyDefaults(app);
     controller = moduleRef.get<FindMemberController>(FindMemberController);
   });
 

@@ -3,16 +3,14 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
 import {
-  //   ErrorFactory,
-  //   FakeRepositoryErrorFactory,
-  //   RepositoryItemConflictError,
-  //   SourceInvalidError,
+  RepositoryItemConflictError,
+  RepositoryItemNotFoundError,
   RequestInvalidError,
+  SourceInvalidError,
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { MemberModule } from '../../../test/member.module.fake';
-import { MutateMemberModule } from '../../../mutate-member.module';
 import { CreateMemberRequestDto } from '../dto/create-member.request.dto';
 import { Member } from '../../../domain/entities/member';
 import { MemberBuilder } from '../../../test/builders/member.builder';
@@ -53,7 +51,7 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    MutateMemberModule.applyDefaults(app);
+    MemberModule.applyDefaults(app);
     repository = moduleRef.get<MemberRepository>(
       MemberRepository
     ) as FakeMemberRepository;
@@ -171,6 +169,93 @@ defineFeature(feature, (test) => {
 
     then('I should receive a RequestInvalidError', () => {
       expect(error).toBeInstanceOf(RequestInvalidError);
+    });
+  });
+
+  test('Fail; Source not found for ID provided', ({ given, when, then }) => {
+    let createMemberDto: CreateMemberRequestDto;
+    let error: Error;
+
+    given('no record exists that matches our request', () => {
+      createMemberDto = MemberBuilder()
+        .noMatchingSource()
+        .buildCreateByIdSourceValueMemberRequestDto();
+    });
+
+    when('I attempt to create a course', async () => {
+      try {
+        await controller.create(createMemberDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a RepositoryItemNotFoundError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
+    });
+  });
+
+  test('Fail; Source does not translate into a valid Member', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    let createMemberDto: CreateMemberRequestDto;
+    let error: Error;
+
+    given('a matching record is found at the source', () => {
+      createMemberDto = MemberBuilder()
+        .invalidSource()
+        .buildCreateByIdSourceValueMemberRequestDto();
+    });
+
+    and('the returned source does not populate a valid Member', () => {
+      // above
+    });
+
+    when('I attempt to create a course', async () => {
+      try {
+        await controller.create(createMemberDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a SourceInvalidError', () => {
+      expect(error).toBeInstanceOf(SourceInvalidError);
+    });
+  });
+
+  test('Fail; Source already exists in our DB', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    let createMemberDto: CreateMemberRequestDto;
+    let error: Error;
+
+    given('a matching record is found at the source', () => {
+      // see next
+    });
+
+    and('the source DOES already exist in our DB', () => {
+      createMemberDto = MemberBuilder()
+        .exists()
+        .buildCreateByIdSourceValueMemberRequestDto();
+    });
+
+    when('I attempt to create a course', async () => {
+      try {
+        await controller.create(createMemberDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('I should receive a RepositoryItemConflictError', () => {
+      expect(error).toBeInstanceOf(RepositoryItemConflictError);
     });
   });
 });

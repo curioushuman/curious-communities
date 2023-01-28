@@ -12,17 +12,18 @@ import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
 import { Source } from '../../../domain/value-objects/source';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
 import { CreateMemberRequestDto } from '../../../infra/create-member/dto/create-member.request.dto';
+import { UpdateMemberRequestDto } from '../../../infra/update-member/dto/update-member.request.dto';
 
 /**
  * TODO
- * - find base abstract class for mappers
+ * - consolidate some of these similar functions
  */
 export class FindMemberMapper {
   /**
    * As we use a similar construct when creating our members,
    * we can share mapper functions.
    */
-  public static fromFindRequestDto(
+  public static fromFindOrCreateRequestDto(
     dto: FindMemberRequestDto | CreateMemberRequestDto
   ): FindMemberDto {
     // NOTE: at least one of the two will be defined
@@ -74,6 +75,21 @@ export class FindMemberMapper {
     const value = MemberEmail.check(dto.email);
     return {
       identifier: 'email',
+      value,
+    } as FindMemberDto;
+  }
+
+  public static fromUpdateMemberRequestDto(
+    dto: UpdateMemberRequestDto
+  ): FindMemberDto {
+    // this will throw an error if the value is not valid
+    const value = parseExternalIdSourceValue(
+      dto.idSourceValue,
+      MemberSourceId,
+      Source
+    );
+    return {
+      identifier: 'idSourceValue',
       value,
     } as FindMemberDto;
   }

@@ -3,12 +3,11 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
 import { MemberModule } from '../../../test/member.module.fake';
-import { UpsertMemberSourceModule } from '../../../upsert-member-source.module';
 import { MemberSourceBuilder } from '../../../test/builders/member-source.builder';
 import { UpsertMemberSourceController } from '../../../infra/upsert-member-source/upsert-member-source.controller';
 import { UpsertMemberSourceRequestDto } from '../dto/upsert-member-source.request.dto';
-import { FakeMemberSourceCrmRepository } from '../../../adapter/implementations/fake/fake.member-source.crm.repository';
-import { MemberSourceCrmRepository } from '../../../adapter/ports/member-source.repository';
+import { FakeMemberSourceRepository } from '../../../adapter/implementations/fake/fake.member-source.repository';
+import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
 import { MemberSource } from '../../../domain/entities/member-source';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
@@ -39,7 +38,7 @@ const feature = loadFeature('./upsert-member-source.feature', {
 defineFeature(feature, (test) => {
   let app: INestApplication;
   let controller: UpsertMemberSourceController;
-  let repository: FakeMemberSourceCrmRepository;
+  let repository: FakeMemberSourceRepository;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -49,13 +48,13 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    UpsertMemberSourceModule.applyDefaults(app);
+    MemberModule.applyDefaults(app);
     controller = moduleRef.get<UpsertMemberSourceController>(
       UpsertMemberSourceController
     );
-    repository = moduleRef.get<MemberSourceCrmRepository>(
-      MemberSourceCrmRepository
-    ) as FakeMemberSourceCrmRepository;
+    repository = moduleRef.get<MemberSourceRepository>(
+      MemberSourceRepository
+    ) as FakeMemberSourceRepository;
   });
 
   afterAll(async () => {

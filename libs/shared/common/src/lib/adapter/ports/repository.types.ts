@@ -29,3 +29,14 @@ export interface RepositoryFindBy<I, E> {
    */
   findOne(identifier: keyof I): RepositoryFindMethod<I, E>;
 }
+
+/**
+ * I is the entity identifierS!! not singular, the plural
+ * E is the entity
+ */
+export interface SourceRepository<S> {
+  /**
+   * All repositories should indicate what source they are
+   */
+  readonly SOURCE: S;
+}

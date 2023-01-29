@@ -152,7 +152,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     this.client.destroy();
   }
 
-  public prepareErrorMessage(
+  public static prepareErrorMessage(
     errorMsg: string,
     params?: DynamoDbFindOneParams | DynamoDbSaveParams
   ) {

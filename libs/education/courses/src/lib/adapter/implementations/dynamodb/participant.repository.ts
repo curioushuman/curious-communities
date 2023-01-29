@@ -55,10 +55,7 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
     // did we find anything?
     if (!item) {
       throw new RepositoryItemNotFoundError(
-        this.dynamoDbRepository.prepareErrorMessage(
-          'Participant not found',
-          params
-        )
+        DynamoDbRepository.prepareErrorMessage('Participant not found', params)
       );
     }
 

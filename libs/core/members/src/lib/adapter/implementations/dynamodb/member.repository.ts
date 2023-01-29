@@ -56,7 +56,7 @@ export class DynamoDbMemberRepository implements MemberRepository {
     // did we find anything?
     if (!item) {
       throw new RepositoryItemNotFoundError(
-        this.dynamoDbRepository.prepareErrorMessage('Member not found', params)
+        DynamoDbRepository.prepareErrorMessage('Member not found', params)
       );
     }
 

@@ -7,12 +7,12 @@ import { ChLayer } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 export class CcCoreLayersStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+  constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
+    super(scope, stackId, props);
 
     const fileLocation = '../../../dist/utils/layers';
 
-    new ChLayer(this, 'cc-groups-service', { fileLocation });
+    // new ChLayer(this, 'cc-groups-service', { fileLocation });
     new ChLayer(this, 'cc-members-service', { fileLocation });
   }
 }

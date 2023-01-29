@@ -1,7 +1,6 @@
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { Construct } from 'constructs';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 
 import { resourceNameTitle } from '../utils/name';
 import { LambdaEventSubscriptionProps } from './lambda-event-subscription.types';
@@ -15,23 +14,14 @@ import { LambdaConstruct } from './lambda.construct';
  *       https://aws.amazon.com/premiumsupport/knowledge-center/lambda-function-idempotent/
  * - [ ] configure retry attempts (upon failure)
  */
-export class LambdaEventSubscription extends Construct {
-  public lambdaFunction: NodejsFunction;
-
+export class LambdaEventSubscription extends LambdaConstruct {
   constructor(
     scope: Construct,
     id: string,
     props: LambdaEventSubscriptionProps
   ) {
-    super(scope, id);
-
-    // create the lambda function
     const { lambdaEntry, lambdaProps } = props;
-    const lambdaConstruct = new LambdaConstruct(this, id, {
-      lambdaEntry,
-      lambdaProps,
-    });
-    this.lambdaFunction = lambdaConstruct.lambdaFunction;
+    super(scope, id, { lambdaEntry, lambdaProps });
 
     /**
      * Rule

@@ -56,7 +56,7 @@ export class DynamoDbCourseRepository implements CourseRepository {
     // did we find anything?
     if (!item) {
       throw new RepositoryItemNotFoundError(
-        this.dynamoDbRepository.prepareErrorMessage('Course not found', params)
+        DynamoDbRepository.prepareErrorMessage('Course not found', params)
       );
     }
 

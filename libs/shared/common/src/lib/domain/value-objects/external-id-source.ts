@@ -60,23 +60,20 @@ export function prepareExternalIdSourceValue(
   return `${source}${EXTERNAL_ID_SOURCE_SEPARATOR}${id}`;
 }
 
-/**
- * Function to convert an external ID and source value into an object
- *
- * ? Should I declare the return type here?
- */
-export function prepareExternalIdSource(
-  idSourceValue: string,
-  externalIdRuntype?: Runtype<string>,
-  externalSourceRuntype?: Runtype<string>
-) {
+export function processExternalIdSourceValue(idSourceValue: string) {
   const [source, id] = idSourceValue.split(EXTERNAL_ID_SOURCE_SEPARATOR);
-  const idType = externalIdRuntype || ExternalId;
-  const sourceType = externalSourceRuntype || ExternalSource;
   return {
-    id: idType.check(id),
-    source: sourceType.check(source),
+    id,
+    source,
   };
+}
+
+export function guardExternalIdSourceValue(
+  idSourceValue: string,
+  sources: string[]
+) {
+  const { source, id } = processExternalIdSourceValue(idSourceValue);
+  return !!id && !!source && sources.includes(source);
 }
 
 /**
@@ -88,7 +85,7 @@ export function parseExternalIdSourceValue(
   externalIdRuntype?: Runtype<string>,
   externalSourceRuntype?: Runtype<string>
 ): ExternalIdSourceValue {
-  const [source, id] = idSourceValue.split(EXTERNAL_ID_SOURCE_SEPARATOR);
+  const { source, id } = processExternalIdSourceValue(idSourceValue);
   const idType = externalIdRuntype || ExternalId;
   const sourceType = externalSourceRuntype || ExternalSource;
   return prepareExternalIdSourceValue(
@@ -98,10 +95,29 @@ export function parseExternalIdSourceValue(
 }
 
 /**
+ * Function to convert an external ID and source value into an object
+ *
+ * ? Should I declare the return type here?
+ */
+export function prepareExternalIdSource(
+  idSourceValue: string,
+  externalIdRuntype?: Runtype<string>,
+  externalSourceRuntype?: Runtype<string>
+) {
+  const { source, id } = processExternalIdSourceValue(idSourceValue);
+  const idType = externalIdRuntype || ExternalId;
+  const sourceType = externalSourceRuntype || ExternalSource;
+  return {
+    id: idType.check(id),
+    source: sourceType.check(source),
+  };
+}
+
+/**
  * A type used solely for these helper functions
  */
-type SourceOfSourceId<SID extends ExternalIdSource> = SID['source'];
-type IdOfSourceId<SID extends ExternalIdSource> = SID['id'];
+export type SourceOfSourceId<SID extends ExternalIdSource> = SID['source'];
+export type IdOfSourceId<SID extends ExternalIdSource> = SID['id'];
 
 /**
  * Helper function to find the sourceId object for a given source

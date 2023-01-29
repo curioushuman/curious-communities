@@ -14,14 +14,11 @@ type TestEntityPersisted = {
 };
 
 /**
- * INTEGRATION TEST
- * SUT = authenticating with an external repository
- * i.e. are we actually connecting with SF
+ * UNIT TEST
+ * SUT = initiating a DynamoDbRepository
  *
  * Scope
- * - repository authorisation
- *
- * NOTE: repository functions and behaviours handled in separate tests
+ * - repository initialization only
  */
 
 const feature = loadFeature('./dynamodb.repository.feature', {

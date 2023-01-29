@@ -26,10 +26,10 @@ export class CoursesDynamoDbConstruct extends Construct {
     super(scope, id);
 
     // for now, we're going to use streams for testing
-    const stream = dynamodb.StreamViewType.NEW_AND_OLD_IMAGES;
-    process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'test'
-      ? dynamodb.StreamViewType.NEW_AND_OLD_IMAGES
-      : undefined;
+    const stream =
+      process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'test'
+        ? dynamodb.StreamViewType.NEW_AND_OLD_IMAGES
+        : undefined;
 
     /**
      * Courses table

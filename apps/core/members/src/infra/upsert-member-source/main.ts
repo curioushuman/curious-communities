@@ -3,11 +3,14 @@ import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
-  UpsertMemberSourceModule,
+  upsertMemberSourceModules,
   UpsertMemberSourceController,
   MemberSourceResponseDto,
 } from '@curioushuman/cc-members-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
+import {
+  InternalRequestInvalidError,
+  RequestInvalidError,
+} from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import { UpsertMemberSourceRequestDto } from './dto/request.dto';
@@ -19,32 +22,44 @@ import { UpsertMemberSourceRequestDto } from './dto/request.dto';
  */
 
 /**
+ * Init a logger
+ */
+const logger = new LoggableLogger('UpsertMemberSourceFunction.handler');
+
+/**
  * Hold a reference to your Nest app outside of the bootstrap function
  * to minimize cold starts
  * https://towardsaws.com/serverless-love-story-nestjs-lambda-part-i-minimizing-cold-starts-4ba513e5ce02
  */
-let lambdaApp: INestApplicationContext;
+const lambdaApps: Record<string, INestApplicationContext> = {};
 
 /**
  * Standalone Nest application for Serverless context
  * i.e. we don't load Express, for optimization purposes
  */
-async function bootstrap() {
+async function bootstrap(source: string) {
+  if (!(source in upsertMemberSourceModules)) {
+    const error = new RequestInvalidError(`Source ${source} is not supported`);
+    logger.error(error);
+    throw error;
+  }
   const app = await NestFactory.createApplicationContext(
-    UpsertMemberSourceModule,
+    upsertMemberSourceModules[source],
     {
       bufferLogs: true,
     }
   );
-  UpsertMemberSourceModule.applyDefaults(app);
+  if ('applyDefaults' in upsertMemberSourceModules[source]) {
+    upsertMemberSourceModules[source].applyDefaults(app);
+  }
   return app;
 }
 
-async function waitForApp() {
-  if (!lambdaApp) {
-    lambdaApp = await bootstrap();
+async function waitForApp(source: string) {
+  if (!lambdaApps[source]) {
+    lambdaApps[source] = await bootstrap(source);
   }
-  return lambdaApp;
+  return lambdaApps[source];
 }
 
 /**
@@ -60,8 +75,10 @@ async function waitForApp() {
  * * We receive our own requestDto format, and not the usual AWS resource event.
  *   This will allow us most flexibility in invoking this function from multiple
  *   triggers. It reverses the dependency from invoked > invoker, to invoker > invoked.
- * * We return void
- *   Which basically indicates success.
+ * * We return the entity, for further application processing
+ *
+ * TODO:
+ * - [ ] I'm not super chuffed about handing source in as a value
  */
 export const handler = async (
   requestDtoOrEvent:
@@ -74,7 +91,7 @@ export const handler = async (
       ? requestDtoOrEvent.detail
       : requestDtoOrEvent;
 
-  const logger = new LoggableLogger('UpsertMemberSourceFunction.handler');
+  // log the request
   logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
 
   // lambda level validation
@@ -90,8 +107,8 @@ export const handler = async (
   }
 
   // init the app
-  const app = await waitForApp();
-  const updateMemberController = app.get(UpsertMemberSourceController);
+  const app = await waitForApp(requestDto.source);
+  const upsertMemberController = app.get(UpsertMemberSourceController);
 
   // perform the action
   // NOTE: no try/catch here. According to the docs:
@@ -101,7 +118,7 @@ export const handler = async (
   //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
-  return updateMemberController.upsert({
+  return upsertMemberController.upsert({
     source: requestDto.source,
     member: requestDto.member,
   });

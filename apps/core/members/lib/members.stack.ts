@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
-import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { resolve as pathResolve } from 'path';
@@ -12,6 +11,7 @@ import {
   LambdaEventSubscription,
   ChEventBusFrom,
   LambdaConstruct,
+  generateCompositeResourceId,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -29,8 +29,8 @@ export class MembersStack extends cdk.Stack {
     layers: [] as lambda.ILayerVersion[],
   };
 
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+  constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
+    super(scope, stackId, props);
 
     /**
      * Other AWS services this stack needs pay attention to
@@ -96,11 +96,15 @@ export class MembersStack extends cdk.Stack {
     this.lambdaProps.layers?.push(chLayerMembers.layer);
 
     /**
+     * Functions
+     */
+
+    /**
      * Function: Create Member
      */
     const createMemberLambdaConstruct = new LambdaEventSubscription(
       this,
-      'cc-members-member-create',
+      generateCompositeResourceId(stackId, 'member-create'),
       {
         lambdaEntry: pathResolve(
           __dirname,
@@ -115,6 +119,8 @@ export class MembersStack extends cdk.Stack {
         ruleDescription: 'Create internal, to match the external',
       }
     );
+    // add salesforce env vars
+    createMemberLambdaConstruct.addEnvironmentSalesforce();
 
     // allow the lambda access to the table
     membersTableConstruct.table.grantReadData(
@@ -129,7 +135,7 @@ export class MembersStack extends cdk.Stack {
      */
     const updateMemberLambdaConstruct = new LambdaEventSubscription(
       this,
-      'cc-members-member-update',
+      generateCompositeResourceId(stackId, 'member-update'),
       {
         lambdaEntry: pathResolve(
           __dirname,
@@ -144,6 +150,8 @@ export class MembersStack extends cdk.Stack {
         ruleDescription: 'Update internal, to match the external',
       }
     );
+    // add salesforce env vars
+    updateMemberLambdaConstruct.addEnvironmentSalesforce();
 
     // allow the lambda access to the table
     membersTableConstruct.table.grantReadData(
@@ -171,21 +179,6 @@ export class MembersStack extends cdk.Stack {
     );
 
     /**
-     * Find Member source
-     */
-    const findMemberSourceLambdaConstruct = new LambdaConstruct(
-      this,
-      'cc-members-member-source-find',
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/find-member-source/main.ts'
-        ),
-        lambdaProps: this.lambdaProps,
-      }
-    );
-
-    /**
      * Function: Upsert Member Source
      *
      * Subscribed to internal eventBus
@@ -194,21 +187,21 @@ export class MembersStack extends cdk.Stack {
      * TODO: create a step function that will be able to take the raw output from
      * other lambdas, and then start the upsert loop.
      */
-    const upsertMemberSourceLambdaConstruct = new LambdaEventSubscription(
-      this,
-      'cc-members-member-source-upsert',
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/upsert-member-source/main.ts'
-        ),
-        lambdaProps: this.lambdaProps,
-        eventBus: internalEventBusConstruct.eventBus,
-        ruleDetailType: 'Lambda Function Invocation Result - Success',
-        ruleSource: 'lambda',
-        ruleDescription: 'Update internal, to match the external',
-      }
-    );
+    // const upsertMemberSourceLambdaConstruct = new LambdaEventSubscription(
+    //   this,
+    //   'cc-members-member-source-upsert',
+    //   {
+    //     lambdaEntry: pathResolve(
+    //       __dirname,
+    //       '../src/infra/upsert-member-source/main.ts'
+    //     ),
+    //     lambdaProps: this.lambdaProps,
+    //     eventBus: internalEventBusConstruct.eventBus,
+    //     ruleDetailType: 'Lambda Function Invocation Result - Success',
+    //     ruleSource: 'lambda',
+    //     ruleDescription: 'Update internal, to match the external',
+    //   }
+    // );
 
     /**
      * Outputs

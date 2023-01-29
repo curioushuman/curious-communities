@@ -1,25 +1,15 @@
-import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as cdk from 'aws-cdk-lib';
-import * as events from 'aws-cdk-lib/aws-events';
 
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
 import {
+  ApiGwHookExternalEventConstruct,
+  ApiGwHookExternalEventProps,
   ChEventBusFrom,
   CoApiConstruct,
-  generateCompositeResourceId,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
-
-import {
-  CoursesHookConstruct,
-  CoursesHookProps,
-} from '../src/infra/hook-course/hook.construct';
-import {
-  ParticipantsHookConstruct,
-  ParticipantsHookProps,
-} from '../src/infra/hook-participant/hook.construct';
 
 /**
  * Stack for the admin API endpoints
@@ -65,18 +55,6 @@ export class ApiAdminStack extends cdk.Stack {
     });
 
     /**
-     * API Gateway Response models
-     *
-     * NOTES
-     * - currently all endpoints are hooks, so we'll use a single response model
-     */
-    apiAdmin.addResponseModel('hook-event-success', {
-      properties: {
-        message: { type: apigw.JsonSchemaType.STRING },
-      },
-    });
-
-    /**
      * Other AWS services this stack needs pay attention to
      */
 
@@ -100,72 +78,44 @@ export class ApiAdminStack extends cdk.Stack {
      * GET /hook/external-event
      */
     const externalEventResource = hookResource.addResource('external-event');
-    const externalEventHookRequestParams = {
-      'method.request.path.sourceKey': true,
-      'method.request.querystring.updatedStatus': false,
-    };
 
     /**
-     * Course Hooks
-     * GET /hook/external-event/course/{sourceKey}/{courseSourceEvent}/{courseSourceId}?{updatedStatus?}
+     * Courses external event hook
+     *
+     * * NOTE: this does everything but the path.yaml file
+     *         please include this in the relevant infra dir
      */
-    const courseResource = externalEventResource.addResource('course');
-    const courseSourceKeyResource = courseResource.addResource('{sourceKey}');
-    const courseSourceEventResource = courseSourceKeyResource.addResource(
-      '{courseSourceEvent}'
-    );
-    const courseSourceIdResource =
-      courseSourceEventResource.addResource('{courseSourceId}');
-    const courseExternalEventHookRequestParams = {
-      ...externalEventHookRequestParams,
-      'method.request.path.courseSourceEvent': true,
-      'method.request.path.courseSourceId': true,
-    };
-
-    /**
-     * Course hook lambda and co
-     */
-    const coursesExternalEventHookConstruct = new CoursesHookConstruct(
-      this,
-      generateCompositeResourceId(stackId, 'hook-external-event-course'),
-      {
+    const coursesExternalEventHookConstruct =
+      new ApiGwHookExternalEventConstruct(this, 'course', {
         apiConstruct: apiAdmin,
-        rootResource: courseSourceIdResource,
-        requestParameters: courseExternalEventHookRequestParams,
+        rootResource: externalEventResource,
         eventBus: externalEventBusConstruct.eventBus,
-      } as CoursesHookProps
-    );
+      } as ApiGwHookExternalEventProps);
 
     /**
-     * Participant Hooks
-     * GET /hook/external-event/participant/{sourceKey}/{participantSourceEvent}/{courseSourceId}/{participantSourceId}?{updatedStatus?}
+     * Participants external event hook
+     *
+     * * NOTE: this does everything but the path.yaml file
+     *         please include this in the relevant infra dir
      */
-    const participantResource =
-      externalEventResource.addResource('participant');
-    const participantSourceKeyResource =
-      participantResource.addResource('{sourceKey}');
-    const participantSourceEventResource =
-      participantSourceKeyResource.addResource('{participantSourceEvent}');
-    const participantSourceIdResource =
-      participantSourceEventResource.addResource('{participantSourceId}');
-    const participantExternalEventHookRequestParams = {
-      ...externalEventHookRequestParams,
-      'method.request.path.participantSourceEvent': true,
-      'method.request.path.participantSourceId': true,
-    };
-
-    /**
-     * Participant hook lambda and co
-     */
-    const participantExternalEventHookConstruct = new ParticipantsHookConstruct(
-      this,
-      generateCompositeResourceId(stackId, 'hook-external-event-participant'),
-      {
+    const participantsExternalEventHookConstruct =
+      new ApiGwHookExternalEventConstruct(this, 'participant', {
         apiConstruct: apiAdmin,
-        rootResource: participantSourceIdResource,
-        requestParameters: participantExternalEventHookRequestParams,
+        rootResource: externalEventResource,
         eventBus: externalEventBusConstruct.eventBus,
-      } as ParticipantsHookProps
-    );
+      } as ApiGwHookExternalEventProps);
+
+    /**
+     * Members external event hook
+     *
+     * * NOTE: this does everything but the path.yaml file
+     *         please include this in the relevant infra dir
+     */
+    const membersExternalEventHookConstruct =
+      new ApiGwHookExternalEventConstruct(this, 'member', {
+        apiConstruct: apiAdmin,
+        rootResource: externalEventResource,
+        eventBus: externalEventBusConstruct.eventBus,
+      } as ApiGwHookExternalEventProps);
   }
 }

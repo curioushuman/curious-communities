@@ -4,12 +4,12 @@
 #set($pathParams = $allParams.get('path'))
 #set($sourceKey = $pathParams.get('sourceKey'))
 #set($sourceKeyEscaped = $util.escapeJavaScript("${sourceKey}"))
-#set($type = $pathParams.get('participantSourceEvent'))
+#set($type = $pathParams.get('{entityId}SourceEvent'))
 #set($typeEscaped = $util.escapeJavaScript("${type}"))
-#set($detail = '"object":"participant","type":"' + $typeEscaped + '"')
-#set($participantSourceId = $pathParams.get('participantSourceId'))
-#set($participantSourceIdEscaped = $util.escapeJavaScript("${participantSourceId}"))
-#set($detail = $detail + ',"participantIdSourceValue":"' + $sourceKeyEscaped + '#' + $participantIdEscaped + '"')
+#set($detail = '"object":"{entityId}","type":"' + $typeEscaped + '"')
+#set($entitySourceId = $pathParams.get('{entityId}SourceId'))
+#set($entitySourceIdEscaped = $util.escapeJavaScript("${entitySourceId}"))
+#set($detail = $detail + ',"{entityId}IdSourceValue":"' + $sourceKeyEscaped + '#' + $entitySourceIdEscaped + '"')
 #if($input.params('updatedStatus'))
 #set($status = $input.params('updatedStatus'))
 #set($statusEscaped = $util.escapeJavaScript("${status}"))
@@ -20,8 +20,8 @@
 {
 "DetailType":"putEvent",
 "Detail":"{$util.escapeJavaScript($detail)}",
-"Source": "source.id",
-"EventBusName": "eventBus.eventBusArn"
+"Source": "{sourceId}",
+"EventBusName": "{eventBusArn}"
 }
 ]
 }

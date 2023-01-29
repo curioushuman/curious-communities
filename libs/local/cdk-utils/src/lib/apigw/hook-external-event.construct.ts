@@ -1,24 +1,10 @@
-import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as events from 'aws-cdk-lib/aws-events';
 import { Construct } from 'constructs';
-
 import { resolve as pathResolve } from 'path';
 
-// Importing utilities for use in infrastructure processes
-// Initially we're going to import from local sources
-import { CoApiConstruct } from '../../../../../../dist/local/@curioushuman/cdk-utils/src';
-// Long term we'll put them into packages
-// import { CoApiConstruct } from '@curioushuman/cdk-utils';
-
-/**
- * Props required to initialize a CO API Construct
- */
-export interface CoursesHookProps {
-  apiConstruct: CoApiConstruct;
-  rootResource: apigateway.IResource;
-  requestParameters: { [key: string]: boolean };
-  eventBus: events.IEventBus;
-}
+import { CoApiConstruct } from './api.construct';
+import { ApiGwHookExternalEventProps } from './api.types';
 
 /**
  * Components required for the api-admin stack courses:hook resource
@@ -29,31 +15,50 @@ export interface CoursesHookProps {
  *       can we do it another way? Maybe specific to the event?
  *       https://aws.amazon.com/premiumsupport/knowledge-center/lambda-function-idempotent/
  */
-export class CoursesHookConstruct extends Construct {
+export class ApiGwHookExternalEventConstruct extends Construct {
   private apiConstruct: CoApiConstruct;
-  private rootResource: apigateway.IResource;
   private eventBus: events.IEventBus;
 
-  private awsIntegration: apigateway.AwsIntegration;
-  private methodOptions: apigateway.MethodOptions;
+  private awsIntegration: apigw.AwsIntegration;
+  private methodOptions: apigw.MethodOptions;
 
-  constructor(scope: Construct, id: string, props: CoursesHookProps) {
-    super(scope, id);
+  private requestParameters: Record<string, boolean> = {
+    'method.request.path.sourceKey': true,
+    'method.request.querystring.updatedStatus': false,
+  };
+
+  constructor(
+    scope: Construct,
+    entityId: string,
+    props: ApiGwHookExternalEventProps
+  ) {
+    super(scope, entityId);
 
     this.apiConstruct = props.apiConstruct;
-    this.rootResource = props.rootResource;
     this.eventBus = props.eventBus;
+
+    /**
+     * More specific request params
+     */
+    this.requestParameters[`method.request.path.${entityId}SourceEvent`] = true;
+    this.requestParameters[`method.request.path.${entityId}SourceId`] = true;
+
+    /**
+     * Add the response model for the hook
+     */
+    this.addSuccessResponse();
 
     /**
      * hook: request mapping template
      * to convert API input/params/body, into acceptable lambda input
      */
-    const eventSourceId = `apigw-${this.apiConstruct.id}-courses-hook`;
-    const coursesHookRequestTemplate = CoApiConstruct.vtlTemplateFromFile(
-      pathResolve(__dirname, './hook.map-request.vtl')
+    const eventSourceId = `${this.apiConstruct.id}-hook-external-event-${entityId}`;
+    const hookRequestTemplate = CoApiConstruct.vtlTemplateFromFile(
+      pathResolve(__dirname, '../../assets/hook.map-request.vtl')
     )
-      .replace('source.id', eventSourceId)
-      .replace('eventBus.eventBusArn', this.eventBus.eventBusArn);
+      .replaceAll('{entityId}', entityId)
+      .replace('{sourceId}', eventSourceId)
+      .replace('{eventBusArn}', this.eventBus.eventBusArn);
 
     /**
      * hook: Acceptable Responses from EventBridge
@@ -61,7 +66,7 @@ export class CoursesHookConstruct extends Construct {
      */
 
     // SUCCESS
-    const coursesHookFunctionSuccessResponse: apigateway.IntegrationResponse = {
+    const coursesHookFunctionSuccessResponse: apigw.IntegrationResponse = {
       statusCode: '200',
       responseTemplates: {
         'application/json': JSON.stringify({
@@ -78,16 +83,16 @@ export class CoursesHookConstruct extends Construct {
     /**
      * hook: eventbridge Integration
      */
-    this.awsIntegration = new apigateway.AwsIntegration({
+    this.awsIntegration = new apigw.AwsIntegration({
       service: 'events',
       action: 'PutEvents',
       integrationHttpMethod: 'POST',
       options: {
         credentialsRole: this.apiConstruct.role,
         requestTemplates: {
-          'application/json': coursesHookRequestTemplate,
+          'application/json': hookRequestTemplate,
         },
-        passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
+        passthroughBehavior: apigw.PassthroughBehavior.NEVER,
         integrationResponses: [
           coursesHookFunctionSuccessResponse,
           coursesHookFunctionServerErrorResponse,
@@ -105,7 +110,7 @@ export class CoursesHookConstruct extends Construct {
 
     this.methodOptions = {
       // Here we can define path, querystring, and acceptable headers
-      requestParameters: props.requestParameters,
+      requestParameters: this.requestParameters,
       requestValidator: this.apiConstruct.requestValidators['basic-get'],
       // what we allow to be returned as a response
       methodResponses: [
@@ -135,9 +140,35 @@ export class CoursesHookConstruct extends Construct {
     };
 
     /**
+     * Set up the resource path
+     */
+    const entityResource = props.rootResource.addResource(entityId);
+    const entitySourceKeyResource = entityResource.addResource('{sourceKey}');
+    const entitySourceEventResource = entitySourceKeyResource.addResource(
+      `{${entityId}SourceEvent}`
+    );
+    const fullResourcePath = entitySourceEventResource.addResource(
+      `{${entityId}SourceId}`
+    );
+
+    /**
      * hook: method definition
      * - AWS integration
      */
-    this.rootResource.addMethod('GET', this.awsIntegration, this.methodOptions);
+    fullResourcePath.addMethod('GET', this.awsIntegration, this.methodOptions);
+  }
+
+  /**
+   * We only need this added once for all hooks attached to this api
+   */
+  private addSuccessResponse(): void {
+    if (this.apiConstruct.responseModels['hook-event-success']) {
+      return;
+    }
+    this.apiConstruct.addResponseModel('hook-event-success', {
+      properties: {
+        message: { type: apigw.JsonSchemaType.STRING },
+      },
+    });
   }
 }

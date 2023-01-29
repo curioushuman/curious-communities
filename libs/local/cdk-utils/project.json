@@ -10,6 +10,9 @@
       "options": {
         "outputPath": "dist/local/@curioushuman/cdk-utils",
         "main": "libs/local/cdk-utils/src/index.ts",
+        "assets": [
+          "libs/local/cdk-utils/src/assets/**/*"
+        ],
         "tsConfig": "libs/local/cdk-utils/tsconfig.json",
         "packageJson": "libs/local/cdk-utils/package.json"
       },

@@ -1,5 +1,6 @@
 export * from './lib/apigw/api.construct';
 export * from './lib/apigw/api.types';
+export * from './lib/apigw/hook-external-event.construct';
 
 export * from './lib/dynamodb/table-from.construct';
 

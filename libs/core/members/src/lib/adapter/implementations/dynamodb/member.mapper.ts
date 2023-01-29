@@ -1,8 +1,5 @@
-import { findSourceIdAsValue } from '@curioushuman/common';
-import {
-  Member,
-  prepareMemberExternalIdSource,
-} from '../../../domain/entities/member';
+import { DynamoDbMapper } from '@curioushuman/common';
+import { Member } from '../../../domain/entities/member';
 import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
 import config from '../../../static/config';
 import { MembersDynamoDbItem } from './entities/item';
@@ -13,13 +10,13 @@ import {
 
 export class DynamoDbMemberMapper {
   public static toDomain(item: MembersDynamoDbItem): Member {
-    const sourceId = item.Member_SourceIdCOURSE
-      ? prepareMemberExternalIdSource(item.Member_SourceIdCOURSE)
-      : undefined;
     return Member.check({
       id: item.primaryKey,
 
-      sourceIds: sourceId ? [sourceId] : [],
+      sourceIds: DynamoDbMapper.prepareDomainSourceIds<
+        MembersDynamoDbItem,
+        MemberSourceIdSource
+      >(item, 'Member', config.defaults.accountSources),
 
       status: item.Member_Status,
       name: item.Member_Name,
@@ -36,16 +33,17 @@ export class DynamoDbMemberMapper {
    * TODO: later we could get fancier with this
    */
   public static toPersistenceKeys(member: Member): DynamoDbMemberKeys {
-    const sourceIdValue = findSourceIdAsValue<MemberSourceIdSource>(
-      member.sourceIds,
-      config.defaults.primaryAccountSource
-    );
+    const sourceIds =
+      DynamoDbMapper.preparePersistenceSourceIds<MemberSourceIdSource>(
+        member.sourceIds,
+        'Member',
+        config.defaults.accountSources
+      );
     return DynamoDbMemberKeys.check({
       primaryKey: member.id,
-      // sortKey: member.lastName,
 
       Sk_Member_Email: member.email,
-      Sk_Member_SourceIdCOURSE: sourceIdValue,
+      ...sourceIds,
     });
   }
 
@@ -55,12 +53,14 @@ export class DynamoDbMemberMapper {
   public static toPersistenceAttributes(
     member: Member
   ): DynamoDbMemberAttributes {
-    const sourceIdValue = findSourceIdAsValue<MemberSourceIdSource>(
-      member.sourceIds,
-      config.defaults.primaryAccountSource
-    );
+    const sourceIdFields =
+      DynamoDbMapper.preparePersistenceSourceIdFields<MemberSourceIdSource>(
+        member.sourceIds,
+        'Member',
+        config.defaults.accountSources
+      );
     return {
-      Member_SourceIdCOURSE: sourceIdValue,
+      ...sourceIdFields,
 
       Member_Status: member.status,
       Member_Name: member.name,

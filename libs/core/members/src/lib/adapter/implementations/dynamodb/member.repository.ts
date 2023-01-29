@@ -30,7 +30,7 @@ import { MemberEmail } from '../../../domain/value-objects/member-email';
  *
  * NOTES:
  * - repos for parent entities, by default, do not return children
- * - we're using composition rather than inheritance here
+ * - we're using composition rather than inheritance
  */
 @Injectable()
 export class DynamoDbMemberRepository implements MemberRepository {
@@ -43,7 +43,13 @@ export class DynamoDbMemberRepository implements MemberRepository {
     const props: DynamoDbRepositoryProps = {
       entityId: 'member',
       tableId: 'members',
-      globalIndexIds: ['email', 'source-id-COURSE'],
+      globalIndexIds: [
+        'email',
+        'source-id-CRM',
+        'source-id-AUTH',
+        'source-id-COMMUNITY',
+        'source-id-MICRO_COURSE',
+      ],
       prefix: 'cc',
     };
     this.dynamoDbRepository = new DynamoDbRepository(props, this.logger);

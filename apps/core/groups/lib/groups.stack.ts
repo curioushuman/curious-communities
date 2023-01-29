@@ -29,8 +29,8 @@ export class GroupsStack extends cdk.Stack {
     layers: [] as lambda.ILayerVersion[],
   };
 
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+  constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
+    super(scope, stackId, props);
 
     /**
      * Other AWS services this stack needs pay attention to
@@ -43,7 +43,7 @@ export class GroupsStack extends cdk.Stack {
      * - this has been abstracted into a construct just to keep this file tidy
      * - all LSI and GSI details can be found in the construct
      */
-    const groupsTableConstruct = new GroupsDynamoDbConstruct(this, 'cc-groups');
+    const groupsTableConstruct = new GroupsDynamoDbConstruct(this, stackId);
 
     /**
      * Internal events eventBus

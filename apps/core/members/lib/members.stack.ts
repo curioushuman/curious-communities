@@ -43,10 +43,7 @@ export class MembersStack extends cdk.Stack {
      * - this has been abstracted into a construct just to keep this file tidy
      * - all LSI and GSI details can be found in the construct
      */
-    const membersTableConstruct = new MembersDynamoDbConstruct(
-      this,
-      'cc-members'
-    );
+    const membersTableConstruct = new MembersDynamoDbConstruct(this, stackId);
 
     /**
      * External events eventBus

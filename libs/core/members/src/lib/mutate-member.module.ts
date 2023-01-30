@@ -19,6 +19,8 @@ import { DynamoDbMemberRepository } from './adapter/implementations/dynamodb/mem
 import { SalesforceApiMemberSourceRepository } from './adapter/implementations/salesforce/member-source.repository';
 import { MemberRepositoryErrorFactory } from './adapter/ports/member.repository.error-factory';
 import { MemberSourceRepositoryErrorFactory } from './adapter/ports/member-source.repository.error-factory';
+import { FindMemberHandler } from './application/queries/find-member/find-member.query';
+import { FindMemberSourceHandler } from './application/queries/find-member-source/find-member-source.query';
 
 const imports = [
   CqrsModule,
@@ -30,7 +32,12 @@ const imports = [
 
 const controllers = [UpdateMemberController, CreateMemberController];
 
-const handlers = [UpdateMemberHandler, CreateMemberHandler];
+const handlers = [
+  UpdateMemberHandler,
+  CreateMemberHandler,
+  FindMemberHandler,
+  FindMemberSourceHandler,
+];
 
 const repositories = [
   {

@@ -1,4 +1,4 @@
-Feature: Course Source Authentication
+Feature: Salesforce Authentication
 
 Scenario: Successful authentication with repository
 Given the repository is live

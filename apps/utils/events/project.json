@@ -32,10 +32,7 @@
         ]
       },
       "outputs": ["{options.outputPath}"],
-      "dependsOn": [{
-        "target": "build",
-        "projects": "dependencies"
-      }]
+      "dependsOn": []
     },
     "synth": {
       "executor": "@otterdev/nx-cdk:run",
@@ -48,10 +45,7 @@
         ]
       },
       "outputs": ["{options.outputPath}"],
-      "dependsOn": [{
-        "target": "build",
-        "projects": "dependencies"
-      }]
+      "dependsOn": []
     },
     "deploy": {
       "executor": "@otterdev/nx-cdk:run",
@@ -66,10 +60,7 @@
         ]
       },
       "outputs": ["{options.outputPath}"],
-      "dependsOn": [{
-        "target": "build",
-        "projects": "dependencies"
-      }]
+      "dependsOn": []
     },
     "destroy": {
       "executor": "@otterdev/nx-cdk:run",
@@ -93,10 +84,7 @@
           "--profile=$AWS_PROFILE"
         ]
       },
-      "dependsOn": [{
-        "target": "build",
-        "projects": "dependencies"
-      }]
+      "dependsOn": []
     },
     "metadata": {
       "executor": "@otterdev/nx-cdk:run",
@@ -160,10 +148,7 @@
         "cwd": "apps/utils/events",
         "parallel": false
       },
-      "dependsOn": [{
-        "target": "build",
-        "projects": "dependencies"
-      }]
+      "dependsOn": []
     },
     "destroy-local": {
       "executor": "nx:run-commands",

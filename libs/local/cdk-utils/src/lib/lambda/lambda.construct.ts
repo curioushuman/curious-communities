@@ -109,7 +109,7 @@ export class LambdaConstruct extends Construct {
      */
     const privateKeyPath = pathResolve(
       __dirname,
-      '../../../../../env/jwtRS256.key'
+      '../../../../../../../env/jwtRS256.key'
     );
     if (!existsSync(privateKeyPath)) {
       throw new Error('SALESFORCE_PRIVATE_KEY file missing');

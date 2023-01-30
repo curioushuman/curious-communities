@@ -65,12 +65,12 @@ export class MembersDynamoDbConstruct extends Construct {
 
     // Global secondary index - member.SourceIdValue
     // Identifier
-    const byMemberSourceIdCRMValueLsiId = generateCompositeResourceId(
+    const byMemberSourceIdCRMValueIndexId = generateCompositeResourceId(
       id,
       'member-source-id-CRM'
     );
     const byMemberSourceIdCRMValueLsiName = transformIdToResourceName(
-      byMemberSourceIdCRMValueLsiId,
+      byMemberSourceIdCRMValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
@@ -88,12 +88,12 @@ export class MembersDynamoDbConstruct extends Construct {
 
     // Global secondary index - member.SourceIdValue
     // Identifier
-    const byMemberSourceIdAUTHValueLsiId = generateCompositeResourceId(
+    const byMemberSourceIdAUTHValueIndexId = generateCompositeResourceId(
       id,
       'member-source-id-AUTH'
     );
     const byMemberSourceIdAUTHValueLsiName = transformIdToResourceName(
-      byMemberSourceIdAUTHValueLsiId,
+      byMemberSourceIdAUTHValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
@@ -111,12 +111,12 @@ export class MembersDynamoDbConstruct extends Construct {
 
     // Global secondary index - member.SourceIdValue
     // Identifier
-    const byMemberSourceIdCOMMUNITYValueLsiId = generateCompositeResourceId(
+    const byMemberSourceIdCOMMUNITYValueIndexId = generateCompositeResourceId(
       id,
       'member-source-id-COMMUNITY'
     );
     const byMemberSourceIdCOMMUNITYValueLsiName = transformIdToResourceName(
-      byMemberSourceIdCOMMUNITYValueLsiId,
+      byMemberSourceIdCOMMUNITYValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
@@ -134,12 +134,12 @@ export class MembersDynamoDbConstruct extends Construct {
 
     // Global secondary index - member.SourceIdValue
     // Identifier
-    const byMemberSourceIdMICROCOURSEValueLsiId = generateCompositeResourceId(
+    const byMemberSourceIdMICROCOURSEValueIndexId = generateCompositeResourceId(
       id,
       'member-source-id-MICRO-COURSE'
     );
     const byMemberSourceIdMICROCOURSEValueLsiName = transformIdToResourceName(
-      byMemberSourceIdMICROCOURSEValueLsiId,
+      byMemberSourceIdMICROCOURSEValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
@@ -157,9 +157,12 @@ export class MembersDynamoDbConstruct extends Construct {
 
     // Global secondary index - member.email
     // Identifier
-    const byMemberEmailLsiId = generateCompositeResourceId(id, 'member-email');
+    const byMemberEmailIndexId = generateCompositeResourceId(
+      id,
+      'member-email'
+    );
     const byMemberEmailLsiName = transformIdToResourceName(
-      byMemberEmailLsiId,
+      byMemberEmailIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({

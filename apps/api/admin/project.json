@@ -30,10 +30,7 @@
         ]
       },
       "outputs": ["{options.outputPath}"],
-      "dependsOn": [{
-        "target": "build",
-        "projects": "dependencies"
-      },
+      "dependsOn": [
       {
         "target": "openapi",
         "projects": "self"
@@ -49,10 +46,7 @@
         ]
       },
       "outputs": ["{options.outputPath}"],
-      "dependsOn": [{
-        "target": "build",
-        "projects": "dependencies"
-      },
+      "dependsOn": [
       {
         "target": "openapi",
         "projects": "self"
@@ -71,10 +65,7 @@
         "command": "deploy"
       },
       "outputs": ["{options.outputPath}"],
-      "dependsOn": [{
-        "target": "deploy",
-        "projects": "dependencies"
-      },
+      "dependsOn": [
       {
         "target": "openapi",
         "projects": "self"
@@ -102,10 +93,7 @@
           "--profile=$AWS_PROFILE"
         ]
       },
-      "dependsOn": [{
-        "target": "build",
-        "projects": "dependencies"
-      },
+      "dependsOn": [
       {
         "target": "openapi",
         "projects": "self"

@@ -16,12 +16,7 @@
         "tsConfig": "libs/local/cdk-utils/tsconfig.json",
         "packageJson": "libs/local/cdk-utils/package.json"
       },
-      "dependsOn": [
-        {
-          "projects": "dependencies",
-          "target": "build"
-        }
-      ]
+      "dependsOn": []
     },
     "publish": {
       "executor": "@nrwl/workspace:run-commands",

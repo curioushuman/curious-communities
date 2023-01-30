@@ -167,7 +167,7 @@ export class LambdaConstruct extends Construct {
   }
 
   /**
-   * Adds the Salesforce environment variables to the lambda
+   * Adds the Auth0 environment variables to the lambda
    */
   public addEnvironmentAuth0(): void {
     /**
@@ -179,6 +179,18 @@ export class LambdaConstruct extends Construct {
       'AUTH0_CLIENT_ID',
       'AUTH0_CLIENT_SECRET',
     ];
+    this.addEnvironmentVars(requiredEnvVars);
+  }
+
+  /**
+   * Adds the EdApp environment variables to the lambda
+   */
+  public addEnvironmentEdApp(): void {
+    /**
+     * If we don't have the appropriate environment variables set,
+     * throw an error
+     */
+    const requiredEnvVars = ['ED_APP_DOMAIN', 'ED_APP_API_KEY'];
     this.addEnvironmentVars(requiredEnvVars);
   }
 }

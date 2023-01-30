@@ -65,12 +65,12 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     // Local secondary index - LAST NAME
     // Sort by
-    const byParticipantLastNameLsiId = generateCompositeResourceId(
+    const byParticipantLastNameIndexId = generateCompositeResourceId(
       id,
       'participant-last-name'
     );
     const byParticipantLastNameLsiName = transformIdToResourceName(
-      byParticipantLastNameLsiId,
+      byParticipantLastNameIndexId,
       'DynamoDbLSI'
     );
     this.table.addLocalSecondaryIndex({
@@ -84,9 +84,9 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     // Global secondary index - course.slug
     // Identifier
-    const byCourseSlugLsiId = generateCompositeResourceId(id, 'course-slug');
+    const byCourseSlugIndexId = generateCompositeResourceId(id, 'course-slug');
     const byCourseSlugLsiName = transformIdToResourceName(
-      byCourseSlugLsiId,
+      byCourseSlugIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
@@ -104,12 +104,12 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     // Global secondary index - course.SourceIdValue
     // Identifier
-    const byCourseSourceIdValueLsiId = generateCompositeResourceId(
+    const byCourseSourceIdValueIndexId = generateCompositeResourceId(
       id,
       'course-source-id-COURSE'
     );
     const byCourseSourceIdValueLsiName = transformIdToResourceName(
-      byCourseSourceIdValueLsiId,
+      byCourseSourceIdValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
@@ -127,12 +127,12 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     // Global secondary index - participant.SourceIdValue
     // Identifier
-    const byParticipantSourceIdValueLsiId = generateCompositeResourceId(
+    const byParticipantSourceIdValueIndexId = generateCompositeResourceId(
       id,
       'participant-source-id-COURSE'
     );
     const byParticipantSourceIdValueLsiName = transformIdToResourceName(
-      byParticipantSourceIdValueLsiId,
+      byParticipantSourceIdValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({

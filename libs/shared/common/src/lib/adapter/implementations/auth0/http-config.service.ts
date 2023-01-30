@@ -8,12 +8,10 @@ import { URLSearchParams } from 'url';
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryAuthenticationError } from '@curioushuman/error-factory';
 import { executeTask, logAction } from '@curioushuman/fp-ts-utils';
-import {
-  Auth0ApiRepositoryError,
-  Auth0ApiRepositoryErrorFactory,
-} from './repository.error-factory';
+import { Auth0ApiRepositoryErrorFactory } from './repository.error-factory';
 import { Auth0ApiAuthResponse } from './types/auth-response';
 import { confirmEnvVars } from '../../../utils/functions';
+import { Auth0ApiRepositoryError } from './repository.error-factory.types';
 
 /**
  * Setting up Authorization header and other HTTP config options

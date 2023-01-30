@@ -118,6 +118,7 @@ export class MembersStack extends cdk.Stack {
     );
     // add salesforce env vars
     createMemberLambdaConstruct.addEnvironmentAuth0();
+    createMemberLambdaConstruct.addEnvironmentEdApp();
     createMemberLambdaConstruct.addEnvironmentSalesforce();
 
     // allow the lambda access to the table
@@ -150,6 +151,7 @@ export class MembersStack extends cdk.Stack {
     );
     // add salesforce env vars
     updateMemberLambdaConstruct.addEnvironmentAuth0();
+    updateMemberLambdaConstruct.addEnvironmentEdApp();
     updateMemberLambdaConstruct.addEnvironmentSalesforce();
 
     // allow the lambda access to the table

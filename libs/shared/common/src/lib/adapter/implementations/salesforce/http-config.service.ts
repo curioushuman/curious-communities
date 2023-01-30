@@ -16,6 +16,7 @@ import {
   SalesforceApiRepositoryErrorFactory,
 } from './repository.error-factory';
 import { SalesforceApiAuthResponse } from './types/auth-response';
+import { confirmEnvVars } from '../../../utils/functions';
 
 /**
  * Setting up Authorization header and other HTTP config options
@@ -40,24 +41,11 @@ export class SalesforceApiHttpConfigService
   private authURL: string;
   private baseURL: string;
 
-  /**
-   * This is a little function to confirm the env vars we need
-   * out of the gates. We check for other ones in context for
-   * better error reporting.
-   */
-  private confirmEnvVars(requiredVars: string[]): void {
-    requiredVars.forEach((envVar) => {
-      if (!process.env[envVar]) {
-        throw new Error(`Missing environment variable ${envVar}`);
-      }
-    });
-  }
-
   constructor() {
     this.errorFactory = new SalesforceApiRepositoryErrorFactory();
     this.logger = new LoggableLogger(SalesforceApiHttpConfigService.name);
     const requiredEnvVars = ['SALESFORCE_URL_AUTH'];
-    this.confirmEnvVars(requiredEnvVars);
+    confirmEnvVars(requiredEnvVars);
     this.authURL = `${process.env.SALESFORCE_URL_AUTH}/services/oauth2/token`;
     this.baseURL = this.prepareBaseUrl();
   }
@@ -74,7 +62,7 @@ export class SalesforceApiHttpConfigService
       );
     }
     const requiredEnvVars = ['SALESFORCE_URL_DATA_VERSION'];
-    this.confirmEnvVars(requiredEnvVars);
+    confirmEnvVars(requiredEnvVars);
     return `${url}/services/data/v${process.env.SALESFORCE_URL_DATA_VERSION}/`;
   }
 
@@ -132,7 +120,7 @@ export class SalesforceApiHttpConfigService
     const privateKey = this.preparePrivateKey();
     // NOTE: auth URL already confirmed in constructor
     const requiredEnvVars = ['SALESFORCE_CONSUMER_KEY', 'SALESFORCE_USER'];
-    this.confirmEnvVars(requiredEnvVars);
+    confirmEnvVars(requiredEnvVars);
     return jwt.sign(
       {
         iss: process.env.SALESFORCE_CONSUMER_KEY,

@@ -33,6 +33,8 @@ export class LambdaConstruct extends Construct {
     },
     environment: {
       NODE_OPTIONS: '--enable-source-maps',
+      NODE_ENV: process.env.NODE_ENV || 'production',
+      AWS_NAME_PREFIX: process.env.AWS_NAME_PREFIX || '',
     },
     logRetention: logs.RetentionDays.ONE_DAY,
     runtime: lambda.Runtime.NODEJS_16_X,
@@ -92,6 +94,53 @@ export class LambdaConstruct extends Construct {
   }
 
   /**
+   * ! NOTE: this is a duplicate from common
+   * When we've made cdk-utils into a package we can remove this
+   */
+  private confirmEnvVars(requiredVars: string[]): void {
+    requiredVars.forEach((envVar) => {
+      if (!process.env[envVar]) {
+        throw new Error(`Missing environment variable ${envVar}`);
+      }
+    });
+  }
+
+  private privateKeyToString(keyFilename: string): string {
+    const privateKeyPath = pathResolve(
+      __dirname,
+      `../../../../../../../env/${keyFilename}`
+    );
+    if (!existsSync(privateKeyPath)) {
+      throw new Error(`PRIVATE_KEY file missing: ${privateKeyPath}}`);
+    }
+    const privateKeyBuffer = readFileSync(privateKeyPath);
+    if (!privateKeyBuffer) {
+      throw new Error('PRIVATE_KEY file empty: ${privateKeyPath}}');
+    }
+    return privateKeyBuffer.toString();
+  }
+
+  /**
+   * Adds the Salesforce environment variables to the lambda
+   */
+  public addEnvironmentVars(vars: string[]): void {
+    /**
+     * If we don't have the appropriate environment variables set,
+     * throw an error
+     */
+    this.confirmEnvVars(vars);
+
+    /**
+     * Now we will add them to the lambda
+     *
+     * NOTE: we are typecasting as we've checked all of them above
+     */
+    vars.forEach((key) => {
+      this.lambdaFunction.addEnvironment(key, process.env[key] as string);
+    });
+  }
+
+  /**
    * Adds the Salesforce environment variables to the lambda
    */
   public addEnvironmentSalesforce(): void {
@@ -99,48 +148,37 @@ export class LambdaConstruct extends Construct {
      * If we don't have the appropriate environment variables set,
      * throw an error
      */
-    if (!process.env.SALESFORCE_CONSUMER_KEY) {
-      throw new Error('SALESFORCE_CONSUMER_KEY is not set');
-    }
+    const requiredEnvVars = [
+      'SALESFORCE_CONSUMER_KEY',
+      'SALESFORCE_CONSUMER_SECRET',
+      'SALESFORCE_USER',
+      'SALESFORCE_URL_AUTH',
+      'SALESFORCE_URL_DATA',
+      'SALESFORCE_URL_DATA_VERSION',
+    ];
+    this.addEnvironmentVars(requiredEnvVars);
 
-    /**
-     * Here, we are going to set the SF private key env var
-     * from the local file we have.
-     */
-    const privateKeyPath = pathResolve(
-      __dirname,
-      '../../../../../../../env/jwtRS256.key'
+    // and private key
+    const SALESFORCE_PRIVATE_KEY = this.privateKeyToString('jwtRS256.key');
+    this.lambdaFunction.addEnvironment(
+      'SALESFORCE_PRIVATE_KEY',
+      SALESFORCE_PRIVATE_KEY
     );
-    if (!existsSync(privateKeyPath)) {
-      throw new Error('SALESFORCE_PRIVATE_KEY file missing');
-    }
-    const privateKeyBuffer = readFileSync(privateKeyPath);
-    if (!privateKeyBuffer) {
-      throw new Error('SALESFORCE_PRIVATE_KEY file is empty');
-    }
+  }
 
+  /**
+   * Adds the Salesforce environment variables to the lambda
+   */
+  public addEnvironmentAuth0(): void {
     /**
-     * These are the required vars for Salesforce
+     * If we don't have the appropriate environment variables set,
+     * throw an error
      */
-    const environment: Record<string, string> = {
-      NODE_ENV: process.env.NODE_ENV || 'test',
-      AWS_NAME_PREFIX: process.env.AWS_NAME_PREFIX || '',
-      SALESFORCE_CONSUMER_KEY: process.env.SALESFORCE_CONSUMER_KEY || 'BROKEN',
-      SALESFORCE_CONSUMER_SECRET:
-        process.env.SALESFORCE_CONSUMER_SECRET || 'BROKEN',
-      SALESFORCE_USER: process.env.SALESFORCE_USER || 'BROKEN',
-      SALESFORCE_URL_AUTH: process.env.SALESFORCE_URL_AUTH || 'BROKEN',
-      SALESFORCE_URL_DATA: process.env.SALESFORCE_URL_DATA || 'BROKEN',
-      SALESFORCE_URL_DATA_VERSION:
-        process.env.SALESFORCE_URL_DATA_VERSION || 'BROKEN',
-      SALESFORCE_PRIVATE_KEY: privateKeyBuffer.toString(),
-    };
-
-    /**
-     * Now we will add them to the lambda
-     */
-    Object.keys(environment).forEach((key) => {
-      this.lambdaFunction.addEnvironment(key, environment[key]);
-    });
+    const requiredEnvVars = [
+      'AUTH0_DOMAIN',
+      'AUTH0_CLIENT_ID',
+      'AUTH0_CLIENT_SECRET',
+    ];
+    this.addEnvironmentVars(requiredEnvVars);
   }
 }

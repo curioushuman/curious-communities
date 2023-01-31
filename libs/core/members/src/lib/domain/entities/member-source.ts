@@ -1,4 +1,4 @@
-import { Record, Static } from 'runtypes';
+import { Optional, Null, Record, Static } from 'runtypes';
 
 import { ValueOf } from '@curioushuman/common';
 
@@ -20,7 +20,7 @@ export const MemberSource = Record({
   status: MemberSourceStatus,
   name: MemberName,
   email: MemberEmail,
-  organisationName: MemberOrganisationName,
+  organisationName: Optional(MemberOrganisationName.Or(Null)),
 });
 
 /**

@@ -6,7 +6,7 @@ import {
   CourseSourceIdentifier,
   CourseSourceIdentifiers,
 } from '../../domain/entities/course-source';
-import { CourseSourceId } from '../../domain/value-objects/course-source-id';
+import { CourseSourceIdSource } from '../../domain/value-objects/course-source-id-source';
 
 /**
  * Type for the findOne method interface within repository
@@ -30,8 +30,7 @@ export abstract class CourseSourceRepository
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findOneById(id: CourseSourceId): TaskEither<Error, CourseSource>;
-  // abstract findOneByIdSource(
-  //   id: CourseSourceIdSource
-  // ): TaskEither<Error, CourseSource>;
+  abstract findOneByIdSource(
+    id: CourseSourceIdSource
+  ): TaskEither<Error, CourseSource>;
 }

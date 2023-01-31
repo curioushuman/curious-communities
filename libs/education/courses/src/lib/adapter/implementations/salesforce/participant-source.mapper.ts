@@ -1,5 +1,6 @@
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 import { ParticipantSourceStatus } from '../../../domain/value-objects/participant-source-status';
+import { Source } from '../../../domain/value-objects/source';
 import { SalesforceApiParticipantSourceStatus } from './entities/participant-source-status';
 import { SalesforceApiParticipantSourceResponse } from './entities/participant-source.response';
 
@@ -13,17 +14,19 @@ export class SalesforceApiParticipantSourceMapper {
    *
    */
   public static toDomain(
-    source: SalesforceApiParticipantSourceResponse
+    sourceResponse: SalesforceApiParticipantSourceResponse,
+    source: Source
   ): ParticipantSource {
     return ParticipantSource.check({
-      id: source.Id,
-      courseId: source.Case__c,
+      id: sourceResponse.Id,
+      source,
+      courseId: sourceResponse.Case__c,
       status: SalesforceApiParticipantSourceMapper.toDomainStatus(
-        source.Status__c
+        sourceResponse.Status__c
       ),
-      name: source.Contact_full_name__c,
-      email: source.Contact_email__c,
-      organisationName: source.SYS_Organisation_name__c,
+      name: sourceResponse.Contact_full_name__c,
+      email: sourceResponse.Contact_email__c,
+      organisationName: sourceResponse.SYS_Organisation_name__c,
     });
   }
 

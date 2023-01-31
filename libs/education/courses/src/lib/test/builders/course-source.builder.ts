@@ -33,11 +33,14 @@ for (let i = 0; i <= 3; i++) {
 }
 
 export const CourseSourceBuilder = () => {
+  let source = config.defaults.primaryAccountSource;
+
   /**
    * Default properties don't exist in source repository
    */
   const defaultProperties: CourseSourceLooseMimic = {
     id: '5008s1234519CjIAAU',
+    source,
     status: 'open' as CourseSourceStatus,
     name: 'Learn to be a dancer',
     dateOpen: timestamps[2],
@@ -45,13 +48,12 @@ export const CourseSourceBuilder = () => {
   };
   const overrides: CourseSourceLooseMimic = {
     id: defaultProperties.id,
+    source: defaultProperties.source,
     status: defaultProperties.status,
     name: defaultProperties.name,
     dateOpen: defaultProperties.dateOpen,
     dateClosed: defaultProperties.dateClosed,
   };
-
-  let source = config.defaults.primaryAccountSource;
 
   return {
     funkyChars() {

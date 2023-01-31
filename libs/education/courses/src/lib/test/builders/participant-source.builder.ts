@@ -28,29 +28,31 @@ type ParticipantSourceLooseMimic = {
 };
 
 export const ParticipantSourceBuilder = () => {
+  let source = config.defaults.primaryAccountSource;
+
   /**
    * Default properties don't exist in source repository
    */
   const defaultProperties: ParticipantSourceLooseMimic = {
     id: '5008s1234519CjIPPU',
+    source,
     courseId: '5008s1234519CjIAAU',
-    status: 'pending' as ParticipantSourceStatus,
 
+    status: 'pending' as ParticipantSourceStatus,
     name: 'James Brown',
     email: 'james@brown.com',
     organisationName: 'James Co',
   };
   const overrides: ParticipantSourceLooseMimic = {
     id: defaultProperties.id,
+    source: defaultProperties.source,
     courseId: defaultProperties.courseId,
-    status: defaultProperties.status,
 
+    status: defaultProperties.status,
     name: defaultProperties.name,
     email: defaultProperties.email,
     organisationName: defaultProperties.organisationName,
   };
-
-  let source = config.defaults.primaryAccountSource;
 
   return {
     alpha() {

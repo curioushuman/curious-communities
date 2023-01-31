@@ -1,6 +1,7 @@
 import { Timestamp } from '@curioushuman/common';
 import { CourseSource } from '../../../domain/entities/course-source';
 import { CourseSourceStatus } from '../../../domain/value-objects/course-source-status';
+import { Source } from '../../../domain/value-objects/source';
 import { SalesforceApiCourseSourceResponse } from './entities/course-source.response';
 
 export class SalesforceApiCourseSourceMapper {
@@ -13,17 +14,19 @@ export class SalesforceApiCourseSourceMapper {
    *
    */
   public static toDomain(
-    source: SalesforceApiCourseSourceResponse
+    sourceResponse: SalesforceApiCourseSourceResponse,
+    source: Source
   ): CourseSource {
     const dateOpen = SalesforceApiCourseSourceMapper.prepareTimestamp(
-      source.Date_start__c
+      sourceResponse.Date_start__c
     );
     const dateClosed = SalesforceApiCourseSourceMapper.prepareTimestamp(
-      source.Date_end__c
+      sourceResponse.Date_end__c
     );
     return CourseSource.check({
-      id: source.Id,
-      name: source.Summary_quick_year__c,
+      id: sourceResponse.Id,
+      source,
+      name: sourceResponse.Summary_quick_year__c,
       status: SalesforceApiCourseSourceMapper.determineStatus(
         dateOpen,
         dateClosed

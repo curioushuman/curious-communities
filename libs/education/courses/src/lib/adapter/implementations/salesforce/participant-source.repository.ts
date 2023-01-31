@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import * as TE from 'fp-ts/lib/TaskEither';
 
 import { LoggableLogger } from '@curioushuman/loggable';
 import {
-  SalesforceApiRepositoryError,
-  SalesforceApiSourceRepository,
+  confirmSourceId,
+  SalesforceApiRepository,
+  SourceRepository,
+  SalesforceApiRepositoryProps,
 } from '@curioushuman/common';
+import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 
 import {
   ParticipantSource,
@@ -19,45 +21,78 @@ import {
 } from '../../ports/participant-source.repository';
 import { SalesforceApiParticipantSourceResponse } from './entities/participant-source.response';
 import { SalesforceApiParticipantSourceMapper } from './participant-source.mapper';
-import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
+import { Source } from '../../../domain/value-objects/source';
+import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
 
 @Injectable()
 export class SalesforceApiParticipantSourceRepository
-  extends SalesforceApiSourceRepository
-  implements ParticipantSourceRepository
+  implements ParticipantSourceRepository, SourceRepository<Source>
 {
+  private salesforceApiRepository: SalesforceApiRepository<
+    ParticipantSource,
+    SalesforceApiParticipantSourceResponse
+  >;
+
+  /**
+   * The key for this source
+   */
+  public readonly SOURCE = 'COURSE';
+
   constructor(public httpService: HttpService, public logger: LoggableLogger) {
-    super('Participant__c', SalesforceApiParticipantSourceResponse);
     this.logger.setContext(SalesforceApiParticipantSourceRepository.name);
+
+    // set up the repository
+    const props: SalesforceApiRepositoryProps = {
+      sourceName: 'Participant__c',
+      responseRuntype: SalesforceApiParticipantSourceResponse,
+    };
+    this.salesforceApiRepository = new SalesforceApiRepository(
+      props,
+      this.httpService,
+      this.logger
+    );
   }
 
-  findOneById = (
-    value: ParticipantSourceId
+  processFindOne =
+    (source: Source) =>
+    (
+      item?: SalesforceApiParticipantSourceResponse,
+      uri = 'not provided'
+    ): ParticipantSource => {
+      // did we find anything?
+      if (!item) {
+        throw new RepositoryItemNotFoundError(
+          `Participant not found for uri: ${uri}`
+        );
+      }
+
+      // is it what we expected?
+      // will throw error if not
+      const participantItem =
+        SalesforceApiParticipantSourceResponse.check(item);
+
+      // NOTE: if the response was invalid, an error would have been thrown
+      // could this similarly be in a serialisation decorator?
+      return SalesforceApiParticipantSourceMapper.toDomain(
+        participantItem,
+        source
+      );
+    };
+
+  /**
+   * ? should the confirmSourceId also be in a tryCatch or similar?
+   */
+  findOneByIdSource = (
+    value: ParticipantSourceIdSource
   ): TE.TaskEither<Error, ParticipantSource> => {
-    return TE.tryCatch(
-      async () => {
-        const id = ParticipantSourceId.check(value);
-        const endpoint = this.prepareFindOneUri(id);
-        const fields = this.fields();
-        const request$ =
-          this.httpService.get<SalesforceApiParticipantSourceResponse>(
-            endpoint,
-            {
-              params: {
-                fields,
-              },
-            }
-          );
-        const response = await firstValueFrom(request$);
-
-        // NOTE: if not found, an error would have been thrown and caught
-
-        // NOTE: if the response was invalid, an error would have been thrown
-        // could this similarly be in a serialisation decorator?
-        return SalesforceApiParticipantSourceMapper.toDomain(response.data);
-      },
-      // NOTE: we don't use an error factory here, it is one level up
-      (reason: SalesforceApiRepositoryError) => reason as Error
+    // NOTE: this will throw an error if the value is invalid
+    const id = confirmSourceId<ParticipantSourceIdSource>(
+      ParticipantSourceIdSource.check(value),
+      this.SOURCE
+    );
+    return this.salesforceApiRepository.tryFindOne(
+      id,
+      this.processFindOne(this.SOURCE)
     );
   };
 
@@ -66,22 +101,12 @@ export class SalesforceApiParticipantSourceRepository
    */
   findOneBy: Record<ParticipantSourceIdentifier, ParticipantSourceFindMethod> =
     {
-      idSource: this.findOneById,
+      idSource: this.findOneByIdSource,
     };
 
   findOne = (
     identifier: ParticipantSourceIdentifier
   ): ParticipantSourceFindMethod => {
     return this.findOneBy[identifier];
-  };
-
-  save = (participantSource: ParticipantSource): TE.TaskEither<Error, void> => {
-    return TE.tryCatch(
-      async () => {
-        // DO NOTHING
-        this.logger.debug(`Temp non-save of ${participantSource.id}`);
-      },
-      (reason: unknown) => reason as Error
-    );
   };
 }

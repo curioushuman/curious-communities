@@ -6,12 +6,14 @@ import { ParticipantEmail } from '../value-objects/participant-email';
 import { ParticipantOrganisationName } from '../value-objects/participant-organisation-name';
 import { ParticipantSourceId } from '../value-objects/participant-source-id';
 import { ParticipantSourceIdSource } from '../value-objects/participant-source-id-source';
+import { Source } from '../value-objects/source';
 
 export const ParticipantSource = Record({
   id: ParticipantSourceId,
+  source: Source,
   courseId: ParticipantSourceId,
-  status: ParticipantSourceStatus,
 
+  status: ParticipantSourceStatus,
   name: ParticipantName,
   email: ParticipantEmail,
   organisationName: ParticipantOrganisationName,

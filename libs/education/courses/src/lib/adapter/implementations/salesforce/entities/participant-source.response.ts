@@ -1,11 +1,10 @@
-import { Array, Null, Optional, Record, Static } from 'runtypes';
+import { Array, Null, Optional, Record, Static, String } from 'runtypes';
 import { SalesforceApiResponse } from '@curioushuman/common';
 import { CourseSourceId } from '../../../../domain/value-objects/course-source-id';
 import { ParticipantEmail } from '../../../../domain/value-objects/participant-email';
 import { ParticipantName } from '../../../../domain/value-objects/participant-name';
 import { ParticipantOrganisationName } from '../../../../domain/value-objects/participant-organisation-name';
 import { ParticipantSourceId } from '../../../../domain/value-objects/participant-source-id';
-import { ParticipantSourceStatus } from '../../../../domain/value-objects/participant-source-status';
 
 /**
  * TODO
@@ -21,7 +20,9 @@ export const SalesforceApiParticipantSourceResponse =
   SalesforceApiResponse.extend({
     Id: ParticipantSourceId,
     Case__c: CourseSourceId,
-    Status__c: ParticipantSourceStatus,
+    // Can't use literals, as the check fails
+    // Status__c: ParticipantSourceStatus,
+    Status__c: String,
     Contact_full_name__c: ParticipantName,
     Contact_email__c: ParticipantEmail,
     SYS_Organisation_name__c: Optional(ParticipantOrganisationName.Or(Null)),

@@ -1,6 +1,5 @@
 import { FindParticipantSourceDto } from './find-participant-source.dto';
 import { prepareParticipantExternalIdSource } from '../../../domain/entities/participant';
-import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
 import config from '../../../static/config';
 import { Source } from '../../../domain/value-objects/source';
@@ -40,14 +39,5 @@ export class FindParticipantSourceMapper {
       value,
       source: Source.check(config.defaults.primaryAccountSource),
     };
-  }
-
-  public static fromIdSourceToId(
-    idSource: ParticipantSourceIdSource
-  ): ParticipantSourceId {
-    // this will throw an error if the id is not valid
-    const parsedIdSource = ParticipantSourceIdSource.check(idSource);
-    // this pulls the id out so it can be used on it's own
-    return parsedIdSource.id as ParticipantSourceId;
   }
 }

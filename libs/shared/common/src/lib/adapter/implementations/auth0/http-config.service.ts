@@ -11,7 +11,6 @@ import { executeTask, logAction } from '@curioushuman/fp-ts-utils';
 import { Auth0ApiRepositoryErrorFactory } from './repository.error-factory';
 import { Auth0ApiAuthResponse } from './types/auth-response';
 import { confirmEnvVars } from '../../../utils/functions';
-import { Auth0ApiRepositoryError } from './repository.error-factory.types';
 
 /**
  * Setting up Authorization header and other HTTP config options
@@ -111,7 +110,7 @@ export class Auth0ApiHttpConfigService implements HttpModuleOptionsFactory {
         }
         return this.processAuthResponse(response.data);
       },
-      (error: Auth0ApiRepositoryError) =>
+      (error: Error) =>
         this.errorFactory.error(error, 'RepositoryAuthenticationError')
     );
   }

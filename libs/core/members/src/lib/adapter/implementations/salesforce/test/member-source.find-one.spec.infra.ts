@@ -16,6 +16,7 @@ import { SalesforceApiMemberSourceRepository } from '../member-source.repository
 import { MemberSourceRepositoryErrorFactory } from '../../../ports/member-source.repository.error-factory';
 import { MemberSourceBuilder } from '../../../../test/builders/member-source.builder';
 import { MemberEmail } from '../../../../domain/value-objects/member-email';
+import { MemberSourceIdSource } from '../../../../domain/value-objects/member-source-id-source';
 
 /**
  * INTEGRATION TEST
@@ -28,6 +29,9 @@ import { MemberEmail } from '../../../../domain/value-objects/member-email';
  * - handling of their various responses/errors
  */
 
+// Salesforce API is suuuuuuper slow
+jest.setTimeout(20000);
+
 const feature = loadFeature('./member-source.find-one.infra.feature', {
   loadRelativePath: true,
 });
@@ -35,6 +39,7 @@ const feature = loadFeature('./member-source.find-one.infra.feature', {
 defineFeature(feature, (test) => {
   let repository: SalesforceApiMemberSourceRepository;
   let memberSourceId: MemberSourceId;
+  let memberSourceIdSource: MemberSourceIdSource;
   let memberEmail: MemberEmail;
 
   beforeAll(async () => {
@@ -79,11 +84,17 @@ defineFeature(feature, (test) => {
       // this is the simpler version
       // I know this ID exists, it'll do for now
       memberSourceId = '0030K00002QdoSMQAZ' as MemberSourceId;
+      memberSourceIdSource = {
+        id: memberSourceId,
+        source: 'CRM',
+      };
     });
 
     when('I request the source by ID', async () => {
       try {
-        result = await executeTask(repository.findOneById(memberSourceId));
+        result = await executeTask(
+          repository.findOneByIdSource(memberSourceIdSource)
+        );
       } catch (err) {
         if ('response' in err) {
           console.log(err.response);
@@ -151,11 +162,17 @@ defineFeature(feature, (test) => {
 
     and('a matching record DOES NOT exist at the source', () => {
       memberSourceId = MemberSourceBuilder().noMatchingSource().build().id;
+      memberSourceIdSource = {
+        id: memberSourceId,
+        source: 'CRM',
+      };
     });
 
     when('I request the source by ID', async () => {
       try {
-        result = await executeTask(repository.findOneById(memberSourceId));
+        result = await executeTask(
+          repository.findOneByIdSource(memberSourceIdSource)
+        );
       } catch (err) {
         error = err;
       }

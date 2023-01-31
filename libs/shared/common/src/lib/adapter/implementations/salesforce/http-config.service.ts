@@ -11,10 +11,7 @@ import { resolve as pathResolve } from 'path';
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryAuthenticationError } from '@curioushuman/error-factory';
 import { executeTask, logAction } from '@curioushuman/fp-ts-utils';
-import {
-  SalesforceApiRepositoryError,
-  SalesforceApiRepositoryErrorFactory,
-} from './repository.error-factory';
+import { SalesforceApiRepositoryErrorFactory } from './repository.error-factory';
 import { SalesforceApiAuthResponse } from './types/auth-response';
 import { confirmEnvVars } from '../../../utils/functions';
 
@@ -177,7 +174,7 @@ export class SalesforceApiHttpConfigService
         }
         return this.processAuthResponse(response.data);
       },
-      (error: SalesforceApiRepositoryError) =>
+      (error: Error) =>
         this.errorFactory.error(error, 'RepositoryAuthenticationError')
     );
   }

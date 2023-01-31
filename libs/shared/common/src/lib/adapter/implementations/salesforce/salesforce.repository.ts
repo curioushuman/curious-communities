@@ -1,33 +1,32 @@
 import { LoggableLogger } from '@curioushuman/loggable';
 import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import * as TE from 'fp-ts/lib/TaskEither';
+
 import {
+  SalesforceApiFindOneProcessMethod,
   SalesforceApiQueryField,
   SalesforceApiQueryOperator,
+  SalesforceApiRepositoryProps,
 } from './salesforce.repository.types';
-
-/**
- * Dirty little type hack that emulates just those parts of Runtype.Record that we need
- *
- * TODO: see if you can replace the replica with a derivative of Runtype
- */
-export interface RunTypeReplica {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  omit: (key: string) => any;
-  fields: Record<string, unknown>;
-}
+import { SalesforceApiRepositoryError } from './repository.error-factory';
 
 /**
  * E is for entity
  * R is for response type (from Salesforce)
  */
-export abstract class SalesforceApiSourceRepository {
-  abstract logger: LoggableLogger;
-  abstract httpService: HttpService;
+export class SalesforceApiRepository<DomainT, ResponseT> {
+  private readonly sourceName: string;
+  private readonly responseRuntype: SalesforceApiRepositoryProps['responseRuntype'];
 
   constructor(
-    protected sourceName: string,
-    private responseRuntype: RunTypeReplica
-  ) {}
+    props: SalesforceApiRepositoryProps,
+    private httpService: HttpService,
+    private logger: LoggableLogger
+  ) {
+    this.sourceName = props.sourceName;
+    this.responseRuntype = props.responseRuntype;
+  }
 
   protected fields(): string {
     const rawRunType = this.responseRuntype.omit('attributes');
@@ -58,4 +57,53 @@ export abstract class SalesforceApiSourceRepository {
     this.logger.debug(`Querying ${this.sourceName} with uri ${endpoint}`);
     return endpoint;
   }
+
+  /**
+   * ? should id be a more specific type?
+   */
+  tryFindOne = (
+    id: string,
+    processResult: SalesforceApiFindOneProcessMethod<DomainT, ResponseT>
+  ): TE.TaskEither<Error, DomainT> => {
+    return TE.tryCatch(
+      async () => {
+        const uri = this.prepareFindOneUri(id);
+        const fields = this.fields();
+        const request$ = this.httpService.get<ResponseT>(uri, {
+          params: {
+            fields,
+          },
+        });
+        const response = await firstValueFrom(request$);
+
+        // NOTE: if not found, an error would have been thrown and caught
+
+        return processResult(response.data, uri);
+      },
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: SalesforceApiRepositoryError) => reason as Error
+    );
+  };
+
+  /**
+   * ? should id be a more specific type?
+   */
+  tryQueryOne = (
+    values: SalesforceApiQueryField[],
+    processResult: SalesforceApiFindOneProcessMethod<DomainT, ResponseT>
+  ): TE.TaskEither<Error, DomainT> => {
+    return TE.tryCatch(
+      async () => {
+        const uri = this.prepareQueryUri(values);
+        const request$ = this.httpService.get<ResponseT>(uri);
+        const response = await firstValueFrom(request$);
+
+        // NOTE: if not found, an error would have been thrown and caught
+
+        return processResult(response.data, uri);
+      },
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: SalesforceApiRepositoryError) => reason as Error
+    );
+  };
 }

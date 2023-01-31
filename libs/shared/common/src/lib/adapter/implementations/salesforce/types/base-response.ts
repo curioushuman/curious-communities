@@ -5,3 +5,8 @@ export const SalesforceApiResponse = Record({
 });
 
 export type SalesforceApiResponse = Static<typeof SalesforceApiResponse>;
+
+export type SalesforceApiResponses<T> = {
+  totalSize: number;
+  records: T[];
+};

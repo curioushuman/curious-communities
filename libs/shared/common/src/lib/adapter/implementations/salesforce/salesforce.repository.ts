@@ -9,7 +9,8 @@ import {
   SalesforceApiQueryOperator,
   SalesforceApiRepositoryProps,
 } from './salesforce.repository.types';
-import { SalesforceApiRepositoryError } from './repository.error-factory';
+import { SalesforceApiRepositoryError } from './repository.error-factory.types';
+import { SalesforceApiResponses } from './types/base-response';
 
 /**
  * E is for entity
@@ -86,21 +87,23 @@ export class SalesforceApiRepository<DomainT, ResponseT> {
   };
 
   /**
-   * ? should id be a more specific type?
+   * Query by a series of WHERE values
    */
   tryQueryOne = (
     values: SalesforceApiQueryField[],
+    operator: SalesforceApiQueryOperator,
     processResult: SalesforceApiFindOneProcessMethod<DomainT, ResponseT>
   ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
-        const uri = this.prepareQueryUri(values);
-        const request$ = this.httpService.get<ResponseT>(uri);
+        const uri = this.prepareQueryUri(values, operator);
+        const request$ =
+          this.httpService.get<SalesforceApiResponses<ResponseT>>(uri);
         const response = await firstValueFrom(request$);
 
         // NOTE: if not found, an error would have been thrown and caught
 
-        return processResult(response.data, uri);
+        return processResult(response.data.records[0], uri);
       },
       // NOTE: we don't use an error factory here, it is one level up
       (reason: SalesforceApiRepositoryError) => reason as Error

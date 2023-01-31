@@ -1,4 +1,4 @@
-import { Array, Null, Optional, Record, Static, String } from 'runtypes';
+import { Null, Optional, Static, String } from 'runtypes';
 import { SalesforceApiResponse } from '@curioushuman/common';
 import { CourseSourceId } from '../../../../domain/value-objects/course-source-id';
 import { CourseSourceName } from '../../../../domain/value-objects/course-source-name';
@@ -22,12 +22,4 @@ export const SalesforceApiCourseSourceResponse = SalesforceApiResponse.extend({
 
 export type SalesforceApiCourseSourceResponse = Static<
   typeof SalesforceApiCourseSourceResponse
->;
-
-export const SalesforceApiCourseSourceResponses = Record({
-  records: Array(SalesforceApiCourseSourceResponse),
-});
-
-export type SalesforceApiCourseSourceResponses = Static<
-  typeof SalesforceApiCourseSourceResponses
 >;

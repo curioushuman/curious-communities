@@ -1,40 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { RepositoryErrorFactory } from '@curioushuman/error-factory';
-
-interface SalesforceApiRepositoryErrorDataObject {
-  error?: string;
-  errorCode?: string;
-  error_description?: string;
-  message?: string;
-}
-
-type SalesforceApiRepositoryErrorDataArray =
-  SalesforceApiRepositoryErrorDataObject[];
-
-type SalesforceApiRepositoryErrorData =
-  | SalesforceApiRepositoryErrorDataObject
-  | SalesforceApiRepositoryErrorDataArray;
-
-interface SalesforceApiRepositoryErrorResponse {
-  status: number;
-  statusText: string;
-  data: SalesforceApiRepositoryErrorData;
-}
-
-export interface SalesforceApiRepositoryError extends Error {
-  response?: SalesforceApiRepositoryErrorResponse;
-}
-
-type SalesforceApiRepositoryErrorOrArray =
-  | SalesforceApiRepositoryError
-  | SalesforceApiRepositoryErrorDataArray;
+import {
+  SalesforceApiRepositoryError,
+  SalesforceApiRepositoryErrorDataArray,
+  SalesforceApiRepositoryErrorOrArray,
+  SalesforceApiRepositoryErrorResponse,
+} from './repository.error-factory.types';
 
 /**
  * Factory to interpret and produce consistent errors from the riddled mess
  * that is returned from Salesforce. Two types of individual error, or maybe
  * even an array of errors.
  */
-
 @Injectable()
 export class SalesforceApiRepositoryErrorFactory extends RepositoryErrorFactory {
   private sfErrorCodes: Record<string, number> = {

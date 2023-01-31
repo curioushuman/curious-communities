@@ -53,6 +53,8 @@ export class Auth0ApiHttpConfigService implements HttpModuleOptionsFactory {
       baseURL: this.baseURL,
       headers: {
         Authorization: `Bearer ${token}`,
+        // this overcomes the 'Unexpected end of file' error
+        'Accept-Encoding': 'gzip,deflate,compress',
       },
     };
   }

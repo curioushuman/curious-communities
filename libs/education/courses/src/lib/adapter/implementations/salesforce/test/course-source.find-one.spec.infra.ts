@@ -15,6 +15,8 @@ import { CourseSourceId } from '../../../../domain/value-objects/course-source-i
 import { SalesforceApiCourseSourceRepository } from '../course-source.repository';
 import { CourseSourceRepositoryErrorFactory } from '../../../ports/course-source.repository.error-factory';
 import { CourseSourceBuilder } from '../../../../test/builders/course-source.builder';
+import { CourseSourceIdSource } from '../../../../domain/value-objects/course-source-id-source';
+import config from '../../../../static/config';
 
 /**
  * INTEGRATION TEST
@@ -34,6 +36,7 @@ const feature = loadFeature('./course-source.find-one.infra.feature', {
 defineFeature(feature, (test) => {
   let repository: SalesforceApiCourseSourceRepository;
   let courseSourceId: CourseSourceId;
+  let courseSourceIdSource: CourseSourceIdSource;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -72,11 +75,17 @@ defineFeature(feature, (test) => {
       // this is the simpler version
       // I know this ID exists, it'll do for now
       courseSourceId = '5009s000001uq8iAAA' as CourseSourceId;
+      courseSourceIdSource = {
+        id: courseSourceId,
+        source: config.defaults.primaryAccountSource,
+      };
     });
 
     when('I request the source by ID', async () => {
       try {
-        result = await executeTask(repository.findOneById(courseSourceId));
+        result = await executeTask(
+          repository.findOneByIdSource(courseSourceIdSource)
+        );
       } catch (err) {
         error = err;
         expect(error).toBeUndefined();
@@ -103,11 +112,17 @@ defineFeature(feature, (test) => {
 
     and('a matching record DOES NOT exist at the source', () => {
       courseSourceId = CourseSourceBuilder().noMatchingSource().build().id;
+      courseSourceIdSource = {
+        id: courseSourceId,
+        source: config.defaults.primaryAccountSource,
+      };
     });
 
     when('I request the source by ID', async () => {
       try {
-        result = await executeTask(repository.findOneById(courseSourceId));
+        result = await executeTask(
+          repository.findOneByIdSource(courseSourceIdSource)
+        );
       } catch (err) {
         error = err;
       }

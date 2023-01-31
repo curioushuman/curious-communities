@@ -6,7 +6,7 @@ import {
   ParticipantSourceIdentifier,
   ParticipantSourceIdentifiers,
 } from '../../domain/entities/participant-source';
-import { ParticipantSourceId } from '../../domain/value-objects/participant-source-id';
+import { ParticipantSourceIdSource } from '../../domain/value-objects/participant-source-id-source';
 
 /**
  * Type for the findOne method interface within repository
@@ -35,7 +35,7 @@ export abstract class ParticipantSourceRepository
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findOneById(
-    id: ParticipantSourceId
+  abstract findOneByIdSource(
+    id: ParticipantSourceIdSource
   ): TaskEither<Error, ParticipantSource>;
 }

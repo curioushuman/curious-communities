@@ -2,8 +2,8 @@ import {
   CourseSourceIdentifier,
   CourseSourceIdentifiers,
 } from '../../../domain/entities/course-source';
+import { CourseSourceIdSource } from '../../../domain/value-objects/course-source-id-source';
 import { Source } from '../../../domain/value-objects/source';
-import { FindCourseSourceMapper } from './find-course-source.mapper';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -40,8 +40,7 @@ type FindCourseSourceDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindCourseSourceDtoParsers = {
-  // * NOTE: the idSource parser will validate the idSource AND extract id
-  idSource: (dto) => FindCourseSourceMapper.fromIdSourceToId(dto.value),
+  idSource: (dto) => CourseSourceIdSource.check(dto.value),
 };
 
 /**

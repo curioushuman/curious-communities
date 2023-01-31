@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import * as TE from 'fp-ts/lib/TaskEither';
 
 import { LoggableLogger } from '@curioushuman/loggable';
 import {
-  SalesforceApiRepositoryError,
-  SalesforceApiSourceRepository,
+  confirmSourceId,
+  SalesforceApiRepository,
+  SourceRepository,
+  SalesforceApiRepositoryProps,
 } from '@curioushuman/common';
+import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 
 import {
   CourseSource,
@@ -19,40 +21,74 @@ import {
 } from '../../ports/course-source.repository';
 import { SalesforceApiCourseSourceResponse } from './entities/course-source.response';
 import { SalesforceApiCourseSourceMapper } from './course-source.mapper';
-import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
+import { Source } from '../../../domain/value-objects/source';
+import { CourseSourceIdSource } from '../../../domain/value-objects/course-source-id-source';
 
 @Injectable()
 export class SalesforceApiCourseSourceRepository
-  extends SalesforceApiSourceRepository
-  implements CourseSourceRepository
+  implements CourseSourceRepository, SourceRepository<Source>
 {
+  private salesforceApiRepository: SalesforceApiRepository<
+    CourseSource,
+    SalesforceApiCourseSourceResponse
+  >;
+
+  /**
+   * The key for this source
+   */
+  public readonly SOURCE = 'COURSE';
+
   constructor(public httpService: HttpService, public logger: LoggableLogger) {
-    super('Case', SalesforceApiCourseSourceResponse);
     this.logger.setContext(SalesforceApiCourseSourceRepository.name);
+
+    // set up the repository
+    const props: SalesforceApiRepositoryProps = {
+      sourceName: 'Case',
+      responseRuntype: SalesforceApiCourseSourceResponse,
+    };
+    this.salesforceApiRepository = new SalesforceApiRepository(
+      props,
+      this.httpService,
+      this.logger
+    );
   }
 
-  findOneById = (value: CourseSourceId): TE.TaskEither<Error, CourseSource> => {
-    return TE.tryCatch(
-      async () => {
-        const id = CourseSourceId.check(value);
-        const endpoint = this.prepareFindOneUri(id);
-        const fields = this.fields();
-        const request$ =
-          this.httpService.get<SalesforceApiCourseSourceResponse>(endpoint, {
-            params: {
-              fields,
-            },
-          });
-        const response = await firstValueFrom(request$);
+  processFindOne =
+    (source: Source) =>
+    (
+      item?: SalesforceApiCourseSourceResponse,
+      uri = 'not provided'
+    ): CourseSource => {
+      // did we find anything?
+      if (!item) {
+        throw new RepositoryItemNotFoundError(
+          `Course not found for uri: ${uri}`
+        );
+      }
 
-        // NOTE: if not found, an error would have been thrown and caught
+      // is it what we expected?
+      // will throw error if not
+      const courseItem = SalesforceApiCourseSourceResponse.check(item);
 
-        // NOTE: if the response was invalid, an error would have been thrown
-        // could this similarly be in a serialisation decorator?
-        return SalesforceApiCourseSourceMapper.toDomain(response.data);
-      },
-      // NOTE: we don't use an error factory here, it is one level up
-      (reason: SalesforceApiRepositoryError) => reason as Error
+      // NOTE: if the response was invalid, an error would have been thrown
+      // could this similarly be in a serialisation decorator?
+      return SalesforceApiCourseSourceMapper.toDomain(courseItem, source);
+    };
+
+  /**
+   * ? should the confirmSourceId also be in a tryCatch or similar?
+   */
+  findOneByIdSource = (
+    value: CourseSourceIdSource
+  ): TE.TaskEither<Error, CourseSource> => {
+    // NOTE: this will throw an error if the value is invalid
+    const id = confirmSourceId<CourseSourceIdSource>(
+      CourseSourceIdSource.check(value),
+      this.SOURCE
+    );
+    return this.salesforceApiRepository.tryFindOne(
+      id,
+      this.processFindOne(this.SOURCE)
     );
   };
 
@@ -60,20 +96,10 @@ export class SalesforceApiCourseSourceRepository
    * Object lookup for findOneBy methods
    */
   findOneBy: Record<CourseSourceIdentifier, CourseSourceFindMethod> = {
-    idSource: this.findOneById,
+    idSource: this.findOneByIdSource,
   };
 
   findOne = (identifier: CourseSourceIdentifier): CourseSourceFindMethod => {
     return this.findOneBy[identifier];
-  };
-
-  save = (courseSource: CourseSource): TE.TaskEither<Error, void> => {
-    return TE.tryCatch(
-      async () => {
-        // DO NOTHING
-        this.logger.debug(`Temp non-save of ${courseSource.id}`);
-      },
-      (reason: unknown) => reason as Error
-    );
   };
 }

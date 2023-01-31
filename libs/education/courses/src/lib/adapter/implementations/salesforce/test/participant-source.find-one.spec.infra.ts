@@ -15,6 +15,8 @@ import { ParticipantSourceId } from '../../../../domain/value-objects/participan
 import { SalesforceApiParticipantSourceRepository } from '../participant-source.repository';
 import { ParticipantSourceRepositoryErrorFactory } from '../../../ports/participant-source.repository.error-factory';
 import { ParticipantSourceBuilder } from '../../../../test/builders/participant-source.builder';
+import { ParticipantSourceIdSource } from '../../../../domain/value-objects/participant-source-id-source';
+import config from '../../../../static/config';
 
 /**
  * INTEGRATION TEST
@@ -34,6 +36,7 @@ const feature = loadFeature('./participant-source.find-one.infra.feature', {
 defineFeature(feature, (test) => {
   let repository: SalesforceApiParticipantSourceRepository;
   let participantSourceId: ParticipantSourceId;
+  let participantSourceIdSource: ParticipantSourceIdSource;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -76,12 +79,18 @@ defineFeature(feature, (test) => {
     and('a matching record exists at the source', async () => {
       // this is the simpler version
       // I know this ID exists, it'll do for now
-      participantSourceId = 'a0n9s000000EEvFAAW' as ParticipantSourceId;
+      participantSourceId = 'a0n9s000000EEvAAAW' as ParticipantSourceId;
+      participantSourceIdSource = {
+        id: participantSourceId,
+        source: config.defaults.primaryAccountSource,
+      };
     });
 
     when('I request the source by ID', async () => {
       try {
-        result = await executeTask(repository.findOneById(participantSourceId));
+        result = await executeTask(
+          repository.findOneByIdSource(participantSourceIdSource)
+        );
       } catch (err) {
         error = err;
         expect(error).toBeUndefined();
@@ -110,11 +119,17 @@ defineFeature(feature, (test) => {
       participantSourceId = ParticipantSourceBuilder()
         .noMatchingSource()
         .build().id;
+      participantSourceIdSource = {
+        id: participantSourceId,
+        source: config.defaults.primaryAccountSource,
+      };
     });
 
     when('I request the source by ID', async () => {
       try {
-        result = await executeTask(repository.findOneById(participantSourceId));
+        result = await executeTask(
+          repository.findOneByIdSource(participantSourceIdSource)
+        );
       } catch (err) {
         error = err;
       }

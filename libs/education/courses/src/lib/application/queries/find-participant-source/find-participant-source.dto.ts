@@ -2,8 +2,8 @@ import {
   ParticipantSourceIdentifier,
   ParticipantSourceIdentifiers,
 } from '../../../domain/entities/participant-source';
+import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
 import { Source } from '../../../domain/value-objects/source';
-import { FindParticipantSourceMapper } from './find-participant-source.mapper';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -40,8 +40,7 @@ type FindParticipantSourceDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindParticipantSourceDtoParsers = {
-  // * NOTE: the idSource parser will validate the idSource AND extract id
-  idSource: (dto) => FindParticipantSourceMapper.fromIdSourceToId(dto.value),
+  idSource: (dto) => ParticipantSourceIdSource.check(dto.value),
 };
 
 /**

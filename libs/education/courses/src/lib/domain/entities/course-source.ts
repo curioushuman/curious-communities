@@ -6,9 +6,12 @@ import { CourseSourceId } from '../value-objects/course-source-id';
 import { CourseSourceName } from '../value-objects/course-source-name';
 import { CourseSourceStatus } from '../value-objects/course-source-status';
 import { CourseSourceIdSource } from '../value-objects/course-source-id-source';
+import { Source } from '../value-objects/source';
 
 export const CourseSource = Record({
   id: CourseSourceId,
+  source: Source,
+
   status: CourseSourceStatus,
   name: CourseSourceName,
   dateOpen: Optional(Timestamp),

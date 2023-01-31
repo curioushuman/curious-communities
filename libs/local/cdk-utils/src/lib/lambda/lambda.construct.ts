@@ -193,4 +193,21 @@ export class LambdaConstruct extends Construct {
     const requiredEnvVars = ['ED_APP_DOMAIN', 'ED_APP_API_KEY'];
     this.addEnvironmentVars(requiredEnvVars);
   }
+
+  /**
+   * Adds the EdApp environment variables to the lambda
+   */
+  public addEnvironmentBettermode(): void {
+    /**
+     * If we don't have the appropriate environment variables set,
+     * throw an error
+     */
+    const requiredEnvVars = [
+      'BETTERMODE_DOMAIN',
+      'BETTERMODE_COMMUNITY_DOMAIN',
+      'BETTERMODE_USER',
+      'BETTERMODE_PASSWORD',
+    ];
+    this.addEnvironmentVars(requiredEnvVars);
+  }
 }

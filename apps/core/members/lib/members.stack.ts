@@ -116,8 +116,9 @@ export class MembersStack extends cdk.Stack {
         ruleDescription: 'Create internal, to match the external',
       }
     );
-    // add salesforce env vars
+    // add env vars
     createMemberLambdaConstruct.addEnvironmentAuth0();
+    createMemberLambdaConstruct.addEnvironmentBettermode();
     createMemberLambdaConstruct.addEnvironmentEdApp();
     createMemberLambdaConstruct.addEnvironmentSalesforce();
 
@@ -149,8 +150,9 @@ export class MembersStack extends cdk.Stack {
         ruleDescription: 'Update internal, to match the external',
       }
     );
-    // add salesforce env vars
+    // add env vars
     updateMemberLambdaConstruct.addEnvironmentAuth0();
+    updateMemberLambdaConstruct.addEnvironmentBettermode();
     updateMemberLambdaConstruct.addEnvironmentEdApp();
     updateMemberLambdaConstruct.addEnvironmentSalesforce();
 

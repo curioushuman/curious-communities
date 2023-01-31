@@ -23,6 +23,6 @@ export class BasicRepositoryErrorFactory<
    * consistent error message from Salesforce.
    */
   public errorDescription(error: E): string {
-    return error?.message || 'Unknown EdApp error';
+    return error?.message || 'Unknown basic HTTP error';
   }
 }

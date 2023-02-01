@@ -18,7 +18,7 @@ import {
 } from '../../../domain/entities/member-source';
 import {
   MemberSourceFindMethod,
-  MemberSourceRepository,
+  MemberSourceRepositoryRead,
 } from '../../ports/member-source.repository';
 import { SalesforceApiMemberSource } from './entities/member-source';
 import { SalesforceApiMemberSourceMapper } from './member-source.mapper';
@@ -29,7 +29,7 @@ import { MemberSourceIdSource } from '../../../domain/value-objects/member-sourc
 
 @Injectable()
 export class SalesforceApiMemberSourceRepository
-  implements MemberSourceRepository, SourceRepository<Source>
+  implements MemberSourceRepositoryRead, SourceRepository<Source>
 {
   private salesforceApiRepository: SalesforceApiRepository<
     MemberSource,

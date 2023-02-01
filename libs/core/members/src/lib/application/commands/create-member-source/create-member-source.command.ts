@@ -10,7 +10,7 @@ import {
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryReadWrite } from '../../../adapter/ports/member-source.repository';
 import { MemberSource } from '../../../domain/entities/member-source';
 import { CreateMemberSourceDto } from './create-member-source.dto';
 import { CreateMemberSourceMapper } from './create-member-source.mapper';
@@ -32,7 +32,7 @@ export class CreateMemberSourceHandler
   implements ICommandHandler<CreateMemberSourceCommand>
 {
   constructor(
-    private readonly memberSourceRepository: MemberSourceRepository,
+    private readonly memberSourceRepository: MemberSourceRepositoryReadWrite,
     private logger: LoggableLogger,
     private memberRepositoryErrorFactory: MemberSourceRepositoryErrorFactory
   ) {

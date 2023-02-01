@@ -7,7 +7,7 @@ import { MemberSourceBuilder } from '../../../test/builders/member-source.builde
 import { UpsertMemberSourceController } from '../../../infra/upsert-member-source/upsert-member-source.controller';
 import { UpsertMemberSourceRequestDto } from '../dto/upsert-member-source.request.dto';
 import { FakeMemberSourceRepository } from '../../../adapter/implementations/fake/fake.member-source.repository';
-import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryReadWrite } from '../../../adapter/ports/member-source.repository';
 import { MemberSource } from '../../../domain/entities/member-source';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
@@ -52,8 +52,8 @@ defineFeature(feature, (test) => {
     controller = moduleRef.get<UpsertMemberSourceController>(
       UpsertMemberSourceController
     );
-    repository = moduleRef.get<MemberSourceRepository>(
-      MemberSourceRepository
+    repository = moduleRef.get<MemberSourceRepositoryReadWrite>(
+      MemberSourceRepositoryReadWrite
     ) as FakeMemberSourceRepository;
   });
 

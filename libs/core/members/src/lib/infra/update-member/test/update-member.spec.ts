@@ -19,7 +19,7 @@ import { MemberSourceBuilder } from '../../../test/builders/member-source.builde
 import { MemberSource } from '../../../domain/entities/member-source';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
 import { FakeMemberSourceRepository } from '../../../adapter/implementations/fake/fake.member-source.repository';
-import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryReadWrite } from '../../../adapter/ports/member-source.repository';
 
 /**
  * INTEGRATION TEST
@@ -59,8 +59,8 @@ defineFeature(feature, (test) => {
     repository = moduleRef.get<MemberRepository>(
       MemberRepository
     ) as FakeMemberRepository;
-    memberSourceRepository = moduleRef.get<MemberSourceRepository>(
-      MemberSourceRepository
+    memberSourceRepository = moduleRef.get<MemberSourceRepositoryReadWrite>(
+      MemberSourceRepositoryReadWrite
     ) as FakeMemberSourceRepository;
     controller = moduleRef.get<UpdateMemberController>(UpdateMemberController);
   });

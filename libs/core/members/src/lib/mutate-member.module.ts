@@ -14,7 +14,7 @@ import { CreateMemberHandler } from './application/commands/create-member/create
 import { CreateMemberController } from './infra/create-member/create-member.controller';
 import { UpdateMemberHandler } from './application/commands/update-member/update-member.command';
 import { UpdateMemberController } from './infra/update-member/update-member.controller';
-import { MemberSourceRepository } from './adapter/ports/member-source.repository';
+import { MemberSourceRepositoryRead } from './adapter/ports/member-source.repository';
 import { DynamoDbMemberRepository } from './adapter/implementations/dynamodb/member.repository';
 import { SalesforceApiMemberSourceRepository } from './adapter/implementations/salesforce/member-source.repository';
 import { MemberRepositoryErrorFactory } from './adapter/ports/member.repository.error-factory';
@@ -45,7 +45,7 @@ const repositories = [
     useClass: DynamoDbMemberRepository,
   },
   {
-    provide: MemberSourceRepository,
+    provide: MemberSourceRepositoryRead,
     useClass: SalesforceApiMemberSourceRepository,
   },
 ];

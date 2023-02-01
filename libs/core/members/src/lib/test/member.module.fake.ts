@@ -17,7 +17,7 @@ import { FindMemberSourceController } from '../infra/find-member-source/find-mem
 import { UpsertMemberSourceController } from '../infra/upsert-member-source/upsert-member-source.controller';
 import { CreateMemberSourceHandler } from '../application/commands/create-member-source/create-member-source.command';
 import { UpdateMemberSourceHandler } from '../application/commands/update-member-source/update-member-source.command';
-import { MemberSourceRepository } from '../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryReadWrite } from '../adapter/ports/member-source.repository';
 import { FakeMemberSourceRepository } from '../adapter/implementations/fake/fake.member-source.repository';
 import { MemberRepositoryErrorFactory } from '../adapter/ports/member.repository.error-factory';
 import { MemberSourceRepositoryErrorFactory } from '../adapter/ports/member-source.repository.error-factory';
@@ -42,7 +42,7 @@ const handlers = [
 const repositories = [
   { provide: MemberRepository, useClass: FakeMemberRepository },
   {
-    provide: MemberSourceRepository,
+    provide: MemberSourceRepositoryReadWrite,
     useClass: FakeMemberSourceRepository,
   },
 ];

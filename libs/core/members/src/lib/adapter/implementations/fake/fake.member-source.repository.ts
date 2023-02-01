@@ -10,7 +10,7 @@ import {
 } from '../../../domain/entities/member-source';
 import {
   MemberSourceFindMethod,
-  MemberSourceRepository,
+  MemberSourceRepositoryReadWrite,
 } from '../../ports/member-source.repository';
 import { MemberSourceBuilder } from '../../../test/builders/member-source.builder';
 import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
@@ -20,7 +20,9 @@ import { Source } from '../../../domain/value-objects/source';
 import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
 
 @Injectable()
-export class FakeMemberSourceRepository implements MemberSourceRepository {
+export class FakeMemberSourceRepository
+  implements MemberSourceRepositoryReadWrite
+{
   private memberSources: MemberSource[] = [];
 
   constructor() {

@@ -9,7 +9,7 @@ import {
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryReadWrite } from '../../../adapter/ports/member-source.repository';
 import { FindMemberSourceDto, parseDto } from './find-member-source.dto';
 import { MemberSource } from '../../../domain/entities/member-source';
 import { MemberSourceRepositoryErrorFactory } from '../../../adapter/ports/member-source.repository.error-factory';
@@ -26,7 +26,7 @@ export class FindMemberSourceHandler
   implements IQueryHandler<FindMemberSourceQuery>
 {
   constructor(
-    private readonly memberSourceRepository: MemberSourceRepository,
+    private readonly memberSourceRepository: MemberSourceRepositoryReadWrite,
     private logger: LoggableLogger,
     private memberSourceErrorFactory: MemberSourceRepositoryErrorFactory
   ) {
@@ -38,8 +38,8 @@ export class FindMemberSourceHandler
 
     const task = pipe(
       findMemberSourceDto,
-      // #1. parse the dto
-      // NOTE: this uses a dynamic parser that will parse the dto based on the
+      // #1. parse the
+      // NOTE: this uses a dynamic parser that will parse the dto based on thedto
       //       identifier within the dto
       parseActionData(parseDto, this.logger, 'RequestInvalidError'),
 

@@ -12,7 +12,7 @@ import {
   CreateMemberSourceCommand,
   CreateMemberSourceHandler,
 } from '../create-member-source.command';
-import { MemberSourceRepository } from '../../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryReadWrite } from '../../../../adapter/ports/member-source.repository';
 import { MemberSource } from '../../../../domain/entities/member-source';
 import { MemberSourceBuilder } from '../../../../test/builders/member-source.builder';
 import { CreateMemberSourceDto } from '../create-member-source.dto';
@@ -43,7 +43,7 @@ defineFeature(feature, (test) => {
         CreateMemberSourceHandler,
         LoggableLogger,
         {
-          provide: MemberSourceRepository,
+          provide: MemberSourceRepositoryReadWrite,
           useClass: FakeMemberSourceRepository,
         },
         {
@@ -53,8 +53,8 @@ defineFeature(feature, (test) => {
       ],
     }).compile();
 
-    repository = moduleRef.get<MemberSourceRepository>(
-      MemberSourceRepository
+    repository = moduleRef.get<MemberSourceRepositoryReadWrite>(
+      MemberSourceRepositoryReadWrite
     ) as FakeMemberSourceRepository;
     handler = moduleRef.get<CreateMemberSourceHandler>(
       CreateMemberSourceHandler

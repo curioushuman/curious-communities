@@ -10,7 +10,7 @@ import {
 
 import { FindMemberSourceHandler } from '../../application/queries/find-member-source/find-member-source.query';
 import { FindMemberSourceController } from '../../infra/find-member-source/find-member-source.controller';
-import { MemberSourceRepository } from '../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryRead } from '../../adapter/ports/member-source.repository';
 import { SalesforceApiMemberSourceRepository } from '../../adapter/implementations/salesforce/member-source.repository';
 import { MemberSourceRepositoryErrorFactory } from '../../adapter/ports/member-source.repository.error-factory';
 
@@ -28,7 +28,7 @@ const handlers = [FindMemberSourceHandler];
 
 const repositories = [
   {
-    provide: MemberSourceRepository,
+    provide: MemberSourceRepositoryRead,
     useClass: SalesforceApiMemberSourceRepository,
   },
 ];

@@ -8,17 +8,23 @@ export * from './lib/adapter/implementations/dynamodb/dynamodb.repository';
 export * from './lib/adapter/implementations/dynamodb/dynamodb.repository.types';
 export * from './lib/adapter/implementations/dynamodb/repository.error-factory';
 
-export * from './lib/adapter/implementations/salesforce/salesforce.repository';
-export * from './lib/adapter/implementations/salesforce/salesforce.repository.types';
-export * from './lib/adapter/implementations/salesforce/repository.error-factory';
-export * from './lib/adapter/implementations/salesforce/http-config.service';
-export * from './lib/adapter/implementations/salesforce/types/base-response';
-
 export * from './lib/adapter/implementations/auth0/auth0.repository';
 export * from './lib/adapter/implementations/auth0/auth0.repository.types';
 export * from './lib/adapter/implementations/auth0/repository.error-factory';
 export * from './lib/adapter/implementations/auth0/http-config.service';
 export * from './lib/adapter/implementations/auth0/types/base-response';
+
+export * from './lib/adapter/implementations/ed-app/ed-app.repository';
+export * from './lib/adapter/implementations/ed-app/ed-app.repository.types';
+export * from './lib/adapter/implementations/ed-app/repository.error-factory';
+export * from './lib/adapter/implementations/ed-app/http-config.service';
+export * from './lib/adapter/implementations/ed-app/types/base-response';
+
+export * from './lib/adapter/implementations/salesforce/salesforce.repository';
+export * from './lib/adapter/implementations/salesforce/salesforce.repository.types';
+export * from './lib/adapter/implementations/salesforce/repository.error-factory';
+export * from './lib/adapter/implementations/salesforce/http-config.service';
+export * from './lib/adapter/implementations/salesforce/types/base-response';
 
 export * from './lib/adapter/implementations/tribe/tribe.repository';
 export * from './lib/adapter/implementations/tribe/tribe.repository.types';

@@ -32,7 +32,7 @@ export class EdAppApiHttpConfigService implements HttpModuleOptionsFactory {
     const requiredEnvVars = ['ED_APP_DOMAIN'];
     confirmEnvVars(requiredEnvVars);
     this.authURL = undefined;
-    this.baseURL = `${process.env.AUTH0_DOMAIN}/v2/`;
+    this.baseURL = `${process.env.ED_APP_DOMAIN}/v2/`;
   }
 
   /**

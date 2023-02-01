@@ -9,18 +9,18 @@ import {
   SalesforceApiRepository,
   SourceRepository,
   SalesforceApiRepositoryProps,
+  SalesforceApiFindOneProcessMethod,
 } from '@curioushuman/common';
 
 import {
   MemberSource,
-  MemberSourceForCreate,
   MemberSourceIdentifier,
 } from '../../../domain/entities/member-source';
 import {
   MemberSourceFindMethod,
   MemberSourceRepository,
 } from '../../ports/member-source.repository';
-import { SalesforceApiMemberSourceResponse } from './entities/member-source.response';
+import { SalesforceApiMemberSource } from './entities/member-source';
 import { SalesforceApiMemberSourceMapper } from './member-source.mapper';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
 import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
@@ -33,7 +33,7 @@ export class SalesforceApiMemberSourceRepository
 {
   private salesforceApiRepository: SalesforceApiRepository<
     MemberSource,
-    SalesforceApiMemberSourceResponse
+    SalesforceApiMemberSource
   >;
 
   /**
@@ -47,7 +47,7 @@ export class SalesforceApiMemberSourceRepository
     // set up the repository
     const props: SalesforceApiRepositoryProps = {
       sourceName: 'Contact',
-      responseRuntype: SalesforceApiMemberSourceResponse,
+      sourceRuntype: SalesforceApiMemberSource,
     };
     this.salesforceApiRepository = new SalesforceApiRepository(
       props,
@@ -56,12 +56,17 @@ export class SalesforceApiMemberSourceRepository
     );
   }
 
+  /**
+   * This function is handed to the repository to process the response
+   */
   processFindOne =
-    (source: Source) =>
     (
-      item?: SalesforceApiMemberSourceResponse,
-      uri = 'not provided'
-    ): MemberSource => {
+      source: Source
+    ): SalesforceApiFindOneProcessMethod<
+      MemberSource,
+      SalesforceApiMemberSource
+    > =>
+    (item?, uri = 'not provided') => {
       // did we find anything?
       if (!item) {
         throw new RepositoryItemNotFoundError(
@@ -71,7 +76,7 @@ export class SalesforceApiMemberSourceRepository
 
       // is it what we expected?
       // will throw error if not
-      const memberItem = SalesforceApiMemberSourceResponse.check(item);
+      const memberItem = SalesforceApiMemberSource.check(item);
 
       // NOTE: if the response was invalid, an error would have been thrown
       // could this similarly be in a serialisation decorator?
@@ -134,32 +139,47 @@ export class SalesforceApiMemberSourceRepository
     return this.findOneBy[identifier];
   };
 
-  create = (
-    memberSource: MemberSourceForCreate
-  ): TE.TaskEither<Error, MemberSource> => {
-    return TE.tryCatch(
-      async () => {
-        // DO NOTHING
-        this.logger.debug(`Temp non-save of ${memberSource.email}`);
-        return {
-          ...memberSource,
-          id: 'temp-id',
-        } as MemberSource;
-      },
-      (reason: unknown) => reason as Error
-    );
-  };
+  /**
+   * ! NOT YET REQUIRED
+   * This function is handed to the repository to process the response
+   */
+  // processSaveOne =
+  //   (
+  //     source: Source
+  //   ): SalesforceApiSaveOneProcessMethod<
+  //     MemberSource,
+  //     SalesforceApiMemberSource
+  //   > =>
+  //   (item) => {
+  //     return SalesforceApiMemberSourceMapper.toDomain(item, source);
+  //   };
 
-  update = (memberSource: MemberSource): TE.TaskEither<Error, MemberSource> => {
-    return TE.tryCatch(
-      async () => {
-        // DO NOTHING
-        this.logger.debug(`Temp non-save of ${memberSource.id}`);
-        return {
-          ...memberSource,
-        } as MemberSource;
-      },
-      (reason: unknown) => reason as Error
-    );
-  };
+  /**
+   * ! NOT YET REQUIRED
+   */
+  // create = (
+  //   memberSource: MemberSourceForCreate
+  // ): TE.TaskEither<Error, MemberSource> => {
+  //   // NOTE: this will throw an error if the value is invalid
+  //   const entity =
+  //     SalesforceApiMemberSourceMapper.toSourceForCreate(memberSource);
+  //   return this.salesforceApiRepository.tryCreateOne(
+  //     entity,
+  //     this.processSaveOne(this.SOURCE)
+  //   );
+  // };
+
+  /**
+   * ! NOT YET REQUIRED
+   */
+  // update = (memberSource: MemberSource): TE.TaskEither<Error, MemberSource> => {
+  //   const entity =
+  //     SalesforceApiMemberSourceMapper.toSourceForUpdate(memberSource);
+  //   const { Id, ...attributes } = entity;
+  //   return this.salesforceApiRepository.tryUpdateOne(
+  //     Id,
+  //     attributes,
+  //     this.processSaveOne(this.SOURCE)
+  //   );
+  // };
 }

@@ -3,6 +3,7 @@ import { RepositoryErrorFactory } from '@curioushuman/error-factory';
 import {
   SalesforceApiRepositoryError,
   SalesforceApiRepositoryErrorDataArray,
+  SalesforceApiRepositoryErrorDataObject,
   SalesforceApiRepositoryErrorOrArray,
   SalesforceApiRepositoryErrorResponse,
 } from './repository.error-factory.types';
@@ -80,5 +81,20 @@ export class SalesforceApiRepositoryErrorFactory extends RepositoryErrorFactory 
       ? errorResponse.data?.map((d) => d.message).join('\n')
       : errorResponse.data?.error_description;
     return description ?? 'unknown error';
+  }
+
+  public static prepareError(
+    errorData: SalesforceApiRepositoryErrorDataObject
+  ): SalesforceApiRepositoryError {
+    const response: SalesforceApiRepositoryErrorResponse = {
+      status: 500,
+      statusText: errorData.error_description ?? 'Error reaching Salesforce',
+      data: errorData,
+    };
+    return {
+      name: 'SalesforceApiRepositoryError',
+      response,
+      message: response.statusText,
+    };
   }
 }

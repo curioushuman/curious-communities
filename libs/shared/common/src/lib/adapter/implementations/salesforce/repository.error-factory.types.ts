@@ -1,4 +1,4 @@
-interface SalesforceApiRepositoryErrorDataObject {
+export interface SalesforceApiRepositoryErrorDataObject {
   error?: string;
   errorCode?: string;
   error_description?: string;

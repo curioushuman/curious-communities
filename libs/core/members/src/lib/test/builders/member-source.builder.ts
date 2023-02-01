@@ -3,7 +3,10 @@ import { CreateMemberSourceDto } from '../../application/commands/create-member-
 import { UpdateMemberSourceDto } from '../../application/commands/update-member-source/update-member-source.dto';
 import { FindMemberSourceDto } from '../../application/queries/find-member-source/find-member-source.dto';
 
-import { MemberSource } from '../../domain/entities/member-source';
+import {
+  MemberSource,
+  MemberSourceForCreate,
+} from '../../domain/entities/member-source';
 import { MemberName } from '../../domain/value-objects/member-name';
 import { MemberSourceStatus } from '../../domain/value-objects/member-source-status';
 import {
@@ -127,6 +130,15 @@ export const MemberSourceBuilder = () => {
         ...defaultProperties,
         ...overrides,
       } as MemberSource;
+    },
+
+    buildForCreate(): MemberSourceForCreate {
+      const memberSource = {
+        ...defaultProperties,
+        ...overrides,
+      };
+      delete memberSource.id;
+      return MemberSourceForCreate.check(memberSource);
     },
 
     buildFindByIdSourceValueMemberSourceDto(): FindMemberSourceDto {

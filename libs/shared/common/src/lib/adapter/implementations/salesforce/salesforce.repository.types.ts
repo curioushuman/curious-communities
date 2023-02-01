@@ -1,11 +1,12 @@
 import { RunTypeReplica } from '../common/repository.types';
+import { SalesforceApiResponse } from './types/base-response';
 
 /**
  * Props for SF repo
  */
 export interface SalesforceApiRepositoryProps {
   sourceName: string;
-  responseRuntype: RunTypeReplica;
+  sourceRuntype: RunTypeReplica;
 }
 
 /**
@@ -24,7 +25,14 @@ export interface SalesforceApiQueryField {
 /**
  * Type contract for processing findOne results from DynamoDB
  */
-export type SalesforceApiFindOneProcessMethod<DomainT, ResponseT> = (
-  item?: ResponseT,
+export type SalesforceApiFindOneProcessMethod<DomainT, SourceT> = (
+  item?: SalesforceApiResponse<SourceT>,
   uri?: string
+) => DomainT;
+
+/**
+ * Type contract for processing saveOne results from DynamoDB
+ */
+export type SalesforceApiSaveOneProcessMethod<DomainT, SourceT> = (
+  item: SourceT
 ) => DomainT;

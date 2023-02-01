@@ -8,6 +8,8 @@ import { RepositoryItemNotFoundError } from './repository/item-not-found.error';
 import { RepositoryServerError } from './repository/server.error';
 import { RepositoryServerUnavailableError } from './repository/server-unavailable.error';
 import { NotYetImplementedError } from './not-yet-implemented.error';
+import { NonMatchingSourceError } from './repository/non-matching-source.error';
+import { RepositoryAuthenticationExpiredError } from './repository/authentication-expired.error';
 
 /**
  * ALL the errors
@@ -28,7 +30,9 @@ export const clientErrors = {
 export const serverErrors = {
   InternalRequestInvalidError,
   NotYetImplementedError,
+  NonMatchingSourceError,
   RepositoryAuthenticationError,
+  RepositoryAuthenticationExpiredError,
   RepositoryItemConflictError,
   RepositoryServerError,
   RepositoryServerUnavailableError,

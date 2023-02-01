@@ -2,7 +2,7 @@ import { ParticipantSource } from '../../../domain/entities/participant-source';
 import { ParticipantSourceStatus } from '../../../domain/value-objects/participant-source-status';
 import { Source } from '../../../domain/value-objects/source';
 import { SalesforceApiParticipantSourceStatus } from './entities/participant-source-status';
-import { SalesforceApiParticipantSourceResponse } from './entities/participant-source.response';
+import { SalesforceApiParticipantSource } from './entities/participant-source';
 
 export class SalesforceApiParticipantSourceMapper {
   /**
@@ -14,7 +14,7 @@ export class SalesforceApiParticipantSourceMapper {
    *
    */
   public static toDomain(
-    sourceResponse: SalesforceApiParticipantSourceResponse,
+    sourceResponse: SalesforceApiParticipantSource,
     source: Source
   ): ParticipantSource {
     return ParticipantSource.check({

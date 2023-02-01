@@ -19,7 +19,7 @@ import {
   ParticipantSourceFindMethod,
   ParticipantSourceRepository,
 } from '../../ports/participant-source.repository';
-import { SalesforceApiParticipantSourceResponse } from './entities/participant-source.response';
+import { SalesforceApiParticipantSource } from './entities/participant-source';
 import { SalesforceApiParticipantSourceMapper } from './participant-source.mapper';
 import { Source } from '../../../domain/value-objects/source';
 import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
@@ -30,7 +30,7 @@ export class SalesforceApiParticipantSourceRepository
 {
   private salesforceApiRepository: SalesforceApiRepository<
     ParticipantSource,
-    SalesforceApiParticipantSourceResponse
+    SalesforceApiParticipantSource
   >;
 
   /**
@@ -44,7 +44,7 @@ export class SalesforceApiParticipantSourceRepository
     // set up the repository
     const props: SalesforceApiRepositoryProps = {
       sourceName: 'Participant__c',
-      responseRuntype: SalesforceApiParticipantSourceResponse,
+      sourceRuntype: SalesforceApiParticipantSource,
     };
     this.salesforceApiRepository = new SalesforceApiRepository(
       props,
@@ -56,7 +56,7 @@ export class SalesforceApiParticipantSourceRepository
   processFindOne =
     (source: Source) =>
     (
-      item?: SalesforceApiParticipantSourceResponse,
+      item?: SalesforceApiParticipantSource,
       uri = 'not provided'
     ): ParticipantSource => {
       // did we find anything?
@@ -68,8 +68,7 @@ export class SalesforceApiParticipantSourceRepository
 
       // is it what we expected?
       // will throw error if not
-      const participantItem =
-        SalesforceApiParticipantSourceResponse.check(item);
+      const participantItem = SalesforceApiParticipantSource.check(item);
 
       // NOTE: if the response was invalid, an error would have been thrown
       // could this similarly be in a serialisation decorator?

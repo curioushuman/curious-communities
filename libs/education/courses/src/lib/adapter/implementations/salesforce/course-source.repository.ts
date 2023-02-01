@@ -19,7 +19,7 @@ import {
   CourseSourceFindMethod,
   CourseSourceRepository,
 } from '../../ports/course-source.repository';
-import { SalesforceApiCourseSourceResponse } from './entities/course-source.response';
+import { SalesforceApiCourseSource } from './entities/course-source';
 import { SalesforceApiCourseSourceMapper } from './course-source.mapper';
 import { Source } from '../../../domain/value-objects/source';
 import { CourseSourceIdSource } from '../../../domain/value-objects/course-source-id-source';
@@ -30,7 +30,7 @@ export class SalesforceApiCourseSourceRepository
 {
   private salesforceApiRepository: SalesforceApiRepository<
     CourseSource,
-    SalesforceApiCourseSourceResponse
+    SalesforceApiCourseSource
   >;
 
   /**
@@ -44,7 +44,7 @@ export class SalesforceApiCourseSourceRepository
     // set up the repository
     const props: SalesforceApiRepositoryProps = {
       sourceName: 'Case',
-      responseRuntype: SalesforceApiCourseSourceResponse,
+      sourceRuntype: SalesforceApiCourseSource,
     };
     this.salesforceApiRepository = new SalesforceApiRepository(
       props,
@@ -55,10 +55,7 @@ export class SalesforceApiCourseSourceRepository
 
   processFindOne =
     (source: Source) =>
-    (
-      item?: SalesforceApiCourseSourceResponse,
-      uri = 'not provided'
-    ): CourseSource => {
+    (item?: SalesforceApiCourseSource, uri = 'not provided'): CourseSource => {
       // did we find anything?
       if (!item) {
         throw new RepositoryItemNotFoundError(
@@ -68,7 +65,7 @@ export class SalesforceApiCourseSourceRepository
 
       // is it what we expected?
       // will throw error if not
-      const courseItem = SalesforceApiCourseSourceResponse.check(item);
+      const courseItem = SalesforceApiCourseSource.check(item);
 
       // NOTE: if the response was invalid, an error would have been thrown
       // could this similarly be in a serialisation decorator?

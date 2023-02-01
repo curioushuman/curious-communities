@@ -2,7 +2,7 @@ import { Timestamp } from '@curioushuman/common';
 import { CourseSource } from '../../../domain/entities/course-source';
 import { CourseSourceStatus } from '../../../domain/value-objects/course-source-status';
 import { Source } from '../../../domain/value-objects/source';
-import { SalesforceApiCourseSourceResponse } from './entities/course-source.response';
+import { SalesforceApiCourseSource } from './entities/course-source';
 
 export class SalesforceApiCourseSourceMapper {
   /**
@@ -14,7 +14,7 @@ export class SalesforceApiCourseSourceMapper {
    *
    */
   public static toDomain(
-    sourceResponse: SalesforceApiCourseSourceResponse,
+    sourceResponse: SalesforceApiCourseSource,
     source: Source
   ): CourseSource {
     const dateOpen = SalesforceApiCourseSourceMapper.prepareTimestamp(

@@ -7,10 +7,10 @@ Scenario: Successful preparation of domain model
 
 Scenario: Successful preparation of persistence keys
   Given I have an entity with valid source ids
-  When I prepare the persistence source keys
+  When I prepare the persistence keys
   Then I should receive a valid keys model
 
-# Scenario: Successful preparation of persistence source attributes
-#   Given I have an entity with valid source ids
-#   When I prepare the persistence source attributes
-#   Then I should receive a valid attributes model
+Scenario: Successful preparation of persistence attributes
+  Given I have an entity with valid source ids
+  When I prepare the persistence attributes
+  Then I should receive a valid attributes model

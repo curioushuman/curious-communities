@@ -4,7 +4,10 @@ import { DynamoDbMemberMapper } from '../member.mapper';
 import { MembersDynamoDbItem } from '../entities/item';
 import { Member } from '../../../../domain/entities/member';
 import { MemberBuilder } from '../../../../test/builders/member.builder';
-import { DynamoDbMemberKeys } from '../entities/member';
+import {
+  DynamoDbMemberAttributes,
+  DynamoDbMemberKeys,
+} from '../entities/member';
 
 /**
  * UNIT TEST
@@ -21,6 +24,7 @@ const feature = loadFeature('./member.mapper.feature', {
 defineFeature(feature, (test) => {
   let validPersistenceItem: MembersDynamoDbItem;
   let validPersistenceKeys: DynamoDbMemberKeys;
+  let validPersistenceAttributes: DynamoDbMemberAttributes;
   let validMember: Member;
 
   beforeAll(() => {
@@ -76,6 +80,22 @@ defineFeature(feature, (test) => {
         'Member_SourceIdMICRO-COURSE'
       ] as string,
     };
+
+    validPersistenceAttributes = {
+      Member_Status: validPersistenceItem.Member_Status as string,
+      Member_Name: validPersistenceItem.Member_Name as string,
+      Member_Email: validPersistenceItem.Member_Email as string,
+      Member_OrganisationName:
+        validPersistenceItem.Member_OrganisationName as string,
+      AccountOwner: validPersistenceItem.AccountOwner as string,
+      Member_SourceIdCRM: validPersistenceItem.Member_SourceIdCRM as string,
+      Member_SourceIdAUTH: validPersistenceItem.Member_SourceIdAUTH as string,
+      Member_SourceIdCOMMUNITY:
+        validPersistenceItem.Member_SourceIdCOMMUNITY as string,
+      'Member_SourceIdMICRO-COURSE': validPersistenceItem[
+        'Member_SourceIdMICRO-COURSE'
+      ] as string,
+    };
   });
 
   test('Successful preparation of domain model', ({ given, when, then }) => {
@@ -105,12 +125,32 @@ defineFeature(feature, (test) => {
       // above
     });
 
-    when('I prepare the persistence source keys', async () => {
+    when('I prepare the persistence keys', async () => {
       keys = DynamoDbMemberMapper.toPersistenceKeys(validMember);
     });
 
     then('I should receive a valid keys model', () => {
       expect(keys).toMatchObject(validPersistenceKeys);
+    });
+  });
+
+  test('Successful preparation of persistence attributes', ({
+    given,
+    when,
+    then,
+  }) => {
+    let attributes: DynamoDbMemberAttributes;
+
+    given('I have an entity with valid source ids', () => {
+      // above
+    });
+
+    when('I prepare the persistence attributes', async () => {
+      attributes = DynamoDbMemberMapper.toPersistenceAttributes(validMember);
+    });
+
+    then('I should receive a valid attributes model', () => {
+      expect(attributes).toMatchObject(validPersistenceAttributes);
     });
   });
 });

@@ -24,7 +24,7 @@ export class Auth0ApiRepository<
   private readonly sourceName: string;
   private readonly sourceRuntype: Auth0ApiRepositoryProps['sourceRuntype'];
 
-  public static defaults: Record<string, string | number> = {
+  public static defaults: Record<string, string> = {
     connection: 'Username-Password-Authentication',
   };
 
@@ -37,32 +37,32 @@ export class Auth0ApiRepository<
     this.sourceRuntype = props.sourceRuntype;
   }
 
-  protected fields(): string {
+  private fields(): string {
     const fields = Object.keys(this.sourceRuntype.fields).join(',');
     this.logger.verbose(fields);
     return fields;
   }
 
-  protected prepareFindOneUri(id: string): string {
+  private prepareFindOneUri(id: string): string {
     const endpoint = `${this.sourceName}/${id}`;
     this.logger.debug(`Finding ${this.sourceName} with uri ${endpoint}`);
     return endpoint;
   }
 
-  protected prepareMutateOneUri(id?: string): string {
-    const suffix = id ? `/${id}` : '';
-    const endpoint = `${this.sourceName}${suffix}`;
-    this.logger.debug(`Finding ${this.sourceName} with uri ${endpoint}`);
-    return endpoint;
-  }
-
-  protected prepareFindOneByEmailUri(email: string): string {
+  private prepareFindOneByEmailUri(email: string): string {
     const params = new URLSearchParams({
       email,
       fields: this.fields(),
     });
     const endpoint = `${this.sourceName}-by-email?${params.toString()}`;
 
+    this.logger.debug(`Finding ${this.sourceName} with uri ${endpoint}`);
+    return endpoint;
+  }
+
+  private prepareMutateOneUri(id?: string): string {
+    const suffix = id ? `/${id}` : '';
+    const endpoint = `${this.sourceName}${suffix}`;
     this.logger.debug(`Finding ${this.sourceName} with uri ${endpoint}`);
     return endpoint;
   }
@@ -154,6 +154,9 @@ export class Auth0ApiRepository<
 
   /**
    * Delete a record
+   *
+   * TODO
+   * - [ ] check for 204 status in the response
    */
   tryDeleteOne = (id: string): TE.TaskEither<Error, void> => {
     return TE.tryCatch(

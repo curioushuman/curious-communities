@@ -37,19 +37,19 @@ export class SalesforceApiRepository<DomainT, SourceT> {
     this.sourceRuntype = props.sourceRuntype;
   }
 
-  protected fields(): string {
+  private fields(): string {
     const fields = Object.keys(this.sourceRuntype.fields).join(',');
     this.logger.verbose(fields);
     return fields;
   }
 
-  protected prepareFindOneUri(id: string): string {
+  private prepareFindOneUri(id: string): string {
     const endpoint = `sobjects/${this.sourceName}/${id}`;
     this.logger.debug(`Finding ${this.sourceName} with uri ${endpoint}`);
     return endpoint;
   }
 
-  protected prepareSaveOneUri(id?: string): string {
+  private prepareSaveOneUri(id?: string): string {
     const suffix = id ? `/${id}` : '';
     const endpoint = `sobjects/${this.sourceName}${suffix}`;
     this.logger.debug(`Saving ${this.sourceName} with uri ${endpoint}`);
@@ -59,7 +59,7 @@ export class SalesforceApiRepository<DomainT, SourceT> {
   /**
    * Only supports AND | OR
    */
-  protected prepareQueryUri(
+  private prepareQueryUri(
     values: SalesforceApiQueryField[],
     operator: SalesforceApiQueryOperator = 'AND'
   ): string {

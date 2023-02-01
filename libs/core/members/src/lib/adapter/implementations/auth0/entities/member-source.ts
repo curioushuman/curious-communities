@@ -5,11 +5,6 @@ import { MemberOrganisationName } from '../../../../domain/value-objects/member-
 import { MemberSourceId } from '../../../../domain/value-objects/member-source-id';
 
 /**
- * TODO
- * - [ ] description
- */
-
-/**
  * Any fields not natively stored by Auth0 we can keep in Metadata
  */
 export const Auth0ApiMemberSourceMetadata = Record({

@@ -4,32 +4,34 @@ import { firstValueFrom } from 'rxjs';
 import * as TE from 'fp-ts/lib/TaskEither';
 
 import {
-  Auth0ApiFindOneProcessMethod,
-  Auth0ApiRepositoryProps,
-  Auth0ApiSaveOneProcessMethod,
-} from './auth0.repository.types';
-import { Auth0ApiRepositoryError } from './repository.error-factory.types';
+  TribeApiFindOneProcessMethod,
+  TribeApiRepositoryProps,
+  TribeApiSaveOneProcessMethod,
+} from './tribe.repository.types';
+import { TribeApiRepositoryError } from './repository.error-factory.types';
 import { URLSearchParams } from 'url';
-import { Auth0ApiAttributes, Auth0ApiResponses } from './types/base-response';
+import { TribeApiAttributes, TribeApiResponses } from './types/base-response';
 
 /**
  * E is for entity
- * R is for response type (from Auth0)
+ * R is for response type (from Tribe)
  */
-export class Auth0ApiRepository<
+export class TribeApiRepository<
   DomainT,
   SourceT,
-  SourceTCreate = Auth0ApiAttributes<SourceT>
+  SourceTCreate = TribeApiAttributes<SourceT>,
+  SourceTUpdate = TribeApiAttributes<SourceT>
 > {
   private readonly sourceName: string;
-  private readonly sourceRuntype: Auth0ApiRepositoryProps['sourceRuntype'];
+  private readonly sourceRuntype: TribeApiRepositoryProps['sourceRuntype'];
 
   public static defaults: Record<string, string> = {
-    connection: 'Username-Password-Authentication',
+    role: 'member',
+    source: 'Facilitated course',
   };
 
   constructor(
-    props: Auth0ApiRepositoryProps,
+    props: TribeApiRepositoryProps,
     private httpService: HttpService,
     private logger: LoggableLogger
   ) {
@@ -52,9 +54,8 @@ export class Auth0ApiRepository<
   private prepareFindOneByEmailUri(email: string): string {
     const params = new URLSearchParams({
       email,
-      fields: this.fields(),
     });
-    const endpoint = `${this.sourceName}-by-email?${params.toString()}`;
+    const endpoint = `${this.sourceName}?${params.toString()}`;
 
     this.logger.debug(`Finding ${this.sourceName} with uri ${endpoint}`);
     return endpoint;
@@ -72,17 +73,12 @@ export class Auth0ApiRepository<
    */
   tryFindOne = (
     id: string,
-    processResult: Auth0ApiFindOneProcessMethod<DomainT, SourceT>
+    processResult: TribeApiFindOneProcessMethod<DomainT, SourceT>
   ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
         const uri = this.prepareFindOneUri(id);
-        const fields = this.fields();
-        const request$ = this.httpService.get<SourceT>(uri, {
-          params: {
-            fields,
-          },
-        });
+        const request$ = this.httpService.get<SourceT>(uri);
         const response = await firstValueFrom(request$);
 
         // NOTE: if not found, an error would have been thrown and caught
@@ -90,18 +86,18 @@ export class Auth0ApiRepository<
         return processResult(response.data, uri);
       },
       // NOTE: we don't use an error factory here, it is one level up
-      (reason: Auth0ApiRepositoryError) => reason as Error
+      (reason: TribeApiRepositoryError) => reason as Error
     );
   };
 
   tryFindOneByEmail = (
     email: string,
-    processResult: Auth0ApiFindOneProcessMethod<DomainT, SourceT>
+    processResult: TribeApiFindOneProcessMethod<DomainT, SourceT>
   ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
         const uri = this.prepareFindOneByEmailUri(email);
-        const request$ = this.httpService.get<Auth0ApiResponses<SourceT>>(uri);
+        const request$ = this.httpService.get<TribeApiResponses<SourceT>>(uri);
         const response = await firstValueFrom(request$);
 
         // NOTE: if not found, an error would have been thrown and caught
@@ -109,7 +105,7 @@ export class Auth0ApiRepository<
         return processResult(response.data[0], uri);
       },
       // NOTE: we don't use an error factory here, it is one level up
-      (reason: Auth0ApiRepositoryError) => reason as Error
+      (reason: TribeApiRepositoryError) => reason as Error
     );
   };
 
@@ -118,7 +114,7 @@ export class Auth0ApiRepository<
    */
   tryCreateOne = (
     entity: SourceTCreate,
-    processResult: Auth0ApiSaveOneProcessMethod<DomainT, SourceT>
+    processResult: TribeApiSaveOneProcessMethod<DomainT, SourceT>
   ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
@@ -128,7 +124,7 @@ export class Auth0ApiRepository<
         return processResult(response.data);
       },
       // NOTE: we don't use an error factory here, it is one level up
-      (reason: Auth0ApiRepositoryError) => reason as Error
+      (reason: TribeApiRepositoryError) => reason as Error
     );
   };
 
@@ -137,18 +133,18 @@ export class Auth0ApiRepository<
    */
   tryUpdateOne = (
     id: string,
-    entity: Auth0ApiAttributes<SourceT>,
-    processResult: Auth0ApiSaveOneProcessMethod<DomainT, SourceT>
+    entity: SourceTUpdate,
+    processResult: TribeApiSaveOneProcessMethod<DomainT, SourceT>
   ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
         const uri = this.prepareMutateOneUri(id);
-        const request$ = this.httpService.patch<SourceT>(uri, entity);
+        const request$ = this.httpService.put<SourceT>(uri, entity);
         const response = await firstValueFrom(request$);
         return processResult(response.data);
       },
       // NOTE: we don't use an error factory here, it is one level up
-      (reason: Auth0ApiRepositoryError) => reason as Error
+      (reason: TribeApiRepositoryError) => reason as Error
     );
   };
 
@@ -166,7 +162,7 @@ export class Auth0ApiRepository<
         await firstValueFrom(request$);
       },
       // NOTE: we don't use an error factory here, it is one level up
-      (reason: Auth0ApiRepositoryError) => reason as Error
+      (reason: TribeApiRepositoryError) => reason as Error
     );
   };
 }

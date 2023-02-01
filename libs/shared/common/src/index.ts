@@ -20,6 +20,12 @@ export * from './lib/adapter/implementations/auth0/repository.error-factory';
 export * from './lib/adapter/implementations/auth0/http-config.service';
 export * from './lib/adapter/implementations/auth0/types/base-response';
 
+export * from './lib/adapter/implementations/tribe/tribe.repository';
+export * from './lib/adapter/implementations/tribe/tribe.repository.types';
+export * from './lib/adapter/implementations/tribe/repository.error-factory';
+export * from './lib/adapter/implementations/tribe/http-config.service';
+export * from './lib/adapter/implementations/tribe/types/base-response';
+
 /**
  * Application
  */

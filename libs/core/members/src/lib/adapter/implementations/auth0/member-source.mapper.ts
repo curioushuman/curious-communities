@@ -50,12 +50,12 @@ export class Auth0ApiMemberSourceMapper {
   public static toSourceForCreate(
     domainEntity: MemberSourceForCreate
   ): Auth0ApiMemberSourceForCreate {
-    const requiredEnvVars = ['AUTH0_DEFAULT_PASSWORD'];
+    const requiredEnvVars = ['MEMBERS_DEFAULT_PASSWORD'];
     confirmEnvVars(requiredEnvVars);
     const entity = {
       ...Auth0ApiMemberSourceMapper.toSourceAttributes(domainEntity),
       connection: Auth0ApiRepository.defaults.connection,
-      password: process.env.AUTH0_DEFAULT_PASSWORD as string,
+      password: process.env.MEMBERS_DEFAULT_PASSWORD as string,
     };
     return Auth0ApiMemberSourceForCreate.check(entity);
   }

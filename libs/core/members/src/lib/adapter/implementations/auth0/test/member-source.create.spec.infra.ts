@@ -109,48 +109,6 @@ defineFeature(feature, (test) => {
     });
   });
 
-  // test('Fail; Source not found for ID provided', ({
-  //   given,
-  //   and,
-  //   when,
-  //   then,
-  // }) => {
-  //   let result: MemberSource;
-  //   let error: Error;
-
-  //   given('I am authorised to access the source', () => {
-  //     // out of scope
-  //   });
-
-  //   and('a matching record DOES NOT exist at the source', () => {
-  //     memberSourceId = MemberSourceBuilder().noMatchingSource().build().id;
-  //     memberSourceIdSource = {
-  //       id: memberSourceId,
-  //       source: 'AUTH',
-  //     };
-  //   });
-
-  //   when('I request the source by ID', async () => {
-  //     try {
-  //       result = await executeTask(
-  //         repository.findOneByIdSource(memberSourceIdSource)
-  //       );
-  //     } catch (err) {
-  //       error = err;
-  //     }
-  //   });
-
-  //   then('I should receive an Error', () => {
-  //     // NOTE: we don't test for our application specific errors here
-  //     // as they are one level above the repository
-  //     expect(error).toBeInstanceOf(Error);
-  //   });
-
-  //   and('no result is returned', () => {
-  //     expect(result).toBeUndefined();
-  //   });
-  // });
-
   afterAll(async () => {
     try {
       const memberCreated = await executeTask(

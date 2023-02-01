@@ -66,7 +66,7 @@ export class Auth0ApiMemberSourceMapper {
     const entity: Auth0ApiAttributes<Auth0ApiMemberSource> =
       Auth0ApiMemberSourceMapper.toSourceAttributes(domainEntity);
     return Auth0ApiMemberSource.check({
-      Id: domainEntity.id,
+      user_id: domainEntity.id,
       ...entity,
     });
   }

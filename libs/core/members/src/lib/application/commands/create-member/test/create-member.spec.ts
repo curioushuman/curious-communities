@@ -18,7 +18,7 @@ import { Member } from '../../../../domain/entities/member';
 import { MemberBuilder } from '../../../../test/builders/member.builder';
 import { CreateMemberDto } from '../create-member.dto';
 import { MemberRepositoryErrorFactory } from '../../../../adapter/ports/member.repository.error-factory';
-import { MemberSourceRepository } from '../../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryReadWrite } from '../../../../adapter/ports/member-source.repository';
 import { FakeMemberSourceRepository } from '../../../../adapter/implementations/fake/fake.member-source.repository';
 import { MemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/member-source.repository.error-factory';
 import { MemberSourceBuilder } from '../../../../test/builders/member-source.builder';
@@ -48,7 +48,7 @@ defineFeature(feature, (test) => {
         LoggableLogger,
         { provide: MemberRepository, useClass: FakeMemberRepository },
         {
-          provide: MemberSourceRepository,
+          provide: MemberSourceRepositoryReadWrite,
           useClass: FakeMemberSourceRepository,
         },
         {

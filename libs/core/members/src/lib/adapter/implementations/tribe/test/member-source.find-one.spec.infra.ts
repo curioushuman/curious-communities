@@ -9,7 +9,7 @@ import {
   TribeApiRepositoryErrorFactory,
 } from '@curioushuman/common';
 
-import { MemberSourceRepository } from '../../../ports/member-source.repository';
+import { MemberSourceRepositoryReadWrite } from '../../../ports/member-source.repository';
 import { MemberSource } from '../../../../domain/entities/member-source';
 import { MemberSourceId } from '../../../../domain/value-objects/member-source-id';
 import { TribeApiMemberSourceRepository } from '../member-source.repository';
@@ -52,7 +52,7 @@ defineFeature(feature, (test) => {
       providers: [
         LoggableLogger,
         {
-          provide: MemberSourceRepository,
+          provide: MemberSourceRepositoryReadWrite,
           useClass: TribeApiMemberSourceRepository,
         },
         {
@@ -62,8 +62,8 @@ defineFeature(feature, (test) => {
       ],
     }).compile();
 
-    repository = moduleRef.get<MemberSourceRepository>(
-      MemberSourceRepository
+    repository = moduleRef.get<MemberSourceRepositoryReadWrite>(
+      MemberSourceRepositoryReadWrite
     ) as TribeApiMemberSourceRepository;
   });
 

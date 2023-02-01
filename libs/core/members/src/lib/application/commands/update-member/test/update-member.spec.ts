@@ -20,7 +20,7 @@ import { MemberSource } from '../../../../domain/entities/member-source';
 import { MemberSourceBuilder } from '../../../../test/builders/member-source.builder';
 import { MemberRepositoryErrorFactory } from '../../../../adapter/ports/member.repository.error-factory';
 import { FakeMemberSourceRepository } from '../../../../adapter/implementations/fake/fake.member-source.repository';
-import { MemberSourceRepository } from '../../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryReadWrite } from '../../../../adapter/ports/member-source.repository';
 import { MemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/member-source.repository.error-factory';
 
 /**
@@ -50,7 +50,7 @@ defineFeature(feature, (test) => {
         LoggableLogger,
         { provide: MemberRepository, useClass: FakeMemberRepository },
         {
-          provide: MemberSourceRepository,
+          provide: MemberSourceRepositoryReadWrite,
           useClass: FakeMemberSourceRepository,
         },
         {
@@ -67,8 +67,8 @@ defineFeature(feature, (test) => {
     repository = moduleRef.get<MemberRepository>(
       MemberRepository
     ) as FakeMemberRepository;
-    memberSourceRepository = moduleRef.get<MemberSourceRepository>(
-      MemberSourceRepository
+    memberSourceRepository = moduleRef.get<MemberSourceRepositoryReadWrite>(
+      MemberSourceRepositoryReadWrite
     ) as FakeMemberSourceRepository;
     handler = moduleRef.get<UpdateMemberHandler>(UpdateMemberHandler);
   });

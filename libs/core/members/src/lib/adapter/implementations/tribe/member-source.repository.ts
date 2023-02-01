@@ -18,7 +18,7 @@ import {
 } from '../../../domain/entities/member-source';
 import {
   MemberSourceFindMethod,
-  MemberSourceRepository,
+  MemberSourceRepositoryReadWrite,
 } from '../../ports/member-source.repository';
 import {
   TribeApiMemberSource,
@@ -30,15 +30,11 @@ import { MemberEmail } from '../../../domain/value-objects/member-email';
 import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 import { Source } from '../../../domain/value-objects/source';
 import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
-import { MemberSourceRepositoryMutations } from '../../ports/member-source.repository-mutations';
 import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
 
 @Injectable()
 export class TribeApiMemberSourceRepository
-  implements
-    MemberSourceRepository,
-    MemberSourceRepositoryMutations,
-    SourceRepository<Source>
+  implements MemberSourceRepositoryReadWrite, SourceRepository<Source>
 {
   private tribeApiRepository: TribeApiRepository<
     MemberSource,

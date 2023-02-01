@@ -10,7 +10,7 @@ import {
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { MemberSourceRepository } from '../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryReadWrite } from '../../../adapter/ports/member-source.repository';
 import { MemberSource } from '../../../domain/entities/member-source';
 import { UpdateMemberSourceDto } from './update-member-source.dto';
 import { UpdateMemberSourceMapper } from './update-member-source.mapper';
@@ -32,7 +32,7 @@ export class UpdateMemberSourceHandler
   implements ICommandHandler<UpdateMemberSourceCommand>
 {
   constructor(
-    private readonly memberSourceRepository: MemberSourceRepository,
+    private readonly memberSourceRepository: MemberSourceRepositoryReadWrite,
     private logger: LoggableLogger,
     private memberSourceErrorFactory: MemberSourceRepositoryErrorFactory
   ) {

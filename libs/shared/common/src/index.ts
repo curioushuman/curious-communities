@@ -18,6 +18,7 @@ export * from './lib/adapter/implementations/auth0/auth0.repository';
 export * from './lib/adapter/implementations/auth0/auth0.repository.types';
 export * from './lib/adapter/implementations/auth0/repository.error-factory';
 export * from './lib/adapter/implementations/auth0/http-config.service';
+export * from './lib/adapter/implementations/auth0/types/base-response';
 
 /**
  * Application

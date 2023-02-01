@@ -10,17 +10,15 @@ import {
 } from '@curioushuman/common';
 
 import { MemberSourceRepository } from '../../../ports/member-source.repository';
-import {
-  MemberSource,
-  MemberSourceForCreate,
-} from '../../../../domain/entities/member-source';
+import { MemberSource } from '../../../../domain/entities/member-source';
 import { Auth0ApiMemberSourceRepository } from '../member-source.repository';
 import { MemberSourceRepositoryErrorFactory } from '../../../ports/member-source.repository.error-factory';
 import { MemberSourceBuilder } from '../../../../test/builders/member-source.builder';
+import { MemberSourceId } from '../../../../domain/value-objects/member-source-id';
 
 /**
  * INTEGRATION TEST
- * SUT = the create function OF an external repository
+ * SUT = the update function OF an external repository
  * i.e. are we actually connecting with external repo
  *
  * Scope
@@ -29,14 +27,14 @@ import { MemberSourceBuilder } from '../../../../test/builders/member-source.bui
  * - handling of their various responses/errors
  */
 
-const feature = loadFeature('./member-source.create.infra.feature', {
+const feature = loadFeature('./member-source.update.infra.feature', {
   loadRelativePath: true,
 });
 
 defineFeature(feature, (test) => {
   let repository: Auth0ApiMemberSourceRepository;
-  let memberSourceCreated: MemberSource;
-  let memberSourceForCreate: MemberSourceForCreate;
+  let memberSourceUpdated: MemberSource;
+  let memberSourceForUpdate: MemberSource;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -63,7 +61,7 @@ defineFeature(feature, (test) => {
     ) as Auth0ApiMemberSourceRepository;
   });
 
-  test('Successfully creating a member source', ({
+  test('Successfully updating a member source', ({
     given,
     and,
     when,
@@ -73,13 +71,14 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request is valid', () => {
-      memberSourceForCreate = MemberSourceBuilder().buildForCreate();
+      memberSourceForUpdate = MemberSourceBuilder().updated().build();
+      memberSourceForUpdate.id = 'auth0|0030K00002V1r63QAB' as MemberSourceId;
     });
 
-    when('I attempt to create a member source', async () => {
+    when('I attempt to update a member source', async () => {
       try {
-        memberSourceCreated = await executeTask(
-          repository.create(memberSourceForCreate)
+        memberSourceUpdated = await executeTask(
+          repository.update(memberSourceForUpdate)
         );
       } catch (err) {
         // if ('response' in err) {
@@ -90,10 +89,13 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('a new record should have been created', async () => {
+    then('a new record should have been updated', async () => {
       try {
         checkMemberSource = await executeTask(
-          repository.findOneByEmail(memberSourceForCreate.email)
+          repository.findOneByIdSource({
+            id: memberSourceForUpdate.id,
+            source: 'AUTH',
+          })
         );
       } catch (err) {
         // if ('response' in err) {
@@ -105,22 +107,7 @@ defineFeature(feature, (test) => {
     });
 
     and('saved member source is returned', () => {
-      expect(memberSourceCreated.id).toEqual(checkMemberSource.id);
+      expect(memberSourceUpdated.email).toEqual(checkMemberSource.email);
     });
-  });
-
-  afterAll(async () => {
-    try {
-      const memberCreated = await executeTask(
-        repository.findOneByEmail(memberSourceForCreate.email)
-      );
-      if (memberCreated) {
-        await executeTask(repository.delete(memberCreated.id));
-      }
-    } catch (err) {
-      if ('response' in err) {
-        console.log(err.response);
-      }
-    }
   });
 });

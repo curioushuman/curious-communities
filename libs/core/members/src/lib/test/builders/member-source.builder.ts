@@ -105,8 +105,8 @@ export const MemberSourceBuilder = () => {
 
     updated() {
       overrides.id = ExternalId.check('ThisSourceExists');
-      overrides.name = 'Jade Green';
-      overrides.email = 'jade@green.com';
+      overrides.name = 'Mikee Freedom';
+      overrides.email = 'mikeefreedom@whatsthatweb.com.au';
       overrides.status = 'active';
       return this;
     },

@@ -5,6 +5,7 @@
  */
 export interface RunTypeReplica {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  omit: (key: string) => any;
+  omit: (...keys: string[]) => any;
   fields: Record<string, unknown>;
+  check: (value: unknown) => unknown;
 }

@@ -6,18 +6,27 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import {
   Auth0ApiFindOneProcessMethod,
   Auth0ApiRepositoryProps,
+  Auth0ApiSaveOneProcessMethod,
 } from './auth0.repository.types';
 import { Auth0ApiRepositoryError } from './repository.error-factory.types';
 import { URLSearchParams } from 'url';
-import { Auth0ApiResponses } from './types/base-response';
+import { Auth0ApiAttributes, Auth0ApiResponses } from './types/base-response';
 
 /**
  * E is for entity
  * R is for response type (from Auth0)
  */
-export class Auth0ApiRepository<DomainT, ResponseT> {
+export class Auth0ApiRepository<
+  DomainT,
+  SourceT,
+  SourceTCreate = Auth0ApiAttributes<SourceT>
+> {
   private readonly sourceName: string;
-  private readonly responseRuntype: Auth0ApiRepositoryProps['responseRuntype'];
+  private readonly sourceRuntype: Auth0ApiRepositoryProps['sourceRuntype'];
+
+  public static defaults: Record<string, string | number> = {
+    connection: 'Username-Password-Authentication',
+  };
 
   constructor(
     props: Auth0ApiRepositoryProps,
@@ -25,17 +34,24 @@ export class Auth0ApiRepository<DomainT, ResponseT> {
     private logger: LoggableLogger
   ) {
     this.sourceName = props.sourceName;
-    this.responseRuntype = props.responseRuntype;
+    this.sourceRuntype = props.sourceRuntype;
   }
 
   protected fields(): string {
-    const fields = Object.keys(this.responseRuntype.fields).join(',');
+    const fields = Object.keys(this.sourceRuntype.fields).join(',');
     this.logger.verbose(fields);
     return fields;
   }
 
   protected prepareFindOneUri(id: string): string {
     const endpoint = `${this.sourceName}/${id}`;
+    this.logger.debug(`Finding ${this.sourceName} with uri ${endpoint}`);
+    return endpoint;
+  }
+
+  protected prepareMutateOneUri(id?: string): string {
+    const suffix = id ? `/${id}` : '';
+    const endpoint = `${this.sourceName}${suffix}`;
     this.logger.debug(`Finding ${this.sourceName} with uri ${endpoint}`);
     return endpoint;
   }
@@ -56,13 +72,13 @@ export class Auth0ApiRepository<DomainT, ResponseT> {
    */
   tryFindOne = (
     id: string,
-    processResult: Auth0ApiFindOneProcessMethod<DomainT, ResponseT>
+    processResult: Auth0ApiFindOneProcessMethod<DomainT, SourceT>
   ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
         const uri = this.prepareFindOneUri(id);
         const fields = this.fields();
-        const request$ = this.httpService.get<ResponseT>(uri, {
+        const request$ = this.httpService.get<SourceT>(uri, {
           params: {
             fields,
           },
@@ -80,18 +96,71 @@ export class Auth0ApiRepository<DomainT, ResponseT> {
 
   tryFindOneByEmail = (
     email: string,
-    processResult: Auth0ApiFindOneProcessMethod<DomainT, ResponseT>
+    processResult: Auth0ApiFindOneProcessMethod<DomainT, SourceT>
   ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
         const uri = this.prepareFindOneByEmailUri(email);
-        const request$ =
-          this.httpService.get<Auth0ApiResponses<ResponseT>>(uri);
+        const request$ = this.httpService.get<Auth0ApiResponses<SourceT>>(uri);
         const response = await firstValueFrom(request$);
 
         // NOTE: if not found, an error would have been thrown and caught
 
         return processResult(response.data[0], uri);
+      },
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: Auth0ApiRepositoryError) => reason as Error
+    );
+  };
+
+  /**
+   * Create a record
+   */
+  tryCreateOne = (
+    entity: SourceTCreate,
+    processResult: Auth0ApiSaveOneProcessMethod<DomainT, SourceT>
+  ): TE.TaskEither<Error, DomainT> => {
+    return TE.tryCatch(
+      async () => {
+        const uri = this.prepareMutateOneUri();
+        const request$ = this.httpService.post<SourceT>(uri, entity);
+        const response = await firstValueFrom(request$);
+        return processResult(response.data);
+      },
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: Auth0ApiRepositoryError) => reason as Error
+    );
+  };
+
+  /**
+   * Update a record
+   */
+  tryUpdateOne = (
+    id: string,
+    entity: Auth0ApiAttributes<SourceT>,
+    processResult: Auth0ApiSaveOneProcessMethod<DomainT, SourceT>
+  ): TE.TaskEither<Error, DomainT> => {
+    return TE.tryCatch(
+      async () => {
+        const uri = this.prepareMutateOneUri(id);
+        const request$ = this.httpService.patch<SourceT>(uri, entity);
+        const response = await firstValueFrom(request$);
+        return processResult(response.data);
+      },
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: Auth0ApiRepositoryError) => reason as Error
+    );
+  };
+
+  /**
+   * Delete a record
+   */
+  tryDeleteOne = (id: string): TE.TaskEither<Error, void> => {
+    return TE.tryCatch(
+      async () => {
+        const uri = this.prepareMutateOneUri(id);
+        const request$ = this.httpService.delete(uri);
+        await firstValueFrom(request$);
       },
       // NOTE: we don't use an error factory here, it is one level up
       (reason: Auth0ApiRepositoryError) => reason as Error

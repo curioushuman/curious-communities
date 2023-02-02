@@ -1,5 +1,6 @@
-import { DynamoDbItemKeys } from '@curioushuman/common';
 import { Null, Optional, Record, Static, String } from 'runtypes';
+
+import { DynamoDbItemKeys } from '@curioushuman/common';
 
 /**
  * Keys for the participant
@@ -11,10 +12,10 @@ import { Null, Optional, Record, Static, String } from 'runtypes';
  */
 export const DynamoDbMemberKeys = DynamoDbItemKeys.extend({
   Sk_Member_Email: String,
-  Sk_Member_SourceIdCRM: String,
-  Sk_Member_SourceIdAUTH: String,
-  Sk_Member_SourceIdCOMMUNITY: String,
-  'Sk_Member_SourceIdMICRO-COURSE': String,
+  Sk_Member_SourceIdCRM: Optional(String.Or(Null)),
+  Sk_Member_SourceIdAUTH: Optional(String.Or(Null)),
+  Sk_Member_SourceIdCOMMUNITY: Optional(String.Or(Null)),
+  'Sk_Member_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
 });
 /**
  * Keys for the participant

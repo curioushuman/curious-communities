@@ -39,6 +39,7 @@ export class DynamoDbMemberMapper {
         'Member',
         config.defaults.accountSources
       );
+
     return DynamoDbMemberKeys.check({
       primaryKey: member.id,
       sortKey: member.id,

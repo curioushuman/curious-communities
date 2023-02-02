@@ -79,7 +79,7 @@ defineFeature(feature, (test) => {
 
     given('the request is valid', () => {
       // we know this to exist in our fake repo
-      updateMemberDto = MemberBuilder().exists().buildUpdateMemberRequestDto();
+      updateMemberDto = MemberBuilder().updated().buildUpdateMemberRequestDto();
     });
 
     and('a matching record is found at the source', async () => {

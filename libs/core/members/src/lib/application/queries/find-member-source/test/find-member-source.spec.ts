@@ -12,7 +12,7 @@ import {
   FindMemberSourceQuery,
   FindMemberSourceHandler,
 } from '../find-member-source.query';
-import { MemberSourceRepositoryReadWrite } from '../../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryRead } from '../../../../adapter/ports/member-source.repository';
 import { MemberSourceBuilder } from '../../../../test/builders/member-source.builder';
 import { FindMemberSourceDto } from '../find-member-source.dto';
 import { FakeMemberSourceRepository } from '../../../../adapter/implementations/fake/fake.member-source.repository';
@@ -42,7 +42,7 @@ defineFeature(feature, (test) => {
         FindMemberSourceHandler,
         LoggableLogger,
         {
-          provide: MemberSourceRepositoryReadWrite,
+          provide: MemberSourceRepositoryRead,
           useClass: FakeMemberSourceRepository,
         },
         {

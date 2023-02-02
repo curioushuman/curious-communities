@@ -81,7 +81,7 @@ defineFeature(feature, (test) => {
 
     given('a matching record is found at the source', () => {
       // we know this to exist in our fake repo
-      updateMemberDto = MemberBuilder().exists().buildUpdateMemberDto();
+      updateMemberDto = MemberBuilder().updated().buildUpdateMemberDto();
     });
 
     and('the returned source populates a valid member', async () => {

@@ -200,7 +200,6 @@ export const ParticipantBuilder = () => {
         ...participantBase,
         course,
       } as Participant;
-      console.log('p', p);
       return p as Participant;
     },
 
@@ -215,7 +214,6 @@ export const ParticipantBuilder = () => {
 
     buildCreateParticipantDto(): CreateParticipantDto {
       const build = this.buildBaseNoCheck();
-      console.log('build', build);
       const participantSource = ParticipantSourceBuilder().exists().build();
       const course = CourseBuilder().exists().buildBaseNoCheck();
       // supports the invalid request tests

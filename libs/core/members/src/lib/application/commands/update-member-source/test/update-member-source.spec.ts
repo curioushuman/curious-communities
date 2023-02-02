@@ -74,8 +74,6 @@ defineFeature(feature, (test) => {
     let result: any;
 
     given('the request is valid', async () => {
-      // NOTE: this is the only time we skip the middle function
-      // i.e. it is all handled in the builder
       updateMemberSourceDto =
         MemberSourceBuilder().buildUpdateMemberSourceDto();
     });

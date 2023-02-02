@@ -85,9 +85,9 @@ defineFeature(feature, (test) => {
           repository.create(memberSourceForCreate)
         );
       } catch (err) {
-        if ('response' in err) {
-          console.log(err.response);
-        }
+        // if ('response' in err) {
+        //   console.log(err.response);
+        // }
         error = err;
         expect(error).toBeUndefined();
       }
@@ -99,9 +99,9 @@ defineFeature(feature, (test) => {
           repository.findOneByEmail(memberSourceForCreate.email)
         );
       } catch (err) {
-        if ('response' in err) {
-          console.log(err.response);
-        }
+        // if ('response' in err) {
+        //   console.log(err.response);
+        // }
         error = err;
         expect(error).toBeUndefined();
       }

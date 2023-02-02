@@ -156,7 +156,7 @@ export const MemberBuilder = () => {
     updated() {
       const source = MemberSourceBuilder().updated().build();
       this.setSource(source);
-      overrides.status = source.status;
+      // overrides.status = source.status;
       overrides.name = source.name;
       overrides.email = source.email;
       return this;

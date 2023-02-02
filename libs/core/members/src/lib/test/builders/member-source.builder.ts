@@ -9,6 +9,7 @@ import {
 } from '../../domain/entities/member-source';
 import { MemberName } from '../../domain/value-objects/member-name';
 import { MemberSourceStatus } from '../../domain/value-objects/member-source-status';
+import { MemberStatus } from '../../domain/value-objects/member-status';
 import {
   FindByEmailMemberSourceRequestDto,
   FindByIdSourceValueMemberSourceRequestDto,
@@ -104,7 +105,7 @@ export const MemberSourceBuilder = () => {
     },
 
     updated() {
-      overrides.id = ExternalId.check('ThisSourceExists');
+      overrides.id = ExternalId.check('ThisSourceUsedForUpdating');
       overrides.name = 'Mikee Freedom';
       overrides.email = 'mikeefreedom@whatsthatweb.com.au';
       overrides.status = 'active';
@@ -208,6 +209,7 @@ export const MemberSourceBuilder = () => {
 
     buildUpdateMemberSourceDto(): UpdateMemberSourceDto {
       const member = MemberBuilder().updated().buildNoCheck();
+      member.status = 'active' as MemberStatus;
       const memberSource = this.exists().buildNoCheck();
       return {
         source,

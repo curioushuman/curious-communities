@@ -27,6 +27,7 @@ export class FakeMemberSourceRepository
 
   constructor() {
     this.memberSources.push(MemberSourceBuilder().exists().build());
+    this.memberSources.push(MemberSourceBuilder().updated().build());
     this.memberSources.push(
       MemberSourceBuilder().invalidSource().buildNoCheck()
     );

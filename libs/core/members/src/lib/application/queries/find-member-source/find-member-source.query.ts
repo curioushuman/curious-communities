@@ -9,7 +9,7 @@ import {
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { MemberSourceRepositoryReadWrite } from '../../../adapter/ports/member-source.repository';
+import { MemberSourceRepositoryRead } from '../../../adapter/ports/member-source.repository';
 import { FindMemberSourceDto, parseDto } from './find-member-source.dto';
 import { MemberSource } from '../../../domain/entities/member-source';
 import { MemberSourceRepositoryErrorFactory } from '../../../adapter/ports/member-source.repository.error-factory';
@@ -26,7 +26,7 @@ export class FindMemberSourceHandler
   implements IQueryHandler<FindMemberSourceQuery>
 {
   constructor(
-    private readonly memberSourceRepository: MemberSourceRepositoryReadWrite,
+    private readonly memberSourceRepository: MemberSourceRepositoryRead,
     private logger: LoggableLogger,
     private memberSourceErrorFactory: MemberSourceRepositoryErrorFactory
   ) {

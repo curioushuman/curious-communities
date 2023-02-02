@@ -24,6 +24,7 @@ export class FakeMemberRepository implements MemberRepository {
 
   constructor() {
     this.members.push(MemberBuilder().exists().build());
+    this.members.push(MemberBuilder().updated().build());
     const invalidSource = MemberBuilder().invalidSource().buildNoCheck();
     invalidSource.name = 'Invalid Source' as MemberName;
     this.members.push(invalidSource);

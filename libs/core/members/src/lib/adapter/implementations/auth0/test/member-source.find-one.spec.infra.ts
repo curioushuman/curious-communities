@@ -93,9 +93,9 @@ defineFeature(feature, (test) => {
           repository.findOneByIdSource(memberSourceIdSource)
         );
       } catch (err) {
-        if ('response' in err) {
-          console.log(err.response);
-        }
+        // if ('response' in err) {
+        //   console.log(err.response);
+        // }
         error = err;
         expect(error).toBeUndefined();
       }
@@ -129,10 +129,7 @@ defineFeature(feature, (test) => {
       try {
         result = await executeTask(repository.findOneByEmail(memberEmail));
       } catch (err) {
-        if ('response' in err) {
-          console.log(err.response);
-        }
-        console.log(err);
+        // console.log(err);
         error = err;
         expect(error).toBeUndefined();
       }

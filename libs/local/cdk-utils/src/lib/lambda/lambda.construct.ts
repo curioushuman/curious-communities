@@ -196,7 +196,7 @@ export class LambdaConstruct extends Construct {
   }
 
   /**
-   * Adds the EdApp environment variables to the lambda
+   * Adds the Bettermode environment variables to the lambda
    */
   public addEnvironmentBettermode(): void {
     /**
@@ -208,6 +208,23 @@ export class LambdaConstruct extends Construct {
       'BETTERMODE_COMMUNITY_DOMAIN',
       'BETTERMODE_USER',
       'BETTERMODE_PASSWORD',
+    ];
+    this.addEnvironmentVars(requiredEnvVars);
+  }
+
+  /**
+   * Adds the Tribe environment variables to the lambda
+   */
+  public addEnvironmentTribe(): void {
+    /**
+     * If we don't have the appropriate environment variables set,
+     * throw an error
+     */
+    const requiredEnvVars = [
+      'TRIBE_DOMAIN',
+      'TRIBE_CLIENT_ID',
+      'TRIBE_CLIENT_SECRET',
+      'TRIBE_USER',
     ];
     this.addEnvironmentVars(requiredEnvVars);
   }

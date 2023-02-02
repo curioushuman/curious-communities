@@ -8,6 +8,7 @@ import { Construct } from 'constructs';
 // Initially we're going to import from local sources
 import {
   ChEventBusFrom,
+  getAccountAndRegion,
   testResourceNameTitle,
 } from '../../../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
@@ -44,6 +45,7 @@ export class TestEventBusConstruct extends Construct {
     /**
      * Rule: Subscribe the SQS queue to everything coming out of the EventBus
      */
+    const [account, region] = getAccountAndRegion();
     const [eventsRuleName, eventsRuleTitle] = testResourceNameTitle(
       eventBusId,
       'Rule'
@@ -53,7 +55,7 @@ export class TestEventBusConstruct extends Construct {
       eventBus: eventBusConstruct.eventBus,
       description: `Listen for all events from ${eventBusId} event bus.`,
       eventPattern: {
-        detailType: ['putEvent'],
+        region: [region],
       },
     });
     eventsRule.addTarget(new targets.SqsQueue(eventsQueue));

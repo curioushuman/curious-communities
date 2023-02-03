@@ -10,6 +10,8 @@ import { RepositoryServerUnavailableError } from './repository/server-unavailabl
 import { NotYetImplementedError } from './not-yet-implemented.error';
 import { NonMatchingSourceError } from './repository/non-matching-source.error';
 import { RepositoryAuthenticationExpiredError } from './repository/authentication-expired.error';
+import { ServiceError } from './services/service.error';
+import { ServiceNotFoundError } from './services/service-not-found.error';
 
 /**
  * ALL the errors
@@ -37,6 +39,8 @@ export const serverErrors = {
   RepositoryServerError,
   RepositoryServerUnavailableError,
   SourceInvalidError,
+  ServiceNotFoundError,
+  ServiceError,
   UnknownError,
 };
 

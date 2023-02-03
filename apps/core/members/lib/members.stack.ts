@@ -1,6 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { resolve as pathResolve } from 'path';
 
@@ -12,6 +14,7 @@ import {
   ChEventBusFrom,
   LambdaConstruct,
   generateCompositeResourceId,
+  resourceNameTitle,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -93,11 +96,18 @@ export class MembersStack extends cdk.Stack {
     this.lambdaProps.layers?.push(chLayerMembers.layer);
 
     /**
+     * Stack env vars
+     */
+    const requiredEnvVars = ['MEMBERS_DEFAULT_PASSWORD'];
+
+    /**
      * Functions
      */
 
     /**
      * Function: Create Member
+     *
+     * Subscribed to external event bus
      */
     const createMemberLambdaConstruct = new LambdaEventSubscription(
       this,
@@ -117,9 +127,6 @@ export class MembersStack extends cdk.Stack {
       }
     );
     // add env vars
-    createMemberLambdaConstruct.addEnvironmentAuth0();
-    createMemberLambdaConstruct.addEnvironmentBettermode();
-    createMemberLambdaConstruct.addEnvironmentEdApp();
     createMemberLambdaConstruct.addEnvironmentSalesforce();
 
     // allow the lambda access to the table
@@ -132,6 +139,8 @@ export class MembersStack extends cdk.Stack {
 
     /**
      * Function: Update Member
+     *
+     * Subscribed to external event bus
      */
     const updateMemberLambdaConstruct = new LambdaEventSubscription(
       this,
@@ -151,9 +160,6 @@ export class MembersStack extends cdk.Stack {
       }
     );
     // add env vars
-    updateMemberLambdaConstruct.addEnvironmentAuth0();
-    updateMemberLambdaConstruct.addEnvironmentBettermode();
-    updateMemberLambdaConstruct.addEnvironmentEdApp();
     updateMemberLambdaConstruct.addEnvironmentSalesforce();
 
     // allow the lambda access to the table
@@ -166,10 +172,12 @@ export class MembersStack extends cdk.Stack {
 
     /**
      * Find Member
+     *
+     * Available for use by other stacks
      */
     const findMemberLambdaConstruct = new LambdaConstruct(
       this,
-      'cc-members-member-find',
+      generateCompositeResourceId(stackId, 'member-find'),
       {
         lambdaEntry: pathResolve(__dirname, '../src/infra/find-member/main.ts'),
         lambdaProps: this.lambdaProps,
@@ -182,28 +190,93 @@ export class MembersStack extends cdk.Stack {
     );
 
     /**
-     * Function: Upsert Member Source
+     * Function: Upsert Member Sources (multiple)
      *
-     * Subscribed to internal eventBus
+     * This fires off multiple calls to the upsert member source lambda
+     * via the queue
      *
-     * ? Maybe we should not subscribe direct to this destination style event
-     * TODO: create a step function that will be able to take the raw output from
-     * other lambdas, and then start the upsert loop.
+     * Subscribed to internal event bus
      */
-    // const upsertMemberSourceLambdaConstruct = new LambdaEventSubscription(
+    const upsertMemberSourceMultiLambdaConstruct = new LambdaEventSubscription(
+      this,
+      generateCompositeResourceId(stackId, 'member-source-upsert-multi'),
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/upsert-member-source-multi/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+        eventBus: internalEventBusConstruct.eventBus,
+        eventPattern: {
+          detailType: ['Lambda Function Invocation Result - Success'],
+          source: ['lambda'],
+          resources: [
+            `${createMemberLambdaConstruct.lambdaFunction.functionArn}:$LATEST`,
+            `${updateMemberLambdaConstruct.lambdaFunction.functionArn}:$LATEST`,
+          ],
+        },
+      }
+    );
+
+    /**
+     * Function AND related resources: Upsert Member Source
+     *
+     * Subscribed to it's own SQS queue (for throttle control)
+     */
+    const upsertMemberSourceResourceId = generateCompositeResourceId(
+      stackId,
+      'member-source-upsert'
+    );
+    /**
+     * SQS queue to throttle requests to upsertMember
+     */
+    const [upsertMemberSourceQueueName, upsertMemberSourceQueueTitle] =
+      resourceNameTitle(upsertMemberSourceResourceId, 'Queue');
+    const upsertMemberSourceQueue = new sqs.Queue(
+      this,
+      upsertMemberSourceQueueTitle,
+      {
+        queueName: upsertMemberSourceQueueName,
+        // TODO: double check if this is necessary
+        // retentionPeriod: cdk.Duration.days(1),
+      }
+    );
+    // allow the lambda to send messages to the queue
+    upsertMemberSourceQueue.grantSendMessages(
+      upsertMemberSourceMultiLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Function for doing the work
+     */
+    // const upsertMemberSourceLambdaConstruct = new LambdaConstruct(
     //   this,
-    //   'cc-members-member-source-upsert',
+    //   upsertMemberSourceResourceId,
     //   {
     //     lambdaEntry: pathResolve(
     //       __dirname,
     //       '../src/infra/upsert-member-source/main.ts'
     //     ),
     //     lambdaProps: this.lambdaProps,
-    //     eventBus: internalEventBusConstruct.eventBus,
-    //     ruleDetailType: 'Lambda Function Invocation Result - Success',
-    //     ruleSource: 'lambda',
-    //     ruleDescription: 'Update internal, to match the external',
     //   }
+    // );
+    // // add env vars
+    // upsertMemberSourceLambdaConstruct.addEnvironmentVars(requiredEnvVars);
+    // upsertMemberSourceLambdaConstruct.addEnvironmentAuth0();
+    // // upsertMemberSourceLambdaConstruct.addEnvironmentBettermode();
+    // upsertMemberSourceLambdaConstruct.addEnvironmentEdApp();
+    // upsertMemberSourceLambdaConstruct.addEnvironmentSalesforce();
+    // upsertMemberSourceLambdaConstruct.addEnvironmentTribe();
+
+    // /**
+    //  * Subscribe the function, to the queue
+    //  */
+    // upsertMemberSourceLambdaConstruct.lambdaFunction.addEventSource(
+    //   new SqsEventSource(upsertMemberSourceQueue, {
+    //     batchSize: 10, // default
+    //     maxBatchingWindow: cdk.Duration.minutes(5),
+    //     reportBatchItemFailures: true, // default to false
+    //   })
     // );
 
     /**

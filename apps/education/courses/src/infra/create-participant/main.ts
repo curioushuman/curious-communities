@@ -7,7 +7,10 @@ import {
   CreateParticipantController,
   ParticipantResponseDto,
 } from '@curioushuman/cc-courses-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
+import {
+  InternalRequestInvalidError,
+  RepositoryItemConflictError,
+} from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import { CreateParticipantRequestDto } from './dto/request.dto';
@@ -67,7 +70,7 @@ export const handler = async (
   requestDtoOrEvent:
     | CreateParticipantRequestDto
     | EventBridgeEvent<'putEvent', CreateParticipantRequestDto>
-): Promise<ParticipantResponseDto> => {
+): Promise<ParticipantResponseDto | void> => {
   // grab the dto
   const requestDto =
     'detail' in requestDtoOrEvent
@@ -93,17 +96,21 @@ export const handler = async (
   const app = await waitForApp();
   const createParticipantController = app.get(CreateParticipantController);
 
-  // perform the action
-  // NOTE: no try/catch here. According to the docs:
-  //  _"For async handlers, you can use `return` and `throw` to send a `response`
-  //    or `error`, respectively. Functions must use the async keyword to use
-  //    these methods to return a `response` or `error`."_
-  //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
-  // Error will be thrown during `executeTask` within the controller.
-  // SEE **Error handling and logging** in README for more info.
-  return createParticipantController.create({
-    participantSource: requestDto.participantSource,
-    course: requestDto.course,
-    member: requestDto.member,
-  });
+  // we're going to try catch here
+  // only to catch RepositoryItemConflictError
+  // to log it, not throw it
+  // to avoid the lambda retrying
+  try {
+    return createParticipantController.create({
+      participantSource: requestDto.participantSource,
+      course: requestDto.course,
+      member: requestDto.member,
+    });
+  } catch (error: unknown) {
+    if (error instanceof RepositoryItemConflictError) {
+      logger.log(error);
+      return;
+    }
+    throw error;
+  }
 };

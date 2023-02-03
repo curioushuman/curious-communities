@@ -1,7 +1,11 @@
-import { EventBridgeEvent } from 'aws-lambda';
 import { Record, Static } from 'runtypes';
 
 import { MemberResponseDto } from '@curioushuman/cc-members-service';
+import {
+  EventBridgeAsLambdaDestinationEvent,
+  EventbridgePutEvent,
+  isLambdaDestinationEvent,
+} from '@curioushuman/common';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -21,30 +25,14 @@ export type UpsertMemberSourceMultiRequestDto = Static<
 /**
  * What the input would look like if someone 'put's it to an eventBus
  */
-export type UpsertMemberSourceMultiPutEvent = EventBridgeEvent<
-  'putEvent',
-  UpsertMemberSourceMultiRequestDto
->;
-
-/**
- * What the data looks like when eventBus used as a lambda destination
- *
- * Not ideal, but I couldn't find reference to a type to use here
- */
-interface LambdaDestinationReplica {
-  requestContext: unknown;
-  requestPayload: unknown;
-  responseContext: unknown;
-  responsePayload: MemberResponseDto;
-}
+export type UpsertMemberSourceMultiPutEvent =
+  EventbridgePutEvent<UpsertMemberSourceMultiRequestDto>;
 
 /**
  * A lambda destination wrapped in an event
  */
-export type UpsertMemberSourceMultiAsDestinationEvent = EventBridgeEvent<
-  'Lambda Function Invocation Result - Success',
-  LambdaDestinationReplica
->;
+export type UpsertMemberSourceMultiAsDestinationEvent =
+  EventBridgeAsLambdaDestinationEvent<MemberResponseDto>;
 
 /**
  * The two types of event we support
@@ -62,41 +50,21 @@ export type UpsertMemberSourceMultiDtoOrEvent =
   | UpsertMemberSourceMultiEvent;
 
 /**
- * Destination event predicate
- * https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
- */
-function isDestinationEvent(
-  event: UpsertMemberSourceMultiEvent
-): event is UpsertMemberSourceMultiAsDestinationEvent {
-  return (
-    (event as UpsertMemberSourceMultiAsDestinationEvent).detail
-      .responsePayload !== undefined
-  );
-}
-
-/**
  * This will determine what kind of input we have received
  * and extract the data we need from it
+ *
+ * NOTE: validation of data is a separate step
  */
-function locateDto(incomingEvent: UpsertMemberSourceMultiDtoOrEvent) {
+export function locateDto(
+  incomingEvent: UpsertMemberSourceMultiDtoOrEvent
+): unknown {
   if ('member' in incomingEvent) {
     return incomingEvent;
   }
-  if (isDestinationEvent(incomingEvent)) {
+  if (isLambdaDestinationEvent(incomingEvent)) {
     return {
       member: incomingEvent.detail.responsePayload,
     };
   }
   return incomingEvent.detail;
-}
-
-/**
- * This will check the data is in the correct format
- */
-export function parseDto(
-  incomingEvent: UpsertMemberSourceMultiDtoOrEvent
-): UpsertMemberSourceMultiRequestDto | undefined {
-  return incomingEvent === undefined
-    ? undefined
-    : UpsertMemberSourceMultiRequestDto.check(locateDto(incomingEvent));
 }

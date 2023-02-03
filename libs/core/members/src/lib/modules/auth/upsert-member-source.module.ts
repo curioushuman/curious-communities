@@ -13,7 +13,10 @@ import { FindMemberSourceHandler } from '../../application/queries/find-member-s
 import { UpdateMemberSourceHandler } from '../../application/commands/update-member-source/update-member-source.command';
 import { CreateMemberSourceHandler } from '../../application/commands/create-member-source/create-member-source.command';
 import { UpsertMemberSourceController } from '../../infra/upsert-member-source/upsert-member-source.controller';
-import { MemberSourceRepositoryReadWrite } from '../../adapter/ports/member-source.repository';
+import {
+  MemberSourceRepositoryRead,
+  MemberSourceRepositoryReadWrite,
+} from '../../adapter/ports/member-source.repository';
 import { MemberRepository } from '../../adapter/ports/member.repository';
 import { DynamoDbMemberRepository } from '../../adapter/implementations/dynamodb/member.repository';
 import { Auth0ApiMemberSourceRepository } from '../../adapter/implementations/auth0/member-source.repository';
@@ -43,6 +46,10 @@ const repositories = [
   },
   {
     provide: MemberSourceRepositoryReadWrite,
+    useClass: Auth0ApiMemberSourceRepository,
+  },
+  {
+    provide: MemberSourceRepositoryRead,
     useClass: Auth0ApiMemberSourceRepository,
   },
 ];

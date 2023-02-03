@@ -77,7 +77,7 @@ export class UpsertMemberSourceController {
         // if it is, then create
         () =>
           pipe(
-            requestDto,
+            validDto,
             parseActionData(
               CreateMemberSourceMapper.fromUpsertRequestDto,
               this.logger
@@ -97,7 +97,7 @@ export class UpsertMemberSourceController {
         // otherwise update
         (ms) =>
           pipe(
-            requestDto,
+            validDto,
             parseActionData(
               UpdateMemberSourceMapper.fromUpsertRequestDto(ms),
               this.logger

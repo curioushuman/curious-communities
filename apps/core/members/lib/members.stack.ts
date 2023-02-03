@@ -238,7 +238,8 @@ export class MembersStack extends cdk.Stack {
       {
         queueName: upsertMemberSourceQueueName,
         // TODO: double check if this is necessary
-        // retentionPeriod: cdk.Duration.days(1),
+        // retentionPeriod: cdk.Duration.seconds(1),
+        visibilityTimeout: cdk.Duration.seconds(60),
       }
     );
     // allow the lambda to send messages to the queue
@@ -249,35 +250,35 @@ export class MembersStack extends cdk.Stack {
     /**
      * Function for doing the work
      */
-    // const upsertMemberSourceLambdaConstruct = new LambdaConstruct(
-    //   this,
-    //   upsertMemberSourceResourceId,
-    //   {
-    //     lambdaEntry: pathResolve(
-    //       __dirname,
-    //       '../src/infra/upsert-member-source/main.ts'
-    //     ),
-    //     lambdaProps: this.lambdaProps,
-    //   }
-    // );
-    // // add env vars
-    // upsertMemberSourceLambdaConstruct.addEnvironmentVars(requiredEnvVars);
-    // upsertMemberSourceLambdaConstruct.addEnvironmentAuth0();
-    // // upsertMemberSourceLambdaConstruct.addEnvironmentBettermode();
-    // upsertMemberSourceLambdaConstruct.addEnvironmentEdApp();
+    const upsertMemberSourceLambdaConstruct = new LambdaConstruct(
+      this,
+      upsertMemberSourceResourceId,
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/upsert-member-source/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
+    );
+    // add env vars
+    upsertMemberSourceLambdaConstruct.addEnvironmentVars(requiredEnvVars);
+    upsertMemberSourceLambdaConstruct.addEnvironmentAuth0();
+    // upsertMemberSourceLambdaConstruct.addEnvironmentBettermode();
+    upsertMemberSourceLambdaConstruct.addEnvironmentEdApp();
     // upsertMemberSourceLambdaConstruct.addEnvironmentSalesforce();
-    // upsertMemberSourceLambdaConstruct.addEnvironmentTribe();
+    upsertMemberSourceLambdaConstruct.addEnvironmentTribe();
 
-    // /**
-    //  * Subscribe the function, to the queue
-    //  */
-    // upsertMemberSourceLambdaConstruct.lambdaFunction.addEventSource(
-    //   new SqsEventSource(upsertMemberSourceQueue, {
-    //     batchSize: 10, // default
-    //     maxBatchingWindow: cdk.Duration.minutes(5),
-    //     reportBatchItemFailures: true, // default to false
-    //   })
-    // );
+    /**
+     * Subscribe the function, to the queue
+     */
+    upsertMemberSourceLambdaConstruct.lambdaFunction.addEventSource(
+      new SqsEventSource(upsertMemberSourceQueue, {
+        batchSize: 3, // default
+        maxBatchingWindow: cdk.Duration.minutes(2),
+        reportBatchItemFailures: true, // default to false
+      })
+    );
 
     /**
      * Outputs

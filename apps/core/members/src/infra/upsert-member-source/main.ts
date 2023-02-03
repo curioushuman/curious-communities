@@ -12,8 +12,13 @@ import {
   RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { parseDto } from '@curioushuman/common';
 
-import { UpsertMemberSourceRequestDto } from './dto/request.dto';
+import {
+  locateDto,
+  UpsertMemberSourceDtoOrEvent,
+  UpsertMemberSourceRequestDto,
+} from './dto/request.dto';
 
 /**
  * TODO
@@ -81,21 +86,16 @@ async function waitForApp(source: string) {
  * - [ ] I'm not super chuffed about handing source in as a value (to controller)
  */
 export const handler = async (
-  requestDtoOrEvent:
-    | UpsertMemberSourceRequestDto
-    | EventBridgeEvent<'putEvent', UpsertMemberSourceRequestDto>
+  requestDtoOrEvent: UpsertMemberSourceDtoOrEvent
 ): Promise<MemberSourceResponseDto> => {
   // grab the dto
-  const requestDto =
-    'detail' in requestDtoOrEvent
-      ? requestDtoOrEvent.detail
-      : requestDtoOrEvent;
+  const requestDto = parseDto(requestDtoOrEvent, locateDto);
 
   // log the request
   logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
 
   // lambda level validation
-  if (!UpsertMemberSourceRequestDto.guard(requestDto)) {
+  if (!requestDto || !UpsertMemberSourceRequestDto.guard(requestDto)) {
     // NOTE: this is a 500 error, not a 400
     const error = new InternalRequestInvalidError(
       'Invalid request sent to UpsertMemberSourceFunction.Lambda'

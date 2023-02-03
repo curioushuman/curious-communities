@@ -17,4 +17,5 @@ export interface LambdaEventSubscriptionProps {
   };
   ruleSource?: string;
   ruleDetailType?: string;
+  eventPattern?: events.EventPattern;
 }

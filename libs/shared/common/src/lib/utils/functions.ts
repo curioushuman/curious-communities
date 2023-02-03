@@ -20,3 +20,10 @@ export function confirmEnvVars(requiredVars: string[]): void {
     }
   });
 }
+
+/**
+ * Basic function to generate a unique ID
+ */
+export function generateUniqueId(): string {
+  return Math.random().toString(36).substring(2, 9);
+}

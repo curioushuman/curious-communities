@@ -57,3 +57,9 @@ export * from './lib/domain/value-objects/year-month';
  */
 export * from './lib/utils/functions';
 export * from './lib/utils/types';
+
+/**
+ * Services
+ */
+export * from './lib/application/services/sqs/sqs.service';
+export * from './lib/application/services/sqs/sqs.service.types';

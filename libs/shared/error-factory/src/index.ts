@@ -1,5 +1,7 @@
 export * from './lib/error-factory';
 export * from './lib/repository.error-factory';
+export * from './lib/service.error-factory';
+export * from './lib/basic-service.error-factory';
 export * from './lib/validation.error-factory';
 
 export * from './lib/adapter/fake.repository.error-factory';
@@ -18,3 +20,6 @@ export * from './lib/errors/repository/non-matching-source.error';
 export * from './lib/errors/repository/server-unavailable.error';
 export * from './lib/errors/repository/server.error';
 export * from './lib/errors/repository/source-invalid.error';
+
+export * from './lib/errors/services/service.error';
+export * from './lib/errors/services/service-not-found.error';

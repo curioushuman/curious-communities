@@ -4,6 +4,7 @@
   "main": "src/index.js",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.252.0",
+    "@aws-sdk/client-sqs": "^3.262.0",
     "@aws-sdk/lib-dynamodb": "^3.252.0",
     "@curioushuman/error-factory": "workspace:^0.0.1",
     "@curioushuman/loggable": "workspace:^0.0.1",
@@ -19,9 +20,9 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@nestjs/testing": "^8.4.7",
     "@types/jsonwebtoken": "^8.5.1",
     "@types/lodash": "^4.14.191",
-    "@nestjs/testing": "^8.4.7",
     "@types/slug": "^5.0.3",
     "jest": "27.5.1",
     "jest-cucumber": "^3.0.1"

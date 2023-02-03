@@ -7,9 +7,10 @@ import {
 } from '@curioushuman/cc-members-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { parseDto } from '@curioushuman/common';
 
 import {
-  parseDto,
+  locateDto,
   UpsertMemberSourceMultiRequestDto,
   UpsertMemberSourceMultiDtoOrEvent,
 } from './dto/request.dto';
@@ -63,7 +64,7 @@ export const handler = async (
   requestDtoOrEvent: UpsertMemberSourceMultiDtoOrEvent
 ): Promise<void> => {
   // grab the dto
-  const requestDto = parseDto(requestDtoOrEvent);
+  const requestDto = parseDto(requestDtoOrEvent, locateDto);
 
   const logger = new LoggableLogger('UpsertMemberSourceMultiFunction.handler');
   logger.debug ? logger.debug(requestDto) : logger.log(requestDto);

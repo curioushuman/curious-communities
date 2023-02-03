@@ -63,3 +63,8 @@ export * from './lib/utils/types';
  */
 export * from './lib/application/services/sqs/sqs.service';
 export * from './lib/application/services/sqs/sqs.service.types';
+
+/**
+ * Infrastructure
+ */
+export * from './lib/infra/aws.types';

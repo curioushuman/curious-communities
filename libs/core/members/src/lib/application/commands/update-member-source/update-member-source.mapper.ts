@@ -1,14 +1,12 @@
+import { UpdateMapper } from '@curioushuman/common';
+
 import { MemberSource } from '../../../domain/entities/member-source';
 import { Member } from '../../../domain/entities/member';
 import { UpsertMemberSourceRequestDto } from '../../../infra/upsert-member-source/dto/upsert-member-source.request.dto';
 import { UpdateMemberSourceDto } from './update-member-source.dto';
 import { MemberMapper } from '../../../infra/member.mapper';
 
-/**
- * TODO
- * - update base abstract class for mappers
- */
-export class UpdateMemberSourceMapper {
+export class UpdateMemberSourceMapper extends UpdateMapper {
   public static fromUpsertRequestDto(
     memberSource: MemberSource
   ): (dto: UpsertMemberSourceRequestDto) => UpdateMemberSourceDto {

@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import * as TE from 'fp-ts/lib/TaskEither';
 
 import { LoggableLogger } from '@curioushuman/loggable';
+import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 import {
   confirmSourceId,
   SourceRepository,
@@ -26,7 +27,6 @@ import {
 } from './entities/member-source';
 import { Auth0ApiMemberSourceMapper } from './member-source.mapper';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
-import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 import { Source } from '../../../domain/value-objects/source';
 import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
 import { MemberSourceId } from '../../../domain/value-objects/member-source-id';

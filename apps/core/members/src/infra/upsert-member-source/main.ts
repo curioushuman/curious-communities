@@ -78,7 +78,7 @@ async function waitForApp(source: string) {
  * * We return the entity, for further application processing
  *
  * TODO:
- * - [ ] I'm not super chuffed about handing source in as a value
+ * - [ ] I'm not super chuffed about handing source in as a value (to controller)
  */
 export const handler = async (
   requestDtoOrEvent:

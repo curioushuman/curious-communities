@@ -31,6 +31,16 @@ Scenario: Fail; Source does not translate into a valid Member
   When I attempt to update a member
   Then I should receive a SourceInvalidError
 
+# TODO - I would prefer this to be ItemConflictError
+Scenario: Fail; Source does not require update
+  Given the request is valid
+  And a matching record is found at the source
+  And the source matches the member in our DB
+  When I attempt to update a member
+  Then the related record should NOT been updated
+  And no result is returned
+  # Then I should receive a RepositoryItemConflictError
+
 # TODO - needs to be implemented
 # Scenario: Fail; internal error occurred
 #   Given the request is valid

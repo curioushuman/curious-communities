@@ -9,10 +9,7 @@ import {
   parseData,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
-import {
-  RepositoryItemConflictError,
-  RepositoryItemNotFoundError,
-} from '@curioushuman/error-factory';
+import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 
 import { CreateMemberRequestDto } from './dto/create-member.request.dto';
 import { CreateMemberCommand } from '../../application/commands/create-member/create-member.command';
@@ -28,6 +25,9 @@ import { FindMemberSourceQuery } from '../../application/queries/find-member-sou
 
 /**
  * Controller for create member operations
+ *
+ * NOTES
+ * - I would prefer to throw a RepositoryItemConflictError and have the lambda catch it
  */
 @Controller()
 export class CreateMemberController {
@@ -39,9 +39,15 @@ export class CreateMemberController {
     this.logger.setContext(CreateMemberController.name);
   }
 
+  /**
+   * Public method to create a member
+   *
+   * TODO:
+   * - [ ] whole thing could be done in fp-ts
+   */
   public async create(
     requestDto: CreateMemberRequestDto
-  ): Promise<MemberResponseDto> {
+  ): Promise<MemberResponseDto | undefined> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -56,15 +62,33 @@ export class CreateMemberController {
     ]);
 
     // if a member exists, throw an error, go no further
+    // UPDATE: log the error, don't throw it
+    // we don't want the calling lambda to fail/retry
+    // try/catch at the lambda level doesn't seem to work
     if (member) {
-      throw new RepositoryItemConflictError(`Member id: ${member.id}`);
+      // throw new RepositoryItemConflictError(`Member id: ${member.id}`);
+      this.logger.error(
+        `Member already exists with id: ${member.id}`,
+        'RepositoryItemConflictError'
+      );
+      return undefined;
     }
 
+    // #3. create the member
     // otherwise, crack on
+    // type-casting is OK as we validate in the createMember function
     const createDto = {
-      memberSource,
-    };
+      memberSource: memberSource,
+    } as CreateMemberDto;
+    const createdMember = await this.createMember(createDto);
 
+    // #4. transform to the response DTO
+    return createdMember !== undefined
+      ? pipe(createdMember, parseData(MemberMapper.toResponseDto, this.logger))
+      : undefined;
+  }
+
+  private createMember(createDto: CreateMemberDto): Promise<Member> {
     const task = pipe(
       createDto,
 
@@ -84,10 +108,7 @@ export class CreateMemberController {
           },
           (error: unknown) => error as Error
         )
-      ),
-
-      // #5. transform to the response DTO
-      TE.chain(parseActionData(MemberMapper.toResponseDto, this.logger))
+      )
     );
 
     return executeTask(task);
@@ -144,14 +165,12 @@ export class CreateMemberController {
 
       // #2. call the query
       TE.chain((findDto) =>
-        pipe(
-          TE.tryCatch(
-            async () => {
-              const query = new FindMemberSourceQuery(findDto);
-              return await this.queryBus.execute<FindMemberSourceQuery>(query);
-            },
-            (error: unknown) => error as Error
-          )
+        TE.tryCatch(
+          async () => {
+            const query = new FindMemberSourceQuery(findDto);
+            return await this.queryBus.execute<FindMemberSourceQuery>(query);
+          },
+          (error: unknown) => error as Error
         )
       )
     );

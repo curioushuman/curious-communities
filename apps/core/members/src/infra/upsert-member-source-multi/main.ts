@@ -51,20 +51,25 @@ async function waitForApp() {
  * and return the response.
  *
  * NOTES:
- * * ALWAYS THROW THE ERROR, don't catch it and return an error-based response
- *   API Gateway integration response regex only pays attention to errors handled
- *   by AWS.
- * * We receive our own requestDto format, and not the usual AWS resource event.
- *   This will allow us most flexibility in invoking this function from multiple
- *   triggers. It reverses the dependency from invoked > invoker, to invoker > invoked.
- * * We return void
- *   Which basically indicates success.
+ * - unfortunately we need to deal with null input here
+ *   I'm unable to add content filtering rules to eventBus event pattern
+ *
+ * TODO:
+ * - [ ] consider a different return type in the other lambda that includes success/failure
  */
 export const handler = async (
   requestDtoOrEvent: UpsertMemberSourceMultiDtoOrEvent
 ): Promise<void> => {
   // grab the dto
   const requestDto = parseDto(requestDtoOrEvent, locateDto);
+
+  // check for an immediate null
+  if (requestDto === null) {
+    // if it's null, it means nothing was created or updated
+    // TODO: there will be a better way to handle this
+    // but I'm uncertain of it for now
+    return;
+  }
 
   const logger = new LoggableLogger('UpsertMemberSourceMultiFunction.handler');
   logger.debug ? logger.debug(requestDto) : logger.log(requestDto);

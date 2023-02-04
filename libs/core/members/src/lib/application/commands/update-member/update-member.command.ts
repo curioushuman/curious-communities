@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler, ICommand } from '@nestjs/cqrs';
-import * as TE from 'fp-ts/lib/TaskEither';
 import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
@@ -9,6 +8,7 @@ import {
   performAction,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { RepositoryItemUpdateError } from '@curioushuman/error-factory';
 
 import { MemberRepository } from '../../../adapter/ports/member.repository';
 import { UpdateMemberDto } from './update-member.dto';
@@ -64,12 +64,13 @@ export class UpdateMemberHandler
       // #4. update the entity, from the source; if required
       O.fromNullable,
       O.fold(
-        // if null, return the original member
+        // if null, throw an error
         () => {
-          this.logger.log(
-            `Member ${member.id} does not need to be updated from source`
-          );
-          return TE.right(member);
+          const msg = `Member ${member.id} does not need to be updated from source`;
+          // as we catch this error above, it is no longer logged
+          // so let's log it manually for a complete audit trail
+          this.logger.error(msg);
+          throw new RepositoryItemUpdateError(msg);
         },
         // otherwise, update and return
         (um) =>

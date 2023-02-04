@@ -148,17 +148,22 @@ export const MemberBuilder = () => {
     exists() {
       const source = MemberSourceBuilder().exists().build();
       this.setSource(source);
+      overrides.id = '6fce9d10-aeed-4bb1-8c8c-92094f1982ee';
       overrides.name = source.name;
       overrides.email = source.email;
+      return this;
+    },
+
+    existsByEmail() {
+      overrides.id = '6fce9d10-aeed-4bb1-8c8c-92094f1983rr';
+      overrides.email = 'exists@byemail.com';
       return this;
     },
 
     updated() {
       const source = MemberSourceBuilder().updated().build();
       this.setSource(source);
-      // overrides.status = source.status;
-      overrides.name = source.name;
-      overrides.email = source.email;
+      overrides.id = '6fce9d10-aeed-4bb1-8c8c-92094f1986yy';
       return this;
     },
 

@@ -9,7 +9,6 @@ import {
 } from '../../domain/entities/member-source';
 import { MemberName } from '../../domain/value-objects/member-name';
 import { MemberSourceStatus } from '../../domain/value-objects/member-source-status';
-import { MemberStatus } from '../../domain/value-objects/member-status';
 import {
   FindByEmailMemberSourceRequestDto,
   FindByIdSourceValueMemberSourceRequestDto,
@@ -209,8 +208,8 @@ export const MemberSourceBuilder = () => {
 
     buildUpdateMemberSourceDto(): UpdateMemberSourceDto {
       const member = MemberBuilder().updated().buildNoCheck();
-      member.status = 'active' as MemberStatus;
-      const memberSource = this.exists().buildNoCheck();
+      const memberSource = this.updated().buildNoCheck();
+      memberSource.status = 'active';
       return {
         source,
         member,
@@ -219,7 +218,7 @@ export const MemberSourceBuilder = () => {
     },
 
     buildUpdateUpsertMemberSourceRequestDto(): UpsertMemberSourceRequestDto {
-      const member = MemberBuilder().exists().buildMemberResponseDto();
+      const member = MemberBuilder().updated().buildMemberResponseDto();
       return {
         source,
         member,
@@ -227,8 +226,9 @@ export const MemberSourceBuilder = () => {
     },
 
     buildUpdateByEmailUpsertMemberSourceRequestDto(): UpsertMemberSourceRequestDto {
-      const member = MemberBuilder().exists().buildMemberResponseDto();
+      const member = MemberBuilder().existsByEmail().buildMemberResponseDto();
       member.sourceIds = [];
+      member.email = 'exists@byemail.com';
       return {
         source,
         member,

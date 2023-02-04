@@ -7,10 +7,7 @@ import {
   CreateMemberController,
   MemberResponseDto,
 } from '@curioushuman/cc-members-service';
-import {
-  InternalRequestInvalidError,
-  RepositoryItemConflictError,
-} from '@curioushuman/error-factory';
+import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import { CreateMemberRequestDto } from './dto/request.dto';
@@ -54,14 +51,12 @@ async function waitForApp() {
  * and return the response.
  *
  * NOTES:
- * * ALWAYS THROW THE ERROR, don't catch it and return an error-based response
- *   API Gateway integration response regex only pays attention to errors handled
- *   by AWS.
- * * We receive our own requestDto format, and not the usual AWS resource event.
- *   This will allow us most flexibility in invoking this function from multiple
- *   triggers. It reverses the dependency from invoked > invoker, to invoker > invoked.
- * * We return void
- *   Which basically indicates success.
+ * _ I would prefer to catch a RepositoryItemConflictError and return void here
+ *
+ * TODO:
+ * - [ ] consider a different return type that includes success/failure
+ *       i.e. instead of void being indicative of unnecessary create, we could return
+ *       an object that includes the result, and the member if necessary
  */
 export const handler = async (
   requestDtoOrEvent:
@@ -93,20 +88,10 @@ export const handler = async (
   const app = await waitForApp();
   const createMemberController = app.get(CreateMemberController);
 
-  // we're going to try catch here
-  // only to catch RepositoryItemConflictError
-  // to log it, not throw it
-  // to avoid the lambda retrying
-  try {
-    return createMemberController.create({
-      email: requestDto.memberEmail,
-      idSourceValue: requestDto.memberIdSourceValue,
-    });
-  } catch (error: unknown) {
-    if (error instanceof RepositoryItemConflictError) {
-      logger.log(error);
-      return;
-    }
-    throw error;
-  }
+  // call the controller
+  // TODO: replace this with a try/catch, and throw the error in the controller
+  return createMemberController.create({
+    email: requestDto.memberEmail,
+    idSourceValue: requestDto.memberIdSourceValue,
+  });
 };

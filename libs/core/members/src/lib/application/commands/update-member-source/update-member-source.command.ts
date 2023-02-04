@@ -84,7 +84,7 @@ export class UpdateMemberSourceHandler
             this.memberSourceRepository.update,
             this.memberSourceErrorFactory,
             this.logger,
-            `update from source`
+            `update source`
           )
       )
     );

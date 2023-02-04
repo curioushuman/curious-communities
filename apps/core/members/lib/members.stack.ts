@@ -196,6 +196,13 @@ export class MembersStack extends cdk.Stack {
      * via the queue
      *
      * Subscribed to internal event bus
+     *
+     * NOTES
+     * - the anything but rule won't work with null :(
+     *
+     * References:
+     * - https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns-content-based-filtering.html#eb-filtering-anything-but
+     * - https://github.com/aws/aws-cdk/issues/8660
      */
     const upsertMemberSourceMultiLambdaConstruct = new LambdaEventSubscription(
       this,
@@ -214,6 +221,9 @@ export class MembersStack extends cdk.Stack {
             `${createMemberLambdaConstruct.lambdaFunction.functionArn}:$LATEST`,
             `${updateMemberLambdaConstruct.lambdaFunction.functionArn}:$LATEST`,
           ],
+          // detail: {
+          //   responsePayload: [{ 'anything-but': null }],
+          // },
         },
       }
     );
@@ -237,12 +247,10 @@ export class MembersStack extends cdk.Stack {
       upsertMemberSourceQueueTitle,
       {
         queueName: upsertMemberSourceQueueName,
-        // TODO: double check if this is necessary
-        // retentionPeriod: cdk.Duration.seconds(1),
         visibilityTimeout: cdk.Duration.seconds(60),
       }
     );
-    // allow the lambda to send messages to the queue
+    // allow the (above) multi lambda to send messages to the queue
     upsertMemberSourceQueue.grantSendMessages(
       upsertMemberSourceMultiLambdaConstruct.lambdaFunction
     );

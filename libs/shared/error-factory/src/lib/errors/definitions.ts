@@ -2,6 +2,7 @@ import { UnknownError } from './unknown.error';
 import { InternalRequestInvalidError } from './internal-request-invalid.error';
 import { RequestInvalidError } from './request-invalid.error';
 import { RepositoryItemConflictError } from './repository/item-conflict.error';
+import { RepositoryItemUpdateError } from './repository/item-update.error';
 import { SourceInvalidError } from './repository/source-invalid.error';
 import { RepositoryAuthenticationError } from './repository/authentication.error';
 import { RepositoryItemNotFoundError } from './repository/item-not-found.error';
@@ -36,6 +37,7 @@ export const serverErrors = {
   RepositoryAuthenticationError,
   RepositoryAuthenticationExpiredError,
   RepositoryItemConflictError,
+  RepositoryItemUpdateError,
   RepositoryServerError,
   RepositoryServerUnavailableError,
   SourceInvalidError,

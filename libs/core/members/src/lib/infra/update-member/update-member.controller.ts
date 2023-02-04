@@ -9,6 +9,7 @@ import {
   parseData,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { RepositoryItemUpdateError } from '@curioushuman/error-factory';
 
 import { UpdateMemberRequestDto } from './dto/update-member.request.dto';
 import { UpdateMemberCommand } from '../../application/commands/update-member/update-member.command';
@@ -40,9 +41,15 @@ export class UpdateMemberController {
     this.logger.setContext(UpdateMemberController.name);
   }
 
+  /**
+   * Public method to update a member
+   *
+   * TODO:
+   * - [ ] whole thing could be done in fp-ts
+   */
   public async update(
     requestDto: UpdateMemberRequestDto
-  ): Promise<MemberResponseDto> {
+  ): Promise<MemberResponseDto | undefined> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -57,22 +64,34 @@ export class UpdateMemberController {
       this.findMemberSource(validDto),
     ]);
 
+    // ? should the comparison of source to member be done here?
+
     // set up the command dto
     const updateDto = {
       member,
       memberSource,
-    };
+    } as UpdateMemberDto;
 
+    // #3. execute the command
+    const updatedMember = await this.updateMember(updateDto);
+
+    // #4. transform to the response DTO
+    return updatedMember !== undefined
+      ? pipe(updatedMember, parseData(MemberMapper.toResponseDto, this.logger))
+      : undefined;
+  }
+
+  private updateMember(updateDto: UpdateMemberDto): Promise<Member> {
     const task = pipe(
       updateDto,
 
-      // #3. validate the dto
+      // #1. validate the command dto
       // NOTE: this will also occur in the command itself
       // but the Runtype.check function is such a useful way to
       // also make sure the types are correct. Better than typecasting
-      parseActionData(UpdateMemberDto.check, this.logger, 'SourceInvalidError'),
+      parseActionData(UpdateMemberDto.check, this.logger),
 
-      // #4. call the command
+      // #2. call the command
       // NOTE: proper error handling within the command itself
       TE.chain((commandDto) =>
         TE.tryCatch(
@@ -84,8 +103,12 @@ export class UpdateMemberController {
         )
       ),
 
-      // #5. transform to the response DTO
-      TE.chain(parseActionData(MemberMapper.toResponseDto, this.logger))
+      // #3. catch the update error specifically
+      TE.orElse((err) => {
+        return err instanceof RepositoryItemUpdateError
+          ? TE.right(undefined)
+          : TE.left(err);
+      })
     );
 
     return executeTask(task);
@@ -102,14 +125,12 @@ export class UpdateMemberController {
 
       // #2. call the query
       TE.chain((findDto) =>
-        pipe(
-          TE.tryCatch(
-            async () => {
-              const query = new FindMemberQuery(findDto);
-              return await this.queryBus.execute<FindMemberQuery>(query);
-            },
-            (error: unknown) => error as Error
-          )
+        TE.tryCatch(
+          async () => {
+            const query = new FindMemberQuery(findDto);
+            return await this.queryBus.execute<FindMemberQuery>(query);
+          },
+          (error: unknown) => error as Error
         )
       )
     );
@@ -131,14 +152,12 @@ export class UpdateMemberController {
 
       // #2. call the query
       TE.chain((findDto) =>
-        pipe(
-          TE.tryCatch(
-            async () => {
-              const query = new FindMemberSourceQuery(findDto);
-              return await this.queryBus.execute<FindMemberSourceQuery>(query);
-            },
-            (error: unknown) => error as Error
-          )
+        TE.tryCatch(
+          async () => {
+            const query = new FindMemberSourceQuery(findDto);
+            return await this.queryBus.execute<FindMemberSourceQuery>(query);
+          },
+          (error: unknown) => error as Error
         )
       )
     );

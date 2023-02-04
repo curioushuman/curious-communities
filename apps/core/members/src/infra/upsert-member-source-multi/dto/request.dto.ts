@@ -62,9 +62,9 @@ export function locateDto(
     return incomingEvent;
   }
   if (isLambdaDestinationEvent(incomingEvent)) {
-    return {
-      member: incomingEvent.detail.responsePayload,
-    };
+    return incomingEvent.detail.responsePayload === null
+      ? null
+      : { member: incomingEvent.detail.responsePayload };
   }
   return incomingEvent.detail;
 }

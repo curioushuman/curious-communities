@@ -18,8 +18,7 @@ import { MemberRepository } from '../../../adapter/ports/member.repository';
 import { MemberSourceBuilder } from '../../../test/builders/member-source.builder';
 import { MemberSource } from '../../../domain/entities/member-source';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
-import { FakeMemberSourceRepository } from '../../../adapter/implementations/fake/fake.member-source.repository';
-import { MemberSourceRepositoryReadWrite } from '../../../adapter/ports/member-source.repository';
+import { Member } from '../../../domain/entities/member';
 
 /**
  * INTEGRATION TEST
@@ -44,7 +43,6 @@ const feature = loadFeature('./update-member.feature', {
 defineFeature(feature, (test) => {
   let app: INestApplication;
   let repository: FakeMemberRepository;
-  let memberSourceRepository: FakeMemberSourceRepository;
   let controller: UpdateMemberController;
 
   beforeAll(async () => {
@@ -59,9 +57,6 @@ defineFeature(feature, (test) => {
     repository = moduleRef.get<MemberRepository>(
       MemberRepository
     ) as FakeMemberRepository;
-    memberSourceRepository = moduleRef.get<MemberSourceRepositoryReadWrite>(
-      MemberSourceRepositoryReadWrite
-    ) as FakeMemberSourceRepository;
     controller = moduleRef.get<UpdateMemberController>(UpdateMemberController);
   });
 
@@ -84,8 +79,6 @@ defineFeature(feature, (test) => {
 
     and('a matching record is found at the source', async () => {
       updatedMemberSource = MemberSourceBuilder().updated().build();
-      // save it to our fake repo
-      executeTask(memberSourceRepository.update(updatedMemberSource));
       const members = await executeTask(repository.all());
       const memberBefore = members.find(
         (member) =>
@@ -248,6 +241,75 @@ defineFeature(feature, (test) => {
 
     then('I should receive a SourceInvalidError', () => {
       expect(error).toBeInstanceOf(SourceInvalidError);
+    });
+  });
+
+  test('Fail; Source does not require update', ({ given, and, when, then }) => {
+    let updatedMemberSource: MemberSource;
+    let memberBefore: Member;
+    // disabling no-explicit-any for testing purposes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
+    let updateMemberDto: UpdateMemberRequestDto;
+    let error: Error;
+
+    given('the request is valid', () => {
+      // we know this to exist in our fake repo
+      updateMemberDto = MemberBuilder().exists().buildUpdateMemberRequestDto();
+    });
+
+    and('a matching record is found at the source', async () => {
+      updatedMemberSource = MemberSourceBuilder().exists().build();
+      const members = await executeTask(repository.all());
+      memberBefore = members.find(
+        (member) =>
+          updateMemberDto.idSourceValue ===
+          prepareExternalIdSourceValue(
+            member.sourceIds[0].id,
+            member.sourceIds[0].source
+          )
+      ) as Member;
+      expect(memberBefore).toBeDefined();
+    });
+
+    when('the source matches the member in our DB', async () => {
+      if (memberBefore) {
+        expect(memberBefore.status).toEqual(updatedMemberSource.status);
+        expect(memberBefore.email).toEqual(updatedMemberSource.email);
+        expect(memberBefore.name).toEqual(updatedMemberSource.name);
+        expect(memberBefore.organisationName).toEqual(
+          updatedMemberSource.organisationName
+        );
+      }
+    });
+
+    when('I attempt to update a member', async () => {
+      try {
+        result = await controller.update(updateMemberDto);
+      } catch (err) {
+        error = err as Error;
+      }
+    });
+
+    then('the related record should NOT been updated', async () => {
+      const members = await executeTask(repository.all());
+      const memberAfter = members.find(
+        (member) =>
+          updateMemberDto.idSourceValue ===
+          prepareExternalIdSourceValue(
+            member.sourceIds[0].id,
+            member.sourceIds[0].source
+          )
+      );
+      expect(memberAfter).toBeDefined();
+      if (memberAfter) {
+        expect(memberAfter.status).toEqual(updatedMemberSource.status);
+      }
+    });
+
+    and('no result is returned', () => {
+      expect(result).toBeUndefined();
+      expect(error).toBeUndefined();
     });
   });
 });

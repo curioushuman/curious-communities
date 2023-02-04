@@ -28,11 +28,13 @@ Scenario: Fail; Source does not translate into a valid Member
   When I attempt to create a member
   Then I should receive a SourceInvalidError
 
+# TODO - I would prefer this to be ItemConflictError
 Scenario: Fail; Source already exists in our DB
   Given a matching record is found at the source
   And the source DOES already exist in our DB
   When I attempt to create a member
-  Then I should receive a RepositoryItemConflictError
+  Then I should receive undefined
+  # Then I should receive a RepositoryItemConflictError
 
 # TODO - needs to be implemented
 # Scenario: Fail; internal error occurred

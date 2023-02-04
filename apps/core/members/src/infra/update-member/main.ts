@@ -64,7 +64,7 @@ export const handler = async (
   requestDtoOrEvent:
     | UpdateMemberRequestDto
     | EventBridgeEvent<'putEvent', UpdateMemberRequestDto>
-): Promise<MemberResponseDto> => {
+): Promise<MemberResponseDto | void> => {
   // grab the dto
   const requestDto =
     'detail' in requestDtoOrEvent
@@ -90,14 +90,8 @@ export const handler = async (
   const app = await waitForApp();
   const updateMemberController = app.get(UpdateMemberController);
 
-  // perform the action
-  // NOTE: no try/catch here. According to the docs:
-  //  _"For async handlers, you can use `return` and `throw` to send a `response`
-  //    or `error`, respectively. Functions must use the async keyword to use
-  //    these methods to return a `response` or `error`."_
-  //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
-  // Error will be thrown during `executeTask` within the controller.
-  // SEE **Error handling and logging** in README for more info.
+  // call the controller
+  // TODO: replace this with a try/catch, and throw the error in the controller
   return updateMemberController.update({
     idSourceValue: requestDto.memberIdSourceValue,
   });

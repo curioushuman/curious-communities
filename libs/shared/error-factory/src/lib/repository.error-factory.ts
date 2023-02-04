@@ -7,11 +7,17 @@ import { RepositoryItemNotFoundError } from './errors/repository/item-not-found.
 import { RepositoryServerError } from './errors/repository/server.error';
 import { RequestInvalidError } from './errors/request-invalid.error';
 import { SourceInvalidError } from './errors/repository/source-invalid.error';
+import { NonMatchingSourceError } from './errors/repository/non-matching-source.error';
+import { RepositoryItemUpdateError } from './errors/repository/item-update.error';
+import { RepositoryAuthenticationExpiredError } from './errors/repository/authentication-expired.error';
 import { ErrorFactory } from './error-factory';
 
 const allowedErrors = {
+  NonMatchingSourceError,
   RepositoryItemConflictError,
+  RepositoryItemUpdateError,
   RepositoryAuthenticationError,
+  RepositoryAuthenticationExpiredError,
   RepositoryItemNotFoundError,
   RepositoryServerError,
   RequestInvalidError,
@@ -23,6 +29,7 @@ const errorMap = {
   400: RepositoryServerError,
   401: RepositoryAuthenticationError,
   404: RepositoryItemNotFoundError,
+  409: RepositoryItemConflictError,
   500: RepositoryServerError,
 };
 

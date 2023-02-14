@@ -1,13 +1,9 @@
-import { DynamoDbItemKeys } from '@curioushuman/common';
 import { Null, Number, Optional, Record, Static, String } from 'runtypes';
+
+import { DynamoDbItemKeys } from '@curioushuman/common';
 
 /**
  * Keys for the course
- *
- * UPDATE: removing the generic sort keys for now, we'll reconsider them
- * when we come to including some GSIs.
- *
- * NOTE: when you do include them, extend() DynamoDbItemKeys rather than brand it.
  */
 export const DynamoDbCourseKeys = DynamoDbItemKeys.extend({
   Sk_Course_Slug: String,

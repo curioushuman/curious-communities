@@ -26,10 +26,10 @@ export const ParticipantBase = Record({
   id: ParticipantId,
   memberId: MemberId,
   courseId: CourseId,
-  status: ParticipantStatus,
 
   sourceIds: Array(ParticipantSourceIdSource),
 
+  status: ParticipantStatus,
   name: ParticipantName,
   email: ParticipantEmail,
   organisationName: ParticipantOrganisationName,

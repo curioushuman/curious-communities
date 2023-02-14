@@ -83,9 +83,10 @@ export class CreateMemberController {
     const createdMember = await this.createMember(createDto);
 
     // #4. transform to the response DTO
-    return createdMember !== undefined
-      ? pipe(createdMember, parseData(MemberMapper.toResponseDto, this.logger))
-      : undefined;
+    return pipe(
+      createdMember,
+      parseData(MemberMapper.toResponseDto, this.logger)
+    );
   }
 
   private createMember(createDto: CreateMemberDto): Promise<Member> {

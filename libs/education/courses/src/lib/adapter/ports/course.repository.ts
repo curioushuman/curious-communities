@@ -8,7 +8,7 @@ import {
 import { CourseSlug } from '../../domain/value-objects/course-slug';
 import { CourseSourceIdSourceValue } from '../../domain/value-objects/course-source-id-source';
 import { CourseId } from '../../domain/value-objects/course-id';
-import { RepositoryFindBy, RepositoryFindMethod } from '@curioushuman/common';
+import { RepositoryFindOne, RepositoryFindMethod } from '@curioushuman/common';
 
 /**
  * TODO:
@@ -32,7 +32,7 @@ export type CourseFindMethod = RepositoryFindMethod<
  * - repos for parent entities, by default, do not return children
  */
 export abstract class CourseRepository
-  implements RepositoryFindBy<CourseIdentifiers, CourseBase>
+  implements RepositoryFindOne<CourseIdentifiers, CourseBase>
 {
   /**
    * FindBy interface

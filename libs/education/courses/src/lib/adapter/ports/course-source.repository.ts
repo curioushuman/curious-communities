@@ -1,4 +1,4 @@
-import { RepositoryFindBy, RepositoryFindMethod } from '@curioushuman/common';
+import { RepositoryFindOne, RepositoryFindMethod } from '@curioushuman/common';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
@@ -17,7 +17,7 @@ export type CourseSourceFindMethod = RepositoryFindMethod<
 >;
 
 export abstract class CourseSourceRepository
-  implements RepositoryFindBy<CourseSourceIdentifiers, CourseSource>
+  implements RepositoryFindOne<CourseSourceIdentifiers, CourseSource>
 {
   /**
    * FindBy interface

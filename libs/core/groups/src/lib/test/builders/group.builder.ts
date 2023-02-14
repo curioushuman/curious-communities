@@ -1,24 +1,34 @@
-import { Group, GroupBase } from '../../domain/entities/group';
-import { GroupSource } from '../../domain/entities/group-source';
-import {
-  GroupBaseResponseDto,
-  GroupResponseDto,
-} from '../../infra/dto/group.response.dto';
-import { GroupSourceBuilder } from './group-source.builder';
-import config from '../../static/config';
-import { GroupStatus } from '../../domain/value-objects/group-status';
-import { FindCourseGroupDto } from '../../application/queries/find-course-group/find-course-group.dto';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import { CreateGroupDto } from '../../application/commands/create-group/create-group.dto';
+import { UpdateGroupDto } from '../../application/commands/update-group/update-group.dto';
+import { FindGroupDto } from '../../application/queries/find-group/find-group.dto';
+import {
+  CourseGroup,
+  CourseGroupBase,
+} from '../../domain/entities/course-group';
+import { CourseDto } from '../../domain/entities/course.dto';
+import { Group } from '../../domain/entities/group';
+import { GroupSource } from '../../domain/entities/group-source';
 import { GroupSourceIdSource } from '../../domain/value-objects/group-source-id-source';
+import { GroupStatus } from '../../domain/value-objects/group-status';
 import { GroupType } from '../../domain/value-objects/group-type';
-import { CourseGroup } from '../../domain/entities/course-group';
-import { CreateCourseGroupDto } from '../../application/commands/create-course-group/create-course-group.dto';
-import { CreateCourseGroupRequestDto } from '../../infra/create-course-group/dto/create-course-group.request.dto';
-import { CourseDto } from '../../infra/dto/course.dto';
-import { GroupId } from '../../domain/value-objects/group-id';
-import { UpdateCourseGroupDto } from '../../application/commands/update-course-group/update-course-group.dto';
-import { UpdateCourseGroupRequestDto } from '../../infra/update-course-group/dto/update-course-group.request.dto';
+import {
+  StandardGroupBaseResponseDto,
+  StandardGroupResponseDto,
+} from '../../infra/dto/standard-group.response.dto';
+import {
+  CourseGroupBaseResponseDto,
+  CourseGroupResponseDto,
+} from '../../infra/dto/course-group.response.dto';
+import { UpsertCourseGroupRequestDto } from '../../infra/upsert-course-group/dto/upsert-course-group.request.dto';
+import config from '../../static/config';
+
 import { GroupMemberBuilder } from './group-member.builder';
+import { GroupSourceBuilder } from './group-source.builder';
+import {
+  StandardGroup,
+  StandardGroupBase,
+} from '../../domain/entities/standard-group';
 
 /**
  * A builder for Groups to play with in testing.
@@ -45,10 +55,8 @@ export const GroupBuilder = () => {
    * Default properties don't exist in source repository
    */
   const defaultProperties: GroupLooseMimic = {
+    _type: config.defaults.groupTypeStandard as GroupType,
     id: '6fce9d10-aeed-4bb1-8c8c-92094f1982ff',
-    status: 'pending' as GroupStatus,
-    type: config.defaults.groupType as GroupType,
-    slug: 'brown-group',
 
     sourceIds: [
       {
@@ -57,28 +65,28 @@ export const GroupBuilder = () => {
       },
     ],
 
+    status: 'pending' as GroupStatus,
+    slug: 'brown-group',
     name: 'Brown group',
-
     accountOwner: config.defaults.accountOwner,
   };
   const overrides: GroupLooseMimic = {
+    _type: defaultProperties._type,
     id: defaultProperties.id,
-    status: defaultProperties.status,
-    type: defaultProperties.type,
-    slug: defaultProperties.slug,
 
     sourceIds: defaultProperties.sourceIds,
 
+    status: defaultProperties.status,
+    slug: defaultProperties.slug,
     name: defaultProperties.name,
-
     accountOwner: defaultProperties.accountOwner,
   };
   /**
    * This is for our course groups
    */
   const courseGroupOverrides = {
+    _type: config.defaults.groupTypeCourse as GroupType,
     courseId: '5b3b079d-42b1-4a30-9c20-dc3f7299e1cc',
-    type: config.defaults.courseGroupType as GroupType,
   };
 
   return {
@@ -110,7 +118,7 @@ export const GroupBuilder = () => {
     },
 
     invalidSource() {
-      const source = GroupSourceBuilder().invalidSource().buildNoCheck();
+      const source = GroupSourceBuilder().invalid().buildNoCheck();
       this.setSource(source);
       return this;
     },
@@ -123,6 +131,7 @@ export const GroupBuilder = () => {
 
     noSourceExists() {
       overrides.sourceIds = [];
+      overrides.name = 'No source exists';
       return this;
     },
 
@@ -147,43 +156,63 @@ export const GroupBuilder = () => {
     },
 
     invalidOther() {
-      overrides.status = 'happy';
+      overrides.name = '';
+      overrides.id = '4109c482-3267-492c-af78-ba9b7178c695';
       return this;
     },
 
     exists() {
-      const source = GroupSourceBuilder().exists().build();
+      const source = GroupSourceBuilder().exists().buildNoCheck();
       this.setSource(source);
-      overrides.name = source.name;
-      return this;
-    },
-
-    updated() {
-      const source = GroupSourceBuilder().updated().build();
-      this.setSource(source);
-      overrides.status = source.status;
       overrides.name = source.name;
       return this;
     },
 
     existsAlpha() {
-      const source = GroupSourceBuilder().exists().build();
+      overrides.id = '07770ecf-eb5f-435f-90a9-5dee0b3b8baa';
+      return this;
+    },
+
+    updated() {
+      const source = GroupSourceBuilder().updated().buildNoCheck();
       this.setSource(source);
-      overrides.name = source.name;
+      overrides.id = '6fce9d10-aeed-4bb1-8c8c-92094f1567yy';
+      overrides.name = 'Updated group';
       return this;
     },
 
     updatedAlpha() {
-      const source = GroupSourceBuilder().updatedAlpha().build();
+      const source = GroupSourceBuilder().updatedAlpha().buildNoCheck();
       this.setSource(source);
-      overrides.status = source.status;
-      overrides.name = source.name;
+      overrides.id = '6fce9d10-aeed-4bb1-8c8c-92094f1789yy';
+      overrides.name = 'Updated alpha group';
+      return this;
+    },
+
+    existsCourse() {
+      courseGroupOverrides.courseId = 'b2b28292-563b-4f3c-8df4-995470b46283';
+      return this;
+    },
+
+    updatedCourse() {
+      courseGroupOverrides.courseId = 'b695dda1-47a1-4750-b7c4-af245a89f3c0';
+      return this;
+    },
+
+    updatedCourseAlpha() {
+      courseGroupOverrides.courseId = '73cd86a9-a297-4f67-a718-bc67cc7e3423';
       return this;
     },
 
     doesntExist() {
       overrides.id = '032a54aa-0e1f-4a54-8cd5-ba58f23a8a2a';
       courseGroupOverrides.courseId = 'c0de1be9-6c00-4fb7-88c7-ca53f5af51ce';
+      overrides.sourceIds = [
+        {
+          id: 'NoExisty',
+          source: config.defaults.primaryAccountSource,
+        },
+      ];
       return this;
     },
 
@@ -192,46 +221,51 @@ export const GroupBuilder = () => {
       return this;
     },
 
-    buildBase(): GroupBase {
-      return GroupBase.check({
-        ...defaultProperties,
-        ...overrides,
-      });
+    /**
+     * UPDATE: no longer checking in builder
+     * too many unnecessary issues
+     */
+    buildBase(): StandardGroupBase {
+      return this.buildBaseNoCheck();
     },
 
-    build(): Group {
-      const group = {
-        ...defaultProperties,
-        ...overrides,
-      };
-      group.members = [GroupMemberBuilder().exists().buildBase()];
-      return Group.check(group);
-    },
-
-    buildCourseGroup(): CourseGroup {
-      const group = {
-        ...defaultProperties,
-        ...overrides,
-        ...courseGroupOverrides,
-      };
-      group.members = [GroupMemberBuilder().exists().buildBase()];
-      return CourseGroup.check(group);
-    },
-
-    buildBaseNoCheck(): GroupBase {
+    buildBaseNoCheck(): StandardGroupBase {
       return {
         ...defaultProperties,
         ...overrides,
-      } as GroupBase;
+      } as StandardGroupBase;
     },
 
-    buildNoCheck(): Group {
+    build(): StandardGroup {
+      return this.buildNoCheck();
+    },
+
+    buildNoCheck(): StandardGroup {
       const group = {
         ...defaultProperties,
         ...overrides,
       };
-      group.members = [GroupMemberBuilder().exists().buildBase()];
-      return group as Group;
+      const groupMembers = [GroupMemberBuilder().exists().buildBaseNoCheck()];
+      return {
+        ...group,
+        groupMembers,
+      } as StandardGroup;
+    },
+
+    buildCourseGroupBase(): CourseGroupBase {
+      return this.buildCourseGroupBaseNoCheck();
+    },
+
+    buildCourseGroupBaseNoCheck(): CourseGroupBase {
+      return {
+        ...defaultProperties,
+        ...overrides,
+        ...courseGroupOverrides,
+      } as CourseGroupBase;
+    },
+
+    buildCourseGroup(): CourseGroup {
+      return this.buildCourseGroupNoCheck();
     },
 
     buildCourseGroupNoCheck(): CourseGroup {
@@ -240,118 +274,119 @@ export const GroupBuilder = () => {
         ...overrides,
         ...courseGroupOverrides,
       };
-      group.members = [GroupMemberBuilder().exists().buildBase()];
-      return group as CourseGroup;
-    },
-
-    buildCreateCourseGroupDto(): CreateCourseGroupDto {
-      const group = this.buildCourseGroupNoCheck();
-      group.id = '9dd38646-112e-436c-b871-e234145e842c' as GroupId;
+      const groupMembers = [GroupMemberBuilder().exists().buildBaseNoCheck()];
       return {
-        group,
-      } as CreateCourseGroupDto;
+        ...group,
+        groupMembers,
+      } as CourseGroup;
     },
 
-    buildCreateCourseGroupRequestDto(): CreateCourseGroupRequestDto {
-      const group = this.buildCourseGroupNoCheck();
-      return {
-        course: {
-          id: group.courseId as string,
-          status: group.status as string,
-          name: group.name as string,
-          accountOwner: group.accountOwner as string,
-        } as CourseDto,
-      } as CreateCourseGroupRequestDto;
-    },
-
-    buildFindByIdCourseGroupDto(): FindCourseGroupDto {
+    buildFindByIdGroupDto(): FindGroupDto {
       return {
         identifier: 'id',
         value: this.buildNoCheck().id,
-      } as FindCourseGroupDto;
+      } as FindGroupDto;
     },
 
-    // buildFindByIdGroupRequestDto(): FindByIdGroupRequestDto {
-    //   return {
-    //     id: this.buildNoCheck().id,
-    //   } as FindByIdGroupRequestDto;
-    // },
-
-    buildFindByIdSourceValueCourseGroupDto(): FindCourseGroupDto {
+    buildFindByIdSourceValueGroupDto(): FindGroupDto {
       const sourceId = this.buildNoCheck().sourceIds[0];
       return {
         identifier: 'idSourceValue',
         value: prepareExternalIdSourceValue(sourceId.id, sourceId.source),
-      } as FindCourseGroupDto;
+      } as FindGroupDto;
     },
 
-    // buildFindByIdSourceValueGroupRequestDto(): FindByIdSourceValueGroupRequestDto {
-    //   const sourceId = this.buildNoCheck().sourceIds[0];
-    //   return {
-    //     idSourceValue: prepareExternalIdSourceValue(
-    //       sourceId.id,
-    //       sourceId.source
-    //     ),
-    //   } as FindByIdSourceValueGroupRequestDto;
-    // },
-
-    buildFindBySlugCourseGroupDto(): FindCourseGroupDto {
+    buildFindBySlugGroupDto(): FindGroupDto {
       return {
         identifier: 'slug',
         value: this.buildNoCheck().slug,
-      } as FindCourseGroupDto;
+      } as FindGroupDto;
     },
 
-    // buildFindBySlugGroupRequestDto(): FindBySlugGroupRequestDto {
-    //   return {
-    //     slug: this.buildNoCheck().slug,
-    //   } as FindBySlugGroupRequestDto;
-    // },
-
-    // buildUpdateGroupDto(): UpdateGroupDto {
-    //   const sourceId = this.buildNoCheck().sourceIds[0];
-    //   return sourceId as UpdateGroupDto;
-    // },
-
-    buildUpdateCourseGroupDto(): UpdateCourseGroupDto {
-      const group = this.buildCourseGroupNoCheck();
+    buildFindByCourseIdGroupDto(): FindGroupDto {
       return {
+        identifier: 'courseId',
+        value: this.buildCourseGroupNoCheck().courseId,
+      } as FindGroupDto;
+    },
+
+    buildCreateGroupDto(gs?: GroupSource): CreateGroupDto {
+      // default is successful path
+      const groupSource = gs || GroupSourceBuilder().beta().buildNoCheck();
+      return { groupSource } as CreateGroupDto;
+    },
+
+    buildCreateCourseGroupDto(): CreateGroupDto {
+      const build = this.doesntExist().buildCourseGroupBaseNoCheck();
+      return {
+        course: {
+          id: '7f694ca5-5a0e-4f10-a580-d1bc44c8c0ca',
+          status: build.status,
+          name: build.name,
+          accountOwner: build.accountOwner,
+        },
+      } as CreateGroupDto;
+    },
+
+    buildCreateCourseGroupRequestDto(): UpsertCourseGroupRequestDto {
+      const build = this.doesntExist().buildCourseGroupBaseNoCheck();
+      return {
+        course: {
+          id: '5fe657c9-52cf-441b-9ab7-a60e116a0293',
+          status: build.status,
+          name: build.name,
+          accountOwner: build.accountOwner,
+        },
+      } as UpsertCourseGroupRequestDto;
+    },
+
+    buildUpdateGroupDto(gs?: GroupSource): UpdateGroupDto {
+      // default is successful path
+      const groupSource = gs || GroupSourceBuilder().updated().buildNoCheck();
+      const group = this.buildNoCheck();
+      return { groupSource, group } as UpdateGroupDto;
+    },
+
+    buildUpdateCourseGroupDto(): UpdateGroupDto {
+      const group = this.updatedCourse().buildCourseGroupNoCheck();
+      return {
+        group,
         course: {
           id: group.courseId,
           status: group.status as GroupStatus,
-          name: 'An updated name',
+          name: group.name === '' ? '' : `${group.name} updated`,
           accountOwner: group.accountOwner,
         } as CourseDto,
-      } as UpdateCourseGroupDto;
+      } as UpdateGroupDto;
     },
 
-    buildUpdateCourseGroupRequestDto(): UpdateCourseGroupRequestDto {
-      const group = this.buildCourseGroupNoCheck();
+    buildUpdateCourseGroupRequestDto(): UpsertCourseGroupRequestDto {
+      const group = this.updatedCourseAlpha().buildCourseGroupNoCheck();
       return {
         course: {
           id: group.courseId as string,
           status: group.status as string,
-          name: 'An updated name',
+          name: group.name === '' ? '' : `${group.name} updated`,
           accountOwner: group.accountOwner as string,
         } as CourseDto,
-      } as UpdateCourseGroupRequestDto;
+      } as UpsertCourseGroupRequestDto;
     },
 
-    buildGroupResponseDto(): GroupResponseDto {
+    buildGroupResponseDto(): StandardGroupResponseDto {
       const sourceIds = overrides.sourceIds as GroupSourceIdSource[];
-      return GroupResponseDto.check({
+      return {
         ...defaultProperties,
         ...overrides,
         sourceIds: sourceIds.map((idSource) =>
           prepareExternalIdSourceValue(idSource.id, idSource.source)
         ),
-        members: [
+        groupMembers: [
           GroupMemberBuilder().exists().buildGroupMemberBaseResponseDto(),
         ],
-      });
+      } as StandardGroupResponseDto;
     },
 
-    buildGroupBaseResponseDto(): GroupBaseResponseDto {
+    buildGroupBaseResponseDto(): StandardGroupBaseResponseDto {
       const sourceIds = overrides.sourceIds as GroupSourceIdSource[];
       const dto = {
         ...defaultProperties,
@@ -360,7 +395,29 @@ export const GroupBuilder = () => {
           prepareExternalIdSourceValue(idSource.id, idSource.source)
         ),
       };
-      return GroupBaseResponseDto.check(dto);
+      return dto as StandardGroupBaseResponseDto;
+    },
+
+    buildCourseGroupResponseDto(): CourseGroupResponseDto {
+      return {
+        ...defaultProperties,
+        ...overrides,
+        ...courseGroupOverrides,
+        sourceIds: [],
+        groupMembers: [
+          GroupMemberBuilder().exists().buildCourseGroupMemberBaseResponseDto(),
+        ],
+      } as CourseGroupResponseDto;
+    },
+
+    buildCourseGroupBaseResponseDto(): CourseGroupBaseResponseDto {
+      const dto = {
+        ...defaultProperties,
+        ...overrides,
+        ...courseGroupOverrides,
+        sourceIds: [],
+      };
+      return dto as CourseGroupBaseResponseDto;
     },
   };
 };

@@ -1,55 +1,46 @@
+import { RepositoryFindOne, RepositoryFindMethod } from '@curioushuman/common';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
   GroupMember,
-  GroupMemberBase,
-  GroupMemberForSourceIdentify,
   GroupMemberIdentifier,
-  GroupMemberIdentifierValue,
+  GroupMemberIdentifiers,
 } from '../../domain/entities/group-member';
-import { GroupMemberId } from '../../domain/value-objects/group-member-id';
 import { GroupMemberSourceIdSourceValue } from '../../domain/value-objects/group-member-source-id-source';
+import { ParticipantId } from '../../domain/value-objects/participant-id';
+
+export type GroupMemberFindMethod = RepositoryFindMethod<
+  GroupMemberIdentifiers,
+  GroupMember
+>;
 
 /**
- * TODO:
- * - [ ] move the find and check method types to generics
+ * A repository for groupMembers
+ *
+ * NOTES:
+ * - repos for child entities, by default, ALWAYS include the parent
  */
-
-/**
- * Type for the findOne method interface within repository
- */
-export type GroupMemberFindMethod = (
-  value: GroupMemberIdentifierValue
-) => TaskEither<Error, GroupMember>;
-
-export abstract class GroupMemberRepository {
+export abstract class GroupMemberRepository
+  implements RepositoryFindOne<GroupMemberIdentifiers, GroupMember>
+{
   /**
-   * Object lookup for findMethods
+   * FindBy interface
    */
-  abstract readonly findOneBy: Record<
-    GroupMemberIdentifier,
-    GroupMemberFindMethod
-  >;
-
-  /**
-   * Find a group
-   *
-   * This method will accept a group identifier and value
-   * and then determine which finder method to use.
-   *
-   * NOTE: will throw NotFoundException if not found
-   */
+  abstract findOneBy: Record<GroupMemberIdentifier, GroupMemberFindMethod>;
   abstract findOne(identifier: GroupMemberIdentifier): GroupMemberFindMethod;
 
   /**
-   * Find a group by the given ID
+   * Find a groupMember by the given ID
    *
    * NOTE: will throw NotFoundException if not found
+   *
+   * ! UPDATE: removing until we've decided what to do about the fact
+   * we need the groupId as well as the groupMemberId for DynamoDb
    */
-  abstract findOneById(id: GroupMemberId): TaskEither<Error, GroupMember>;
+  // abstract findOneById(id: GroupMemberId): TaskEither<Error, GroupMember>;
 
   /**
-   * Find a group by the given ID and source value
+   * Find a groupMember by the given ID and source value
    *
    * NOTE: will throw NotFoundException if not found
    */
@@ -58,25 +49,19 @@ export abstract class GroupMemberRepository {
   ): TaskEither<Error, GroupMember>;
 
   /**
-   * Find a source, from the entity it reflects
+   * Find a group member by the given participant ID
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findOneByEntity(
-    group: GroupMemberForSourceIdentify
+  abstract findOneByParticipantId(
+    id: ParticipantId
   ): TaskEither<Error, GroupMember>;
 
   /**
-   * Check a group member exists
+   * Create/update a groupMember
    *
-   * * NOTE: will NOT throw NotFoundException if not found
+   * NOTE: full groupMember, not just the base
+   * * This will be the pattern for children, i.e. we need entity.parent to save
    */
-  abstract check(groupMember: GroupMemberBase): TaskEither<Error, boolean>;
-
-  /**
-   * Create/update a group
-   */
-  abstract save(
-    group: GroupMember | GroupMemberBase
-  ): TaskEither<Error, GroupMember>;
+  abstract save(groupMember: GroupMember): TaskEither<Error, GroupMember>;
 }

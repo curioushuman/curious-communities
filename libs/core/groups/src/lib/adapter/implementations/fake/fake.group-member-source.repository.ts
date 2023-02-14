@@ -10,32 +10,46 @@ import {
 } from '../../../domain/entities/group-member-source';
 import {
   GroupMemberSourceFindMethod,
-  GroupMemberSourceRepository,
+  GroupMemberSourceRepositoryReadWrite,
 } from '../../ports/group-member-source.repository';
 import { GroupMemberSourceBuilder } from '../../../test/builders/group-member-source.builder';
 import { GroupMemberSourceId } from '../../../domain/value-objects/group-member-source-id';
-import { GroupMemberForSourceIdentify } from '../../../domain/entities/group-member';
+import config from '../../../static/config';
 import { Source } from '../../../domain/value-objects/source';
-import { GroupSourceIdSource } from '../../../domain/value-objects/group-source-id-source';
+import { GroupMemberSourceIdSource } from '../../../domain/value-objects/group-member-source-id-source';
+import { GroupMemberEmail } from '../../../domain/value-objects/group-member-email';
+import { GroupMemberName } from '../../../domain/value-objects/group-member-name';
+import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
 
 @Injectable()
 export class FakeGroupMemberSourceRepository
-  implements GroupMemberSourceRepository
+  implements GroupMemberSourceRepositoryReadWrite
 {
   private groupMemberSources: GroupMemberSource[] = [];
 
-  readonly source: Source = 'GROUP';
+  private renameGroupMember(groupMember: GroupMemberSource): GroupMemberSource {
+    groupMember.name = 'Bland base name' as GroupMemberName;
+    return groupMember;
+  }
 
   constructor() {
-    this.groupMemberSources.push(GroupMemberSourceBuilder().exists().build());
     this.groupMemberSources.push(
-      GroupMemberSourceBuilder().existsAlpha().build()
+      GroupMemberSourceBuilder().exists().buildNoCheck()
     );
     this.groupMemberSources.push(
-      GroupMemberSourceBuilder().invalidSource().buildNoCheck()
+      this.renameGroupMember(
+        GroupMemberSourceBuilder().updated().buildNoCheck()
+      )
     );
-    this.groupMemberSources.push(GroupMemberSourceBuilder().alpha().build());
-    this.groupMemberSources.push(GroupMemberSourceBuilder().beta().build());
+    this.groupMemberSources.push(
+      GroupMemberSourceBuilder().invalid().buildNoCheck()
+    );
+    this.groupMemberSources.push(
+      GroupMemberSourceBuilder().alpha().buildNoCheck()
+    );
+    this.groupMemberSources.push(
+      GroupMemberSourceBuilder().beta().buildNoCheck()
+    );
     this.groupMemberSources.push(
       GroupMemberSourceBuilder().invalidStatus().buildNoCheck()
     );
@@ -43,32 +57,29 @@ export class FakeGroupMemberSourceRepository
 
   /**
    * Find by source ID
-   *
-   * ? Should the value check be extracted into it's own (functional) step?
    */
-  findOneById = (
-    value: GroupMemberSourceId
-  ): TE.TaskEither<Error, GroupMemberSource> => {
+  findOneByIdSource = (props: {
+    value: GroupMemberSourceIdSource;
+    parentId: GroupSourceId;
+  }): TE.TaskEither<Error, GroupMemberSource> => {
     return TE.tryCatch(
       async () => {
-        const id = GroupMemberSourceId.check(value);
-        const groupMemberSource = this.groupMemberSources.find(
-          (cs) => cs.id === id
+        const idSource = GroupMemberSourceIdSource.check(props.value);
+        const groupId = GroupSourceId.check(props.parentId);
+        const groupSource = this.groupMemberSources.find(
+          (cs) => cs.id === idSource.id && cs.groupId === groupId
         );
         return pipe(
-          groupMemberSource,
+          groupSource,
           O.fromNullable,
           O.fold(
             () => {
               // this mimics an API or DB call throwing an error
               throw new NotFoundException(
-                `GroupMemberSource with id ${id} not found`
+                `GroupMemberSource with id ${idSource.id} not found`
               );
             },
-            // this mimics the fact that all non-fake adapters
-            // will come with a mapper, which will perform a check
-            // prior to return
-            (gMS) => GroupMemberSource.check(gMS)
+            (gs) => gs
           )
         );
       },
@@ -77,57 +88,30 @@ export class FakeGroupMemberSourceRepository
   };
 
   /**
-   * A helper function for the helper function to make sure the groups match
+   * Find by source ID
    */
-  private matchGroupIdSource(
-    groupMemberSource: GroupMemberSource
-  ): (idSource: GroupSourceIdSource) => boolean {
-    return (groupMemberGroupIdSource) =>
-      groupMemberGroupIdSource.id === groupMemberSource.groupId &&
-      groupMemberGroupIdSource.source === this.source;
-  }
-
-  /**
-   * A helper function to make sure the groups match
-   */
-  private matchGroup(
-    groupMemberSource: GroupMemberSource,
-    groupMember: GroupMemberForSourceIdentify
-  ): boolean {
-    const idSource = groupMember.group.sourceIds.find(
-      this.matchGroupIdSource(groupMemberSource)
-    );
-    return !!idSource;
-  }
-
-  /**
-   * Find by any value on the entity
-   *
-   * ? Should the value check be extracted into it's own (functional) step?
-   */
-  findOneByEntity = (
-    groupMember: GroupMemberForSourceIdentify
-  ): TE.TaskEither<Error, GroupMemberSource> => {
+  findOneByEmail = (props: {
+    value: GroupMemberEmail;
+    parentId: GroupSourceId;
+  }): TE.TaskEither<Error, GroupMemberSource> => {
     return TE.tryCatch(
       async () => {
-        const groupMemberSource = this.groupMemberSources.find(
-          (gMS) =>
-            gMS.email === groupMember.email && this.matchGroup(gMS, groupMember)
+        const email = GroupMemberEmail.check(props.value);
+        const groupId = GroupSourceId.check(props.parentId);
+        const groupSource = this.groupMemberSources.find(
+          (cs) => cs.email === email && cs.groupId === groupId
         );
         return pipe(
-          groupMemberSource,
+          groupSource,
           O.fromNullable,
           O.fold(
             () => {
               // this mimics an API or DB call throwing an error
               throw new NotFoundException(
-                `GroupMemberSource matching ${groupMember.name} not found`
+                `GroupMemberSource with email ${email} not found`
               );
             },
-            // this mimics the fact that all non-fake adapters
-            // will come with a mapper, which will perform a check
-            // prior to return
-            (gMS) => GroupMemberSource.check(gMS)
+            (gs) => gs
           )
         );
       },
@@ -138,14 +122,11 @@ export class FakeGroupMemberSourceRepository
   /**
    * Object lookup for findOneBy methods
    */
-  readonly findOneBy: Record<
-    GroupMemberSourceIdentifier,
-    GroupMemberSourceFindMethod
-  > = {
-    // NOTE: idSource is parsed to id in application layer
-    idSource: this.findOneById,
-    entity: this.findOneByEntity,
-  };
+  findOneBy: Record<GroupMemberSourceIdentifier, GroupMemberSourceFindMethod> =
+    {
+      idSource: this.findOneByIdSource,
+      email: this.findOneByEmail,
+    };
 
   findOne = (
     identifier: GroupMemberSourceIdentifier
@@ -153,13 +134,16 @@ export class FakeGroupMemberSourceRepository
     return this.findOneBy[identifier];
   };
 
-  create = (
-    groupMemberSource: GroupMemberSourceForCreate
-  ): TE.TaskEither<Error, GroupMemberSource> => {
+  create = (props: {
+    groupMember: GroupMemberSourceForCreate;
+    parentId: GroupSourceId;
+  }): TE.TaskEither<Error, GroupMemberSource> => {
     return TE.tryCatch(
       async () => {
         const savedGroupMemberSource = {
-          ...groupMemberSource,
+          ...props.groupMember,
+          groupId: props.parentId,
+          source: config.defaults.primaryAccountSource as Source,
           id: GroupMemberSourceId.check(`FakeId${Date.now()}`),
         };
         this.groupMemberSources.push(savedGroupMemberSource);
@@ -169,23 +153,24 @@ export class FakeGroupMemberSourceRepository
     );
   };
 
-  update = (
-    groupMemberSource: GroupMemberSource
-  ): TE.TaskEither<Error, GroupMemberSource> => {
+  update = (props: {
+    groupMember: GroupMemberSource;
+    parentId: GroupSourceId;
+  }): TE.TaskEither<Error, GroupMemberSource> => {
     return TE.tryCatch(
       async () => {
         const groupMemberSourceExists = this.groupMemberSources.find(
-          (cs) => cs.id === groupMemberSource.id
+          (cs) => cs.id === props.groupMember.id
         );
         if (!groupMemberSourceExists) {
           throw new NotFoundException(
-            `GroupMemberSource with id ${groupMemberSource.id} not found`
+            `GroupMemberSource with id ${props.groupMember.id} not found`
           );
         }
         this.groupMemberSources = this.groupMemberSources.map((cs) =>
-          cs.id === groupMemberSource.id ? groupMemberSource : cs
+          cs.id === props.groupMember.id ? props.groupMember : cs
         );
-        return groupMemberSource;
+        return groupMemberSourceExists;
       },
       (reason: unknown) => reason as Error
     );

@@ -1,52 +1,43 @@
+import {
+  RepositoryFindOneWithParent,
+  RepositoryFindOneWithParentMethod,
+} from '@curioushuman/common';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
-import { GroupMemberForSourceIdentify } from '../../domain/entities/group-member';
 
 import {
   GroupMemberSource,
   GroupMemberSourceForCreate,
   GroupMemberSourceIdentifier,
-  GroupMemberSourceIdentifierValue,
+  GroupMemberSourceIdentifiers,
 } from '../../domain/entities/group-member-source';
-import { GroupMemberSourceId } from '../../domain/value-objects/group-member-source-id';
-import { Source } from '../../domain/value-objects/source';
+import { GroupMemberEmail } from '../../domain/value-objects/group-member-email';
+import { GroupMemberSourceIdSource } from '../../domain/value-objects/group-member-source-id-source';
+import { GroupSourceId } from '../../domain/value-objects/group-source-id';
 
 /**
  * Type for the findOne method interface within repository
  */
-export type GroupMemberSourceFindMethod = (
-  value: GroupMemberSourceIdentifierValue
-) => TaskEither<Error, GroupMemberSource>;
+export type GroupMemberSourceFindMethod = RepositoryFindOneWithParentMethod<
+  GroupMemberSourceIdentifiers,
+  GroupMemberSource,
+  GroupSourceId
+>;
 
-/**
- * Repository for group member sources
- *
- * TODO
- * - [ ] abstract some of the common items
- *       two levels, one for base, one for source/external vs internal
- */
-export abstract class GroupMemberSourceRepository {
+export abstract class GroupMemberSourceRepositoryRead
+  implements
+    RepositoryFindOneWithParent<
+      GroupMemberSourceIdentifiers,
+      GroupMemberSource,
+      GroupSourceId
+    >
+{
   /**
-   * Each source repository should also be marked with the source
-   * it represents
+   * FindOneWithParent interface
    */
-  abstract readonly source: Source;
-
-  /**
-   * Object lookup for findMethods
-   */
-  abstract readonly findOneBy: Record<
+  abstract findOneBy: Record<
     GroupMemberSourceIdentifier,
     GroupMemberSourceFindMethod
   >;
-
-  /**
-   * Find a group
-   *
-   * This method will accept a group identifier and value
-   * and then determine which finder method to use.
-   *
-   * NOTE: will throw NotFoundException if not found
-   */
   abstract findOne(
     identifier: GroupMemberSourceIdentifier
   ): GroupMemberSourceFindMethod;
@@ -56,35 +47,38 @@ export abstract class GroupMemberSourceRepository {
    *
    * NOTES
    * - will throw NotFoundException if not found
-   * - idSource is parsed to id in application layer
    */
-  abstract findOneById(
-    id: GroupMemberSourceId
-  ): TaskEither<Error, GroupMemberSource>;
+  abstract findOneByIdSource(props: {
+    value: GroupMemberSourceIdSource;
+    parentId: GroupSourceId;
+  }): TaskEither<Error, GroupMemberSource>;
 
   /**
-   * Find a source, from the entity it reflects
+   * Find a group by the given email
    *
-   * NOTE: will throw NotFoundException if not found
+   * NOTES
+   * - will throw NotFoundException if not found
    */
-  abstract findOneByEntity(
-    group: GroupMemberForSourceIdentify
-  ): TaskEither<Error, GroupMemberSource>;
-
-  /**
-   * Create/update a group
-   */
-  abstract create(
-    group: GroupMemberSourceForCreate
-  ): TaskEither<Error, GroupMemberSource>;
-
-  /**
-   * Create/update a group
-   */
-  abstract update(
-    group: GroupMemberSource
-  ): TaskEither<Error, GroupMemberSource>;
+  abstract findOneByEmail(props: {
+    value: GroupMemberEmail;
+    parentId: GroupSourceId;
+  }): TaskEither<Error, GroupMemberSource>;
 }
 
-export abstract class GroupMemberSourceCommunityRepository extends GroupMemberSourceRepository {}
-export abstract class GroupMemberSourceMicroCourseRepository extends GroupMemberSourceRepository {}
+export abstract class GroupMemberSourceRepositoryReadWrite extends GroupMemberSourceRepositoryRead {
+  /**
+   * Create/update a group
+   */
+  abstract create(props: {
+    groupMember: GroupMemberSourceForCreate;
+    parentId: GroupSourceId;
+  }): TaskEither<Error, GroupMemberSource>;
+
+  /**
+   * Create/update a group
+   */
+  abstract update(props: {
+    groupMember: GroupMemberSource;
+    parentId: GroupSourceId;
+  }): TaskEither<Error, GroupMemberSource>;
+}

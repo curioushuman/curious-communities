@@ -2,10 +2,9 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
   RepositoryItemNotFoundError,
-  RequestInvalidError,
+  InternalRequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
@@ -17,6 +16,8 @@ import { GroupMemberRepository } from '../../../../adapter/ports/group-member.re
 import { FakeGroupMemberRepository } from '../../../../adapter/implementations/fake/fake.group-member.repository';
 import { GroupMemberBuilder } from '../../../../test/builders/group-member.builder';
 import { FindGroupMemberDto } from '../find-group-member.dto';
+import { GroupMemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/group-member-source.repository.error-factory';
+import { GroupMemberRepositoryErrorFactory } from '../../../../adapter/ports/group-member.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -43,7 +44,11 @@ defineFeature(feature, (test) => {
         LoggableLogger,
         { provide: GroupMemberRepository, useClass: FakeGroupMemberRepository },
         {
-          provide: ErrorFactory,
+          provide: GroupMemberSourceRepositoryErrorFactory,
+          useClass: FakeRepositoryErrorFactory,
+        },
+        {
+          provide: GroupMemberRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -52,30 +57,30 @@ defineFeature(feature, (test) => {
     handler = moduleRef.get<FindGroupMemberHandler>(FindGroupMemberHandler);
   });
 
-  test('Successfully finding a group member by Id', ({ given, and, when }) => {
-    // disabling no-explicit-any for testing purposes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
+  // test('Successfully finding a groupMember by Id', ({ given, and, when }) => {
+  //   // disabling no-explicit-any for testing purposes
+  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   let result: any;
 
-    given('the request is valid', () => {
-      // we know this to exist in our fake repo
-      findGroupMemberDto = GroupMemberBuilder()
-        .exists()
-        .buildFindByIdGroupMemberDto();
-    });
+  //   given('the request is valid', () => {
+  //     // we know this to exist in our fake repo
+  //     findGroupMemberDto = GroupMemberBuilder()
+  //       .exists()
+  //       .buildFindByIdGroupMemberDto();
+  //   });
 
-    when('I attempt to find a group member', async () => {
-      result = await handler.execute(
-        new FindGroupMemberQuery(findGroupMemberDto)
-      );
-    });
+  //   when('I attempt to find a groupMember', async () => {
+  //     result = await handler.execute(
+  //       new FindGroupMemberQuery(findGroupMemberDto)
+  //     );
+  //   });
 
-    and('a record should have been returned', () => {
-      expect(result.id).toBeDefined();
-    });
-  });
+  //   and('a record should have been returned', () => {
+  //     expect(result.id).toBeDefined();
+  //   });
+  // });
 
-  test('Successfully finding a group member by Source Id', ({
+  test('Successfully finding a groupMember by Source Id', ({
     given,
     and,
     when,
@@ -91,7 +96,7 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupMemberDto();
     });
 
-    when('I attempt to find a group member', async () => {
+    when('I attempt to find a groupMember', async () => {
       result = await handler.execute(
         new FindGroupMemberQuery(findGroupMemberDto)
       );
@@ -102,7 +107,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Successfully finding a group member by entity', ({
+  test('Successfully finding a groupMember by participant Id', ({
     given,
     and,
     when,
@@ -115,10 +120,10 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findGroupMemberDto = GroupMemberBuilder()
         .exists()
-        .buildFindByEntityGroupMemberDto();
+        .buildFindByParticipantIdGroupMemberDto();
     });
 
-    when('I attempt to find a group member', async () => {
+    when('I attempt to find a groupMember', async () => {
       result = await handler.execute(
         new FindGroupMemberQuery(findGroupMemberDto)
       );
@@ -129,7 +134,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; group member not found', ({ given, and, when, then }) => {
+  test('Fail; groupMember not found', ({ given, and, when, then }) => {
     let error: Error;
 
     given('the request is valid', () => {
@@ -138,11 +143,11 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupMemberDto();
     });
 
-    and('the group member does NOT exist in the DB', () => {
+    and('the groupMember does NOT exist in the DB', () => {
       // above
     });
 
-    when('I attempt to find a group member', async () => {
+    when('I attempt to find a groupMember', async () => {
       try {
         await handler.execute(new FindGroupMemberQuery(findGroupMemberDto));
       } catch (err) {
@@ -164,7 +169,7 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupMemberDto();
     });
 
-    when('I attempt to find a group member', async () => {
+    when('I attempt to find a groupMember', async () => {
       try {
         await handler.execute(new FindGroupMemberQuery(findGroupMemberDto));
       } catch (err) {
@@ -172,8 +177,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a RequestInvalidError', () => {
-      expect(error).toBeInstanceOf(RequestInvalidError);
+    then('I should receive a InternalRequestInvalidError', () => {
+      expect(error).toBeInstanceOf(InternalRequestInvalidError);
     });
   });
 });

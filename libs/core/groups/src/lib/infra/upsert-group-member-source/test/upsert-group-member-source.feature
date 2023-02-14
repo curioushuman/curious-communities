@@ -1,23 +1,23 @@
-Feature: Upsert GroupMember Source
+Feature: Upsert Group Source
 
-Scenario: Successfully creating a group member source
+Scenario: Successfully creating a group source
   Given the request is valid
   And no matching record is found at the source
-  When I attempt to upsert a group member source
+  When I attempt to upsert a group source
   Then a new record should have been created
   And the created record should be returned
 
-Scenario: Successfully updating a group member source by Source Id
+Scenario: Successfully updating a group source by Source Id
   Given the request is valid
   And a matching record is found at the source
-  When I attempt to upsert a group member source
+  When I attempt to upsert a group source
   Then the record should have been updated
   And the updated record should be returned
 
-Scenario: Successfully updating a group member source by entity
+Scenario: Successfully updating a group source by email
   Given the request is valid
   And a matching record is found at the source
-  When I attempt to upsert a group member source
+  When I attempt to upsert a group source
   Then the record should have been updated
   And the updated record should be returned
 
@@ -26,5 +26,5 @@ Scenario: Successfully updating a group member source by entity
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data
-  When I attempt to upsert a group member source
+  When I attempt to upsert a group source
   Then I should receive a RequestInvalidError

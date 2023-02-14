@@ -1,32 +1,30 @@
+import { UpdateMapper } from '@curioushuman/common';
+
 import { GroupSource } from '../../../domain/entities/group-source';
-import { Group } from '../../../domain/entities/group';
+import { GroupBase } from '../../../domain/entities/group';
 import { UpsertGroupSourceRequestDto } from '../../../infra/upsert-group-source/dto/upsert-group-source.request.dto';
 import { UpdateGroupSourceDto } from './update-group-source.dto';
-import { GroupMapper } from '../../../infra/group.mapper';
-import { Source } from '../../../domain/value-objects/source';
+import { GroupMapper } from '../../../infra/group.mapper ';
 
-/**
- * TODO
- * - update base abstract class for mappers
- */
-export class UpdateGroupSourceMapper {
+export class UpdateGroupSourceMapper extends UpdateMapper {
   public static fromUpsertRequestDto(
     groupSource: GroupSource
   ): (dto: UpsertGroupSourceRequestDto) => UpdateGroupSourceDto {
     return (dto: UpsertGroupSourceRequestDto) => ({
-      source: Source.check(dto.source),
-      group: GroupMapper.fromResponseDto(dto.group),
+      group: GroupMapper.fromResponseDtoToBase(dto.group),
       groupSource,
     });
   }
 
   public static fromGroupToSource(
     groupSource: GroupSource
-  ): (group: Group) => GroupSource {
-    return (group: Group) => ({
-      id: groupSource.id,
-      status: group.status,
-      name: group.name,
-    });
+  ): (group: GroupBase) => GroupSource {
+    return (group: GroupBase) =>
+      GroupSource.check({
+        id: groupSource.id,
+        source: groupSource.source,
+        status: group.status,
+        name: group.name,
+      });
   }
 }

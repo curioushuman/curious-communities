@@ -19,7 +19,7 @@
 ### Steps
 
 1. Validate input
-2. Find group
+2. Find groupMember
 3. Return
    1. GroupMember
    2. Error
@@ -50,7 +50,7 @@ Else
   return FindGroupMemberDto
 ```
 
-### Step 2. Find group
+### Step 2. Find groupMember
 
 #### Input
 
@@ -68,7 +68,7 @@ Else
 #### Steps (pseudocode)
 
 ```
-Try to find group
+Try to find groupMember
   catch + return Error
 Else
   return GroupMember

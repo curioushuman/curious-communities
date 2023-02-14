@@ -2,14 +2,17 @@ import { ExternalId } from '@curioushuman/common';
 import { CreateGroupMemberSourceDto } from '../../application/commands/create-group-member-source/create-group-member-source.dto';
 import { UpdateGroupMemberSourceDto } from '../../application/commands/update-group-member-source/update-group-member-source.dto';
 import { FindGroupMemberSourceDto } from '../../application/queries/find-group-member-source/find-group-member-source.dto';
+import { GroupMember } from '../../domain/entities/group-member';
 
 import { GroupMemberSource } from '../../domain/entities/group-member-source';
-import { GroupMemberName } from '../../domain/value-objects/group-member-name';
 import { GroupMemberSourceStatus } from '../../domain/value-objects/group-member-source-status';
+import { GroupMemberResponseDto } from '../../infra/dto/group-member-response.dto';
+import { GroupMemberSourceResponseDto } from '../../infra/dto/group-member-source.response.dto';
+import { GroupMemberSourceMapper } from '../../infra/group-member-source.mapper';
 import { UpsertGroupMemberSourceRequestDto } from '../../infra/upsert-group-member-source/dto/upsert-group-member-source.request.dto';
 import config from '../../static/config';
 import { GroupMemberBuilder } from './group-member.builder';
-import { GroupBuilder } from './group.builder';
+import { GroupSourceBuilder } from './group-source.builder';
 
 /**
  * A builder for GroupMember Sources to play with in testing.
@@ -31,47 +34,42 @@ type GroupMemberSourceLooseMimic = {
 };
 
 export const GroupMemberSourceBuilder = () => {
+  const source = config.defaults.primaryAccountSource;
+
   /**
    * Default properties don't exist in source repository
    */
   const defaultProperties: GroupMemberSourceLooseMimic = {
     id: '5008s1234519CjIPPU',
-    groupId: '5008s1234519CjIAAH',
-    status: 'pending' as GroupMemberSourceStatus,
+    source,
+    groupId: '5008s1234519CjIAAU',
 
+    status: 'pending' as GroupMemberSourceStatus,
     name: 'James Brown',
     email: 'james@brown.com',
     organisationName: 'James Co',
   };
   const overrides: GroupMemberSourceLooseMimic = {
     id: defaultProperties.id,
+    source: defaultProperties.source,
     groupId: defaultProperties.groupId,
-    status: defaultProperties.status,
 
+    status: defaultProperties.status,
     name: defaultProperties.name,
     email: defaultProperties.email,
     organisationName: defaultProperties.organisationName,
   };
 
-  let source = config.defaults.primaryAccountSource;
-
   return {
     alpha() {
       overrides.id = '5000K1234567GEYQA3';
       overrides.name = 'Jim Brown';
-      overrides.email = 'jim@brown.com';
       return this;
     },
 
     beta() {
       overrides.id = '5008s000000y7LUAAY';
       overrides.name = 'June Brown';
-      overrides.email = 'june@brown.com';
-      return this;
-    },
-
-    alternateSource() {
-      source = 'MICRO-COURSE';
       return this;
     },
 
@@ -86,62 +84,35 @@ export const GroupMemberSourceBuilder = () => {
 
     invalidStatus() {
       overrides.name = 'Jones Invalid';
-      overrides.status = 'this is invalid';
-      return this;
-    },
-
-    invalidSource() {
-      overrides.name = '';
+      overrides.status = 'this is invalid' as GroupMemberSourceStatus;
       return this;
     },
 
     exists() {
       overrides.id = ExternalId.check('ThisSourceExists');
-      overrides.groupId = ExternalId.check('ThisSourceExists');
-      overrides.name = 'Jade Green';
-      overrides.email = 'jade@green.com';
       return this;
     },
 
     updated() {
-      overrides.id = ExternalId.check('ThisSourceExists');
-      overrides.groupId = ExternalId.check('ThisSourceExists');
-      overrides.name = 'Jade Green';
-      overrides.email = 'jade@green.com';
-      overrides.status = 'registered';
-      return this;
-    },
-
-    existsAlpha() {
-      overrides.id = ExternalId.check('ThisSourceExistsAlpha');
-      overrides.groupId = ExternalId.check('ThisSourceExistsAlpha');
-      overrides.name = 'Alpha Pink';
-      overrides.email = 'alpha@pink.com';
+      overrides.id = ExternalId.check('ThisSourceUsedForUpdating');
+      overrides.status = 'active' as GroupMemberSourceStatus;
       return this;
     },
 
     updatedAlpha() {
-      overrides.id = ExternalId.check('ThisSourceExists');
-      overrides.groupId = ExternalId.check('ThisSourceExists');
-      overrides.name = 'Alpha Pink';
-      overrides.email = 'alpha@pink.com';
-      overrides.status = 'registered';
+      overrides.id = ExternalId.check('ThisSourceUsedForUpdatingAlpha');
+      overrides.status = 'active' as GroupMemberSourceStatus;
       return this;
     },
 
     doesntExist() {
-      overrides.id = ExternalId.check('NothingExistsHere');
-      overrides.groupId = ExternalId.check('ThisSourceExists');
-      overrides.name = 'Nothing Exists';
-      overrides.email = 'nothing@exists.com';
+      overrides.id = ExternalId.check('DoesntExist');
+      overrides.email = 'doesnt@exist.com';
       return this;
     },
 
     build(): GroupMemberSource {
-      return GroupMemberSource.check({
-        ...defaultProperties,
-        ...overrides,
-      });
+      return this.buildNoCheck();
     },
 
     buildNoCheck(): GroupMemberSource {
@@ -151,7 +122,12 @@ export const GroupMemberSourceBuilder = () => {
       } as GroupMemberSource;
     },
 
-    buildFindByIdSourceValueGroupMemberSourceDto(): FindGroupMemberSourceDto {
+    buildGroupMemberSourceResponseDto(): GroupMemberSourceResponseDto {
+      const p = this.buildNoCheck();
+      return GroupMemberSourceMapper.toResponseDto(p);
+    },
+
+    buildFindByIdSourceGroupMemberSourceDto(): FindGroupMemberSourceDto {
       const build = this.buildNoCheck();
       return {
         identifier: 'idSource',
@@ -160,111 +136,64 @@ export const GroupMemberSourceBuilder = () => {
           source,
         },
         source,
+        parentId: build.groupId,
       } as FindGroupMemberSourceDto;
     },
 
-    // buildFindByIdSourceValueGroupMemberSourceRequestDto(): FindByIdSourceValueGroupMemberSourceRequestDto {
-    //   const build = this.buildNoCheck();
-    //   return {
-    //     idSourceValue: prepareExternalIdSourceValue(build.id, source),
-    //   } as FindByIdSourceValueGroupMemberSourceRequestDto;
-    // },
+    buildFindByEmailGroupMemberSourceDto(): FindGroupMemberSourceDto {
+      const build = this.buildNoCheck();
+      return {
+        identifier: 'email',
+        value: build.email,
+        source,
+        parentId: build.groupId,
+      } as FindGroupMemberSourceDto;
+    },
 
-    // buildFindByEmailGroupMemberSourceDto(): FindGroupMemberSourceDto {
-    //   return {
-    //     identifier: 'email',
-    //     value: this.buildNoCheck().email,
-    //   } as FindGroupMemberSourceDto;
-    // },
-
-    // buildFindByEmailGroupMemberSourceRequestDto(): FindByEmailGroupMemberSourceRequestDto {
-    //   return {
-    //     email: this.buildNoCheck().email,
-    //   } as FindByEmailGroupMemberSourceRequestDto;
-    // },
-
-    buildCreateGroupMemberSourceDto(): CreateGroupMemberSourceDto {
-      const groupMember = GroupMemberBuilder().noSourceExists().buildNoCheck();
+    buildCreateUpsertGroupMemberSourceRequestDto(
+      g?: GroupMemberResponseDto
+    ): UpsertGroupMemberSourceRequestDto {
+      const groupMember =
+        g ||
+        GroupMemberBuilder().noSourceExists().buildGroupMemberResponseDto();
       return {
         source: config.defaults.primaryAccountSource,
+        groupMember,
+      } as UpsertGroupMemberSourceRequestDto;
+    },
+
+    buildCreateGroupMemberSourceDto(
+      g?: GroupMember
+    ): CreateGroupMemberSourceDto {
+      const groupMember = g || GroupMemberBuilder().noSourceExists().build();
+      const groupSource = GroupSourceBuilder().exists().build();
+      return {
+        groupSource,
         groupMember,
       } as CreateGroupMemberSourceDto;
     },
 
-    buildInvalidCreateGroupMemberSourceDto(): CreateGroupMemberSourceDto {
-      const groupMember = GroupMemberBuilder().noSourceExists().buildNoCheck();
-      groupMember.name = '' as GroupMemberName;
+    buildUpdateUpsertGroupMemberSourceRequestDto(
+      g?: GroupMemberResponseDto
+    ): UpsertGroupMemberSourceRequestDto {
+      const groupMember =
+        g || GroupMemberBuilder().updated().buildGroupMemberResponseDto();
       return {
         source: config.defaults.primaryAccountSource,
         groupMember,
-      } as CreateGroupMemberSourceDto;
+      } as UpsertGroupMemberSourceRequestDto;
     },
 
-    buildUpdateGroupMemberSourceDto(): UpdateGroupMemberSourceDto {
-      const groupMember = GroupMemberBuilder().updated().buildNoCheck();
-      const groupMemberSource = this.exists().buildNoCheck();
+    buildUpdateGroupMemberSourceDto(
+      g?: GroupMember
+    ): UpdateGroupMemberSourceDto {
+      const groupMember = g || GroupMemberBuilder().updated().buildNoCheck();
+      const groupMemberSource = this.buildNoCheck();
       return {
         source: config.defaults.primaryAccountSource,
         groupMember,
         groupMemberSource,
       } as UpdateGroupMemberSourceDto;
-    },
-
-    buildInvalidUpdateGroupMemberSourceDto(): UpdateGroupMemberSourceDto {
-      const groupMember = GroupMemberBuilder().exists().buildNoCheck();
-      const groupMemberSource = this.exists().buildNoCheck();
-      groupMember.name = '' as GroupMemberName;
-      return {
-        source: config.defaults.primaryAccountSource,
-        groupMember,
-        groupMemberSource,
-      } as UpdateGroupMemberSourceDto;
-    },
-
-    buildCreateUpsertGroupMemberSourceRequestDto(): UpsertGroupMemberSourceRequestDto {
-      const groupMember = GroupMemberBuilder()
-        .noSourceExists()
-        .buildGroupMemberResponseDto();
-      return {
-        source: config.defaults.primaryAccountSource,
-        groupMember,
-      } as UpsertGroupMemberSourceRequestDto;
-    },
-
-    buildUpdateUpsertGroupMemberSourceRequestDto(): UpsertGroupMemberSourceRequestDto {
-      const groupMember = GroupMemberBuilder()
-        .updated()
-        .buildGroupMemberResponseDto();
-      return {
-        source: config.defaults.primaryAccountSource,
-        groupMember,
-      } as UpsertGroupMemberSourceRequestDto;
-    },
-
-    buildUpdateByEntityUpsertGroupMemberSourceRequestDto(): UpsertGroupMemberSourceRequestDto {
-      const groupMember = GroupMemberBuilder()
-        .updatedAlpha()
-        .buildGroupMemberResponseDto();
-      // TODO - it would be better if this could be controlled elsewhere
-      // the exists / updated alpha was a recent addition
-      const group = GroupBuilder().updatedAlpha().buildGroupBaseResponseDto();
-      groupMember.sourceIds = [];
-      groupMember.group = group;
-      return {
-        source: config.defaults.primaryAccountSource,
-        groupMember,
-      } as UpsertGroupMemberSourceRequestDto;
-    },
-
-    buildInvalidUpsertGroupMemberSourceRequestDto(): UpsertGroupMemberSourceRequestDto {
-      const groupMember = GroupMemberBuilder()
-        .exists()
-        .buildGroupMemberResponseDto();
-      groupMember.name = '' as GroupMemberName;
-      return {
-        source: config.defaults.primaryAccountSource,
-        groupMember,
-      } as UpsertGroupMemberSourceRequestDto;
     },
   };
 };

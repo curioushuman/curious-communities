@@ -1,25 +1,50 @@
-import { CourseGroupResponseDto } from './dto/course-group.response.dto';
-import { CourseGroup } from '../domain/entities/course-group';
-import { GroupMapper } from './group.mapper';
+import {
+  CourseGroupBaseResponseDto,
+  CourseGroupResponseDto,
+} from './dto/course-group.response.dto';
+import { CourseGroup, CourseGroupBase } from '../domain/entities/course-group';
+import { StandardGroupMapper } from './standard-group.mapper';
+import { CourseGroupMemberMapper } from './course-group-member.mapper';
+import { CourseId } from '../domain/value-objects/course-id';
 
-/**
- * TODO
- * - Should we do more checking of CourseGroupResponseDto?
- */
 export class CourseGroupMapper {
   public static toResponseDto(group: CourseGroup): CourseGroupResponseDto {
-    const groupResponseDto = GroupMapper.toResponseDto(group);
+    const base = CourseGroupMapper.toBaseResponseDto(group);
     return CourseGroupResponseDto.check({
-      ...groupResponseDto,
-      courseId: group.courseId,
+      ...base,
+      groupMembers: group.groupMembers.map(
+        CourseGroupMemberMapper.toBaseResponseDto
+      ),
     });
   }
 
+  public static toBaseResponseDto(
+    group: CourseGroup | CourseGroupBase
+  ): CourseGroupBaseResponseDto {
+    const standardBase = StandardGroupMapper.toBaseResponseDto(group);
+    return {
+      ...standardBase,
+      courseId: group.courseId,
+    };
+  }
+
   public static fromResponseDto(dto: CourseGroupResponseDto): CourseGroup {
-    const group = GroupMapper.fromResponseDto(dto);
-    return CourseGroup.check({
-      ...group,
-      courseId: dto.courseId,
-    });
+    const base = CourseGroupMapper.fromResponseDtoToBase(dto);
+    return {
+      ...base,
+      groupMembers: dto.groupMembers.map((member) =>
+        CourseGroupMemberMapper.fromResponseDtoToBase(member)
+      ),
+    };
+  }
+
+  public static fromResponseDtoToBase(
+    dto: CourseGroupResponseDto | CourseGroupBaseResponseDto
+  ): CourseGroupBase {
+    const standardBase = StandardGroupMapper.fromResponseDtoToBase(dto);
+    return {
+      ...standardBase,
+      courseId: CourseId.check(dto.courseId),
+    };
   }
 }

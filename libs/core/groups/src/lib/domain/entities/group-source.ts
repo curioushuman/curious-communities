@@ -1,20 +1,22 @@
 import { Record, Static } from 'runtypes';
 
-import { ValueOf } from '@curioushuman/common';
-
-import { GroupSourceStatus } from '../value-objects/group-source-status';
-import { GroupName } from '../value-objects/group-name';
 import { GroupSourceId } from '../value-objects/group-source-id';
+import { GroupSourceStatus } from '../value-objects/group-source-status';
 import { GroupSourceIdSource } from '../value-objects/group-source-id-source';
-import { Group } from './group';
+import { Source } from '../value-objects/source';
+import { GroupName } from '../value-objects/group-name';
+import { GroupSlug } from '../value-objects/group-slug';
 
 /**
  * Type for external group entity
  */
 export const GroupSource = Record({
   id: GroupSourceId,
+  source: Source,
+
   status: GroupSourceStatus,
   name: GroupName,
+  slug: GroupSlug,
 });
 
 /**
@@ -26,7 +28,8 @@ export type GroupSource = Static<typeof GroupSource>;
  * Type for external group entity, minus Id
  * Used for creating a new group
  */
-export const GroupSourceForCreate = GroupSource.omit('id');
+export const GroupSourceForCreate = GroupSource.omit('id', 'source');
+
 /**
  * Type for external group entity, minus Id
  * Used for creating a new group
@@ -40,7 +43,6 @@ export type GroupSourceForCreate = Static<typeof GroupSourceForCreate>;
  */
 export type GroupSourceIdentifiers = {
   idSource: GroupSourceIdSource;
-  entity: Group;
+  name: GroupName;
 };
 export type GroupSourceIdentifier = keyof GroupSourceIdentifiers;
-export type GroupSourceIdentifierValue = ValueOf<GroupSourceIdentifiers>;

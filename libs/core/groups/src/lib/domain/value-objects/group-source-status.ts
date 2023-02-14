@@ -2,7 +2,7 @@ import { Literal, Static, Union } from 'runtypes';
 
 export const GroupSourceStatus = Union(
   Literal('pending'),
-  Literal('open'),
+  Literal('active'),
   Literal('closed')
 );
 

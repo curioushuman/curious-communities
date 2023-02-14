@@ -1,9 +1,8 @@
 import { GroupSourceForCreate } from '../../../domain/entities/group-source';
-import { Group } from '../../../domain/entities/group';
+import { GroupBase } from '../../../domain/entities/group';
 import { UpsertGroupSourceRequestDto } from '../../../infra/upsert-group-source/dto/upsert-group-source.request.dto';
 import { CreateGroupSourceDto } from './create-group-source.dto';
-import { GroupMapper } from '../../../infra/group.mapper';
-import { Source } from '../../../domain/value-objects/source';
+import { GroupMapper } from '../../../infra/group.mapper ';
 
 /**
  * TODO
@@ -14,12 +13,11 @@ export class CreateGroupSourceMapper {
     dto: UpsertGroupSourceRequestDto
   ): CreateGroupSourceDto {
     return {
-      source: Source.check(dto.source),
-      group: GroupMapper.fromResponseDto(dto.group),
+      group: GroupMapper.fromResponseDtoToBase(dto.group),
     };
   }
 
-  public static fromGroupToSource(group: Group): GroupSourceForCreate {
+  public static fromGroupToSource(group: GroupBase): GroupSourceForCreate {
     return GroupSourceForCreate.check({
       status: group.status,
       name: group.name,

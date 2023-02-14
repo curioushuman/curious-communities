@@ -2,10 +2,9 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
   RepositoryItemNotFoundError,
-  RequestInvalidError,
+  InternalRequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
@@ -13,14 +12,11 @@ import {
   FindGroupSourceQuery,
   FindGroupSourceHandler,
 } from '../find-group-source.query';
-import {
-  GroupSourceCommunityRepository,
-  GroupSourceMicroCourseRepository,
-} from '../../../../adapter/ports/group-source.repository';
+import { GroupSourceRepositoryRead } from '../../../../adapter/ports/group-source.repository';
+import { FakeGroupSourceRepository } from '../../../../adapter/implementations/fake/fake.group-source.repository';
 import { GroupSourceBuilder } from '../../../../test/builders/group-source.builder';
 import { FindGroupSourceDto } from '../find-group-source.dto';
-import { FakeGroupSourceCommunityRepository } from '../../../../adapter/implementations/fake/fake.group-source.community.repository';
-import { FakeGroupSourceMicroCourseRepository } from '../../../../adapter/implementations/fake/fake.group-source.micro-course.repository';
+import { GroupSourceRepositoryErrorFactory } from '../../../../adapter/ports/group-source.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -46,15 +42,11 @@ defineFeature(feature, (test) => {
         FindGroupSourceHandler,
         LoggableLogger,
         {
-          provide: GroupSourceCommunityRepository,
-          useClass: FakeGroupSourceCommunityRepository,
+          provide: GroupSourceRepositoryRead,
+          useClass: FakeGroupSourceRepository,
         },
         {
-          provide: GroupSourceMicroCourseRepository,
-          useClass: FakeGroupSourceMicroCourseRepository,
-        },
-        {
-          provide: ErrorFactory,
+          provide: GroupSourceRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -63,7 +55,7 @@ defineFeature(feature, (test) => {
     handler = moduleRef.get<FindGroupSourceHandler>(FindGroupSourceHandler);
   });
 
-  test('Successfully finding a group source by Source Id', ({
+  test('Successfully finding a group-source by Source Id', ({
     given,
     and,
     when,
@@ -79,7 +71,7 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupSourceDto();
     });
 
-    when('I attempt to find a group source', async () => {
+    when('I attempt to find a group-source', async () => {
       result = await handler.execute(
         new FindGroupSourceQuery(findGroupSourceDto)
       );
@@ -90,7 +82,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Successfully finding a group source from non-primary source', ({
+  test('Successfully finding a group-source by name', ({
     given,
     and,
     when,
@@ -103,11 +95,10 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findGroupSourceDto = GroupSourceBuilder()
         .exists()
-        .alternateSource()
-        .buildFindByIdSourceValueGroupSourceDto();
+        .buildFindByNameGroupSourceDto();
     });
 
-    when('I attempt to find a group source', async () => {
+    when('I attempt to find a group-source', async () => {
       result = await handler.execute(
         new FindGroupSourceQuery(findGroupSourceDto)
       );
@@ -118,7 +109,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; group source not found', ({ given, and, when, then }) => {
+  test('Fail; group-source not found', ({ given, and, when, then }) => {
     let error: Error;
 
     given('the request is valid', () => {
@@ -127,11 +118,11 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupSourceDto();
     });
 
-    and('the group source does NOT exist in the DB', () => {
+    and('the group-source does NOT exist in the DB', () => {
       // above
     });
 
-    when('I attempt to find a group source', async () => {
+    when('I attempt to find a group-source', async () => {
       try {
         await handler.execute(new FindGroupSourceQuery(findGroupSourceDto));
       } catch (err) {
@@ -153,7 +144,7 @@ defineFeature(feature, (test) => {
         .buildFindByIdSourceValueGroupSourceDto();
     });
 
-    when('I attempt to find a group source', async () => {
+    when('I attempt to find a group-source', async () => {
       try {
         await handler.execute(new FindGroupSourceQuery(findGroupSourceDto));
       } catch (err) {
@@ -161,8 +152,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a RequestInvalidError', () => {
-      expect(error).toBeInstanceOf(RequestInvalidError);
+    then('I should receive a InternalRequestInvalidError', () => {
+      expect(error).toBeInstanceOf(InternalRequestInvalidError);
     });
   });
 });

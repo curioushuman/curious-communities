@@ -14,7 +14,7 @@ Scenario: Successfully updating a group source by Source Id
   Then the record should have been updated
   And the updated record should be returned
 
-Scenario: Successfully updating a group source by entity
+Scenario: Successfully updating a group source by name
   Given the request is valid
   And a matching record is found at the source
   When I attempt to upsert a group source

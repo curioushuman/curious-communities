@@ -1,29 +1,58 @@
-import { CourseGroup } from '../domain/entities/course-group';
-import { ParticipantDto } from './dto/participant.dto';
-import { GroupMemberForIdentify } from '../domain/entities/group-member';
+import {
+  CourseGroupMember,
+  CourseGroupMemberBase,
+} from '../domain/entities/course-group-member';
+import { GroupMember } from '../domain/entities/group-member';
+import { CourseId } from '../domain/value-objects/course-id';
+import { ParticipantId } from '../domain/value-objects/participant-id';
+import { CourseGroupMapper } from './course-group.mapper';
+import {
+  CourseGroupMemberBaseResponseDto,
+  CourseGroupMemberResponseDto,
+} from './dto/course-group-member.response.dto';
+import { StandardGroupMemberMapper } from './standard-group-member.mapper';
 
-/**
- * Mapper for course group related DTO objects
- */
 export class CourseGroupMemberMapper {
-  public static fromParticipantToCourseGroupMember(
-    group: CourseGroup,
-    participant: ParticipantDto
-  ): GroupMemberForIdentify {
-    return GroupMemberForIdentify.check({
-      groupId: group.id,
-      memberId: participant.memberId,
-      // NOTE: if the status' differ between participant and group member
-      // add an additional map function to handle it
-      status: participant.status,
+  public static toResponseDto(
+    groupMember: CourseGroupMember
+  ): CourseGroupMemberResponseDto {
+    const base = CourseGroupMemberMapper.toBaseResponseDto(groupMember);
+    return {
+      ...base,
+      group: CourseGroupMapper.toBaseResponseDto(groupMember.group),
+    };
+  }
 
-      sourceIds: [],
+  public static toBaseResponseDto(
+    groupMember: CourseGroupMember | CourseGroupMemberBase
+  ): CourseGroupMemberBaseResponseDto {
+    const standardBase =
+      StandardGroupMemberMapper.toBaseResponseDto(groupMember);
+    return {
+      ...standardBase,
+      courseId: groupMember.courseId,
+      participantId: groupMember.participantId,
+    };
+  }
 
-      name: participant.name,
-      email: participant.email,
-      organisationName: participant.organisationName,
+  public static fromResponseDto(
+    dto: CourseGroupMemberResponseDto
+  ): GroupMember {
+    const base = CourseGroupMemberMapper.fromResponseDtoToBase(dto);
+    return {
+      ...base,
+      group: CourseGroupMapper.fromResponseDtoToBase(dto.group),
+    };
+  }
 
-      accountOwner: participant.accountOwner,
-    });
+  public static fromResponseDtoToBase(
+    dto: CourseGroupMemberResponseDto | CourseGroupMemberBaseResponseDto
+  ): CourseGroupMemberBase {
+    const standardBase = StandardGroupMemberMapper.fromResponseDtoToBase(dto);
+    return {
+      ...standardBase,
+      courseId: CourseId.check(dto.courseId),
+      participantId: ParticipantId.check(dto.participantId),
+    };
   }
 }

@@ -2,10 +2,9 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
   RepositoryItemNotFoundError,
-  RequestInvalidError,
+  InternalRequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
@@ -13,14 +12,12 @@ import {
   FindGroupMemberSourceQuery,
   FindGroupMemberSourceHandler,
 } from '../find-group-member-source.query';
-import {
-  GroupMemberSourceCommunityRepository,
-  GroupMemberSourceMicroCourseRepository,
-} from '../../../../adapter/ports/group-member-source.repository';
+import { GroupMemberSourceRepositoryRead } from '../../../../adapter/ports/group-member-source.repository';
+import { FakeGroupMemberSourceRepository } from '../../../../adapter/implementations/fake/fake.group-member-source.repository';
 import { GroupMemberSourceBuilder } from '../../../../test/builders/group-member-source.builder';
 import { FindGroupMemberSourceDto } from '../find-group-member-source.dto';
-import { FakeGroupMemberSourceCommunityRepository } from '../../../../adapter/implementations/fake/fake.group-member-source.community.repository';
-import { FakeGroupMemberSourceMicroCourseRepository } from '../../../../adapter/implementations/fake/fake.group-member-source.micro-course.repository';
+import { GroupMemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/group-member-source.repository.error-factory';
+import { GroupMemberRepositoryErrorFactory } from '../../../../adapter/ports/group-member.repository.error-factory';
 
 /**
  * UNIT TEST
@@ -46,15 +43,15 @@ defineFeature(feature, (test) => {
         FindGroupMemberSourceHandler,
         LoggableLogger,
         {
-          provide: GroupMemberSourceCommunityRepository,
-          useClass: FakeGroupMemberSourceCommunityRepository,
+          provide: GroupMemberSourceRepositoryRead,
+          useClass: FakeGroupMemberSourceRepository,
         },
         {
-          provide: GroupMemberSourceMicroCourseRepository,
-          useClass: FakeGroupMemberSourceMicroCourseRepository,
+          provide: GroupMemberSourceRepositoryErrorFactory,
+          useClass: FakeRepositoryErrorFactory,
         },
         {
-          provide: ErrorFactory,
+          provide: GroupMemberRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
@@ -65,7 +62,7 @@ defineFeature(feature, (test) => {
     );
   });
 
-  test('Successfully finding a group member source by Source Id', ({
+  test('Successfully finding a groupMember source by Source Id', ({
     given,
     and,
     when,
@@ -78,10 +75,10 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findGroupMemberSourceDto = GroupMemberSourceBuilder()
         .exists()
-        .buildFindByIdSourceValueGroupMemberSourceDto();
+        .buildFindByIdSourceGroupMemberSourceDto();
     });
 
-    when('I attempt to find a group member source', async () => {
+    when('I attempt to find a groupMember source', async () => {
       result = await handler.execute(
         new FindGroupMemberSourceQuery(findGroupMemberSourceDto)
       );
@@ -92,7 +89,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Successfully finding a group member source from non-primary source', ({
+  test('Successfully finding a groupMember source by email', ({
     given,
     and,
     when,
@@ -105,11 +102,10 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findGroupMemberSourceDto = GroupMemberSourceBuilder()
         .exists()
-        .alternateSource()
-        .buildFindByIdSourceValueGroupMemberSourceDto();
+        .buildFindByEmailGroupMemberSourceDto();
     });
 
-    when('I attempt to find a group member source', async () => {
+    when('I attempt to find a groupMember source', async () => {
       result = await handler.execute(
         new FindGroupMemberSourceQuery(findGroupMemberSourceDto)
       );
@@ -120,20 +116,20 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; group member source not found', ({ given, and, when, then }) => {
+  test('Fail; groupMember source not found', ({ given, and, when, then }) => {
     let error: Error;
 
     given('the request is valid', () => {
       findGroupMemberSourceDto = GroupMemberSourceBuilder()
         .doesntExist()
-        .buildFindByIdSourceValueGroupMemberSourceDto();
+        .buildFindByIdSourceGroupMemberSourceDto();
     });
 
-    and('the group member source does NOT exist in the DB', () => {
+    and('the groupMember source does NOT exist in the DB', () => {
       // above
     });
 
-    when('I attempt to find a group member source', async () => {
+    when('I attempt to find a groupMember source', async () => {
       try {
         await handler.execute(
           new FindGroupMemberSourceQuery(findGroupMemberSourceDto)
@@ -154,10 +150,10 @@ defineFeature(feature, (test) => {
     given('the request contains invalid data', () => {
       findGroupMemberSourceDto = GroupMemberSourceBuilder()
         .invalid()
-        .buildFindByIdSourceValueGroupMemberSourceDto();
+        .buildFindByIdSourceGroupMemberSourceDto();
     });
 
-    when('I attempt to find a group member source', async () => {
+    when('I attempt to find a groupMember source', async () => {
       try {
         await handler.execute(
           new FindGroupMemberSourceQuery(findGroupMemberSourceDto)
@@ -167,8 +163,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a RequestInvalidError', () => {
-      expect(error).toBeInstanceOf(RequestInvalidError);
+    then('I should receive a InternalRequestInvalidError', () => {
+      expect(error).toBeInstanceOf(InternalRequestInvalidError);
     });
   });
 });

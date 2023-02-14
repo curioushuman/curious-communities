@@ -9,10 +9,6 @@ import { Literal, Static, Union } from 'runtypes';
  * - singular, not plural e.g. COURSE
  * - generic, not specific software e.g. COURSE, not SF_COURSE
  */
-export const Source = Union(
-  Literal('GROUP'),
-  Literal('COMMUNITY'),
-  Literal('MICRO-COURSE')
-);
+export const Source = Union(Literal('COMMUNITY'), Literal('MICRO-COURSE'));
 
 export type Source = Static<typeof Source>;

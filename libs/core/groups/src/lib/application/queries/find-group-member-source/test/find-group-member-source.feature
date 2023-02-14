@@ -1,22 +1,22 @@
 Feature: Find GroupMember Source
 
-Scenario: Successfully finding a group member source by Source Id
+Scenario: Successfully finding a groupMember source by Source Id
   Given the request is valid
-  When I attempt to find a group member source
+  When I attempt to find a groupMember source
   Then a record should have been returned
 
-Scenario: Successfully finding a group member source from non-primary source
+Scenario: Successfully finding a groupMember source by email
   Given the request is valid
-  When I attempt to find a group member source
+  When I attempt to find a groupMember source
   Then a record should have been returned
 
-Scenario: Fail; group member source not found
+Scenario: Fail; groupMember source not found
   Given the request is valid
-  And the group member source does NOT exist in the DB
-  When I attempt to find a group member source
+  And the groupMember source does NOT exist in the DB
+  When I attempt to find a groupMember source
   Then I should receive a RepositoryItemNotFoundError
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data
-  When I attempt to find a group member source
-  Then I should receive a RequestInvalidError
+  When I attempt to find a groupMember source
+  Then I should receive a InternalRequestInvalidError

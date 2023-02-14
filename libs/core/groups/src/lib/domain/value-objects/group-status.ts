@@ -1,9 +1,9 @@
-import { Static } from 'runtypes';
-import { GroupSourceStatus } from './group-source-status';
+import { Literal, Static, Union } from 'runtypes';
 
-/**
- * ? Should we define the list twice?
- */
-export const GroupStatus = GroupSourceStatus.withBrand('GroupStatus');
+export const GroupStatus = Union(
+  Literal('pending'),
+  Literal('active'),
+  Literal('closed')
+);
 
 export type GroupStatus = Static<typeof GroupStatus>;

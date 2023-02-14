@@ -2,8 +2,8 @@
 
 ## 1. Details
 
-- **Subdomain**: GroupMembers
-- **Aggregate root**: GroupMembers
+- **Subdomain**: Learning design
+- **Aggregate root**: Groups
 
 ## 2. Data
 

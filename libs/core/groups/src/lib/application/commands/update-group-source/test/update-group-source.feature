@@ -10,4 +10,4 @@ Scenario: Successfully updating a group source
 Scenario: Fail; Invalid request
   Given the request contains invalid data
   When I attempt to update a group source
-  Then I should receive a RequestInvalidError
+  Then I should receive a InternalRequestInvalidError

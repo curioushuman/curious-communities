@@ -2,9 +2,8 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
-  RequestInvalidError,
+  InternalRequestInvalidError,
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -13,15 +12,14 @@ import {
   UpdateGroupMemberSourceCommand,
   UpdateGroupMemberSourceHandler,
 } from '../update-group-member-source.command';
-import {
-  GroupMemberSourceCommunityRepository,
-  GroupMemberSourceMicroCourseRepository,
-} from '../../../../adapter/ports/group-member-source.repository';
-import { FakeGroupMemberSourceCommunityRepository } from '../../../../adapter/implementations/fake/fake.group-member-source.community.repository';
-import { FakeGroupMemberSourceMicroCourseRepository } from '../../../../adapter/implementations/fake/fake.group-member-source.micro-course.repository';
+import { GroupMemberSourceRepositoryReadWrite } from '../../../../adapter/ports/group-member-source.repository';
+import { FakeGroupMemberSourceRepository } from '../../../../adapter/implementations/fake/fake.group-member-source.repository';
 import { GroupMemberSource } from '../../../../domain/entities/group-member-source';
 import { GroupMemberSourceBuilder } from '../../../../test/builders/group-member-source.builder';
 import { UpdateGroupMemberSourceDto } from '../update-group-member-source.dto';
+import { GroupMemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/group-member-source.repository.error-factory';
+import config from '../../../../static/config';
+import { GroupMemberBuilder } from '../../../../test/builders/group-member.builder';
 
 /**
  * UNIT TEST
@@ -37,7 +35,7 @@ const feature = loadFeature('./update-group-member-source.feature', {
 });
 
 defineFeature(feature, (test) => {
-  let repository: FakeGroupMemberSourceCommunityRepository;
+  let repository: FakeGroupMemberSourceRepository;
   let handler: UpdateGroupMemberSourceHandler;
   let updateGroupMemberSourceDto: UpdateGroupMemberSourceDto;
 
@@ -47,37 +45,36 @@ defineFeature(feature, (test) => {
         UpdateGroupMemberSourceHandler,
         LoggableLogger,
         {
-          provide: GroupMemberSourceCommunityRepository,
-          useClass: FakeGroupMemberSourceCommunityRepository,
+          provide: GroupMemberSourceRepositoryReadWrite,
+          useClass: FakeGroupMemberSourceRepository,
         },
         {
-          provide: GroupMemberSourceMicroCourseRepository,
-          useClass: FakeGroupMemberSourceMicroCourseRepository,
-        },
-        {
-          provide: ErrorFactory,
+          provide: GroupMemberSourceRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
     }).compile();
 
-    repository = moduleRef.get<GroupMemberSourceCommunityRepository>(
-      GroupMemberSourceCommunityRepository
-    ) as FakeGroupMemberSourceCommunityRepository;
+    repository = moduleRef.get<GroupMemberSourceRepositoryReadWrite>(
+      GroupMemberSourceRepositoryReadWrite
+    ) as FakeGroupMemberSourceRepository;
     handler = moduleRef.get<UpdateGroupMemberSourceHandler>(
       UpdateGroupMemberSourceHandler
     );
   });
 
-  test('Successfully updating a group source', ({ given, and, when, then }) => {
+  test('Successfully updating a group member source', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
     let groupMemberSourceBefore: GroupMemberSource;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
 
     given('the request is valid', async () => {
-      // NOTE: this is the only time we skip the middle function
-      // i.e. it is all handled in the builder
       updateGroupMemberSourceDto =
         GroupMemberSourceBuilder().buildUpdateGroupMemberSourceDto();
     });
@@ -85,11 +82,14 @@ defineFeature(feature, (test) => {
     and('a matching record is found at the source', async () => {
       // we'll grab the groupMemberSource before the update
       groupMemberSourceBefore = await executeTask(
-        repository.findOneById(updateGroupMemberSourceDto.groupMemberSource.id)
+        repository.findOneByIdSource({
+          id: updateGroupMemberSourceDto.groupMemberSource.id,
+          source: config.defaults.primaryAccountSource,
+        })
       );
     });
 
-    when('I attempt to update a group source', async () => {
+    when('I attempt to update a group member source', async () => {
       result = await handler.execute(
         new UpdateGroupMemberSourceCommand(updateGroupMemberSourceDto)
       );
@@ -110,7 +110,7 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('saved group source is returned', () => {
+    and('saved group member source is returned', () => {
       expect(result.id).toEqual(
         updateGroupMemberSourceDto.groupMemberSource.id
       );
@@ -121,13 +121,12 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request contains invalid data', () => {
-      // NOTE: this is the only time we skip the middle function
-      // i.e. it is all handled in the builder
+      const groupMember = GroupMemberBuilder().exists().invalid().build();
       updateGroupMemberSourceDto =
-        GroupMemberSourceBuilder().buildInvalidUpdateGroupMemberSourceDto();
+        GroupMemberSourceBuilder().buildUpdateGroupMemberSourceDto(groupMember);
     });
 
-    when('I attempt to update a group source', async () => {
+    when('I attempt to update a group member source', async () => {
       try {
         await handler.execute(
           new UpdateGroupMemberSourceCommand(updateGroupMemberSourceDto)
@@ -137,8 +136,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a RequestInvalidError', () => {
-      expect(error).toBeInstanceOf(RequestInvalidError);
+    then('I should receive a InternalRequestInvalidError', () => {
+      expect(error).toBeInstanceOf(InternalRequestInvalidError);
     });
   });
 });

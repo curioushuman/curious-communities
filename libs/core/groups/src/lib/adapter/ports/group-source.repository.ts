@@ -1,45 +1,30 @@
+import { RepositoryFindOne, RepositoryFindMethod } from '@curioushuman/common';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
-import { Group } from '../../domain/entities/group';
 
 import {
   GroupSource,
   GroupSourceForCreate,
   GroupSourceIdentifier,
-  GroupSourceIdentifierValue,
+  GroupSourceIdentifiers,
 } from '../../domain/entities/group-source';
-import { GroupSourceId } from '../../domain/value-objects/group-source-id';
-import { Source } from '../../domain/value-objects/source';
+import { GroupName } from '../../domain/value-objects/group-name';
+import { GroupSourceIdSource } from '../../domain/value-objects/group-source-id-source';
 
 /**
  * Type for the findOne method interface within repository
  */
-export type GroupSourceFindMethod = (
-  value: GroupSourceIdentifierValue
-) => TaskEither<Error, GroupSource>;
+export type GroupSourceFindMethod = RepositoryFindMethod<
+  GroupSourceIdentifiers,
+  GroupSource
+>;
 
-export abstract class GroupSourceRepository {
+export abstract class GroupSourceRepositoryRead
+  implements RepositoryFindOne<GroupSourceIdentifiers, GroupSource>
+{
   /**
-   * Each source repository should also be marked with the source
-   * it represents
+   * FindBy interface
    */
-  abstract readonly source: Source;
-
-  /**
-   * Object lookup for findMethods
-   */
-  abstract readonly findOneBy: Record<
-    GroupSourceIdentifier,
-    GroupSourceFindMethod
-  >;
-
-  /**
-   * Find a group
-   *
-   * This method will accept a group identifier and value
-   * and then determine which finder method to use.
-   *
-   * NOTE: will throw NotFoundException if not found
-   */
+  abstract findOneBy: Record<GroupSourceIdentifier, GroupSourceFindMethod>;
   abstract findOne(identifier: GroupSourceIdentifier): GroupSourceFindMethod;
 
   /**
@@ -47,17 +32,21 @@ export abstract class GroupSourceRepository {
    *
    * NOTES
    * - will throw NotFoundException if not found
-   * - idSource is parsed to id in application layer
    */
-  abstract findOneById(id: GroupSourceId): TaskEither<Error, GroupSource>;
+  abstract findOneByIdSource(
+    id: GroupSourceIdSource
+  ): TaskEither<Error, GroupSource>;
 
   /**
-   * Find a source, from the entity it reflects
+   * Find a group by the given ID
    *
-   * NOTE: will throw NotFoundException if not found
+   * NOTES
+   * - will throw NotFoundException if not found
    */
-  abstract findOneByEntity(group: Group): TaskEither<Error, GroupSource>;
+  abstract findOneByName(value: GroupName): TaskEither<Error, GroupSource>;
+}
 
+export abstract class GroupSourceRepositoryReadWrite extends GroupSourceRepositoryRead {
   /**
    * Create/update a group
    */
@@ -68,6 +57,3 @@ export abstract class GroupSourceRepository {
    */
   abstract update(group: GroupSource): TaskEither<Error, GroupSource>;
 }
-
-export abstract class GroupSourceCommunityRepository extends GroupSourceRepository {}
-export abstract class GroupSourceMicroCourseRepository extends GroupSourceRepository {}

@@ -117,7 +117,7 @@ export class CreateParticipantConstruct extends Construct {
      * {
      *  "DetailType":"putEvent",
      *  "Detail":
-     *    "{\"object\":\"participant\",\"type\":\"created\",\"courseIdSourceValue\":\"{course.idSourceValue}\",\"paxIdSourceValue\":\"{pax.idSourceValue}\"}
+     *    "{\"object\":\"participant\",\"type\":\"created\",\"paxIdSourceValue\":\"{pax.idSourceValue}\"}
      *  "Source": "apigw-cc-api-admin-participants-hook",
      *  "EventBusName": "eventBusArn"
      * }
@@ -130,7 +130,7 @@ export class CreateParticipantConstruct extends Construct {
      * {
      *  "DetailType":"putEvent",
      *  "Detail":
-     *    "{\"object\":\"participant\",\"type\":\"created\",\"courseIdSourceValue\":\"{course.idSourceValue}\",\"paxIdSourceValue\":\"{pax.idSourceValue}\"}
+     *    "{\"object\":\"participant\",\"type\":\"created\",\"paxIdSourceValue\":\"{pax.idSourceValue}\"}
      *  "Source": "apigw-cc-api-admin-participants-hook",
      *  "EventBusName": "eventBusArn",
      *  "participantSource": {},
@@ -140,7 +140,7 @@ export class CreateParticipantConstruct extends Construct {
      */
 
     /**
-     * Step 3A (Parallel): Find participant based on pax courseIdSourceValue
+     * Step 3A (no longer Parallel): Find participant based on pax paxIdSourceValue
      */
     const findPaxSourceId = `${id}-find-participant-source`;
     const findPaxSource = new tasks.LambdaInvoke(this, findPaxSourceId, {
@@ -150,7 +150,7 @@ export class CreateParticipantConstruct extends Construct {
     }).addCatch(sfnFail);
 
     /**
-     * Step 3B (Parallel): Find course based on course courseIdSourceValue
+     * Step 3B (no longer Parallel): Find course based on course courseIdSourceValue
      */
     const findCourseId = `${id}-find-course`;
     const findCourse = new tasks.LambdaInvoke(this, findCourseId, {
@@ -161,11 +161,14 @@ export class CreateParticipantConstruct extends Construct {
 
     /**
      * Step 3 (Parallel): Find participant and course sources
+     *
+     * No longer parallel, as we are no longer receiving the course id
+     * we need to get the pax source first, then find the course
      */
-    const findSourcesId = `${id}-find-sources`;
-    const findSources = new sfn.Parallel(this, findSourcesId);
-    findSources.branch(findPaxSource);
-    findSources.branch(findCourse);
+    // const findSourcesId = `${id}-find-sources`;
+    // const findSources = new sfn.Parallel(this, findSourcesId);
+    // findSources.branch(findPaxSource);
+    // findSources.branch(findCourse);
 
     /**
      * Step 1: Check if a participant already exists
@@ -184,13 +187,13 @@ export class CreateParticipantConstruct extends Construct {
     /**
      * Step 2: Does PAX already exist?
      */
-    const paxExistsId = `${id}-participant-exists`;
-    const paxExists = new sfn.Choice(this, paxExistsId);
+    const doesPaxExistId = `${id}-participant-exists`;
+    const doesPaxExist = new sfn.Choice(this, doesPaxExistId);
     // * NOTE: if PAX exists, then we should stop here
-    paxExists.when(sfn.Condition.isPresent('$.participant.id'), sfnSuccess);
+    doesPaxExist.when(sfn.Condition.isPresent('$.participant.id'), sfnSuccess);
     // otherwise continue in the chain
     // ? is this necessary?
-    paxExists.otherwise(findSources);
+    doesPaxExist.otherwise(findSources);
 
     /**
      * Step 4: Find member based on email
@@ -228,7 +231,7 @@ export class CreateParticipantConstruct extends Construct {
     })
       .addCatch(sfnFail)
       .next(findMember);
-    // should then continue to memberExists
+    // should then continue to doesMemberExist
 
     /**
      * Step 5: Does member exist?
@@ -237,21 +240,25 @@ export class CreateParticipantConstruct extends Construct {
      * so the choice will receive the entire input from the previous step
      * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions.ChoiceProps.html
      */
-    const memberExistsId = `${id}-member-exists`;
-    const memberExists = new sfn.Choice(this, memberExistsId);
-    memberExists.when(sfn.Condition.isNotPresent('$.member.id'), createMember);
+    const doesMemberExistId = `${id}-member-exists`;
+    const doesMemberExist = new sfn.Choice(this, doesMemberExistId);
+    doesMemberExist.when(
+      sfn.Condition.isNotPresent('$.member.id'),
+      createMember
+    );
     // otherwise continue in the chain
     // ? is this necessary?
-    memberExists.otherwise(createPax);
+    doesMemberExist.otherwise(createPax);
 
     /**
      * Step function definition
      */
     const definition = sfn.Chain.start(findPax)
-      .next(paxExists)
-      .next(findSources)
+      .next(doesPaxExist)
+      .next(findPaxSource)
+      .next(findCourse)
       .next(findMember)
-      .next(memberExists)
+      .next(doesMemberExist)
       .next(createPax)
       .next(sfnSuccess);
 

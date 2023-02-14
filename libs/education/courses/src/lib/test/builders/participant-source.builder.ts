@@ -28,7 +28,7 @@ type ParticipantSourceLooseMimic = {
 };
 
 export const ParticipantSourceBuilder = () => {
-  let source = config.defaults.primaryAccountSource;
+  const source = config.defaults.primaryAccountSource;
 
   /**
    * Default properties don't exist in source repository
@@ -37,40 +37,29 @@ export const ParticipantSourceBuilder = () => {
     id: '5008s1234519CjIPPU',
     source,
     courseId: '5008s1234519CjIAAU',
+    memberEmail: 'james@brown.com',
 
     status: 'pending' as ParticipantSourceStatus,
-    name: 'James Brown',
-    email: 'james@brown.com',
-    organisationName: 'James Co',
   };
   const overrides: ParticipantSourceLooseMimic = {
     id: defaultProperties.id,
     source: defaultProperties.source,
     courseId: defaultProperties.courseId,
+    memberEmail: defaultProperties.memberEmail,
 
     status: defaultProperties.status,
-    name: defaultProperties.name,
-    email: defaultProperties.email,
-    organisationName: defaultProperties.organisationName,
   };
 
   return {
     alpha() {
       overrides.id = '5000K1234567GEYQA3';
-      overrides.name = 'Jim Brown';
+      overrides.memberEmail = 'alpha@email.com';
       return this;
     },
 
     beta() {
       overrides.id = '5008s000000y7LUAAY';
-      overrides.name = 'June Brown';
-      return this;
-    },
-
-    alternateSource() {
-      // NOTE: this is not a valid source
-      // we only have a single source for courses ATM
-      source = 'COMMUNITY';
+      overrides.memberEmail = 'beta@email.com';
       return this;
     },
 
@@ -84,14 +73,14 @@ export const ParticipantSourceBuilder = () => {
     },
 
     invalidStatus() {
-      overrides.name = 'Jones Invalid';
+      overrides.memberEmail = 'invalid@email.com';
       overrides.status = 'this is invalid' as ParticipantSourceStatus;
       return this;
     },
 
     invalidSource() {
       overrides.id = ExternalId.check('InvalidSourceId');
-      overrides.email = '';
+      overrides.memberEmail = '';
       return this;
     },
 

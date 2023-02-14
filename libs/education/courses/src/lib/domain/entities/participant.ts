@@ -1,12 +1,10 @@
 import { Array, Record, Static } from 'runtypes';
 
 import { CourseBase } from './course';
+import { Member } from './member';
 import { ParticipantId } from '../value-objects/participant-id';
 import { ParticipantStatus } from '../value-objects/participant-status';
 import { AccountSlug } from '../value-objects/account-slug';
-import { ParticipantName } from '../value-objects/participant-name';
-import { ParticipantEmail } from '../value-objects/participant-email';
-import { ParticipantOrganisationName } from '../value-objects/participant-organisation-name';
 import {
   ParticipantSourceIdSource,
   ParticipantSourceIdSourceValue,
@@ -26,13 +24,9 @@ export const ParticipantBase = Record({
   id: ParticipantId,
   memberId: MemberId,
   courseId: CourseId,
-
   sourceIds: Array(ParticipantSourceIdSource),
 
   status: ParticipantStatus,
-  name: ParticipantName,
-  email: ParticipantEmail,
-  organisationName: ParticipantOrganisationName,
 
   // e.g. APF being the account that owns this participant
   accountOwner: AccountSlug,
@@ -51,6 +45,8 @@ export type ParticipantBase = Static<typeof ParticipantBase>;
 export const Participant = ParticipantBase.extend({
   // course info
   course: CourseBase,
+  // member info
+  member: Member,
 });
 
 /**
@@ -142,16 +138,14 @@ export type ParticipantFromSource = Static<typeof ParticipantFromSource>;
  * NOTE: similarly we will be unable to use this for runtype checking
  *
  */
-export const ParticipantFromSourceAndMember = ParticipantBase.pick(
+export const ParticipantFromSourceAndMember = Participant.pick(
   'id',
   'accountOwner',
   'status',
   'sourceIds',
 
   'memberId',
-  'name',
-  'email',
-  'organisationName'
+  'member'
 );
 
 /**

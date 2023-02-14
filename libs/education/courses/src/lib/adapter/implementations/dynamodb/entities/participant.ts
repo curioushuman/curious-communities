@@ -27,9 +27,6 @@ export const DynamoDbParticipantAttributes = Record({
   Participant_MemberId: String,
 
   Participant_Status: String,
-  Participant_Name: String,
-  Participant_Email: String,
-  Participant_OrganisationName: String,
 
   AccountOwner: String,
 });

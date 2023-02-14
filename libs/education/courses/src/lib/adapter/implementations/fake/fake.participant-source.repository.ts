@@ -13,6 +13,7 @@ import {
 } from '../../ports/participant-source.repository';
 import { ParticipantSourceBuilder } from '../../../test/builders/participant-source.builder';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
+import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
 
 @Injectable()
 export class FakeParticipantSourceRepository
@@ -32,12 +33,12 @@ export class FakeParticipantSourceRepository
     );
   }
 
-  findOneById = (
-    value: ParticipantSourceId
+  findOneByIdSource = (
+    value: ParticipantSourceIdSource
   ): TE.TaskEither<Error, ParticipantSource> => {
     return TE.tryCatch(
       async () => {
-        const id = ParticipantSourceId.check(value);
+        const id = ParticipantSourceId.check(value.id);
         const participantSource = this.participantSources.find(
           (cs) => cs.id === id
         );
@@ -67,7 +68,7 @@ export class FakeParticipantSourceRepository
    */
   findOneBy: Record<ParticipantSourceIdentifier, ParticipantSourceFindMethod> =
     {
-      idSource: this.findOneById,
+      idSource: this.findOneByIdSource,
     };
 
   findOne = (

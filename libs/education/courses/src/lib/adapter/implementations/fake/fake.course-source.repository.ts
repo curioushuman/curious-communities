@@ -13,6 +13,7 @@ import {
 } from '../../ports/course-source.repository';
 import { CourseSourceBuilder } from '../../../test/builders/course-source.builder';
 import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
+import { CourseSourceIdSource } from '../../../domain/value-objects/course-source-id-source';
 
 @Injectable()
 export class FakeCourseSourceRepository implements CourseSourceRepository {
@@ -30,10 +31,12 @@ export class FakeCourseSourceRepository implements CourseSourceRepository {
     );
   }
 
-  findOneById = (value: CourseSourceId): TE.TaskEither<Error, CourseSource> => {
+  findOneByIdSource = (
+    value: CourseSourceIdSource
+  ): TE.TaskEither<Error, CourseSource> => {
     return TE.tryCatch(
       async () => {
-        const id = CourseSourceId.check(value);
+        const id = CourseSourceId.check(value.id);
         const courseSource = this.courseSources.find((cs) => cs.id === id);
         return pipe(
           courseSource,
@@ -60,7 +63,7 @@ export class FakeCourseSourceRepository implements CourseSourceRepository {
    * Object lookup for findOneBy methods
    */
   findOneBy: Record<CourseSourceIdentifier, CourseSourceFindMethod> = {
-    idSource: this.findOneById,
+    idSource: this.findOneByIdSource,
   };
 
   findOne = (identifier: CourseSourceIdentifier): CourseSourceFindMethod => {

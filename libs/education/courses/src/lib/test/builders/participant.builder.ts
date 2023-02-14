@@ -23,6 +23,7 @@ import { prepareExternalIdSourceValue } from '@curioushuman/common';
 import { CourseBuilder } from './course.builder';
 import { ParticipantSourceIdSource } from '../../domain/value-objects/participant-source-id-source';
 import { ParticipantSourceStatus } from '../../domain/value-objects/participant-source-status';
+import { MemberBuilder } from './member.builder';
 
 /**
  * A builder for Participants to play with in testing.
@@ -61,10 +62,6 @@ export const ParticipantBuilder = () => {
       },
     ],
 
-    name: 'James Brown',
-    email: 'james@brown.com',
-    organisationName: 'James Co',
-
     accountOwner: config.defaults.accountOwner,
   };
   const overrides: ParticipantLooseMimic = {
@@ -74,10 +71,6 @@ export const ParticipantBuilder = () => {
     status: defaultProperties.status,
 
     sourceIds: defaultProperties.sourceIds,
-
-    name: defaultProperties.name,
-    email: defaultProperties.email,
-    organisationName: defaultProperties.organisationName,
 
     accountOwner: defaultProperties.accountOwner,
   };
@@ -190,26 +183,19 @@ export const ParticipantBuilder = () => {
     },
 
     build(): Participant {
-      const participantBase = ParticipantBase.check({
-        ...defaultProperties,
-        ...overrides,
-      });
-      const course = CourseBuilder().exists().buildBase();
-      // the above two checks are sufficient
-      const p = {
-        ...participantBase,
-        course,
-      } as Participant;
-      return p as Participant;
+      return this.buildNoCheck();
     },
 
     buildNoCheck(): Participant {
-      const participant = {
+      const course = CourseBuilder().exists().buildBase();
+      const member = MemberBuilder().build();
+      // the above two checks are sufficient
+      return {
         ...defaultProperties,
         ...overrides,
-      };
-      participant.course = CourseBuilder().exists().buildBase();
-      return participant as Participant;
+        course,
+        member,
+      } as Participant;
     },
 
     buildCreateParticipantDto(): CreateParticipantDto {
@@ -218,15 +204,11 @@ export const ParticipantBuilder = () => {
       const course = CourseBuilder().exists().buildBaseNoCheck();
       // supports the invalid request tests
       participantSource.status = build.status as ParticipantSourceStatus;
+      const member = MemberBuilder().alpha().build();
       return {
         participantSource,
         course,
-        member: {
-          id: build.memberId,
-          email: build.email,
-          name: build.name,
-          organisationName: build.organisationName,
-        },
+        member,
       } as CreateParticipantDto;
     },
 
@@ -236,17 +218,13 @@ export const ParticipantBuilder = () => {
         .exists()
         .buildParticipantSourceResponseDto();
       const course = CourseBuilder().exists().buildCourseBaseResponseDto();
+      const member = MemberBuilder().alpha().buildDto();
       // this supports the invalid request tests
       participantSource.status = build.status;
       return {
         participantSource,
         course,
-        member: {
-          id: build.memberId,
-          email: build.email,
-          name: build.name,
-          organisationName: build.organisationName,
-        },
+        member: member,
       } as CreateParticipantRequestDto;
     },
 
@@ -322,6 +300,7 @@ export const ParticipantBuilder = () => {
       const courseResponseDto = CourseBuilder()
         .exists()
         .buildCourseBaseResponseDto();
+      const member = MemberBuilder().alpha().buildDto();
       const dto = {
         ...defaultProperties,
         ...overrides,
@@ -329,6 +308,7 @@ export const ParticipantBuilder = () => {
           prepareExternalIdSourceValue(idSource.id, idSource.source)
         ),
         course: courseResponseDto,
+        member,
       };
       return dto as ParticipantResponseDto;
     },

@@ -9,4 +9,4 @@ Scenario: Successfully creating a group source
 Scenario: Fail; Invalid request
   Given the request contains invalid data
   When I attempt to create a group source
-  Then I should receive a RequestInvalidError
+  Then I should receive a InternalRequestInvalidError

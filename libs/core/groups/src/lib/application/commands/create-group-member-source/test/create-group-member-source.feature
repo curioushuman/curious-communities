@@ -1,12 +1,12 @@
-Feature: Create GroupMember Source
+Feature: Create Group Member Source
 
-Scenario: Successfully creating a group source
+Scenario: Successfully creating a group member source
   Given the request is valid
-  When I attempt to create a group source
+  When I attempt to create a group member source
   Then a new record should have been created
-  And saved group source is returned
+  And saved group member source is returned
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data
-  When I attempt to create a group source
-  Then I should receive a RequestInvalidError
+  When I attempt to create a group member source
+  Then I should receive a InternalRequestInvalidError

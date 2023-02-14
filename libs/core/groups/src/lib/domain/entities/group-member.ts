@@ -1,110 +1,82 @@
-import { Array, Record, Static } from 'runtypes';
-
-import { GroupBase } from './group';
-import { GroupMemberId } from '../value-objects/group-member-id';
-import { GroupMemberStatus } from '../value-objects/group-member-status';
-import { AccountSlug } from '../value-objects/account-slug';
-import { GroupMemberName } from '../value-objects/group-member-name';
-import { GroupMemberEmail } from '../value-objects/group-member-email';
-import { GroupMemberOrganisationName } from '../value-objects/group-member-organisation-name';
-import {
-  GroupMemberSourceIdSource,
-  GroupMemberSourceIdSourceValue,
-} from '../value-objects/group-member-source-id-source';
-import { prepareExternalIdSource, ValueOf } from '@curioushuman/common';
+import { Static, Union } from 'runtypes';
+import { prepareExternalIdSource } from '@curioushuman/common';
 import { GroupMemberSourceId } from '../value-objects/group-member-source-id';
+import { GroupMemberSourceIdSource } from '../value-objects/group-member-source-id-source';
 import { Source } from '../value-objects/source';
-import { GroupId } from '../value-objects/group-id';
-import { MemberId } from '../value-objects/member-id';
+import {
+  CourseGroupMember,
+  CourseGroupMemberBase,
+  CourseGroupMemberIdentifiers,
+} from './course-group-member';
+import {
+  StandardGroupMember,
+  StandardGroupMemberBase,
+  StandardGroupMemberIdentifiers,
+} from './standard-group-member';
+import config from '../../static/config';
+import { CourseGroupBase } from './course-group';
+import { StandardGroupBase } from './standard-group';
 
 /**
- * Base type for internal group member entity
+ * Type for course group member base entity
+ */
+export type GroupMemberBase = StandardGroupMemberBase | CourseGroupMemberBase;
+
+/**
+ * Type for course group member entity
  *
- * i.e. just the fields
+ * Note: Is Runtype, as used for validation in command
  */
-export const GroupMemberBase = Record({
-  id: GroupMemberId,
-  memberId: MemberId,
-  groupId: GroupId,
-  status: GroupMemberStatus,
-
-  sourceIds: Array(GroupMemberSourceIdSource),
-
-  name: GroupMemberName,
-  email: GroupMemberEmail,
-  organisationName: GroupMemberOrganisationName,
-
-  // e.g. APF being the account that owns this member
-  accountOwner: AccountSlug,
-});
-
-/**
- * Base type for internal group member entity
- *
- * i.e. just the fields
- */
-export type GroupMemberBase = Static<typeof GroupMemberBase>;
-
-/**
- * Type for internal group member entity
- */
-export const GroupMember = GroupMemberBase.extend({
-  // group info
-  group: GroupBase,
-});
-
-/**
- * Type for internal member entity
- */
+export const GroupMember = Union(StandardGroupMember, CourseGroupMember);
 export type GroupMember = Static<typeof GroupMember>;
 
 /**
- * An alternate version of GroupMember that excludes the ID
- * as we don't know it yet, we're going to pass everything else
- * to see if we can identify the member
- */
-export const GroupMemberForIdentify = GroupMemberBase.omit('id');
-
-/**
- * An alternate version of GroupMember used for identification
- * of group member when Id is not present
- */
-export type GroupMemberForIdentify = Static<typeof GroupMemberForIdentify>;
-
-/**
- * An alternate version of GroupMember that includes the group
- * as it is required for identification of source by entity in
- * the group member source repository
+ * An alternative parser, instead of GroupMember.check()
  *
- * NOTE: remains a separate type, in case the similarity differs
+ * GroupMember being a Union and a Composite I think has proven too much
  */
-export const GroupMemberForSourceIdentify = GroupMember.withBrand(
-  'GroupMemberForSourceIdentify'
-);
+export const parseGroupMember = (groupMember: GroupMember): GroupMember => {
+  const { group, ...groupMemberBase } = groupMember;
+
+  let parsedGroupBase;
+  let parsedGroupMemberBase;
+  if (group._type === config.defaults.groupTypeCourse) {
+    parsedGroupBase = CourseGroupBase.check(group);
+    parsedGroupMemberBase = CourseGroupMemberBase.check(groupMemberBase);
+  } else {
+    parsedGroupBase = StandardGroupBase.check(group);
+    parsedGroupMemberBase = StandardGroupMemberBase.check(groupMemberBase);
+  }
+
+  return {
+    ...parsedGroupMemberBase,
+    group: parsedGroupBase,
+  };
+};
 
 /**
- * An alternate version of GroupMember that includes the group
- * as the group is required for identification by entity
+ * Course group member predicate
+ * https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
  */
-export type GroupMemberForSourceIdentify = Static<
-  typeof GroupMemberForSourceIdentify
->;
+export function isCourseGroupMember(
+  groupMember: GroupMember
+): groupMember is CourseGroupMember {
+  return (
+    (groupMember as CourseGroupMember)._type === config.defaults.groupTypeCourse
+  );
+}
 
 /**
- * Type that defines all the possible identifiers for a member
- * NOTE: this is utilized in find-member.dto.ts and member.repository.ts
+ * Type that defines all the possible identifiers for a course group
+ * NOTE: this is utilized in find-group.dto.ts and group.repository.ts
  * to define parsers and finders.
  */
-export type GroupMemberIdentifiers = {
-  id: GroupMemberId;
-  idSourceValue: GroupMemberSourceIdSourceValue;
-  entity: GroupMemberForIdentify;
-};
+export type GroupMemberIdentifiers = StandardGroupMemberIdentifiers &
+  CourseGroupMemberIdentifiers;
 export type GroupMemberIdentifier = keyof GroupMemberIdentifiers;
-export type GroupMemberIdentifierValue = ValueOf<GroupMemberIdentifiers>;
 
 /**
- * Convenience function to prepare a GroupMemberSourceIdSource
+ * Convenience function to prepare a GroupSourceIdSource
  */
 export function prepareGroupMemberExternalIdSource(
   idSourceValue: string

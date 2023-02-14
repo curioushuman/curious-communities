@@ -1,13 +1,15 @@
 import { Record, Static, String } from 'runtypes';
 import { Source } from '../../../domain/value-objects/source';
 import {
-  GroupMemberBaseResponseDto,
   GroupMemberResponseDto,
-} from '../../dto/group-member.response.dto';
-import { GroupBaseResponseDto } from '../../dto/group.response.dto';
+  parseGroupMemberResponseDto,
+} from '../../dto/group-member-response.dto';
 
 /**
- * Externally facing DTO for find function
+ * Externally facing DTO for upsert function
+ *
+ * TODO
+ * - [ ] find a better way for this module to know what source it uses
  */
 
 export const UpsertGroupMemberSourceRequestDto = Record({
@@ -20,21 +22,16 @@ export type UpsertGroupMemberSourceRequestDto = Static<
 >;
 
 /**
- * Custom validator/parser as UpsertGroupMemberSourceRequestDto.check
- * is having some issues.
+ * An alternative parser, instead of UpsertGroupMemberSourceRequestDto.check()
+ *
+ * GroupMember being a Union and a Composite I think has proven too much
  */
-export const checkUpsertGroupMemberSourceRequestDto = (
+export const parseUpsertGroupMemberSourceRequestDto = (
   dto: UpsertGroupMemberSourceRequestDto
-) => {
-  const { group, ...groupMemberBaseResponseDto } = dto.groupMember;
-  const validGroupMemberBase = GroupMemberBaseResponseDto.check(
-    groupMemberBaseResponseDto
-  );
-  const validGroupBaseResponseDto = GroupBaseResponseDto.check(group);
-  const groupMember = {
-    ...validGroupMemberBase,
-    group: validGroupBaseResponseDto,
+): UpsertGroupMemberSourceRequestDto => {
+  const { groupMember, source } = dto;
+  return {
+    source: Source.check(source),
+    groupMember: parseGroupMemberResponseDto(groupMember),
   };
-  const source = Source.check(dto.source);
-  return { source, groupMember };
 };

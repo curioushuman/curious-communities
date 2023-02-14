@@ -1,23 +1,23 @@
 import { CommandHandler, ICommandHandler, ICommand } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
+import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
-import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
-  parseActionData,
+  parseData,
   performAction,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import {
-  GroupMemberSourceCommunityRepository,
-  GroupMemberSourceMicroCourseRepository,
-  GroupMemberSourceRepository,
-} from '../../../adapter/ports/group-member-source.repository';
+import { GroupMemberSourceRepositoryReadWrite } from '../../../adapter/ports/group-member-source.repository';
 import { GroupMemberSource } from '../../../domain/entities/group-member-source';
-import { UpdateGroupMemberSourceDto } from './update-group-member-source.dto';
+import {
+  parseUpdateGroupMemberSourceDto,
+  UpdateGroupMemberSourceDto,
+} from './update-group-member-source.dto';
 import { UpdateGroupMemberSourceMapper } from './update-group-member-source.mapper';
+import { GroupMemberSourceRepositoryErrorFactory } from '../../../adapter/ports/group-member-source.repository.error-factory';
 
 export class UpdateGroupMemberSourceCommand implements ICommand {
   constructor(
@@ -26,7 +26,7 @@ export class UpdateGroupMemberSourceCommand implements ICommand {
 }
 
 /**
- * Command handler for update group source
+ * Command handler for update groupMember source
  * TODO
  * - [ ] move the source repository selection to a separate service
  * - [ ] this shouldn't be accepting findDtos, doesn't feel right
@@ -37,10 +37,9 @@ export class UpdateGroupMemberSourceHandler
   implements ICommandHandler<UpdateGroupMemberSourceCommand>
 {
   constructor(
-    private readonly groupSourceCommunityRepository: GroupMemberSourceCommunityRepository,
-    private readonly groupSourceMicroCourseRepository: GroupMemberSourceMicroCourseRepository,
+    private readonly groupMemberSourceRepository: GroupMemberSourceRepositoryReadWrite,
     private logger: LoggableLogger,
-    private errorFactory: ErrorFactory
+    private groupMemberSourceErrorFactory: GroupMemberSourceRepositoryErrorFactory
   ) {
     this.logger.setContext(UpdateGroupMemberSourceHandler.name);
   }
@@ -50,40 +49,58 @@ export class UpdateGroupMemberSourceHandler
   ): Promise<GroupMemberSource> {
     const { updateGroupMemberSourceDto } = command;
 
-    // we can safely destructure as the DTO has been validated in mapper
-    const { source, groupMember, groupMemberSource } =
-      updateGroupMemberSourceDto;
+    // #1. validate the dto
+    const validDto = pipe(
+      updateGroupMemberSourceDto,
+      parseData(
+        parseUpdateGroupMemberSourceDto,
+        this.logger,
+        'InternalRequestInvalidError'
+      )
+    );
 
-    // TODO this must be improved/moved at some later point
-    const sourceRepositories: Record<string, GroupMemberSourceRepository> = {
-      COMMUNITY: this.groupSourceCommunityRepository,
-      'MICRO-COURSE': this.groupSourceMicroCourseRepository,
-    };
+    const { groupMember, groupMemberSource } = validDto;
 
     const task = pipe(
-      // updateGroupMemberSourceDto,
-      // #1. validate the DTO
-      // done in mapper
-
-      // #2. transform
       groupMember,
-      parseActionData(
+
+      // #2. prepare the updated groupMember source
+      parseData(
         UpdateGroupMemberSourceMapper.fromGroupMemberToSource(
           groupMemberSource
         ),
         this.logger,
-        'RequestInvalidError'
+        'InternalRequestInvalidError'
       ),
 
-      // #3. save
-      TE.chain((ms) =>
-        performAction(
-          ms,
-          sourceRepositories[source].update,
-          this.errorFactory,
-          this.logger,
-          `update group source`
-        )
+      // #3. make sure an update is required
+      parseData(
+        UpdateGroupMemberSourceMapper.requiresUpdate<GroupMemberSource>(
+          groupMemberSource
+        ),
+        this.logger,
+        'SourceInvalidError'
+      ),
+
+      // #4. update the entity, from the source; if required
+      O.fromNullable,
+      O.fold(
+        // if null, return the original groupMember
+        () => {
+          this.logger.log(
+            `GroupMemberSource ${groupMemberSource.id} does not need to be updated AT source`
+          );
+          return TE.right(groupMemberSource);
+        },
+        // otherwise, update and return
+        (ms) =>
+          performAction(
+            ms,
+            this.groupMemberSourceRepository.update,
+            this.groupMemberSourceErrorFactory,
+            this.logger,
+            `update source`
+          )
       )
     );
 

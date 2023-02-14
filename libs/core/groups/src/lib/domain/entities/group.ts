@@ -1,82 +1,66 @@
-import { Array, Record, Static } from 'runtypes';
-
-import { GroupId } from '../value-objects/group-id';
-import { GroupStatus } from '../value-objects/group-status';
-import { AccountSlug } from '../value-objects/account-slug';
-import { GroupName } from '../value-objects/group-name';
-import {
-  GroupSourceIdSource,
-  GroupSourceIdSourceValue,
-} from '../value-objects/group-source-id-source';
-import { prepareExternalIdSource, ValueOf } from '@curioushuman/common';
+import { Static, Union } from 'runtypes';
+import { prepareExternalIdSource } from '@curioushuman/common';
 import { GroupSourceId } from '../value-objects/group-source-id';
+import { GroupSourceIdSource } from '../value-objects/group-source-id-source';
 import { Source } from '../value-objects/source';
-import { GroupSlug } from '../value-objects/group-slug';
-import { GroupType } from '../value-objects/group-type';
-import { GroupMemberBase } from './group-member';
+import {
+  CourseGroup,
+  CourseGroupBase,
+  CourseGroupIdentifiers,
+} from './course-group';
+import {
+  StandardGroup,
+  StandardGroupBase,
+  StandardGroupIdentifiers,
+} from './standard-group';
+import config from '../../static/config';
 
 /**
- * Base type for internal group entity
+ * Type for group base entity
  *
- * i.e. just the fields
+ * Note: Is Runtype, as used for validation in command
  */
-export const GroupBase = Record({
-  id: GroupId,
-  status: GroupStatus,
-  type: GroupType,
-  slug: GroupSlug,
-
-  sourceIds: Array(GroupSourceIdSource),
-
-  name: GroupName,
-
-  // e.g. APF being the account that owns this group
-  accountOwner: AccountSlug,
-});
-
-/**
- * Base type for internal group entity
- *
- * i.e. just the fields
- */
+export const GroupBase = Union(StandardGroupBase, CourseGroupBase);
 export type GroupBase = Static<typeof GroupBase>;
 
 /**
- * Type for internal group entity
- *
- * i.e. fields + relationships
- *
- * * NOTE: I've had to duplicate this extension over at CourseGroup
+ * Course group base predicate
+ * https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
  */
-export const Group = GroupBase.extend({
-  members: Array(GroupMemberBase),
-});
+export function isCourseGroupBase(group: GroupBase): group is CourseGroupBase {
+  return (group as CourseGroupBase)._type === config.defaults.groupTypeCourse;
+}
 
 /**
- * Type for internal group entity
+ * Type for group entity
  *
- * i.e. fields + relationships
+ * Will inherit the discriminator from GroupBase
  */
-export type Group = Static<typeof Group>;
+export type Group = StandardGroup | CourseGroup;
 
 /**
- * Type that defines all the possible identifiers for a group
+ * Type that defines all the possible identifiers for a course group
  * NOTE: this is utilized in find-group.dto.ts and group.repository.ts
  * to define parsers and finders.
  */
-export interface GroupIdentifiers {
-  id: GroupId;
-  idSourceValue: GroupSourceIdSourceValue;
-  slug: GroupSlug;
-}
+export type GroupIdentifiers = StandardGroupIdentifiers &
+  CourseGroupIdentifiers;
 export type GroupIdentifier = keyof GroupIdentifiers;
-export type GroupIdentifierValue = ValueOf<GroupIdentifiers>;
 
 /**
  * Convenience function to prepare a GroupSourceIdSource
+ *
+ * ! What is returned isn't seen as GroupSourceIdSource by TS
+ *   Additional checks are still required
+ *
+ * TODO:
+ * - [ ] prepareExternalIdSource should return a GroupSourceIdSource
+ *
  */
 export function prepareGroupExternalIdSource(
   idSourceValue: string
 ): GroupSourceIdSource {
-  return prepareExternalIdSource(idSourceValue, GroupSourceId, Source);
+  return GroupSourceIdSource.check(
+    prepareExternalIdSource(idSourceValue, GroupSourceId, Source)
+  );
 }

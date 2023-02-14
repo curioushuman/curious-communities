@@ -1,10 +1,11 @@
-import { GroupMemberForSourceIdentify } from '../../../domain/entities/group-member';
 import {
   GroupMemberSourceIdentifier,
   GroupMemberSourceIdentifiers,
 } from '../../../domain/entities/group-member-source';
+import { GroupMemberEmail } from '../../../domain/value-objects/group-member-email';
+import { GroupMemberSourceIdSource } from '../../../domain/value-objects/group-member-source-id-source';
+import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
 import { Source } from '../../../domain/value-objects/source';
-import { FindGroupMemberSourceMapper } from './find-group-member-source.mapper';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -12,6 +13,7 @@ import { FindGroupMemberSourceMapper } from './find-group-member-source.mapper';
  * {
  *   identifier: 'id',
  *   value: '123-456-abc-def'
+ *   ...
  * }
  */
 type FindGroupMemberSourceDtoTypes = {
@@ -19,8 +21,19 @@ type FindGroupMemberSourceDtoTypes = {
     identifier: I;
     value: GroupMemberSourceIdentifiers[I];
     source: Source;
+    // * Required as this is a nested entity
+    parentId: GroupSourceId;
   };
 };
+
+/**
+ * A wrapper for the value, that will also include the parentId
+ */
+export type FindGroupMemberSourceValue<I extends GroupMemberSourceIdentifier> =
+  {
+    value: GroupMemberSourceIdentifiers[I];
+    parentId: GroupSourceId;
+  };
 
 /**
  * A type for the DTO parser function
@@ -41,17 +54,16 @@ type FindGroupMemberSourceDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindGroupMemberSourceDtoParsers = {
-  // * NOTE: the idSource parser will validate the idSource AND extract id
-  idSource: (dto) => FindGroupMemberSourceMapper.fromIdSourceToId(dto.value),
-  entity: (dto) => GroupMemberForSourceIdentify.check(dto.value),
+  idSource: (dto) => GroupMemberSourceIdSource.check(dto.value),
+  email: (dto) => GroupMemberEmail.check(dto.value),
 };
 
 /**
  * This is an array of identifier literals for use in the mapper
- * We know they match groupIdentifiers as the parsers object is derived
- * from the original groupIdentifiers type.
+ * We know they match groupMemberIdentifiers as the parsers object is derived
+ * from the original groupMemberIdentifiers type.
  */
-export const groupIdentifiers = Object.keys(
+export const groupMemberIdentifiers = Object.keys(
   parsers
 ) as GroupMemberSourceIdentifier[];
 
@@ -68,4 +80,7 @@ export type FindGroupMemberSourceDto =
  */
 export const parseDto = <I extends GroupMemberSourceIdentifier>(
   dto: FindGroupMemberSourceDtoTypes[I]
-) => (parsers[dto.identifier] as FindGroupMemberSourceDtoParser<I>)(dto);
+): FindGroupMemberSourceValue<I> => ({
+  value: (parsers[dto.identifier] as FindGroupMemberSourceDtoParser<I>)(dto),
+  parentId: GroupSourceId.check(dto.parentId),
+});

@@ -1,24 +1,20 @@
 import { CommandHandler, ICommandHandler, ICommand } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
-import { sequenceT } from 'fp-ts/lib/Apply';
 
-import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
+  parseData,
   performAction,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import {
-  GroupSourceCommunityRepository,
-  GroupSourceMicroCourseRepository,
-  GroupSourceRepository,
-} from '../../../adapter/ports/group-source.repository';
+import { GroupSourceRepositoryReadWrite } from '../../../adapter/ports/group-source.repository';
 import { GroupSource } from '../../../domain/entities/group-source';
 import { CreateGroupSourceDto } from './create-group-source.dto';
 import { CreateGroupSourceMapper } from './create-group-source.mapper';
+import { GroupSourceRepositoryErrorFactory } from '../../../adapter/ports/group-source.repository.error-factory';
 
 export class CreateGroupSourceCommand implements ICommand {
   constructor(public readonly createGroupSourceDto: CreateGroupSourceDto) {}
@@ -36,10 +32,9 @@ export class CreateGroupSourceHandler
   implements ICommandHandler<CreateGroupSourceCommand>
 {
   constructor(
-    private readonly groupSourceCommunityRepository: GroupSourceCommunityRepository,
-    private readonly groupSourceMicroCourseRepository: GroupSourceMicroCourseRepository,
+    private readonly groupSourceRepository: GroupSourceRepositoryReadWrite,
     private logger: LoggableLogger,
-    private errorFactory: ErrorFactory
+    private groupRepositoryErrorFactory: GroupSourceRepositoryErrorFactory
   ) {
     this.logger.setContext(CreateGroupSourceHandler.name);
   }
@@ -47,46 +42,33 @@ export class CreateGroupSourceHandler
   async execute(command: CreateGroupSourceCommand): Promise<GroupSource> {
     const { createGroupSourceDto } = command;
 
-    // TODO don't do this here, extract it in the fp destructuring below
-    const source = createGroupSourceDto.source;
-
-    // TODO this must be improved/moved at some later point
-    const sourceRepositories: Record<string, GroupSourceRepository> = {
-      COMMUNITY: this.groupSourceCommunityRepository,
-      'MICRO-COURSE': this.groupSourceMicroCourseRepository,
-    };
-
-    const task = pipe(
+    // #1. validate the dto
+    const validDto = pipe(
       createGroupSourceDto,
-      // #1. validate the DTO
-      parseActionData(
+      parseData(
         CreateGroupSourceDto.check,
         this.logger,
-        'RequestInvalidError'
+        'InternalRequestInvalidError'
+      )
+    );
+
+    const { group } = validDto;
+
+    const task = pipe(
+      group,
+      // #2. populate group source
+      parseActionData(
+        CreateGroupSourceMapper.fromGroupToSource,
+        this.logger,
+        'InternalRequestInvalidError'
       ),
 
-      // #2. destructure the DTO
-      // TODO improve/simplify
-      TE.chain((dto) => sequenceT(TE.ApplySeq)(TE.right(dto.group))),
-
-      // #3. transform
-      TE.chain(([group]) =>
-        pipe(
-          group,
-          parseActionData(
-            CreateGroupSourceMapper.fromGroupToSource,
-            this.logger,
-            'RequestInvalidError'
-          )
-        )
-      ),
-
-      // #4. create the group source
+      // #3. create the group source
       TE.chain((groupSourceForCreate) =>
         performAction(
           groupSourceForCreate,
-          sourceRepositories[source].create,
-          this.errorFactory,
+          this.groupSourceRepository.create,
+          this.groupRepositoryErrorFactory,
           this.logger,
           `save group source`
         )

@@ -10,24 +10,35 @@ import {
 } from '../../../domain/entities/group-source';
 import {
   GroupSourceFindMethod,
-  GroupSourceRepository,
+  GroupSourceRepositoryReadWrite,
 } from '../../ports/group-source.repository';
 import { GroupSourceBuilder } from '../../../test/builders/group-source.builder';
 import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
-import { Group } from '../../../domain/entities/group';
+import config from '../../../static/config';
 import { Source } from '../../../domain/value-objects/source';
+import { GroupSourceIdSource } from '../../../domain/value-objects/group-source-id-source';
+import { GroupName } from '../../../domain/value-objects/group-name';
 
 @Injectable()
-export class FakeGroupSourceRepository implements GroupSourceRepository {
+export class FakeGroupSourceRepository
+  implements GroupSourceRepositoryReadWrite
+{
   private groupSources: GroupSource[] = [];
 
-  readonly source: Source = 'GROUP';
+  private renameGroup(group: GroupSource): GroupSource {
+    group.name = 'Bland base name' as GroupName;
+    return group;
+  }
 
   constructor() {
-    this.groupSources.push(GroupSourceBuilder().exists().build());
-    this.groupSources.push(GroupSourceBuilder().invalidSource().buildNoCheck());
-    this.groupSources.push(GroupSourceBuilder().alpha().build());
-    this.groupSources.push(GroupSourceBuilder().beta().build());
+    this.groupSources.push(GroupSourceBuilder().exists().buildNoCheck());
+    this.groupSources.push(
+      this.renameGroup(GroupSourceBuilder().updated().buildNoCheck())
+    );
+    this.groupSources.push(GroupSourceBuilder().updatedAlpha().buildNoCheck());
+    this.groupSources.push(GroupSourceBuilder().invalid().buildNoCheck());
+    this.groupSources.push(GroupSourceBuilder().alpha().buildNoCheck());
+    this.groupSources.push(GroupSourceBuilder().beta().buildNoCheck());
     this.groupSources.push(GroupSourceBuilder().invalidStatus().buildNoCheck());
   }
 
@@ -36,11 +47,15 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
    *
    * ? Should the value check be extracted into it's own (functional) step?
    */
-  findOneById = (value: GroupSourceId): TE.TaskEither<Error, GroupSource> => {
+  findOneByIdSource = (
+    value: GroupSourceIdSource
+  ): TE.TaskEither<Error, GroupSource> => {
     return TE.tryCatch(
       async () => {
-        const id = GroupSourceId.check(value);
-        const groupSource = this.groupSources.find((cs) => cs.id === id);
+        const idSource = GroupSourceIdSource.check(value);
+        const groupSource = this.groupSources.find(
+          (cs) => cs.id === idSource.id
+        );
         return pipe(
           groupSource,
           O.fromNullable,
@@ -48,13 +63,10 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
             () => {
               // this mimics an API or DB call throwing an error
               throw new NotFoundException(
-                `GroupSource with id ${id} not found`
+                `GroupSource with id ${idSource.id} not found`
               );
             },
-            // this mimics the fact that all non-fake adapters
-            // will come with a mapper, which will perform a check
-            // prior to return
-            (groupSource) => GroupSource.check(groupSource)
+            (gs) => gs
           )
         );
       },
@@ -63,16 +75,13 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
   };
 
   /**
-   * Find by any value on the entity
-   *
-   * ? Should the value check be extracted into it's own (functional) step?
+   * Find by source ID
    */
-  findOneByEntity = (group: Group): TE.TaskEither<Error, GroupSource> => {
+  findOneByName = (value: GroupName): TE.TaskEither<Error, GroupSource> => {
     return TE.tryCatch(
       async () => {
-        const groupSource = this.groupSources.find(
-          (g) => g.name === group.name
-        );
+        const name = GroupName.check(value);
+        const groupSource = this.groupSources.find((cs) => cs.name === name);
         return pipe(
           groupSource,
           O.fromNullable,
@@ -80,13 +89,10 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
             () => {
               // this mimics an API or DB call throwing an error
               throw new NotFoundException(
-                `GroupSource matching ${group.name} not found`
+                `GroupSource with name ${name} not found`
               );
             },
-            // this mimics the fact that all non-fake adapters
-            // will come with a mapper, which will perform a check
-            // prior to return
-            (groupSource) => GroupSource.check(groupSource)
+            (gs) => gs
           )
         );
       },
@@ -97,10 +103,9 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
   /**
    * Object lookup for findOneBy methods
    */
-  readonly findOneBy: Record<GroupSourceIdentifier, GroupSourceFindMethod> = {
-    // NOTE: idSource is parsed to id in application layer
-    idSource: this.findOneById,
-    entity: this.findOneByEntity,
+  findOneBy: Record<GroupSourceIdentifier, GroupSourceFindMethod> = {
+    idSource: this.findOneByIdSource,
+    name: this.findOneByName,
   };
 
   findOne = (identifier: GroupSourceIdentifier): GroupSourceFindMethod => {
@@ -114,6 +119,7 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
       async () => {
         const savedGroupSource = {
           ...groupSource,
+          source: config.defaults.primaryAccountSource as Source,
           id: GroupSourceId.check(`FakeId${Date.now()}`),
         };
         this.groupSources.push(savedGroupSource);
@@ -127,7 +133,7 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
     return TE.tryCatch(
       async () => {
         const groupSourceExists = this.groupSources.find(
-          (gS) => gS.id === groupSource.id
+          (cs) => cs.id === groupSource.id
         );
         if (!groupSourceExists) {
           throw new NotFoundException(
@@ -137,7 +143,7 @@ export class FakeGroupSourceRepository implements GroupSourceRepository {
         this.groupSources = this.groupSources.map((cs) =>
           cs.id === groupSource.id ? groupSource : cs
         );
-        return groupSource;
+        return groupSourceExists;
       },
       (reason: unknown) => reason as Error
     );

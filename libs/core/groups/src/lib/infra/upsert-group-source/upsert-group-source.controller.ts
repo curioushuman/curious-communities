@@ -17,11 +17,11 @@ import { CreateGroupSourceCommand } from '../../application/commands/create-grou
 import { UpdateGroupSourceMapper } from '../../application/commands/update-group-source/update-group-source.mapper';
 import { UpdateGroupSourceCommand } from '../../application/commands/update-group-source/update-group-source.command';
 import { GroupSourceResponseDto } from '../dto/group-source.response.dto';
-import { GroupSourceMapper } from '../group-source.mapper';
 import { FindGroupSourceMapper } from '../../application/queries/find-group-source/find-group-source.mapper';
 import { FindGroupSourceQuery } from '../../application/queries/find-group-source/find-group-source.query';
 import { GroupSource } from '../../domain/entities/group-source';
 import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
+import { GroupSourceMapper } from '../group-source.mapper';
 
 /**
  * Controller for upsert group operations
@@ -52,31 +52,32 @@ export class UpsertGroupSourceController {
    * Then we pipe that result into the rest of the function.
    *
    * TODO
-   * - [ ] add the found groupSource to the requestDto
    * - [ ] at some point extract the update and create into a single, simpler, static function
    */
   public async upsert(
     requestDto: UpsertGroupSourceRequestDto
   ): Promise<GroupSourceResponseDto> {
+    // #1. validate the dto
     const validDto = pipe(
       requestDto,
-
-      // #1. parse the dto
       parseData(UpsertGroupSourceRequestDto.check, this.logger)
     );
 
-    // #2. see if you can find a groupSource
+    // #2. find groupSource or undefined
+    // NOTE: These will error if they need to
     const groupSource = await this.find(validDto);
 
-    // #3. based on whether or not we find anything, take the appropriate action
     const task = pipe(
       groupSource,
+
+      // #3. based on whether or not we find anything, take the appropriate action
+      // groupSource could be null
       O.fromNullable,
       O.fold(
         // if it is, then create
         () =>
           pipe(
-            requestDto,
+            validDto,
             parseActionData(
               CreateGroupSourceMapper.fromUpsertRequestDto,
               this.logger
@@ -96,7 +97,7 @@ export class UpsertGroupSourceController {
         // otherwise update
         (ms) =>
           pipe(
-            requestDto,
+            validDto,
             parseActionData(
               UpdateGroupSourceMapper.fromUpsertRequestDto(ms),
               this.logger
@@ -115,7 +116,7 @@ export class UpsertGroupSourceController {
           )
       ),
 
-      // #4. transform to the response DTO
+      // #5. transform to the response DTO
       TE.chain(parseActionData(GroupSourceMapper.toResponseDto, this.logger))
     );
 
@@ -123,44 +124,32 @@ export class UpsertGroupSourceController {
   }
 
   private find(
-    validRequestDto: UpsertGroupSourceRequestDto
+    requestDto: UpsertGroupSourceRequestDto
   ): Promise<GroupSource | undefined> {
     const task = pipe(
-      validRequestDto,
+      requestDto,
 
       // #1. transform the dto
-      // NOTE: if no idSource for this source exists, this will return undefined
+      // NOTE: it is within this mapper function that we look for idSource, if not email
       parseActionData(FindGroupSourceMapper.fromUpsertRequestDto, this.logger),
 
       // #2. find the groupSource
       TE.chain((findDto) =>
         pipe(
-          findDto,
-          // because dto might be undefined
-          O.fromNullable,
-          O.fold(
-            // if it is, simply return undefined
-            () => TE.right(undefined),
-            (dto) =>
-              pipe(
-                TE.tryCatch(
-                  async () => {
-                    const query = new FindGroupSourceQuery(dto);
-                    return await this.queryBus.execute<FindGroupSourceQuery>(
-                      query
-                    );
-                  },
-                  (error: unknown) => error as Error
-                ),
-                // check if it's a notFound error just return undefined
-                // otherwise, continue on the left path with the error
-                TE.orElse((err) => {
-                  return err instanceof RepositoryItemNotFoundError
-                    ? TE.right(undefined)
-                    : TE.left(err);
-                })
-              )
-          )
+          TE.tryCatch(
+            async () => {
+              const query = new FindGroupSourceQuery(findDto);
+              return await this.queryBus.execute<FindGroupSourceQuery>(query);
+            },
+            (error: unknown) => error as Error
+          ),
+          // check if it's a notFound error just return undefined
+          // otherwise, continue on the left path with the error
+          TE.orElse((err) => {
+            return err instanceof RepositoryItemNotFoundError
+              ? TE.right(undefined)
+              : TE.left(err);
+          })
         )
       )
     );

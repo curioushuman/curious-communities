@@ -1,13 +1,16 @@
 import { Record, Static, String } from 'runtypes';
-import { GroupResponseDto } from '../../dto/group.response.dto';
+import { GroupBaseResponseDto } from '../../dto/group-response.dto';
 
 /**
- * Externally facing DTO for find function
+ * Externally facing DTO for upsert function
+ *
+ * TODO
+ * - [ ] find a better way for this module to know what source it uses
  */
 
 export const UpsertGroupSourceRequestDto = Record({
   source: String,
-  group: GroupResponseDto,
+  group: GroupBaseResponseDto,
 });
 
 export type UpsertGroupSourceRequestDto = Static<

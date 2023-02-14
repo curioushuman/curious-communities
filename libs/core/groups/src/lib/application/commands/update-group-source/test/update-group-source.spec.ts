@@ -2,9 +2,8 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
-  ErrorFactory,
   FakeRepositoryErrorFactory,
-  RequestInvalidError,
+  InternalRequestInvalidError,
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -13,15 +12,14 @@ import {
   UpdateGroupSourceCommand,
   UpdateGroupSourceHandler,
 } from '../update-group-source.command';
-import {
-  GroupSourceCommunityRepository,
-  GroupSourceMicroCourseRepository,
-} from '../../../../adapter/ports/group-source.repository';
-import { FakeGroupSourceCommunityRepository } from '../../../../adapter/implementations/fake/fake.group-source.community.repository';
-import { FakeGroupSourceMicroCourseRepository } from '../../../../adapter/implementations/fake/fake.group-source.micro-course.repository';
+import { GroupSourceRepositoryReadWrite } from '../../../../adapter/ports/group-source.repository';
+import { FakeGroupSourceRepository } from '../../../../adapter/implementations/fake/fake.group-source.repository';
 import { GroupSource } from '../../../../domain/entities/group-source';
 import { GroupSourceBuilder } from '../../../../test/builders/group-source.builder';
 import { UpdateGroupSourceDto } from '../update-group-source.dto';
+import { GroupSourceRepositoryErrorFactory } from '../../../../adapter/ports/group-source.repository.error-factory';
+import config from '../../../../static/config';
+import { GroupBuilder } from '../../../../test/builders/group.builder';
 
 /**
  * UNIT TEST
@@ -37,7 +35,7 @@ const feature = loadFeature('./update-group-source.feature', {
 });
 
 defineFeature(feature, (test) => {
-  let repository: FakeGroupSourceCommunityRepository;
+  let repository: FakeGroupSourceRepository;
   let handler: UpdateGroupSourceHandler;
   let updateGroupSourceDto: UpdateGroupSourceDto;
 
@@ -47,23 +45,19 @@ defineFeature(feature, (test) => {
         UpdateGroupSourceHandler,
         LoggableLogger,
         {
-          provide: GroupSourceCommunityRepository,
-          useClass: FakeGroupSourceCommunityRepository,
+          provide: GroupSourceRepositoryReadWrite,
+          useClass: FakeGroupSourceRepository,
         },
         {
-          provide: GroupSourceMicroCourseRepository,
-          useClass: FakeGroupSourceMicroCourseRepository,
-        },
-        {
-          provide: ErrorFactory,
+          provide: GroupSourceRepositoryErrorFactory,
           useClass: FakeRepositoryErrorFactory,
         },
       ],
     }).compile();
 
-    repository = moduleRef.get<GroupSourceCommunityRepository>(
-      GroupSourceCommunityRepository
-    ) as FakeGroupSourceCommunityRepository;
+    repository = moduleRef.get<GroupSourceRepositoryReadWrite>(
+      GroupSourceRepositoryReadWrite
+    ) as FakeGroupSourceRepository;
     handler = moduleRef.get<UpdateGroupSourceHandler>(UpdateGroupSourceHandler);
   });
 
@@ -74,15 +68,18 @@ defineFeature(feature, (test) => {
     let result: any;
 
     given('the request is valid', async () => {
-      // NOTE: this is the only time we skip the middle function
-      // i.e. it is all handled in the builder
-      updateGroupSourceDto = GroupSourceBuilder().buildUpdateGroupSourceDto();
+      updateGroupSourceDto = GroupSourceBuilder()
+        .updated()
+        .buildUpdateGroupSourceDto();
     });
 
     and('a matching record is found at the source', async () => {
       // we'll grab the groupSource before the update
       groupSourceBefore = await executeTask(
-        repository.findOneById(updateGroupSourceDto.groupSource.id)
+        repository.findOneByIdSource({
+          id: updateGroupSourceDto.groupSource.id,
+          source: config.defaults.primaryAccountSource,
+        })
       );
     });
 
@@ -112,10 +109,10 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request contains invalid data', () => {
-      // NOTE: this is the only time we skip the middle function
-      // i.e. it is all handled in the builder
-      updateGroupSourceDto =
-        GroupSourceBuilder().buildInvalidUpdateGroupSourceDto();
+      const group = GroupBuilder().invalid().buildBase();
+      updateGroupSourceDto = GroupSourceBuilder()
+        .exists()
+        .buildUpdateGroupSourceDto(group);
     });
 
     when('I attempt to update a group source', async () => {
@@ -128,8 +125,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a RequestInvalidError', () => {
-      expect(error).toBeInstanceOf(RequestInvalidError);
+    then('I should receive a InternalRequestInvalidError', () => {
+      expect(error).toBeInstanceOf(InternalRequestInvalidError);
     });
   });
 });

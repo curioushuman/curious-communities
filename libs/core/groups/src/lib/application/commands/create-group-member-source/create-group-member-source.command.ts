@@ -2,22 +2,22 @@ import { CommandHandler, ICommandHandler, ICommand } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 
-import { ErrorFactory } from '@curioushuman/error-factory';
 import {
   executeTask,
   parseActionData,
+  parseData,
   performAction,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import {
-  GroupMemberSourceCommunityRepository,
-  GroupMemberSourceMicroCourseRepository,
-  GroupMemberSourceRepository,
-} from '../../../adapter/ports/group-member-source.repository';
+import { GroupMemberSourceRepositoryReadWrite } from '../../../adapter/ports/group-member-source.repository';
 import { GroupMemberSource } from '../../../domain/entities/group-member-source';
-import { CreateGroupMemberSourceDto } from './create-group-member-source.dto';
+import {
+  CreateGroupMemberSourceDto,
+  parseCreateGroupMemberSourceDto,
+} from './create-group-member-source.dto';
 import { CreateGroupMemberSourceMapper } from './create-group-member-source.mapper';
+import { GroupMemberSourceRepositoryErrorFactory } from '../../../adapter/ports/group-member-source.repository.error-factory';
 
 export class CreateGroupMemberSourceCommand implements ICommand {
   constructor(
@@ -26,21 +26,16 @@ export class CreateGroupMemberSourceCommand implements ICommand {
 }
 
 /**
- * Command handler for create group source
- * TODO
- * - [ ] move the source repository selection to a separate service
- * - [ ] this shouldn't be accepting findDtos, doesn't feel right
- *       requires more thought. Look at upsert for example.
+ * Command handler for create groupMember source
  */
 @CommandHandler(CreateGroupMemberSourceCommand)
 export class CreateGroupMemberSourceHandler
   implements ICommandHandler<CreateGroupMemberSourceCommand>
 {
   constructor(
-    private readonly groupMemberSourceCommunityRepository: GroupMemberSourceCommunityRepository,
-    private readonly groupMemberSourceMicroCourseRepository: GroupMemberSourceMicroCourseRepository,
+    private readonly groupMemberSourceRepository: GroupMemberSourceRepositoryReadWrite,
     private logger: LoggableLogger,
-    private errorFactory: ErrorFactory
+    private groupMemberRepositoryErrorFactory: GroupMemberSourceRepositoryErrorFactory
   ) {
     this.logger.setContext(CreateGroupMemberSourceHandler.name);
   }
@@ -50,36 +45,35 @@ export class CreateGroupMemberSourceHandler
   ): Promise<GroupMemberSource> {
     const { createGroupMemberSourceDto } = command;
 
-    // we can safely destructure as the DTO has been validated in mapper
-    const { source, groupMember } = createGroupMemberSourceDto;
+    // #1. validate the dto
+    const validDto = pipe(
+      createGroupMemberSourceDto,
+      parseData(
+        parseCreateGroupMemberSourceDto,
+        this.logger,
+        'InternalRequestInvalidError'
+      )
+    );
 
-    // TODO this must be improved/moved at some later point
-    const sourceRepositories: Record<string, GroupMemberSourceRepository> = {
-      COMMUNITY: this.groupMemberSourceCommunityRepository,
-      'MICRO-COURSE': this.groupMemberSourceMicroCourseRepository,
-    };
+    const { groupSource, groupMember } = validDto;
 
     const task = pipe(
-      // createGroupMemberSourceDto,
-      // #1. validate the DTO
-      // done in mapper
-
-      // #2. transform
       groupMember,
+      // #2. populate groupMember source
       parseActionData(
-        CreateGroupMemberSourceMapper.fromGroupMemberToSource,
+        CreateGroupMemberSourceMapper.fromGroupMemberToSource(groupSource),
         this.logger,
-        'RequestInvalidError'
+        'InternalRequestInvalidError'
       ),
 
-      // #3. save
+      // #3. create the groupMember source
       TE.chain((groupMemberSourceForCreate) =>
         performAction(
           groupMemberSourceForCreate,
-          sourceRepositories[source].create,
-          this.errorFactory,
+          this.groupMemberSourceRepository.create,
+          this.groupMemberRepositoryErrorFactory,
           this.logger,
-          `save group member source`
+          `save groupMember source`
         )
       )
     );

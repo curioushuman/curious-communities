@@ -39,6 +39,14 @@
         "jestConfig": "libs/core/groups/jest.config.ts",
         "passWithNoTests": true
       }
+    },
+    "test-infra": {
+      "executor": "@nrwl/jest:jest",
+      "options": {
+        "jestConfig": "libs/core/groups/jest.config.infra.ts",
+        "passWithNoTests": true,
+        "cwd": "libs/core/groups"
+      }
     }
   },
   "tags": []

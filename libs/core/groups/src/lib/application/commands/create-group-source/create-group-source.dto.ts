@@ -1,13 +1,11 @@
 import { Record, Static } from 'runtypes';
-import { Group } from '../../../domain/entities/group';
-import { Source } from '../../../domain/value-objects/source';
+import { GroupBase } from '../../../domain/entities/group';
 
 /**
  * Info required to create a groupSource from group
  */
 export const CreateGroupSourceDto = Record({
-  source: Source,
-  group: Group,
+  group: GroupBase,
 });
 
 export type CreateGroupSourceDto = Static<typeof CreateGroupSourceDto>;

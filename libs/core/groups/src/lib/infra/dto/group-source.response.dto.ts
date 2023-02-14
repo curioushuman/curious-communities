@@ -22,6 +22,7 @@ import { Record, Static, String } from 'runtypes';
  */
 export const GroupSourceResponseDto = Record({
   id: String,
+  source: String,
   status: String,
   name: String,
 });

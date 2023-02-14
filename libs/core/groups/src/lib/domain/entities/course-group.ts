@@ -1,15 +1,13 @@
 import { Array, Static } from 'runtypes';
 
-import { ValueOf } from '@curioushuman/common';
-
-import { GroupBase, GroupIdentifiers } from './group';
 import { CourseId } from '../value-objects/course-id';
-import { GroupMemberBase } from './group-member';
+import { CourseGroupMemberBase } from './course-group-member';
+import { StandardGroupBase, StandardGroupIdentifiers } from './standard-group';
 
 /**
  * Course group entity
  */
-export const CourseGroupBase = GroupBase.extend({
+export const CourseGroupBase = StandardGroupBase.extend({
   courseId: CourseId,
 
   // we could include things like open and close dates here
@@ -24,13 +22,9 @@ export type CourseGroupBase = Static<typeof CourseGroupBase>;
  * Course group entity
  *
  * i.e. fields + relationships
- *
- * * NOTE: I would have preferred to do this
- * Group.extend({ courseId: CourseId })
- * But this threw an error :()
  */
 export const CourseGroup = CourseGroupBase.extend({
-  members: Array(GroupMemberBase),
+  groupMembers: Array(CourseGroupMemberBase),
 
   // we could include things like open and close dates here
 });
@@ -45,8 +39,7 @@ export type CourseGroup = Static<typeof CourseGroup>;
  * NOTE: this is utilized in find-group.dto.ts and group.repository.ts
  * to define parsers and finders.
  */
-export interface CourseGroupIdentifiers extends GroupIdentifiers {
+export interface CourseGroupIdentifiers extends StandardGroupIdentifiers {
   courseId: CourseId;
 }
 export type CourseGroupIdentifier = keyof CourseGroupIdentifiers;
-export type CourseGroupIdentifierValue = ValueOf<CourseGroupIdentifiers>;

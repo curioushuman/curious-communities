@@ -19,7 +19,7 @@
 ### Steps
 
 1. Validate input
-2. Find group source
+2. Find groupMember source
 3. Return
    1. GroupMemberSource
    2. Error
@@ -50,7 +50,7 @@ Else
   return FindGroupMemberSourceDto
 ```
 
-### Step 2. Find group source
+### Step 2. Find groupMember source
 
 #### Input
 
@@ -68,7 +68,7 @@ Else
 #### Steps (pseudocode)
 
 ```
-Try to find group source
+Try to find groupMember source
   catch + return Error
 Else
   return GroupMemberSource

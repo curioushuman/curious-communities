@@ -1,13 +1,12 @@
 import { parseExternalIdSourceValue } from '@curioushuman/common';
 
-import { GroupMemberId } from '../../../domain/value-objects/group-member-id';
 import {
-  GroupMemberForIdentify,
   GroupMemberIdentifier,
   GroupMemberIdentifiers,
 } from '../../../domain/entities/group-member';
 import { Source } from '../../../domain/value-objects/source';
 import { GroupMemberSourceId } from '../../../domain/value-objects/group-member-source-id';
+import { ParticipantId } from '../../../domain/value-objects/participant-id';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -21,6 +20,7 @@ type FindGroupMemberDtoTypes = {
   [I in GroupMemberIdentifier]: {
     identifier: I;
     value: GroupMemberIdentifiers[I];
+    source: Source;
   };
 };
 
@@ -43,18 +43,19 @@ type FindGroupMemberDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindGroupMemberDtoParsers = {
-  id: (dto) => GroupMemberId.check(dto.value),
   idSourceValue: (dto) =>
     parseExternalIdSourceValue(dto.value, GroupMemberSourceId, Source),
-  entity: (dto) => GroupMemberForIdentify.check(dto.value),
+  participantId: (dto) => ParticipantId.check(dto.value),
 };
 
 /**
  * This is an array of identifier literals for use in the mapper
- * We know they match groupIdentifiers as the parsers object is derived
- * from the original groupIdentifiers type.
+ * We know they match groupMemberIdentifiers as the parsers object is derived
+ * from the original groupMemberIdentifiers type.
  */
-export const groupIdentifiers = Object.keys(parsers) as GroupMemberIdentifier[];
+export const groupMemberIdentifiers = Object.keys(
+  parsers
+) as GroupMemberIdentifier[];
 
 /**
  * A type for our DTO, which is basically a union of the various

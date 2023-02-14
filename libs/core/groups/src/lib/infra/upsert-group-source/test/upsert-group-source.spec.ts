@@ -3,15 +3,18 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
 import { GroupModule } from '../../../test/group.module.fake';
-import { UpsertGroupSourceModule } from '../../../upsert-group-source.module';
 import { GroupSourceBuilder } from '../../../test/builders/group-source.builder';
 import { UpsertGroupSourceController } from '../../../infra/upsert-group-source/upsert-group-source.controller';
 import { UpsertGroupSourceRequestDto } from '../dto/upsert-group-source.request.dto';
-import { FakeGroupSourceCommunityRepository } from '../../../adapter/implementations/fake/fake.group-source.community.repository';
-import { GroupSourceCommunityRepository } from '../../../adapter/ports/group-source.repository';
+import { FakeGroupSourceRepository } from '../../../adapter/implementations/fake/fake.group-source.repository';
+import { GroupSourceRepositoryReadWrite } from '../../../adapter/ports/group-source.repository';
 import { GroupSource } from '../../../domain/entities/group-source';
 import { executeTask } from '@curioushuman/fp-ts-utils';
+import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
+import { prepareGroupExternalIdSource } from '../../../domain/entities/group';
+import { GroupName } from '../../../domain/value-objects/group-name';
 import { RequestInvalidError } from '@curioushuman/error-factory';
+import { GroupBuilder } from '../../../test/builders/group.builder';
 
 /**
  * INTEGRATION TEST
@@ -33,22 +36,10 @@ const feature = loadFeature('./upsert-group-source.feature', {
   loadRelativePath: true,
 });
 
-const matchingRecordFound = async (
-  repository: FakeGroupSourceCommunityRepository,
-  dto: UpsertGroupSourceRequestDto
-): Promise<GroupSource | undefined> => {
-  const groupSources = await executeTask(repository.all());
-  const groupSource = groupSources.find(
-    (groupSource) => groupSource.name === dto.group.name
-  );
-  expect(groupSource).toBeDefined();
-  return groupSource;
-};
-
 defineFeature(feature, (test) => {
   let app: INestApplication;
   let controller: UpsertGroupSourceController;
-  let repository: FakeGroupSourceCommunityRepository;
+  let repository: FakeGroupSourceRepository;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -58,13 +49,13 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    UpsertGroupSourceModule.applyDefaults(app);
+    GroupModule.applyDefaults(app);
     controller = moduleRef.get<UpsertGroupSourceController>(
       UpsertGroupSourceController
     );
-    repository = moduleRef.get<GroupSourceCommunityRepository>(
-      GroupSourceCommunityRepository
-    ) as FakeGroupSourceCommunityRepository;
+    repository = moduleRef.get<GroupSourceRepositoryReadWrite>(
+      GroupSourceRepositoryReadWrite
+    ) as FakeGroupSourceRepository;
   });
 
   afterAll(async () => {
@@ -115,6 +106,8 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
+    let groupSourceBefore: GroupSource;
+    let groupSourceId: GroupSourceId;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
@@ -127,7 +120,15 @@ defineFeature(feature, (test) => {
     });
 
     and('a matching record is found at the source', async () => {
-      await matchingRecordFound(repository, upsertGroupSourceDto);
+      // we'll grab the groupSource before the update
+      const idSourceValue = upsertGroupSourceDto.group.sourceIds[0];
+      const idSource = prepareGroupExternalIdSource(idSourceValue);
+      groupSourceId = idSource.id as GroupSourceId;
+      const groupSources = await executeTask(repository.all());
+      groupSourceBefore = groupSources.find(
+        (groupSource) => groupSource.id === groupSourceId
+      ) as GroupSource;
+      expect(groupSourceBefore).toBeDefined();
     });
 
     when('I attempt to upsert a group source', async () => {
@@ -140,10 +141,11 @@ defineFeature(feature, (test) => {
     });
 
     then('the record should have been updated', async () => {
-      const groupSourceAfter = await matchingRecordFound(
-        repository,
-        upsertGroupSourceDto
+      const groupSources = await executeTask(repository.all());
+      const groupSourceAfter = groupSources.find(
+        (groupSource) => groupSource.id === groupSourceId
       );
+      expect(groupSourceAfter).toBeDefined();
       if (groupSourceAfter) {
         expect(groupSourceAfter.status).toEqual(
           upsertGroupSourceDto.group.status
@@ -156,12 +158,14 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Successfully updating a group source by entity', ({
+  test('Successfully updating a group source by name', ({
     given,
     when,
     then,
     and,
   }) => {
+    let groupSourceBefore: GroupSource;
+    let groupName: GroupName;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
@@ -169,12 +173,26 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request is valid', () => {
+      // this creates a group with no idSources, so we defer to name
+      const group = GroupBuilder().noSourceExists().buildGroupBaseResponseDto();
+      // this is what updatedAlpha would look like
+      const groupSource = GroupSourceBuilder().updatedAlpha().build();
+      // now we'll set some values from the groupSource to the group
+      // so that it can be found by name, and updated
+      group.name = groupSource.name;
+      group.status = groupSource.status;
       upsertGroupSourceDto =
-        GroupSourceBuilder().buildUpdateByEntityUpsertGroupSourceRequestDto();
+        GroupSourceBuilder().buildUpdateUpsertGroupSourceRequestDto(group);
     });
 
     and('a matching record is found at the source', async () => {
-      await matchingRecordFound(repository, upsertGroupSourceDto);
+      // we'll grab the groupSource before the update
+      groupName = GroupName.check(upsertGroupSourceDto.group.name);
+      const groupSources = await executeTask(repository.all());
+      groupSourceBefore = groupSources.find(
+        (groupSource) => groupSource.name === groupName
+      ) as GroupSource;
+      expect(groupSourceBefore).toBeDefined();
     });
 
     when('I attempt to upsert a group source', async () => {
@@ -187,10 +205,11 @@ defineFeature(feature, (test) => {
     });
 
     then('the record should have been updated', async () => {
-      const groupSourceAfter = await matchingRecordFound(
-        repository,
-        upsertGroupSourceDto
+      const groupSources = await executeTask(repository.all());
+      const groupSourceAfter = groupSources.find(
+        (groupSource) => groupSource.name === groupName
       );
+      expect(groupSourceAfter).toBeDefined();
       if (groupSourceAfter) {
         expect(groupSourceAfter.status).toEqual(
           upsertGroupSourceDto.group.status
@@ -208,10 +227,10 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request contains invalid data', () => {
-      // we know this to exist in our fake repo
+      const group = GroupBuilder().invalid().buildGroupBaseResponseDto();
       upsertGroupSourceDto = GroupSourceBuilder()
         .invalid()
-        .buildInvalidUpsertGroupSourceRequestDto();
+        .buildCreateUpsertGroupSourceRequestDto(group);
     });
 
     when('I attempt to upsert a group source', async () => {

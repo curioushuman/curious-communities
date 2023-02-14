@@ -2,8 +2,7 @@ import { Literal, Static, Union } from 'runtypes';
 
 export const GroupMemberSourceStatus = Union(
   Literal('pending'),
-  Literal('registered'),
-  Literal('cancelled')
+  Literal('active')
 );
 
 export type GroupMemberSourceStatus = Static<typeof GroupMemberSourceStatus>;

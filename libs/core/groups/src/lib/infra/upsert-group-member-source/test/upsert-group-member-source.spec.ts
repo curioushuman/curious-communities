@@ -2,17 +2,20 @@ import { INestApplication } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
-import { executeTask } from '@curioushuman/fp-ts-utils';
 import { RequestInvalidError } from '@curioushuman/error-factory';
 
 import { GroupMemberModule } from '../../../test/group-member.module.fake';
-import { UpsertGroupMemberSourceModule } from '../../../upsert-group-member-source.module';
 import { GroupMemberSourceBuilder } from '../../../test/builders/group-member-source.builder';
 import { UpsertGroupMemberSourceController } from '../../../infra/upsert-group-member-source/upsert-group-member-source.controller';
 import { UpsertGroupMemberSourceRequestDto } from '../dto/upsert-group-member-source.request.dto';
-import { FakeGroupMemberSourceCommunityRepository } from '../../../adapter/implementations/fake/fake.group-member-source.community.repository';
-import { GroupMemberSourceCommunityRepository } from '../../../adapter/ports/group-member-source.repository';
+import { FakeGroupMemberSourceRepository } from '../../../adapter/implementations/fake/fake.group-member-source.repository';
+import { GroupMemberSourceRepositoryReadWrite } from '../../../adapter/ports/group-member-source.repository';
 import { GroupMemberSource } from '../../../domain/entities/group-member-source';
+import { executeTask } from '@curioushuman/fp-ts-utils';
+import { GroupMemberSourceId } from '../../../domain/value-objects/group-member-source-id';
+import { prepareGroupMemberExternalIdSource } from '../../../domain/entities/group-member';
+import { GroupMemberEmail } from '../../../domain/value-objects/group-member-email';
+import { GroupMemberBuilder } from '../../../test/builders/group-member.builder';
 
 /**
  * INTEGRATION TEST
@@ -34,22 +37,10 @@ const feature = loadFeature('./upsert-group-member-source.feature', {
   loadRelativePath: true,
 });
 
-const matchingRecordFound = async (
-  repository: FakeGroupMemberSourceCommunityRepository,
-  dto: UpsertGroupMemberSourceRequestDto
-): Promise<GroupMemberSource | undefined> => {
-  const groupMemberSources = await executeTask(repository.all());
-  const groupMemberSource = groupMemberSources.find(
-    (groupMemberSource) => groupMemberSource.email === dto.groupMember.email
-  );
-  expect(groupMemberSource).toBeDefined();
-  return groupMemberSource;
-};
-
 defineFeature(feature, (test) => {
   let app: INestApplication;
   let controller: UpsertGroupMemberSourceController;
-  let repository: FakeGroupMemberSourceCommunityRepository;
+  let repository: FakeGroupMemberSourceRepository;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -59,27 +50,22 @@ defineFeature(feature, (test) => {
     app = moduleRef.createNestApplication();
 
     await app.init();
-    UpsertGroupMemberSourceModule.applyDefaults(app);
+    GroupMemberModule.applyDefaults(app);
     controller = moduleRef.get<UpsertGroupMemberSourceController>(
       UpsertGroupMemberSourceController
     );
-    repository = moduleRef.get<GroupMemberSourceCommunityRepository>(
-      GroupMemberSourceCommunityRepository
-    ) as FakeGroupMemberSourceCommunityRepository;
+    repository = moduleRef.get<GroupMemberSourceRepositoryReadWrite>(
+      GroupMemberSourceRepositoryReadWrite
+    ) as FakeGroupMemberSourceRepository;
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  test('Successfully creating a group member source', ({
-    given,
-    when,
-    then,
-    and,
-  }) => {
-    let groupMemberSources: GroupMemberSource[];
-    let groupMemberSourcesBefore: number;
+  test('Successfully creating a group source', ({ given, when, then, and }) => {
+    let groupSources: GroupMemberSource[];
+    let groupSourcesBefore: number;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
@@ -92,11 +78,11 @@ defineFeature(feature, (test) => {
     });
 
     and('no matching record is found at the source', async () => {
-      groupMemberSources = await executeTask(repository.all());
-      groupMemberSourcesBefore = groupMemberSources.length;
+      groupSources = await executeTask(repository.all());
+      groupSourcesBefore = groupSources.length;
     });
 
-    when('I attempt to upsert a group member source', async () => {
+    when('I attempt to upsert a group source', async () => {
       try {
         result = await controller.upsert(upsertGroupMemberSourceDto);
       } catch (err) {
@@ -106,8 +92,8 @@ defineFeature(feature, (test) => {
     });
 
     then('a new record should have been created', async () => {
-      groupMemberSources = await executeTask(repository.all());
-      expect(groupMemberSources.length).toEqual(groupMemberSourcesBefore + 1);
+      groupSources = await executeTask(repository.all());
+      expect(groupSources.length).toEqual(groupSourcesBefore + 1);
     });
 
     and('the created record should be returned', async () => {
@@ -115,12 +101,14 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Successfully updating a group member source by Source Id', ({
+  test('Successfully updating a group source by Source Id', ({
     given,
     when,
     then,
     and,
   }) => {
+    let groupSourceBefore: GroupMemberSource;
+    let groupSourceId: GroupMemberSourceId;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
@@ -133,18 +121,18 @@ defineFeature(feature, (test) => {
     });
 
     and('a matching record is found at the source', async () => {
-      const groupMemberSourceBefore = await matchingRecordFound(
-        repository,
-        upsertGroupMemberSourceDto
-      );
-      if (groupMemberSourceBefore) {
-        expect(groupMemberSourceBefore.status).not.toEqual(
-          upsertGroupMemberSourceDto.groupMember.status
-        );
-      }
+      // we'll grab the groupSource before the update
+      const idSourceValue = upsertGroupMemberSourceDto.groupMember.sourceIds[0];
+      const idSource = prepareGroupMemberExternalIdSource(idSourceValue);
+      groupSourceId = idSource.id as GroupMemberSourceId;
+      const groupSources = await executeTask(repository.all());
+      groupSourceBefore = groupSources.find(
+        (groupSource) => groupSource.id === groupSourceId
+      ) as GroupMemberSource;
+      expect(groupSourceBefore).toBeDefined();
     });
 
-    when('I attempt to upsert a group member source', async () => {
+    when('I attempt to upsert a group source', async () => {
       try {
         result = await controller.upsert(upsertGroupMemberSourceDto);
       } catch (err) {
@@ -154,12 +142,13 @@ defineFeature(feature, (test) => {
     });
 
     then('the record should have been updated', async () => {
-      const groupMemberSourceAfter = await matchingRecordFound(
-        repository,
-        upsertGroupMemberSourceDto
+      const groupSources = await executeTask(repository.all());
+      const groupSourceAfter = groupSources.find(
+        (groupSource) => groupSource.id === groupSourceId
       );
-      if (groupMemberSourceAfter) {
-        expect(groupMemberSourceAfter.status).toEqual(
+      expect(groupSourceAfter).toBeDefined();
+      if (groupSourceAfter) {
+        expect(groupSourceAfter.status).toEqual(
           upsertGroupMemberSourceDto.groupMember.status
         );
       }
@@ -170,12 +159,14 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Successfully updating a group member source by entity', ({
+  test('Successfully updating a group source by email', ({
     given,
     when,
     then,
     and,
   }) => {
+    let groupSourceBefore: GroupMemberSource;
+    let groupEmail: GroupMemberSourceId;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
@@ -183,23 +174,37 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request is valid', () => {
+      // this creates a group with no idSources, so we defer to email
+      const groupMember = GroupMemberBuilder()
+        .noSourceExists()
+        .buildGroupMemberResponseDto();
+      // this is what updatedAlpha would look like
+      const groupMemberSource = GroupMemberSourceBuilder()
+        .updatedAlpha()
+        .build();
+      // now we'll set some values from the groupMemberSource to the groupMember
+      // so that it can be found by email, and updated
+      groupMember.email = groupMemberSource.email;
+      groupMember.status = groupMemberSource.status;
       upsertGroupMemberSourceDto =
-        GroupMemberSourceBuilder().buildUpdateByEntityUpsertGroupMemberSourceRequestDto();
+        GroupMemberSourceBuilder().buildUpdateUpsertGroupMemberSourceRequestDto(
+          groupMember
+        );
     });
 
     and('a matching record is found at the source', async () => {
-      const groupMemberSourceBefore = await matchingRecordFound(
-        repository,
-        upsertGroupMemberSourceDto
+      // we'll grab the groupSource before the update
+      groupEmail = GroupMemberEmail.check(
+        upsertGroupMemberSourceDto.groupMember.email
       );
-      if (groupMemberSourceBefore) {
-        expect(groupMemberSourceBefore.status).not.toEqual(
-          upsertGroupMemberSourceDto.groupMember.status
-        );
-      }
+      const groupSources = await executeTask(repository.all());
+      groupSourceBefore = groupSources.find(
+        (groupSource) => groupSource.email === groupEmail
+      ) as GroupMemberSource;
+      expect(groupSourceBefore).toBeDefined();
     });
 
-    when('I attempt to upsert a group member source', async () => {
+    when('I attempt to upsert a group source', async () => {
       try {
         result = await controller.upsert(upsertGroupMemberSourceDto);
       } catch (err) {
@@ -209,12 +214,13 @@ defineFeature(feature, (test) => {
     });
 
     then('the record should have been updated', async () => {
-      const groupMemberSourceAfter = await matchingRecordFound(
-        repository,
-        upsertGroupMemberSourceDto
+      const groupSources = await executeTask(repository.all());
+      const groupSourceAfter = groupSources.find(
+        (groupSource) => groupSource.email === groupEmail
       );
-      if (groupMemberSourceAfter) {
-        expect(groupMemberSourceAfter.status).toEqual(
+      expect(groupSourceAfter).toBeDefined();
+      if (groupSourceAfter) {
+        expect(groupSourceAfter.status).toEqual(
           upsertGroupMemberSourceDto.groupMember.status
         );
       }
@@ -230,13 +236,15 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request contains invalid data', () => {
-      // we know this to exist in our fake repo
+      const groupMember = GroupMemberBuilder()
+        .invalid()
+        .buildGroupMemberResponseDto();
       upsertGroupMemberSourceDto = GroupMemberSourceBuilder()
         .invalid()
-        .buildInvalidUpsertGroupMemberSourceRequestDto();
+        .buildCreateUpsertGroupMemberSourceRequestDto(groupMember);
     });
 
-    when('I attempt to upsert a group member source', async () => {
+    when('I attempt to upsert a group source', async () => {
       try {
         await controller.upsert(upsertGroupMemberSourceDto);
       } catch (err) {

@@ -1,10 +1,10 @@
-import { Group } from '../../../domain/entities/group';
 import {
   GroupSourceIdentifier,
   GroupSourceIdentifiers,
 } from '../../../domain/entities/group-source';
+import { GroupName } from '../../../domain/value-objects/group-name';
+import { GroupSourceIdSource } from '../../../domain/value-objects/group-source-id-source';
 import { Source } from '../../../domain/value-objects/source';
-import { FindGroupSourceMapper } from './find-group-source.mapper';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -41,9 +41,8 @@ type FindGroupSourceDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindGroupSourceDtoParsers = {
-  // * NOTE: the idSource parser will validate the idSource AND extract id
-  idSource: (dto) => FindGroupSourceMapper.fromIdSourceToId(dto.value),
-  entity: (dto) => Group.check(dto.value),
+  idSource: (dto) => GroupSourceIdSource.check(dto.value),
+  name: (dto) => GroupName.check(dto.value),
 };
 
 /**

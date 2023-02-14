@@ -1,18 +1,20 @@
 import { Injectable } from '@nestjs/common';
 
-import { SourceInvalidError } from './errors/repository/source-invalid.error';
-import { RequestInvalidError } from './errors/request-invalid.error';
 import { ErrorFactory } from './error-factory';
+import { InternalRequestInvalidError } from './errors/internal-request-invalid.error';
+import { RequestInvalidError } from './errors/request-invalid.error';
+import { SourceInvalidError } from './errors/repository/source-invalid.error';
 
 const allowedErrors = {
   RequestInvalidError,
   SourceInvalidError,
+  InternalRequestInvalidError,
 };
 export type ValidationAllowedErrorTypeName = keyof typeof allowedErrors;
 
 const errorMap = {
   400: RequestInvalidError,
-  500: SourceInvalidError,
+  500: InternalRequestInvalidError,
 };
 
 @Injectable()

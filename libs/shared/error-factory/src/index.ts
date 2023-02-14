@@ -11,6 +11,7 @@ export * from './lib/errors/internal-request-invalid.error';
 export * from './lib/errors/not-yet-implemented.error';
 export * from './lib/errors/request-invalid.error';
 export * from './lib/errors/unknown.error';
+export * from './lib/errors/unsupported.error';
 
 export * from './lib/errors/repository/authentication.error';
 export * from './lib/errors/repository/authentication-expired.error';

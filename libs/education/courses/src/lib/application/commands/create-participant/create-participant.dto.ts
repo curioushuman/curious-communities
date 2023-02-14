@@ -1,7 +1,7 @@
 import { Record, Static } from 'runtypes';
 
-import { MemberDto } from '../../../infra/dto/member.dto';
 import { CourseBase } from '../../../domain/entities/course';
+import { Member } from '../../../domain/entities/member';
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 
 /**
@@ -11,7 +11,7 @@ import { ParticipantSource } from '../../../domain/entities/participant-source';
 export const CreateParticipantDto = Record({
   participantSource: ParticipantSource,
   course: CourseBase,
-  member: MemberDto,
+  member: Member,
 });
 
 export type CreateParticipantDto = Static<typeof CreateParticipantDto>;

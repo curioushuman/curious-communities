@@ -30,6 +30,8 @@ export class FakeCourseRepository implements CourseRepository {
     const invalidSource = CourseBuilder().invalidSource().buildNoCheck();
     invalidSource.name = 'Invalid Source' as CourseName;
     this.courses.push(invalidSource);
+    // console.log(this.courses);
+    // this.courses.forEach((c) => console.log(c.sourceIds));
   }
 
   findOneById = (id: CourseSourceId): TE.TaskEither<Error, Course> => {

@@ -1,22 +1,19 @@
 import { Record, Static } from 'runtypes';
 
 import { ParticipantSourceStatus } from '../value-objects/participant-source-status';
-import { ParticipantName } from '../value-objects/participant-name';
-import { ParticipantEmail } from '../value-objects/participant-email';
-import { ParticipantOrganisationName } from '../value-objects/participant-organisation-name';
 import { ParticipantSourceId } from '../value-objects/participant-source-id';
 import { ParticipantSourceIdSource } from '../value-objects/participant-source-id-source';
 import { Source } from '../value-objects/source';
+import { CourseSourceId } from '../value-objects/course-source-id';
+import { MemberEmail } from '../value-objects/member-email';
 
 export const ParticipantSource = Record({
   id: ParticipantSourceId,
   source: Source,
-  courseId: ParticipantSourceId,
+  courseId: CourseSourceId,
+  memberEmail: MemberEmail,
 
   status: ParticipantSourceStatus,
-  name: ParticipantName,
-  email: ParticipantEmail,
-  organisationName: ParticipantOrganisationName,
 });
 
 export type ParticipantSource = Static<typeof ParticipantSource>;

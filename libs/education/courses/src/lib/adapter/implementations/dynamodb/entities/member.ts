@@ -9,33 +9,34 @@ import { Null, Optional, Record, Static, String } from 'runtypes';
  *
  * NOTE: when you do include them, extend() DynamoDbItemKeys rather than brand it.
  */
-export const DynamoDbParticipantKeys = DynamoDbItemKeys.extend({
+export const DynamoDbMemberKeys = DynamoDbItemKeys.extend({
   Sk_Course_Slug: String,
   Sk_Course_SourceIdCOURSE: String,
-  Sk_Participant_SourceIdCOURSE: String,
+  Sk_Member_SourceIdCOURSE: String,
 });
 /**
  * Keys for the participant
  */
-export type DynamoDbParticipantKeys = Static<typeof DynamoDbParticipantKeys>;
+export type DynamoDbMemberKeys = Static<typeof DynamoDbMemberKeys>;
 
 /**
  * Attributes for the participant
  */
-export const DynamoDbParticipantAttributes = Record({
-  Participant_SourceIdCOURSE: Optional(String.Or(Null)),
-  Participant_MemberId: String,
+export const DynamoDbMemberAttributes = Record({
+  Member_SourceIdCOURSE: Optional(String.Or(Null)),
+  Member_MemberId: String,
 
-  Participant_Status: String,
+  Member_Status: String,
+  Member_Name: String,
+  Member_Email: String,
+  Member_OrganisationName: String,
 
   AccountOwner: String,
 });
 /**
  * Attributes for the participant
  */
-export type DynamoDbParticipantAttributes = Static<
-  typeof DynamoDbParticipantAttributes
->;
+export type DynamoDbMemberAttributes = Static<typeof DynamoDbMemberAttributes>;
 
 /**
  * Complete DynamoDb record
@@ -45,10 +46,8 @@ export type DynamoDbParticipantAttributes = Static<
  *
  * Use it more for the type checking, rather than validation.
  */
-export const DynamoDbParticipant = DynamoDbParticipantKeys.And(
-  DynamoDbParticipantAttributes
-);
+export const DynamoDbMember = DynamoDbMemberKeys.And(DynamoDbMemberAttributes);
 /**
  * Complete DynamoDb record
  */
-export type DynamoDbParticipant = Static<typeof DynamoDbParticipant>;
+export type DynamoDbMember = Static<typeof DynamoDbMember>;

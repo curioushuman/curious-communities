@@ -11,6 +11,7 @@ import {
 } from '../domain/entities/participant';
 import { ParticipantSourceIdSource } from '../domain/value-objects/participant-source-id-source';
 import { CourseMapper } from './course.mapper';
+import { MemberMapper } from './member.mapper';
 
 export class ParticipantMapper {
   public static toResponseDtoIdSource(idSource: ParticipantSourceIdSource) {
@@ -25,6 +26,7 @@ export class ParticipantMapper {
     const dto = {
       ...baseDto,
       course: CourseMapper.toBaseResponseDto(participant.course),
+      member: MemberMapper.toResponseDto(participant.member),
     };
     return dto;
   }
@@ -42,10 +44,6 @@ export class ParticipantMapper {
         ParticipantMapper.toResponseDtoIdSource
       ),
 
-      name: participant.name,
-      email: participant.email,
-      organisationName: participant.organisationName,
-
       accountOwner: participant.accountOwner,
     };
     return ParticipantBaseResponseDto.check(dto);
@@ -56,6 +54,7 @@ export class ParticipantMapper {
     const participant = {
       ...base,
       course: CourseMapper.fromResponseDtoToBase(dto.course),
+      member: MemberMapper.fromResponseDto(dto.member),
     };
     return Participant.check(participant);
   }
@@ -70,10 +69,6 @@ export class ParticipantMapper {
       courseId: dto.courseId,
 
       sourceIds: dto.sourceIds.map(prepareParticipantExternalIdSource),
-
-      name: dto.name,
-      email: dto.email,
-      organisationName: dto.organisationName,
 
       accountOwner: dto.accountOwner,
     };

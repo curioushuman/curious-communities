@@ -1,8 +1,8 @@
 import { Null, Optional, Record, Static, String } from 'runtypes';
 import { CourseSourceId } from '../../../../domain/value-objects/course-source-id';
-import { ParticipantEmail } from '../../../../domain/value-objects/participant-email';
-import { ParticipantName } from '../../../../domain/value-objects/participant-name';
-import { ParticipantOrganisationName } from '../../../../domain/value-objects/participant-organisation-name';
+import { ParticipantEmail } from '../../../../domain/value-objects/member-email';
+import { ParticipantName } from '../../../../domain/value-objects/member-name';
+import { ParticipantOrganisationName } from '../../../../domain/value-objects/member-organisation-name';
 import { ParticipantSourceId } from '../../../../domain/value-objects/participant-source-id';
 
 /**

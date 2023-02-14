@@ -3,7 +3,6 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
 import {
-  RepositoryItemConflictError,
   RepositoryItemNotFoundError,
   RequestInvalidError,
   SourceInvalidError,
@@ -185,6 +184,9 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
+    // disabling no-explicit-any for testing purposes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
     let createCourseDto: CreateCourseRequestDto;
     let error: Error;
 
@@ -198,14 +200,15 @@ defineFeature(feature, (test) => {
 
     when('I attempt to create a course', async () => {
       try {
-        await controller.create(createCourseDto);
+        result = await controller.create(createCourseDto);
       } catch (err) {
         error = err as Error;
       }
     });
 
-    then('I should receive a RepositoryItemConflictError', () => {
-      expect(error).toBeInstanceOf(RepositoryItemConflictError);
+    then('I should receive a undefined as a result', () => {
+      expect(error).toBeUndefined();
+      expect(result).toBeUndefined();
     });
   });
 });

@@ -1,5 +1,6 @@
 import { Array, Record, Static, String } from 'runtypes';
 import { CourseBaseResponseDto } from './course.response.dto';
+import { MemberDto } from './member.dto';
 
 /**
  * Base type for response DTO
@@ -12,9 +13,6 @@ export const ParticipantBaseResponseDto = Record({
   courseId: String,
   status: String,
   sourceIds: Array(String),
-  name: String,
-  email: String,
-  organisationName: String,
   accountOwner: String,
 });
 
@@ -37,6 +35,7 @@ export type ParticipantBaseResponseDto = Static<
 
 export const ParticipantResponseDto = ParticipantBaseResponseDto.extend({
   course: CourseBaseResponseDto,
+  member: MemberDto,
 });
 
 /**

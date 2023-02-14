@@ -7,12 +7,10 @@ export class ParticipantSourceMapper {
   ): ParticipantSourceResponseDto {
     return ParticipantSourceResponseDto.check({
       id: participantSource.id,
+      source: participantSource.source,
       courseId: participantSource.courseId,
+      memberEmail: participantSource.memberEmail,
       status: participantSource.status,
-
-      name: participantSource.name,
-      email: participantSource.email,
-      organisationName: participantSource.organisationName,
     });
   }
 
@@ -21,12 +19,10 @@ export class ParticipantSourceMapper {
   ): ParticipantSource {
     return ParticipantSource.check({
       id: dto.id,
+      source: dto.source,
       courseId: dto.courseId,
+      memberEmail: dto.memberEmail,
       status: dto.status,
-
-      name: dto.name,
-      email: dto.email,
-      organisationName: dto.organisationName,
     });
   }
 }

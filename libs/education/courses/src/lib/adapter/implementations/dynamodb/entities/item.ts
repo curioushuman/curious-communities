@@ -1,6 +1,7 @@
 import { DynamoDbItem } from '@curioushuman/common';
 
 import { DynamoDbCourseAttributes } from './course';
+import { DynamoDbMemberAttributes } from './member';
 import { DynamoDbParticipantAttributes } from './participant';
 
 /**
@@ -13,6 +14,7 @@ import { DynamoDbParticipantAttributes } from './participant';
  * TODO: there is probably a more elegant way of doing this.
  */
 export type CoursesItem = Partial<DynamoDbParticipantAttributes> &
-  Omit<Partial<DynamoDbCourseAttributes>, 'AccountOwner'>;
+  Omit<Partial<DynamoDbCourseAttributes>, 'AccountOwner'> &
+  Omit<Partial<DynamoDbMemberAttributes>, 'AccountOwner'>;
 
 export type CoursesDynamoDbItem = DynamoDbItem<CoursesItem>;

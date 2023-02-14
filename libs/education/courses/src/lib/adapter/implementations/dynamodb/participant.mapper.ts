@@ -9,10 +9,12 @@ import {
   DynamoDbParticipantAttributes,
   DynamoDbParticipantKeys,
 } from './entities/participant';
+import { DynamoDbMemberMapper } from './member.mapper';
 
 export class DynamoDbParticipantMapper {
   public static toDomain(item: CoursesDynamoDbItem): Participant {
     const course = DynamoDbCourseMapper.toDomain(item);
+    const member = DynamoDbMemberMapper.toDomain(item);
     return Participant.check({
       // IMPORTANT: this is sk, not pk. Always check the keys method below
       id: item.sortKey,
@@ -27,14 +29,13 @@ export class DynamoDbParticipantMapper {
         ParticipantSourceIdSource
       >(item, 'Participant', config.defaults.accountSources),
 
+      // attributes
       status: item.Participant_Status,
-      name: item.Participant_Name,
-      email: item.Participant_Email,
-      organisationName: item.Participant_OrganisationName,
-
       accountOwner: item.AccountOwner,
 
+      // relationships
       course,
+      member,
     });
   }
 
@@ -87,12 +88,7 @@ export class DynamoDbParticipantMapper {
     return {
       ...sourceIdFields,
       Participant_MemberId: participant.memberId,
-
       Participant_Status: participant.status,
-      Participant_Name: participant.name,
-      Participant_Email: participant.email,
-      Participant_OrganisationName: participant.organisationName,
-
       AccountOwner: participant.accountOwner,
     };
   }
@@ -111,10 +107,14 @@ export class DynamoDbParticipantMapper {
     const courseAttributes = DynamoDbCourseMapper.toPersistenceAttributes(
       participant.course
     );
+    const memberAttributes = DynamoDbMemberMapper.toPersistenceAttributes(
+      participant.member
+    );
     return {
       ...keys,
       ...attributes,
       ...courseAttributes,
+      ...memberAttributes,
     };
   }
 }

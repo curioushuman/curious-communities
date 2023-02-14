@@ -4,11 +4,10 @@ import { Record, Static, String } from 'runtypes';
  */
 export const ParticipantSourceResponseDto = Record({
   id: String,
+  source: String,
   courseId: String,
+  memberEmail: String,
   status: String,
-  name: String,
-  email: String,
-  organisationName: String,
 });
 
 /**

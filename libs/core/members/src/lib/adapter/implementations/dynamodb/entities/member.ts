@@ -4,11 +4,6 @@ import { DynamoDbItemKeys } from '@curioushuman/common';
 
 /**
  * Keys for the participant
- *
- * UPDATE: removing the generic sort keys (sk2, etc) for now, we'll reconsider them
- * when we come to including some GSIs.
- *
- * NOTE: when you do include them, extend() DynamoDbItemKeys rather than brand it.
  */
 export const DynamoDbMemberKeys = DynamoDbItemKeys.extend({
   Sk_Member_Email: String,

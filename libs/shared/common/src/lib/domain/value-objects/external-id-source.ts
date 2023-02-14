@@ -97,7 +97,8 @@ export function parseExternalIdSourceValue(
 /**
  * Function to convert an external ID and source value into an object
  *
- * ? Should I declare the return type here?
+ * TODO
+ * - [ ] modify this to be a generic function
  */
 export function prepareExternalIdSource(
   idSourceValue: string,
@@ -144,6 +145,18 @@ export function findSourceIdAsValue<SID extends ExternalIdSource>(
 }
 
 /**
+ * Helper function to find the sourceIdValue for a given source
+ */
+export function findSourceIdValue(
+  sourceIdValues: string[],
+  sourceString: string
+): string | undefined {
+  return sourceIdValues.find(
+    (sourceIdValue) => sourceIdValue.indexOf(sourceString) > -1
+  );
+}
+
+/**
  * Helper function to confirm the correct source, and return the id value
  *
  * If incorrect source, throw an error
@@ -155,5 +168,5 @@ export function confirmSourceId<SID extends ExternalIdSource>(
   if (sourceId.source !== source) {
     throw new NonMatchingSourceError();
   }
-  return sourceId.id;
+  return sourceId.id as IdOfSourceId<SID>;
 }

@@ -39,8 +39,8 @@ export class TribeApiMemberSourceMapper {
       name: domainEntity.name,
       email: domainEntity.email,
       password: process.env.MEMBERS_DEFAULT_PASSWORD as string,
-      role: TribeApiRepository.defaults.role,
-      source: TribeApiRepository.defaults.source,
+      role: TribeApiRepository.defaults.user.role,
+      source: TribeApiRepository.defaults.user.source,
     };
     return TribeApiMemberSourceForCreate.check(entity);
   }

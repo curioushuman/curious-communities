@@ -9,10 +9,7 @@ import {
   parseData,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
-import {
-  RepositoryItemConflictError,
-  RepositoryItemNotFoundError,
-} from '@curioushuman/error-factory';
+import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 
 import { CreateCourseRequestDto } from './dto/create-course.request.dto';
 import { CreateCourseCommand } from '../../application/commands/create-course/create-course.command';
@@ -41,7 +38,7 @@ export class CreateCourseController {
 
   public async create(
     requestDto: CreateCourseRequestDto
-  ): Promise<CourseBaseResponseDto> {
+  ): Promise<CourseBaseResponseDto | void> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -56,8 +53,16 @@ export class CreateCourseController {
     ]);
 
     // if a course exists, throw an error, go no further
+    // UPDATE: log the error, don't throw it
+    // we don't want the calling lambda to fail/retry
+    // try/catch at the lambda level doesn't seem to work
     if (course) {
-      throw new RepositoryItemConflictError(`Course id: ${course.id}`);
+      // throw new RepositoryItemConflictError(`Group id: ${course.id}`);
+      this.logger.error(
+        `Course already exists with id: ${course.id}`,
+        'RepositoryItemConflictError'
+      );
+      return undefined;
     }
 
     // otherwise, crack on

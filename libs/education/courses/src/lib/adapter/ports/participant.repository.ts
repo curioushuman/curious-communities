@@ -1,4 +1,4 @@
-import { RepositoryFindBy, RepositoryFindMethod } from '@curioushuman/common';
+import { RepositoryFindOne, RepositoryFindMethod } from '@curioushuman/common';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
@@ -20,7 +20,7 @@ export type ParticipantFindMethod = RepositoryFindMethod<
  * - repos for child entities, by default, ALWAYS include the parent
  */
 export abstract class ParticipantRepository
-  implements RepositoryFindBy<ParticipantIdentifiers, Participant>
+  implements RepositoryFindOne<ParticipantIdentifiers, Participant>
 {
   /**
    * FindBy interface

@@ -2,6 +2,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as TE from 'fp-ts/lib/TaskEither';
+import { URLSearchParams } from 'url';
 
 import {
   Auth0ApiFindOneProcessMethod,
@@ -9,7 +10,6 @@ import {
   Auth0ApiSaveOneProcessMethod,
 } from './auth0.repository.types';
 import { Auth0ApiRepositoryError } from './repository.error-factory.types';
-import { URLSearchParams } from 'url';
 import { Auth0ApiAttributes, Auth0ApiResponses } from './types/base-response';
 
 /**

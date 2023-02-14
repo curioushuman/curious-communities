@@ -8,7 +8,7 @@ import {
 import { MemberEmail } from '../../domain/value-objects/member-email';
 import { MemberSourceIdSourceValue } from '../../domain/value-objects/member-source-id-source';
 import { MemberId } from '../../domain/value-objects/member-id';
-import { RepositoryFindBy, RepositoryFindMethod } from '@curioushuman/common';
+import { RepositoryFindOne, RepositoryFindMethod } from '@curioushuman/common';
 
 /**
  * TODO:
@@ -27,7 +27,7 @@ export type MemberFindMethod = RepositoryFindMethod<MemberIdentifiers, Member>;
  * - repos for parent entities, by default, do not return children
  */
 export abstract class MemberRepository
-  implements RepositoryFindBy<MemberIdentifiers, Member>
+  implements RepositoryFindOne<MemberIdentifiers, Member>
 {
   /**
    * FindBy interface

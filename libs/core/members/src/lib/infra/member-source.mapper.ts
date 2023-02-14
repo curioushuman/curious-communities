@@ -11,6 +11,7 @@ export class MemberSourceMapper {
   ): MemberSourceResponseDto {
     return {
       id: memberSource.id,
+      source: memberSource.source,
       status: memberSource.status,
 
       name: memberSource.name,

@@ -1,8 +1,5 @@
-import { findSourceIdAsValue } from '@curioushuman/common';
-import {
-  CourseBase,
-  prepareCourseExternalIdSource,
-} from '../../../domain/entities/course';
+import { DynamoDbMapper } from '@curioushuman/common';
+import { CourseBase } from '../../../domain/entities/course';
 import { CourseSourceIdSource } from '../../../domain/value-objects/course-source-id-source';
 import config from '../../../static/config';
 import {
@@ -16,13 +13,13 @@ import { CoursesDynamoDbItem } from './entities/item';
  */
 export class DynamoDbCourseMapper {
   public static toDomain(item: CoursesDynamoDbItem): CourseBase {
-    const sourceId = item.Course_SourceIdCOURSE
-      ? prepareCourseExternalIdSource(item.Course_SourceIdCOURSE)
-      : undefined;
     return CourseBase.check({
       id: item.primaryKey,
 
-      sourceIds: sourceId ? [sourceId] : [],
+      sourceIds: DynamoDbMapper.prepareDomainSourceIds<
+        CoursesDynamoDbItem,
+        CourseSourceIdSource
+      >(item, 'Course', config.defaults.accountSources),
 
       slug: item.Course_Slug,
       status: item.Course_Status,
@@ -41,16 +38,18 @@ export class DynamoDbCourseMapper {
    * TODO: later we could get fancier with this
    */
   public static toPersistenceKeys(course: CourseBase): DynamoDbCourseKeys {
-    const sourceIdValue = findSourceIdAsValue<CourseSourceIdSource>(
-      course.sourceIds,
-      config.defaults.primaryAccountSource
-    );
+    const sourceIds =
+      DynamoDbMapper.preparePersistenceSourceIds<CourseSourceIdSource>(
+        course.sourceIds,
+        'Course',
+        config.defaults.accountSources
+      );
     return DynamoDbCourseKeys.check({
       primaryKey: course.id,
       sortKey: course.id,
 
       Sk_Course_Slug: course.slug,
-      Sk_Course_SourceIdCOURSE: sourceIdValue,
+      ...sourceIds,
     });
   }
 
@@ -60,12 +59,14 @@ export class DynamoDbCourseMapper {
   public static toPersistenceAttributes(
     course: CourseBase
   ): DynamoDbCourseAttributes {
-    const sourceIdValue = findSourceIdAsValue<CourseSourceIdSource>(
-      course.sourceIds,
-      config.defaults.primaryAccountSource
-    );
+    const sourceIdFields =
+      DynamoDbMapper.preparePersistenceSourceIdFields<CourseSourceIdSource>(
+        course.sourceIds,
+        'Course',
+        config.defaults.accountSources
+      );
     return {
-      Course_SourceIdCOURSE: sourceIdValue,
+      ...sourceIdFields,
 
       Course_Slug: course.slug,
       Course_Status: course.status,

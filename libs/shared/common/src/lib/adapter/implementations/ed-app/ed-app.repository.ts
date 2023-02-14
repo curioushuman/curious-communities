@@ -2,6 +2,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as TE from 'fp-ts/lib/TaskEither';
+import { URLSearchParams } from 'url';
 
 import {
   EdAppApiFindOneProcessMethod,
@@ -9,7 +10,6 @@ import {
   EdAppApiSaveOneProcessMethod,
 } from './ed-app.repository.types';
 import { EdAppApiRepositoryError } from './repository.error-factory.types';
-import { URLSearchParams } from 'url';
 import { EdAppApiAttributes, EdAppApiResponses } from './types/base-response';
 
 /**

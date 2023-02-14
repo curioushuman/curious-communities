@@ -22,6 +22,7 @@ import { Record, Static, String } from 'runtypes';
  */
 export const MemberSourceResponseDto = Record({
   id: String,
+  source: String,
   status: String,
   name: String,
   email: String,

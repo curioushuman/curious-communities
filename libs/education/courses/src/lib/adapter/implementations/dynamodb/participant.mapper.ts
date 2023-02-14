@@ -1,8 +1,6 @@
-import { findSourceIdAsValue } from '@curioushuman/common';
-import {
-  Participant,
-  prepareParticipantExternalIdSource,
-} from '../../../domain/entities/participant';
+import { DynamoDbMapper } from '@curioushuman/common';
+import { Participant } from '../../../domain/entities/participant';
+import { CourseSourceIdSource } from '../../../domain/value-objects/course-source-id-source';
 import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
 import config from '../../../static/config';
 import { DynamoDbCourseMapper } from './course.mapper';
@@ -14,15 +12,20 @@ import {
 
 export class DynamoDbParticipantMapper {
   public static toDomain(item: CoursesDynamoDbItem): Participant {
-    const sourceId = item.Participant_SourceIdCOURSE
-      ? prepareParticipantExternalIdSource(item.Participant_SourceIdCOURSE)
-      : undefined;
     const course = DynamoDbCourseMapper.toDomain(item);
     return Participant.check({
       // IMPORTANT: this is sk, not pk. Always check the keys method below
       id: item.sortKey,
 
-      sourceIds: sourceId ? [sourceId] : [],
+      // as it's a child, it's stored in the parent (DDB) collection
+      courseId: item.primaryKey,
+
+      // other ids
+      memberId: item.Participant_MemberId,
+      sourceIds: DynamoDbMapper.prepareDomainSourceIds<
+        CoursesDynamoDbItem,
+        ParticipantSourceIdSource
+      >(item, 'Participant', config.defaults.accountSources),
 
       status: item.Participant_Status,
       name: item.Participant_Name,
@@ -43,17 +46,29 @@ export class DynamoDbParticipantMapper {
   public static toPersistenceKeys(
     participant: Participant
   ): DynamoDbParticipantKeys {
-    const sourceIdValue = findSourceIdAsValue<ParticipantSourceIdSource>(
-      participant.sourceIds,
-      config.defaults.primaryAccountSource
-    );
+    const sourceIds =
+      DynamoDbMapper.preparePersistenceSourceIds<ParticipantSourceIdSource>(
+        participant.sourceIds,
+        'Participant',
+        config.defaults.accountSources
+      );
+    const courseSourceIds =
+      DynamoDbMapper.preparePersistenceSourceIds<CourseSourceIdSource>(
+        participant.course.sourceIds,
+        'Course',
+        config.defaults.accountSources
+      );
     return DynamoDbParticipantKeys.check({
+      // composite key
       primaryKey: participant.courseId,
       sortKey: participant.id,
 
-      Sk_Course_Slug: participant.id,
-      Sk_Course_SourceIdCOURSE: participant.id,
-      Sk_Participant_SourceIdCOURSE: sourceIdValue,
+      // other keys; participant
+      ...sourceIds,
+
+      // other keys; course
+      Sk_Course_Slug: participant.course.slug,
+      ...courseSourceIds,
     });
   }
 
@@ -63,13 +78,14 @@ export class DynamoDbParticipantMapper {
   public static toPersistenceAttributes(
     participant: Participant
   ): DynamoDbParticipantAttributes {
-    const sourceIdValue = findSourceIdAsValue<ParticipantSourceIdSource>(
-      participant.sourceIds,
-      config.defaults.primaryAccountSource
-    );
+    const sourceIdFields =
+      DynamoDbMapper.preparePersistenceSourceIdFields<ParticipantSourceIdSource>(
+        participant.sourceIds,
+        'Participant',
+        config.defaults.accountSources
+      );
     return {
-      Participant_SourceIdCOURSE: sourceIdValue,
-      Participant_CourseId: participant.courseId,
+      ...sourceIdFields,
       Participant_MemberId: participant.memberId,
 
       Participant_Status: participant.status,

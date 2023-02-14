@@ -24,7 +24,6 @@ export type DynamoDbParticipantKeys = Static<typeof DynamoDbParticipantKeys>;
  */
 export const DynamoDbParticipantAttributes = Record({
   Participant_SourceIdCOURSE: Optional(String.Or(Null)),
-  Participant_CourseId: String,
   Participant_MemberId: String,
 
   Participant_Status: String,

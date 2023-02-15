@@ -3,7 +3,6 @@ import {
   GroupMember,
   isCourseGroupMember,
 } from '../../../domain/entities/group-member';
-import { GroupMemberSourceIdSource } from '../../../domain/value-objects/group-member-source-id-source';
 import config from '../../../static/config';
 import { DynamoDbGroupMapper } from './group.mapper';
 import { GroupsDynamoDbItem } from './entities/item';
@@ -12,26 +11,20 @@ import {
   DynamoDbGroupMemberKeys,
 } from './entities/group-member';
 import { GroupSourceIdSource } from '../../../domain/value-objects/group-source-id-source';
+import { DynamoDbMemberMapper } from './member.mapper';
 
 export class DynamoDbGroupMemberMapper {
   public static toDomain(item: GroupsDynamoDbItem): GroupMember {
     const group = DynamoDbGroupMapper.toDomain(item);
+    const member = DynamoDbMemberMapper.toDomain(item);
     return GroupMember.check({
       _type: item.GroupMember_Type,
-
-      // IMPORTANT: this is sk, not pk. Always check the keys method below
-      id: item.sortKey,
-
-      // as it's a child, it's stored in the parent (DDB) collection
-      groupId: item.primaryKey,
+      id: item.GroupMember_Id,
+      groupId: item.Group_Id,
 
       // other ids
       // standard
-      memberId: item.GroupMember_MemberId,
-      sourceIds: DynamoDbMapper.prepareDomainSourceIds<
-        GroupsDynamoDbItem,
-        GroupMemberSourceIdSource
-      >(item, 'GroupMember', config.defaults.accountSources),
+      memberId: item.Member_Id,
 
       // course
       courseId: item.Group_CourseId,
@@ -39,12 +32,11 @@ export class DynamoDbGroupMemberMapper {
 
       // other fields
       status: item.GroupMember_Status,
-      name: item.GroupMember_Name,
-      email: item.GroupMember_Email,
-      organisationName: item.GroupMember_OrganisationName,
       accountOwner: item.AccountOwner,
 
+      // relationships
       group,
+      member,
     });
   }
 
@@ -60,34 +52,34 @@ export class DynamoDbGroupMemberMapper {
   public static toPersistenceKeys(
     groupMember: GroupMember
   ): DynamoDbGroupMemberKeys {
-    const sourceIds =
-      DynamoDbMapper.preparePersistenceSourceIds<GroupMemberSourceIdSource>(
-        groupMember.sourceIds,
-        'GroupMember',
-        config.defaults.accountSources
-      );
     const groupSourceIds =
       DynamoDbMapper.preparePersistenceSourceIds<GroupSourceIdSource>(
         groupMember.group.sourceIds,
         'Group',
-        config.defaults.accountSources
+        config.defaults.accountSources,
+        groupMember.id
       );
-    const courseId = isCourseGroupMember(groupMember)
-      ? groupMember.courseId
+    // if not a course group member leave this field blank
+    // that way it is not included in the courseId index
+    const skCourseId = isCourseGroupMember(groupMember)
+      ? groupMember.id
       : undefined;
     return DynamoDbGroupMemberKeys.check({
       // composite key
       primaryKey: groupMember.groupId,
       sortKey: groupMember.id,
 
-      // other keys; group member
-      ...sourceIds,
-
-      // other keys; group
+      // index sort keys; group
       // TODO: this is the part that, if separate, could be called from the group mapper
-      Sk_Group_Slug: groupMember.group.slug,
-      Sk_Group_CourseId: courseId,
+      Sk_Group_Slug: groupMember.id,
+      Sk_Group_CourseId: skCourseId,
       ...groupSourceIds,
+
+      // index sort keys; groupMember
+      Sk_GroupMember_ParticipantId: skCourseId,
+
+      // index sort keys; member
+      Sk_Member_Id: groupMember.id,
     });
   }
 
@@ -97,32 +89,16 @@ export class DynamoDbGroupMemberMapper {
   public static toPersistenceAttributes(
     groupMember: GroupMember
   ): DynamoDbGroupMemberAttributes {
-    const sourceIdFields =
-      DynamoDbMapper.preparePersistenceSourceIdFields<GroupMemberSourceIdSource>(
-        groupMember.sourceIds,
-        'GroupMember',
-        config.defaults.accountSources
-      );
     const participantId = isCourseGroupMember(groupMember)
       ? groupMember.participantId
       : undefined;
     return {
       GroupMember_Type: groupMember._type,
-
-      ...sourceIdFields,
-
-      GroupMember_GroupId: groupMember.groupId,
-      GroupMember_MemberId: groupMember.memberId,
+      GroupMember_Id: groupMember.id,
 
       GroupMember_ParticipantId: participantId,
-      // NOTE: Group_CourseId will be added in groupAttributes (below)
-      // Group_CourseId: courseId,
 
       GroupMember_Status: groupMember.status,
-      GroupMember_Name: groupMember.name,
-      GroupMember_Email: groupMember.email,
-      GroupMember_OrganisationName: groupMember.organisationName,
-
       AccountOwner: groupMember.accountOwner,
     };
   }
@@ -141,10 +117,14 @@ export class DynamoDbGroupMemberMapper {
     const groupAttributes = DynamoDbGroupMapper.toPersistenceAttributes(
       groupMember.group
     );
+    const memberAttributes = DynamoDbMemberMapper.toPersistenceAttributes(
+      groupMember.member
+    );
     return {
       ...keys,
       ...attributes,
       ...groupAttributes,
+      ...memberAttributes,
     };
   }
 }

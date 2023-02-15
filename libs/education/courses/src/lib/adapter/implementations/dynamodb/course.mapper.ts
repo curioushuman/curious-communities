@@ -14,7 +14,7 @@ import { CoursesDynamoDbItem } from './entities/item';
 export class DynamoDbCourseMapper {
   public static toDomain(item: CoursesDynamoDbItem): CourseBase {
     return CourseBase.check({
-      id: item.primaryKey,
+      id: item.Course_Id,
 
       sourceIds: DynamoDbMapper.prepareDomainSourceIds<
         CoursesDynamoDbItem,
@@ -35,6 +35,12 @@ export class DynamoDbCourseMapper {
   /**
    * Function to define the composite keys
    *
+   * NOTES:
+   * SK_{Index_Name} are overloaded secondary keys
+   * it's a generic name for THE sortKey for the index Index_name
+   * for participants the sortKey will be the participant id
+   * and for courses, the sortKey (for this index) will be it's id
+   *
    * TODO: later we could get fancier with this
    */
   public static toPersistenceKeys(course: CourseBase): DynamoDbCourseKeys {
@@ -42,14 +48,23 @@ export class DynamoDbCourseMapper {
       DynamoDbMapper.preparePersistenceSourceIds<CourseSourceIdSource>(
         course.sourceIds,
         'Course',
-        config.defaults.accountSources
+        config.defaults.accountSources,
+        course.id
       );
     return DynamoDbCourseKeys.check({
+      // composite key
       primaryKey: course.id,
       sortKey: course.id,
 
-      Sk_Course_Slug: course.slug,
+      // index sort keys; course
+      Sk_Course_Slug: course.id,
       ...sourceIds,
+
+      // index sort keys; participant
+      // none, unnecessary
+
+      // index sort keys; member
+      Sk_Member_Id: course.id,
     });
   }
 
@@ -67,7 +82,7 @@ export class DynamoDbCourseMapper {
       );
     return {
       ...sourceIdFields,
-
+      Course_Id: course.id,
       Course_Slug: course.slug,
       Course_Status: course.status,
       Course_SupportType: course.supportType,

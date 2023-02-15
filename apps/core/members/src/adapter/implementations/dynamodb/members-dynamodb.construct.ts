@@ -69,12 +69,12 @@ export class MembersDynamoDbConstruct extends Construct {
       id,
       'member-source-id-CRM'
     );
-    const byMemberSourceIdCRMValueLsiName = transformIdToResourceName(
+    const byMemberSourceIdCRMValueGsiName = transformIdToResourceName(
       byMemberSourceIdCRMValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
-      indexName: byMemberSourceIdCRMValueLsiName,
+      indexName: byMemberSourceIdCRMValueGsiName,
       partitionKey: {
         name: 'Member_SourceIdCRM',
         type: dynamodb.AttributeType.STRING,
@@ -92,12 +92,12 @@ export class MembersDynamoDbConstruct extends Construct {
       id,
       'member-source-id-AUTH'
     );
-    const byMemberSourceIdAUTHValueLsiName = transformIdToResourceName(
+    const byMemberSourceIdAUTHValueGsiName = transformIdToResourceName(
       byMemberSourceIdAUTHValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
-      indexName: byMemberSourceIdAUTHValueLsiName,
+      indexName: byMemberSourceIdAUTHValueGsiName,
       partitionKey: {
         name: 'Member_SourceIdAUTH',
         type: dynamodb.AttributeType.STRING,
@@ -115,12 +115,12 @@ export class MembersDynamoDbConstruct extends Construct {
       id,
       'member-source-id-COMMUNITY'
     );
-    const byMemberSourceIdCOMMUNITYValueLsiName = transformIdToResourceName(
+    const byMemberSourceIdCOMMUNITYValueGsiName = transformIdToResourceName(
       byMemberSourceIdCOMMUNITYValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
-      indexName: byMemberSourceIdCOMMUNITYValueLsiName,
+      indexName: byMemberSourceIdCOMMUNITYValueGsiName,
       partitionKey: {
         name: 'Member_SourceIdCOMMUNITY',
         type: dynamodb.AttributeType.STRING,
@@ -138,12 +138,12 @@ export class MembersDynamoDbConstruct extends Construct {
       id,
       'member-source-id-MICRO-COURSE'
     );
-    const byMemberSourceIdMICROCOURSEValueLsiName = transformIdToResourceName(
+    const byMemberSourceIdMICROCOURSEValueGsiName = transformIdToResourceName(
       byMemberSourceIdMICROCOURSEValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
-      indexName: byMemberSourceIdMICROCOURSEValueLsiName,
+      indexName: byMemberSourceIdMICROCOURSEValueGsiName,
       partitionKey: {
         name: 'Member_SourceIdMICRO-COURSE',
         type: dynamodb.AttributeType.STRING,
@@ -161,12 +161,12 @@ export class MembersDynamoDbConstruct extends Construct {
       id,
       'member-email'
     );
-    const byMemberEmailLsiName = transformIdToResourceName(
+    const byMemberEmailGsiName = transformIdToResourceName(
       byMemberEmailIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
-      indexName: byMemberEmailLsiName,
+      indexName: byMemberEmailGsiName,
       partitionKey: {
         name: 'Member_Email',
         type: dynamodb.AttributeType.STRING,

@@ -6,8 +6,9 @@ import { Construct } from 'constructs';
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
 import {
+  generateCompositeResourceId,
   resourceNameTitle,
-  transformIdToResourceTitle,
+  transformIdToResourceName,
 } from '../../../../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -24,36 +25,173 @@ export class GroupsDynamoDbConstruct extends Construct {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
+    // for now, we're going to use streams for testing
+    const stream =
+      process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'test'
+        ? dynamodb.StreamViewType.NEW_AND_OLD_IMAGES
+        : undefined;
+
     /**
      * Groups table
      */
     const [tableName, tableTitle] = resourceNameTitle(id, 'DynamoDbTable');
     this.table = new dynamodb.Table(this, tableTitle, {
       tableName,
-      // billingMode: dynamodb.BillingMode.PROVISIONED,
-      // readCapacity: 1,
-      // writeCapacity: 1,
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+      partitionKey: { name: 'primaryKey', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'sortKey', type: dynamodb.AttributeType.STRING },
+      stream,
       // pointInTimeRecovery: true,
+    });
+
+    // destroy the table on stack deletion
+    // ONLY in dev and test environments
+    if (process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'test') {
+      this.table.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+    }
+
+    /**
+     * DynamoDb table arn output
+     */
+    new cdk.CfnOutput(this, `dynamoDbTableArn for ${tableTitle}`, {
+      value: this.table.tableArn,
+    });
+    new cdk.CfnOutput(this, `dynamoDbTableStreamArn for ${tableTitle}`, {
+      value: this.table.tableStreamArn || 'No stream',
     });
 
     // allow root to read
     this.table.grantReadData(new iam.AccountRootPrincipal());
 
-    // Local secondary index - EMAIL
-    this.table.addLocalSecondaryIndex({
-      indexName: transformIdToResourceTitle('pax-by-email', 'DynamoDbLSI'),
-      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+    // Global secondary index - group.SourceIdValue
+    // Identifier
+    const byGroupSourceIdCOMMUNITYValueIndexId = generateCompositeResourceId(
+      id,
+      'group-source-id-COMMUNITY'
+    );
+    const byGroupSourceIdCOMMUNITYValueGsiName = transformIdToResourceName(
+      byGroupSourceIdCOMMUNITYValueIndexId,
+      'DynamoDbGSI'
+    );
+    this.table.addGlobalSecondaryIndex({
+      indexName: byGroupSourceIdCOMMUNITYValueGsiName,
+      partitionKey: {
+        name: 'Group_SourceIdCOMMUNITY',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'Sk_Group_SourceIdCOMMUNITY',
+        type: dynamodb.AttributeType.STRING,
+      },
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
-    // Local secondary index - LAST NAME
-    this.table.addLocalSecondaryIndex({
-      indexName: transformIdToResourceTitle('pax-by-lastname', 'DynamoDbLSI'),
-      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+    // Global secondary index - group.SourceIdValue
+    // Identifier
+    const byGroupSourceIdMICROCOURSEValueIndexId = generateCompositeResourceId(
+      id,
+      'group-source-id-MICRO-COURSE'
+    );
+    const byGroupSourceIdMICROCOURSEValueGsiName = transformIdToResourceName(
+      byGroupSourceIdMICROCOURSEValueIndexId,
+      'DynamoDbGSI'
+    );
+    this.table.addGlobalSecondaryIndex({
+      indexName: byGroupSourceIdMICROCOURSEValueGsiName,
+      partitionKey: {
+        name: 'Group_SourceIdMICRO-COURSE',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'Sk_Group_SourceIdMICRO-COURSE',
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // Global secondary index - group.slug
+    // Identifier
+    const byGroupSlugIndexId = generateCompositeResourceId(id, 'group-slug');
+    const byGroupSlugGsiName = transformIdToResourceName(
+      byGroupSlugIndexId,
+      'DynamoDbGSI'
+    );
+    this.table.addGlobalSecondaryIndex({
+      indexName: byGroupSlugGsiName,
+      partitionKey: {
+        name: 'Group_Slug',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'Sk_Group_Slug',
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // Global secondary index - group.courseId
+    // Identifier
+    const byGroupCourseIdIndexId = generateCompositeResourceId(
+      id,
+      'group-course-id'
+    );
+    const byGroupCourseIdGsiName = transformIdToResourceName(
+      byGroupCourseIdIndexId,
+      'DynamoDbGSI'
+    );
+    this.table.addGlobalSecondaryIndex({
+      indexName: byGroupCourseIdGsiName,
+      partitionKey: {
+        name: 'Group_CourseId',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'Sk_Group_CourseId',
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // Global secondary index - groupMember.participantId
+    // Identifier
+    const byGroupMemberParticipantIdIndexId = generateCompositeResourceId(
+      id,
+      'group-member-participant-id'
+    );
+    const byGroupMemberParticipantIdGsiName = transformIdToResourceName(
+      byGroupMemberParticipantIdIndexId,
+      'DynamoDbGSI'
+    );
+    this.table.addGlobalSecondaryIndex({
+      indexName: byGroupMemberParticipantIdGsiName,
+      partitionKey: {
+        name: 'GroupMember_ParticipantId',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'Sk_GroupMember_ParticipantId',
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // Global secondary index - groupMember.memberId
+    // Identifier
+    const byMemberIdIndexId = generateCompositeResourceId(id, 'member-id');
+    const byMemberIdGsiName = transformIdToResourceName(
+      byMemberIdIndexId,
+      'DynamoDbGSI'
+    );
+    this.table.addGlobalSecondaryIndex({
+      indexName: byMemberIdGsiName,
+      partitionKey: {
+        name: 'Member_Id',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'Sk_Member_Id',
+        type: dynamodb.AttributeType.STRING,
+      },
       projectionType: dynamodb.ProjectionType.ALL,
     });
   }

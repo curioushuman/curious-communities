@@ -65,18 +65,18 @@ export class CoursesDynamoDbConstruct extends Construct {
 
     // Local secondary index - LAST NAME
     // Sort by
-    const byParticipantLastNameIndexId = generateCompositeResourceId(
+    const byMemberLastNameIndexId = generateCompositeResourceId(
       id,
-      'participant-last-name'
+      'member-last-name'
     );
-    const byParticipantLastNameLsiName = transformIdToResourceName(
-      byParticipantLastNameIndexId,
+    const byMemberLastNameLsiName = transformIdToResourceName(
+      byMemberLastNameIndexId,
       'DynamoDbLSI'
     );
     this.table.addLocalSecondaryIndex({
-      indexName: byParticipantLastNameLsiName,
+      indexName: byMemberLastNameLsiName,
       sortKey: {
-        name: 'Participant_LastName',
+        name: 'Member_LastName',
         type: dynamodb.AttributeType.STRING,
       },
       projectionType: dynamodb.ProjectionType.ALL,
@@ -85,12 +85,12 @@ export class CoursesDynamoDbConstruct extends Construct {
     // Global secondary index - course.slug
     // Identifier
     const byCourseSlugIndexId = generateCompositeResourceId(id, 'course-slug');
-    const byCourseSlugLsiName = transformIdToResourceName(
+    const byCourseSlugGsiName = transformIdToResourceName(
       byCourseSlugIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
-      indexName: byCourseSlugLsiName,
+      indexName: byCourseSlugGsiName,
       partitionKey: {
         name: 'Course_Slug',
         type: dynamodb.AttributeType.STRING,
@@ -108,12 +108,12 @@ export class CoursesDynamoDbConstruct extends Construct {
       id,
       'course-source-id-COURSE'
     );
-    const byCourseSourceIdValueLsiName = transformIdToResourceName(
+    const byCourseSourceIdValueGsiName = transformIdToResourceName(
       byCourseSourceIdValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
-      indexName: byCourseSourceIdValueLsiName,
+      indexName: byCourseSourceIdValueGsiName,
       partitionKey: {
         name: 'Course_SourceIdCOURSE',
         type: dynamodb.AttributeType.STRING,
@@ -131,18 +131,41 @@ export class CoursesDynamoDbConstruct extends Construct {
       id,
       'participant-source-id-COURSE'
     );
-    const byParticipantSourceIdValueLsiName = transformIdToResourceName(
+    const byParticipantSourceIdValueGsiName = transformIdToResourceName(
       byParticipantSourceIdValueIndexId,
       'DynamoDbGSI'
     );
     this.table.addGlobalSecondaryIndex({
-      indexName: byParticipantSourceIdValueLsiName,
+      indexName: byParticipantSourceIdValueGsiName,
       partitionKey: {
         name: 'Participant_SourceIdCOURSE',
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
         name: 'Sk_Participant_SourceIdCOURSE',
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // Global secondary index - participant.MemberId
+    // Identifier
+    const byParticipantMemberIdIndexId = generateCompositeResourceId(
+      id,
+      'participant-member-id'
+    );
+    const byParticipantMemberIdGsiName = transformIdToResourceName(
+      byParticipantMemberIdIndexId,
+      'DynamoDbGSI'
+    );
+    this.table.addGlobalSecondaryIndex({
+      indexName: byParticipantMemberIdGsiName,
+      partitionKey: {
+        name: 'Member_Id',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'Sk_Member_Id',
         type: dynamodb.AttributeType.STRING,
       },
       projectionType: dynamodb.ProjectionType.ALL,

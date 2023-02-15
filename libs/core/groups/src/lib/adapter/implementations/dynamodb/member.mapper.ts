@@ -2,21 +2,21 @@ import { DynamoDbMapper, memberSources } from '@curioushuman/common';
 import { Member } from '../../../domain/entities/member';
 import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
 import config from '../../../static/config';
-import { CoursesDynamoDbItem } from './entities/item';
+import { GroupsDynamoDbItem } from './entities/item';
 import { DynamoDbMemberAttributes } from './entities/member';
 
 export class DynamoDbMemberMapper {
   /**
    * Converts the DynamoDb item to a domain entity
    */
-  public static toDomain(item: CoursesDynamoDbItem): Member {
+  public static toDomain(item: GroupsDynamoDbItem): Member {
     return Member.check({
       // IMPORTANT: pk and sk are not part of this entity
       id: item.Member_Id,
 
       // other ids
       sourceIds: DynamoDbMapper.prepareDomainSourceIds<
-        CoursesDynamoDbItem,
+        GroupsDynamoDbItem,
         MemberSourceIdSource
       >(item, 'Member', memberSources),
 

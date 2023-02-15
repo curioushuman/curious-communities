@@ -16,13 +16,13 @@ import {
 import {
   GroupMember,
   GroupMemberIdentifier,
-  prepareGroupMemberExternalIdSource,
 } from '../../../domain/entities/group-member';
 import { DynamoDbGroupMemberMapper } from './group-member.mapper';
-import { GroupMemberSourceIdSourceValue } from '../../../domain/value-objects/group-member-source-id-source';
 import { DynamoDbGroupMember } from './entities/group-member';
 import { GroupsItem } from './entities/item';
 import { ParticipantId } from '../../../domain/value-objects/participant-id';
+import { MemberId } from '../../../domain/value-objects/member-id';
+import { GroupId } from '../../../domain/value-objects/group-id';
 
 /**
  * A repository for groupMembers
@@ -80,25 +80,26 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
   //   return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   // };
 
-  findOneByIdSourceValue = (
-    value: GroupMemberSourceIdSourceValue
-  ): TE.TaskEither<Error, GroupMember> => {
+  findOneByMemberId = (props: {
+    value: MemberId;
+    parentId: GroupId;
+  }): TE.TaskEither<Error, GroupMember> => {
     // Set the parameters.
-    const { source } = prepareGroupMemberExternalIdSource(value);
     const params = this.dynamoDbRepository.prepareParamsQueryOne({
-      indexId: `source-id-${source}`,
-      value,
+      indexId: `member-id`,
+      value: props.value,
     });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);
   };
 
-  findOneByParticipantId = (
-    value: ParticipantId
-  ): TE.TaskEither<Error, GroupMember> => {
+  findOneByParticipantId = (props: {
+    value: ParticipantId;
+    parentId: GroupId;
+  }): TE.TaskEither<Error, GroupMember> => {
     // Set the parameters.
     const params = this.dynamoDbRepository.prepareParamsQueryOne({
       indexId: `participantId`,
-      value,
+      value: props.value,
     });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);
   };
@@ -107,7 +108,7 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
    * Object lookup for findOneBy methods
    */
   findOneBy: Record<GroupMemberIdentifier, GroupMemberFindMethod> = {
-    idSourceValue: this.findOneByIdSourceValue,
+    memberId: this.findOneByMemberId,
     participantId: this.findOneByParticipantId,
   };
 

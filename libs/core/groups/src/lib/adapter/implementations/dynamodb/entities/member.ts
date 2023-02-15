@@ -6,7 +6,7 @@ import { DynamoDbMemberCommonAttributes } from '@curioushuman/common';
  * Keys for the member
  *
  * NOTE: We don't need keys for the member.
- * As far as DDB is concerned they are just additional attributes of a participant
+ * As far as DDB is concerned they are just additional attributes of a groupMember
  * We don't need them as a top level object in this context
  */
 

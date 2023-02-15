@@ -16,14 +16,11 @@ export class DynamoDbParticipantMapper {
     const course = DynamoDbCourseMapper.toDomain(item);
     const member = DynamoDbMemberMapper.toDomain(item);
     return Participant.check({
-      // IMPORTANT: this is sk, not pk. Always check the keys method below
-      id: item.sortKey,
-
-      // as it's a child, it's stored in the parent (DDB) collection
-      courseId: item.primaryKey,
+      id: item.Participant_Id,
+      courseId: item.Course_Id,
 
       // other ids
-      memberId: item.Participant_MemberId,
+      memberId: item.Member_Id,
       sourceIds: DynamoDbMapper.prepareDomainSourceIds<
         CoursesDynamoDbItem,
         ParticipantSourceIdSource
@@ -42,6 +39,14 @@ export class DynamoDbParticipantMapper {
   /**
    * Function to define the composite keys
    *
+   * NOTES:
+   * SK_{Index_Name} are overloaded secondary keys
+   * it's a generic name for THE sortKey for the index Index_name
+   * for participants the sortKey will be the participant id
+   * and for courses, the sortKey (for this index) will be it's id
+   *
+   * ? do we want LastName to be our sortKey?
+   *
    * TODO: later we could get fancier with this
    */
   public static toPersistenceKeys(
@@ -51,13 +56,15 @@ export class DynamoDbParticipantMapper {
       DynamoDbMapper.preparePersistenceSourceIds<ParticipantSourceIdSource>(
         participant.sourceIds,
         'Participant',
-        config.defaults.accountSources
+        config.defaults.accountSources,
+        participant.id
       );
     const courseSourceIds =
       DynamoDbMapper.preparePersistenceSourceIds<CourseSourceIdSource>(
         participant.course.sourceIds,
         'Course',
-        config.defaults.accountSources
+        config.defaults.accountSources,
+        participant.id
       );
     return DynamoDbParticipantKeys.check({
       // composite key
@@ -68,8 +75,11 @@ export class DynamoDbParticipantMapper {
       ...sourceIds,
 
       // other keys; course
-      Sk_Course_Slug: participant.course.slug,
+      Sk_Course_Slug: participant.id,
       ...courseSourceIds,
+
+      // other keys; member
+      Sk_Member_Id: participant.id,
     });
   }
 
@@ -87,7 +97,7 @@ export class DynamoDbParticipantMapper {
       );
     return {
       ...sourceIdFields,
-      Participant_MemberId: participant.memberId,
+      Participant_Id: participant.id,
       Participant_Status: participant.status,
       AccountOwner: participant.accountOwner,
     };

@@ -1,42 +1,44 @@
-import { Null, Optional, Record, Static, String } from 'runtypes';
+import { Static } from 'runtypes';
 
-import { DynamoDbItemKeys } from '@curioushuman/common';
+import {
+  DynamoDbMemberCommonAttributes,
+  DynamoDbMemberCommonKeys,
+} from '@curioushuman/common';
 
 /**
- * Keys for the participant
+ * Keys for the member
  */
-export const DynamoDbMemberKeys = DynamoDbItemKeys.extend({
-  Sk_Member_Email: String,
-  Sk_Member_SourceIdCRM: Optional(String.Or(Null)),
-  Sk_Member_SourceIdAUTH: Optional(String.Or(Null)),
-  Sk_Member_SourceIdCOMMUNITY: Optional(String.Or(Null)),
-  'Sk_Member_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
-});
+export const DynamoDbMemberKeys = DynamoDbMemberCommonKeys.pick(
+  'primaryKey',
+  'sortKey',
+  'Sk_Member_Email',
+  'Sk_Member_SourceIdCRM',
+  'Sk_Member_SourceIdAUTH',
+  'Sk_Member_SourceIdCOMMUNITY',
+  'Sk_Member_SourceIdMICRO-COURSE'
+);
 /**
- * Keys for the participant
+ * Keys for the member
  */
 export type DynamoDbMemberKeys = Static<typeof DynamoDbMemberKeys>;
 
 /**
- * Attributes for the participant
+ * Attributes for the member
  */
-export const DynamoDbMemberAttributes = Record({
-  // primary source
-  Member_SourceIdCRM: Optional(String.Or(Null)),
-  // other sources
-  Member_SourceIdAUTH: Optional(String.Or(Null)),
-  Member_SourceIdCOMMUNITY: Optional(String.Or(Null)),
-  'Member_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
-
-  Member_Status: String,
-  Member_Name: String,
-  Member_Email: String,
-  Member_OrganisationName: String,
-
-  AccountOwner: String,
-});
+export const DynamoDbMemberAttributes = DynamoDbMemberCommonAttributes.pick(
+  'Member_Id',
+  'Member_SourceIdCRM',
+  'Member_SourceIdAUTH',
+  'Member_SourceIdCOMMUNITY',
+  'Member_SourceIdMICRO-COURSE',
+  'Member_Status',
+  'Member_Name',
+  'Member_Email',
+  'Member_OrganisationName',
+  'AccountOwner'
+);
 /**
- * Attributes for the participant
+ * Attributes for the member
  */
 export type DynamoDbMemberAttributes = Static<typeof DynamoDbMemberAttributes>;
 

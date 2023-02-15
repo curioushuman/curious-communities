@@ -170,11 +170,15 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     props: DynamoDbRepositoryGetOneProps
   ): GetCommandInput {
     const { primaryKey, sortKey } = props;
+    // if only the primary key is provided
+    // we assume they want the parent record
+    // our pattern for parent records is for pk and sk to match
+    const sk = sortKey || primaryKey;
     return {
       TableName: this.tableName,
       Key: {
         primaryKey,
-        sortKey,
+        sortKey: sk,
       },
     };
   }

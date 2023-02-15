@@ -61,19 +61,22 @@ export class DynamoDbMapper {
   public static preparePersistenceSourceIdFields<SID extends ExternalIdSource>(
     sourceIds: SID[],
     entityId: string,
-    sources: SourceOfSourceId<SID>[],
-    prefix = ''
+    sources: SourceOfSourceId<SID>[]
   ): Record<string, string | undefined> {
     const sourceIdsConverted: Record<string, string | undefined> = {};
     sources.forEach((sourceKey) => {
-      sourceIdsConverted[`${prefix}${entityId}_SourceId${sourceKey}`] =
+      sourceIdsConverted[`${entityId}_SourceId${sourceKey}`] =
         findSourceIdAsValue<SID>(sourceIds, sourceKey);
     });
     return sourceIdsConverted;
   }
 
   /**
-   * Map domain sources ids to persistence source ids
+   * Create (overloaded) sort key values for related indexes
+   *
+   * NOTE: this function assumes the sort key will be the same for all the indexes
+   * If you want different sort keys per sourceId then define them manually in your
+   * DDB entity.
    *
    * NOTES
    * - SID is for (Domain)SourceIdSource
@@ -81,13 +84,14 @@ export class DynamoDbMapper {
   public static preparePersistenceSourceIds<SID extends ExternalIdSource>(
     sourceIds: SID[],
     entityId: string,
-    sources: SourceOfSourceId<SID>[]
+    sources: SourceOfSourceId<SID>[],
+    value?: string
   ): Record<string, string | undefined> {
-    return DynamoDbMapper.preparePersistenceSourceIdFields(
-      sourceIds,
-      entityId,
-      sources,
-      'Sk_'
-    );
+    const sourceIdsConverted: Record<string, string | undefined> = {};
+    sources.forEach((sourceKey) => {
+      const val = value || findSourceIdAsValue<SID>(sourceIds, sourceKey);
+      sourceIdsConverted[`Sk_${entityId}_SourceId${sourceKey}`] = val;
+    });
+    return sourceIdsConverted;
   }
 }

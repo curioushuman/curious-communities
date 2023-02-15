@@ -6,14 +6,23 @@ import { DynamoDbItemKeys } from '@curioushuman/common';
  * Keys for the group
  */
 export const DynamoDbGroupKeys = DynamoDbItemKeys.extend({
+  // these are sortKeys for the other DDB indexes
+  // the pattern is SK_{Index_Name}
+
+  // group
   // Standard
   Sk_Group_Slug: String,
   Sk_Group_SourceIdCOMMUNITY: Optional(String.Or(Null)),
   'Sk_Group_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
   // Course
   Sk_Group_CourseId: Optional(String.Or(Null)),
-  // NOTE: does not include Sk from GroupMember
-  // this means these rows will not appear in that GSI
+
+  // group member
+  // none; we don't need the group rows in the groupMember index
+
+  // member
+  // we will include the member one so we can see groups as a sub list of member
+  Sk_Member_Id: String,
 });
 /**
  * Keys for the group
@@ -25,7 +34,7 @@ export type DynamoDbGroupKeys = Static<typeof DynamoDbGroupKeys>;
  */
 export const DynamoDbGroupAttributes = Record({
   Group_Type: String,
-
+  Group_Id: String,
   Group_SourceIdCOMMUNITY: Optional(String.Or(Null)),
   'Group_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
 

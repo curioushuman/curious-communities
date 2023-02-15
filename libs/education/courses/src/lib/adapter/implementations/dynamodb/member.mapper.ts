@@ -1,4 +1,4 @@
-import { DynamoDbMapper } from '@curioushuman/common';
+import { DynamoDbMapper, memberSources } from '@curioushuman/common';
 import { Member } from '../../../domain/entities/member';
 import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
 import config from '../../../static/config';
@@ -8,21 +8,17 @@ import { DynamoDbMemberAttributes } from './entities/member';
 export class DynamoDbMemberMapper {
   /**
    * Converts the DynamoDb item to a domain entity
-   *
-   * TODO:
-   * - [ ] find a new home for the config.defaults.memberAccountSources
    */
   public static toDomain(item: CoursesDynamoDbItem): Member {
     return Member.check({
       // IMPORTANT: pk and sk are not part of this entity
-      id: item.Member_MemberId,
+      id: item.Member_Id,
 
       // other ids
-      // ! Config is a terrible place to store these sources
       sourceIds: DynamoDbMapper.prepareDomainSourceIds<
         CoursesDynamoDbItem,
         MemberSourceIdSource
-      >(item, 'Member', config.defaults.memberAccountSources),
+      >(item, 'Member', memberSources),
 
       status: item.Member_Status,
       name: item.Member_Name,
@@ -47,7 +43,7 @@ export class DynamoDbMemberMapper {
       );
     return {
       ...sourceIdFields,
-      Member_MemberId: member.id,
+      Member_Id: member.id,
 
       Member_Status: member.status,
       Member_Name: member.name,

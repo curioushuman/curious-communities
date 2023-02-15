@@ -12,11 +12,7 @@ export class DynamoDbGroupMapper {
   public static toDomain(item: GroupsDynamoDbItem): GroupBase {
     return GroupBase.check({
       _type: item.Group_Type,
-
-      //pk as group is the parent
-      id: item.primaryKey,
-
-      // sk is the same as pk
+      id: item.Group_Id,
 
       // other ids
       // standard
@@ -45,16 +41,25 @@ export class DynamoDbGroupMapper {
       DynamoDbMapper.preparePersistenceSourceIds<GroupSourceIdSource>(
         group.sourceIds,
         'Group',
-        config.defaults.accountSources
+        config.defaults.accountSources,
+        group.id
       );
-    const courseId = isCourseGroupBase(group) ? group.courseId : undefined;
+    const skCourseId = isCourseGroupBase(group) ? group.id : undefined;
     return DynamoDbGroupKeys.check({
+      // composite key
       primaryKey: group.id,
       sortKey: group.id,
 
-      Sk_Group_Slug: group.slug,
-      Sk_Group_CourseId: courseId,
+      // index sort keys; group
+      Sk_Group_Slug: group.id,
+      Sk_Group_CourseId: skCourseId,
       ...sourceIds,
+
+      // index sort keys; group member
+      // none
+
+      // index sort keys; member
+      Sk_Member_Id: group.id,
     });
   }
 
@@ -73,7 +78,7 @@ export class DynamoDbGroupMapper {
     const courseId = isCourseGroupBase(group) ? group.courseId : undefined;
     return {
       Group_Type: group._type,
-
+      Group_Id: group.id,
       ...sourceIdFields,
 
       Group_CourseId: courseId,

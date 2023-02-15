@@ -10,9 +10,18 @@ import { Null, Optional, Record, Static, String } from 'runtypes';
  * NOTE: when you do include them, extend() DynamoDbItemKeys rather than brand it.
  */
 export const DynamoDbParticipantKeys = DynamoDbItemKeys.extend({
+  // these are sortKeys for the other DDB indexes
+  // the pattern is SK_{Index_Name}
+
+  // course
   Sk_Course_Slug: String,
   Sk_Course_SourceIdCOURSE: String,
+
+  // participant
   Sk_Participant_SourceIdCOURSE: String,
+
+  // member
+  Sk_Member_Id: String,
 });
 /**
  * Keys for the participant
@@ -23,8 +32,12 @@ export type DynamoDbParticipantKeys = Static<typeof DynamoDbParticipantKeys>;
  * Attributes for the participant
  */
 export const DynamoDbParticipantAttributes = Record({
+  // best to store the id here as an attr. as well
+  Participant_Id: String,
+  // we don't need Course_Id as that is already part of DdbCourseAttributes
+  // we do need the value for each of our sourceIds
   Participant_SourceIdCOURSE: Optional(String.Or(Null)),
-  Participant_MemberId: String,
+  // we don't need Member_Id as that will be included with DdbMemberAttributes
 
   Participant_Status: String,
 

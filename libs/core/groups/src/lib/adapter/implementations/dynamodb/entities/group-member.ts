@@ -5,9 +5,13 @@ import { Null, Optional, Record, Static, String } from 'runtypes';
  * Keys for the groupMember
  */
 export const DynamoDbGroupMemberKeys = DynamoDbItemKeys.extend({
+  // these are sortKeys for the other DDB indexes
+  // the pattern is SK_{Index_Name}
+
   // Group
   // Standard
   Sk_Group_Slug: String,
+  // these are optional as at times there will yet to be values
   Sk_Group_SourceIdCOMMUNITY: Optional(String.Or(Null)),
   'Sk_Group_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
   // Course
@@ -15,10 +19,13 @@ export const DynamoDbGroupMemberKeys = DynamoDbItemKeys.extend({
 
   // GroupMember
   // Standard
-  Sk_GroupMember_SourceIdCOMMUNITY: Optional(String.Or(Null)),
-  'Sk_GroupMember_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
+  // NOTE: no sourceIds
+  // memberId, which is handled below
   // Course
   Sk_GroupMember_ParticipantId: Optional(String.Or(Null)),
+
+  // member
+  Sk_Member_Id: String,
 });
 /**
  * Keys for the groupMember
@@ -30,24 +37,17 @@ export type DynamoDbGroupMemberKeys = Static<typeof DynamoDbGroupMemberKeys>;
  */
 export const DynamoDbGroupMemberAttributes = Record({
   GroupMember_Type: String,
+  GroupMember_Id: String,
 
-  GroupMember_SourceIdCOMMUNITY: Optional(String.Or(Null)),
-  'GroupMember_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
+  // NOTE: we don't need group or member id as they will be included
+  // in their respective attributes
+  // as part of the GroupsDdbItem
 
-  GroupMember_GroupId: String,
-  GroupMember_MemberId: String,
-
-  // NOTE: we don't need to define Group_CourseId here
-  // it is part of the CoursesItem and will be available
-  // during mapping process
-  // Group_CourseId: Optional(String.Or(Null)),
+  // NOTE: we also don't need to define Group_CourseId here
+  // it is part of the GroupsDdbItem
   GroupMember_ParticipantId: Optional(String.Or(Null)),
 
   GroupMember_Status: String,
-  GroupMember_Name: String,
-  GroupMember_Email: String,
-  GroupMember_OrganisationName: String,
-
   AccountOwner: String,
 });
 /**

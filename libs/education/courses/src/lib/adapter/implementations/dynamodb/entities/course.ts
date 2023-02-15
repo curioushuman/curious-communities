@@ -6,10 +6,22 @@ import { DynamoDbItemKeys } from '@curioushuman/common';
  * Keys for the course
  */
 export const DynamoDbCourseKeys = DynamoDbItemKeys.extend({
+  // these are sortKeys for the other DDB indexes
+  // the pattern is SK_{Index_Name}
+
+  // course
   Sk_Course_Slug: String,
   Sk_Course_SourceIdCOURSE: String,
-  // NOTE: does not include Sk_Participant_SourceIdCOURSE
-  // this means these rows will not appear in that GSI
+
+  // participant
+  // NOTE: we are not adding a value for this field/column
+  // this means this row will not appear in that GSI
+  // the course info is already duplicated in the participant rows
+  // so it is unnecessary
+
+  // member
+  // we will include the member one so we can see courses as a sub list of member
+  Sk_Member_Id: String,
 });
 /**
  * Keys for the course
@@ -20,6 +32,7 @@ export type DynamoDbCourseKeys = Static<typeof DynamoDbCourseKeys>;
  * Attributes for the course
  */
 export const DynamoDbCourseAttributes = Record({
+  Course_Id: String,
   Course_SourceIdCOURSE: Optional(String.Or(Null)),
 
   Course_Slug: String,

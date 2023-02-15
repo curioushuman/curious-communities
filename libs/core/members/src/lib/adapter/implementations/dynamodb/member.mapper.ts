@@ -1,4 +1,4 @@
-import { DynamoDbMapper } from '@curioushuman/common';
+import { DynamoDbMapper, memberSources } from '@curioushuman/common';
 import { Member } from '../../../domain/entities/member';
 import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
 import config from '../../../static/config';
@@ -11,12 +11,12 @@ import {
 export class DynamoDbMemberMapper {
   public static toDomain(item: MembersDynamoDbItem): Member {
     return Member.check({
-      id: item.primaryKey,
+      id: item.Member_Id,
 
       sourceIds: DynamoDbMapper.prepareDomainSourceIds<
         MembersDynamoDbItem,
         MemberSourceIdSource
-      >(item, 'Member', config.defaults.accountSources),
+      >(item, 'Member', memberSources),
 
       status: item.Member_Status,
       name: item.Member_Name,
@@ -28,7 +28,10 @@ export class DynamoDbMemberMapper {
   }
 
   /**
-   * Function to define the composite keys
+   * Function to define the composite keys and the sort keys for other indexes
+   *
+   * NOTE: the fields Sk_{Index_Name} refer to the overloadable sortKey for the
+   * index of that name. They can be populated by any other field value.
    *
    * TODO: later we could get fancier with this
    */
@@ -37,13 +40,14 @@ export class DynamoDbMemberMapper {
       DynamoDbMapper.preparePersistenceSourceIds<MemberSourceIdSource>(
         member.sourceIds,
         'Member',
-        config.defaults.accountSources
+        config.defaults.accountSources,
+        member.id
       );
 
     return DynamoDbMemberKeys.check({
       primaryKey: member.id,
       sortKey: member.id,
-      Sk_Member_Email: member.email,
+      Sk_Member_Email: member.id,
       ...sourceIds,
     });
   }
@@ -63,6 +67,7 @@ export class DynamoDbMemberMapper {
     return {
       ...sourceIdFields,
 
+      Member_Id: member.id,
       Member_Status: member.status,
       Member_Name: member.name,
       Member_Email: member.email,

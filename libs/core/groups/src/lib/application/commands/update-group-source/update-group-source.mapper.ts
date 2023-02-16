@@ -25,6 +25,7 @@ export class UpdateGroupSourceMapper extends UpdateMapper {
         source: groupSource.source,
         status: group.status,
         name: group.name,
+        slug: group.slug,
       });
   }
 }

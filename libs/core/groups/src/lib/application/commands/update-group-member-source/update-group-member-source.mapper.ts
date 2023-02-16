@@ -21,13 +21,12 @@ export class UpdateGroupMemberSourceMapper extends UpdateMapper {
   ): (groupMember: GroupMemberBase) => GroupMemberSource {
     return (groupMember: GroupMemberBase) =>
       GroupMemberSource.check({
-        id: groupMemberSource.id,
         groupId: groupMemberSource.groupId,
+        memberId: groupMemberSource.memberId,
+        memberEmail: groupMemberSource.memberEmail,
         source: groupMemberSource.source,
+        // TODO: map the statuses
         status: groupMember.status,
-        name: groupMember.name,
-        email: groupMember.email,
-        organisationName: groupMember.organisationName,
       });
   }
 }

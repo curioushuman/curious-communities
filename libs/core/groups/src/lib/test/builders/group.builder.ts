@@ -6,7 +6,6 @@ import {
   CourseGroup,
   CourseGroupBase,
 } from '../../domain/entities/course-group';
-import { CourseDto } from '../../domain/entities/course.dto';
 import { Group } from '../../domain/entities/group';
 import { GroupSource } from '../../domain/entities/group-source';
 import { GroupSourceIdSource } from '../../domain/value-objects/group-source-id-source';
@@ -29,6 +28,7 @@ import {
   StandardGroup,
   StandardGroupBase,
 } from '../../domain/entities/standard-group';
+import { CourseDto } from '../../infra/dto/course.dto';
 
 /**
  * A builder for Groups to play with in testing.
@@ -56,7 +56,7 @@ export const GroupBuilder = () => {
    */
   const defaultProperties: GroupLooseMimic = {
     _type: config.defaults.groupTypeStandard as GroupType,
-    id: '6fce9d10-aeed-4bb1-8c8c-92094f1982ff',
+    id: '6fce9d10-aeed-4bb1-8c8c-92094f1983ff',
 
     sourceIds: [
       {
@@ -190,7 +190,14 @@ export const GroupBuilder = () => {
     },
 
     existsCourse() {
+      overrides.id = 'b2b28292-563b-4f3c-8df4-995470b46275';
       courseGroupOverrides.courseId = 'b2b28292-563b-4f3c-8df4-995470b46283';
+      return this;
+    },
+
+    existsCourseAlpha() {
+      overrides.id = 'b2b28292-563b-4f3c-8df4-995470b46276';
+      courseGroupOverrides.courseId = 'b2b28292-563b-4f3c-8df4-995470b46284';
       return this;
     },
 

@@ -16,6 +16,7 @@ import {
 import config from '../../static/config';
 import { CourseGroupBase } from './course-group';
 import { StandardGroupBase } from './standard-group';
+import { Member } from './member';
 
 /**
  * Type for course group member base entity
@@ -36,7 +37,7 @@ export type GroupMember = Static<typeof GroupMember>;
  * GroupMember being a Union and a Composite I think has proven too much
  */
 export const parseGroupMember = (groupMember: GroupMember): GroupMember => {
-  const { group, ...groupMemberBase } = groupMember;
+  const { group, member, ...groupMemberBase } = groupMember;
 
   let parsedGroupBase;
   let parsedGroupMemberBase;
@@ -51,6 +52,7 @@ export const parseGroupMember = (groupMember: GroupMember): GroupMember => {
   return {
     ...parsedGroupMemberBase,
     group: parsedGroupBase,
+    member: Member.check(member),
   };
 };
 

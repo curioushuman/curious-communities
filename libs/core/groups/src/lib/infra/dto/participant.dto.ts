@@ -1,5 +1,6 @@
-import { Record, Static, String } from 'runtypes';
+import { Record, Static } from 'runtypes';
 import { NotEmptyString } from '@curioushuman/common';
+import { MemberDto } from './member.dto';
 
 /**
  * Type for external Participant entity
@@ -13,13 +14,11 @@ export const ParticipantDto = Record({
   id: NotEmptyString,
   courseId: NotEmptyString,
   memberId: NotEmptyString,
-  status: NotEmptyString,
-  name: NotEmptyString,
-  email: NotEmptyString,
-  organisationName: String,
 
-  // e.g. APF being the account that owns this group
+  status: NotEmptyString,
   accountOwner: NotEmptyString,
+
+  member: MemberDto,
 });
 
 /**

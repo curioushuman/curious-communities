@@ -88,7 +88,7 @@ export class UpdateGroupMemberSourceHandler
         // if null, return the original groupMember
         () => {
           this.logger.log(
-            `GroupMemberSource ${groupMemberSource.id} does not need to be updated AT source`
+            `GroupMemberSource ${groupMemberSource.groupId}:${groupMemberSource.memberId} does not need to be updated AT source`
           );
           return TE.right(groupMemberSource);
         },

@@ -1,5 +1,5 @@
 import { Record, Static } from 'runtypes';
-import { ParticipantDto } from '../../../domain/entities/participant.dto';
+import { ParticipantDto } from '../../dto/participant.dto';
 
 /**
  * DTO that accepts any of the identifiers

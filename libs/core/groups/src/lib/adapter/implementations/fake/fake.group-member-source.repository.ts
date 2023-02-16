@@ -13,13 +13,11 @@ import {
   GroupMemberSourceRepositoryReadWrite,
 } from '../../ports/group-member-source.repository';
 import { GroupMemberSourceBuilder } from '../../../test/builders/group-member-source.builder';
-import { GroupMemberSourceId } from '../../../domain/value-objects/group-member-source-id';
 import config from '../../../static/config';
 import { Source } from '../../../domain/value-objects/source';
-import { GroupMemberSourceIdSource } from '../../../domain/value-objects/group-member-source-id-source';
-import { GroupMemberEmail } from '../../../domain/value-objects/group-member-email';
-import { GroupMemberName } from '../../../domain/value-objects/group-member-name';
 import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
+import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
+import { MemberEmail } from '../../../domain/value-objects/member-email';
 
 @Injectable()
 export class FakeGroupMemberSourceRepository
@@ -27,22 +25,12 @@ export class FakeGroupMemberSourceRepository
 {
   private groupMemberSources: GroupMemberSource[] = [];
 
-  private renameGroupMember(groupMember: GroupMemberSource): GroupMemberSource {
-    groupMember.name = 'Bland base name' as GroupMemberName;
-    return groupMember;
-  }
-
   constructor() {
     this.groupMemberSources.push(
       GroupMemberSourceBuilder().exists().buildNoCheck()
     );
     this.groupMemberSources.push(
-      this.renameGroupMember(
-        GroupMemberSourceBuilder().updated().buildNoCheck()
-      )
-    );
-    this.groupMemberSources.push(
-      GroupMemberSourceBuilder().invalid().buildNoCheck()
+      GroupMemberSourceBuilder().updated().buildNoCheck()
     );
     this.groupMemberSources.push(
       GroupMemberSourceBuilder().alpha().buildNoCheck()
@@ -50,24 +38,22 @@ export class FakeGroupMemberSourceRepository
     this.groupMemberSources.push(
       GroupMemberSourceBuilder().beta().buildNoCheck()
     );
-    this.groupMemberSources.push(
-      GroupMemberSourceBuilder().invalidStatus().buildNoCheck()
-    );
+    // console.log(this.groupMemberSources);
   }
 
   /**
    * Find by source ID
    */
-  findOneByIdSource = (props: {
-    value: GroupMemberSourceIdSource;
+  findOneByMemberId = (props: {
+    value: MemberSourceId;
     parentId: GroupSourceId;
   }): TE.TaskEither<Error, GroupMemberSource> => {
     return TE.tryCatch(
       async () => {
-        const idSource = GroupMemberSourceIdSource.check(props.value);
+        const memberId = MemberSourceId.check(props.value);
         const groupId = GroupSourceId.check(props.parentId);
         const groupSource = this.groupMemberSources.find(
-          (cs) => cs.id === idSource.id && cs.groupId === groupId
+          (gms) => gms.memberId === memberId && gms.groupId === groupId
         );
         return pipe(
           groupSource,
@@ -76,7 +62,7 @@ export class FakeGroupMemberSourceRepository
             () => {
               // this mimics an API or DB call throwing an error
               throw new NotFoundException(
-                `GroupMemberSource with id ${idSource.id} not found`
+                `GroupMemberSource with memberId ${memberId} not found`
               );
             },
             (gs) => gs
@@ -90,16 +76,16 @@ export class FakeGroupMemberSourceRepository
   /**
    * Find by source ID
    */
-  findOneByEmail = (props: {
-    value: GroupMemberEmail;
+  findOneByMemberEmail = (props: {
+    value: MemberEmail;
     parentId: GroupSourceId;
   }): TE.TaskEither<Error, GroupMemberSource> => {
     return TE.tryCatch(
       async () => {
-        const email = GroupMemberEmail.check(props.value);
+        const email = MemberEmail.check(props.value);
         const groupId = GroupSourceId.check(props.parentId);
         const groupSource = this.groupMemberSources.find(
-          (cs) => cs.email === email && cs.groupId === groupId
+          (cs) => cs.memberEmail === email && cs.groupId === groupId
         );
         return pipe(
           groupSource,
@@ -124,8 +110,8 @@ export class FakeGroupMemberSourceRepository
    */
   findOneBy: Record<GroupMemberSourceIdentifier, GroupMemberSourceFindMethod> =
     {
-      idSource: this.findOneByIdSource,
-      email: this.findOneByEmail,
+      memberId: this.findOneByMemberId,
+      memberEmail: this.findOneByMemberEmail,
     };
 
   findOne = (
@@ -134,17 +120,15 @@ export class FakeGroupMemberSourceRepository
     return this.findOneBy[identifier];
   };
 
-  create = (props: {
-    groupMember: GroupMemberSourceForCreate;
-    parentId: GroupSourceId;
-  }): TE.TaskEither<Error, GroupMemberSource> => {
+  create = (
+    groupMember: GroupMemberSourceForCreate
+  ): TE.TaskEither<Error, GroupMemberSource> => {
     return TE.tryCatch(
       async () => {
         const savedGroupMemberSource = {
-          ...props.groupMember,
-          groupId: props.parentId,
+          ...groupMember,
           source: config.defaults.primaryAccountSource as Source,
-          id: GroupMemberSourceId.check(`FakeId${Date.now()}`),
+          memberEmail: 'nomatters@email.com' as MemberEmail,
         };
         this.groupMemberSources.push(savedGroupMemberSource);
         return savedGroupMemberSource;
@@ -153,24 +137,13 @@ export class FakeGroupMemberSourceRepository
     );
   };
 
-  update = (props: {
-    groupMember: GroupMemberSource;
-    parentId: GroupSourceId;
-  }): TE.TaskEither<Error, GroupMemberSource> => {
+  update = (
+    groupMember: GroupMemberSource
+  ): TE.TaskEither<Error, GroupMemberSource> => {
     return TE.tryCatch(
       async () => {
-        const groupMemberSourceExists = this.groupMemberSources.find(
-          (cs) => cs.id === props.groupMember.id
-        );
-        if (!groupMemberSourceExists) {
-          throw new NotFoundException(
-            `GroupMemberSource with id ${props.groupMember.id} not found`
-          );
-        }
-        this.groupMemberSources = this.groupMemberSources.map((cs) =>
-          cs.id === props.groupMember.id ? props.groupMember : cs
-        );
-        return groupMemberSourceExists;
+        // we don't do updates for this object type
+        return groupMember;
       },
       (reason: unknown) => reason as Error
     );

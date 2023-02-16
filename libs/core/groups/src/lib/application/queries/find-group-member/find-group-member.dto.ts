@@ -1,12 +1,11 @@
-import { parseExternalIdSourceValue } from '@curioushuman/common';
-
 import {
   GroupMemberIdentifier,
   GroupMemberIdentifiers,
 } from '../../../domain/entities/group-member';
 import { Source } from '../../../domain/value-objects/source';
-import { GroupMemberSourceId } from '../../../domain/value-objects/group-member-source-id';
 import { ParticipantId } from '../../../domain/value-objects/participant-id';
+import { MemberId } from '../../../domain/value-objects/member-id';
+import { GroupId } from '../../../domain/value-objects/group-id';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -21,7 +20,17 @@ type FindGroupMemberDtoTypes = {
     identifier: I;
     value: GroupMemberIdentifiers[I];
     source: Source;
+    // * Required as this is a nested entity
+    parentId: GroupId;
   };
+};
+
+/**
+ * A wrapper for the value, that will also include the parentId
+ */
+export type FindGroupMemberValue<I extends GroupMemberIdentifier> = {
+  value: GroupMemberIdentifiers[I];
+  parentId: GroupId;
 };
 
 /**
@@ -43,8 +52,7 @@ type FindGroupMemberDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindGroupMemberDtoParsers = {
-  idSourceValue: (dto) =>
-    parseExternalIdSourceValue(dto.value, GroupMemberSourceId, Source),
+  memberId: (dto) => MemberId.check(dto.value),
   participantId: (dto) => ParticipantId.check(dto.value),
 };
 
@@ -70,4 +78,7 @@ export type FindGroupMemberDto =
  */
 export const parseDto = <I extends GroupMemberIdentifier>(
   dto: FindGroupMemberDtoTypes[I]
-) => (parsers[dto.identifier] as FindGroupMemberDtoParser<I>)(dto);
+): FindGroupMemberValue<I> => ({
+  value: (parsers[dto.identifier] as FindGroupMemberDtoParser<I>)(dto),
+  parentId: GroupId.check(dto.parentId),
+});

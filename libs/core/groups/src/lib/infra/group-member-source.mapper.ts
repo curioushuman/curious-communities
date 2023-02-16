@@ -6,14 +6,11 @@ export class GroupMemberSourceMapper {
     groupMemberSource: GroupMemberSource
   ): GroupMemberSourceResponseDto {
     return GroupMemberSourceResponseDto.check({
-      id: groupMemberSource.id,
       source: groupMemberSource.source,
       groupId: groupMemberSource.groupId,
+      memberId: groupMemberSource.memberId,
+      memberEmail: groupMemberSource.memberEmail,
       status: groupMemberSource.status,
-
-      name: groupMemberSource.name,
-      email: groupMemberSource.email,
-      organisationName: groupMemberSource.organisationName,
     });
   }
 
@@ -21,13 +18,11 @@ export class GroupMemberSourceMapper {
     dto: GroupMemberSourceResponseDto
   ): GroupMemberSource {
     return GroupMemberSource.check({
-      id: dto.id,
+      source: dto.source,
       groupId: dto.groupId,
+      memberId: dto.memberId,
+      memberEmail: dto.memberEmail,
       status: dto.status,
-
-      name: dto.name,
-      email: dto.email,
-      organisationName: dto.organisationName,
     });
   }
 }

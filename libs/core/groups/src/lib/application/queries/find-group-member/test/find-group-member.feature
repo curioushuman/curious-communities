@@ -5,7 +5,7 @@ Feature: Find GroupMember
 #   When I attempt to find a groupMember
 #   Then a record should have been returned
 
-Scenario: Successfully finding a groupMember by Source Id
+Scenario: Successfully finding a groupMember by Member Id
   Given the request is valid
   When I attempt to find a groupMember
   Then a record should have been returned

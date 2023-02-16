@@ -60,10 +60,8 @@ export class UpsertCourseGroupMemberController {
     // #2. find group and groupMember
     // NOTE: These will error if they need to
     // specifically findGroup; inc. if no group
-    const [group, groupMember] = await Promise.all([
-      this.findGroup(validDto),
-      this.findGroupMember(validDto),
-    ]);
+    const group = await this.findGroup(validDto);
+    const groupMember = await this.findGroupMember(validDto, group);
 
     // #3. upsert group member
     const upsertTask = groupMember
@@ -172,14 +170,15 @@ export class UpsertCourseGroupMemberController {
   }
 
   private findGroupMember(
-    requestDto: UpsertCourseGroupMemberRequestDto
+    requestDto: UpsertCourseGroupMemberRequestDto,
+    group: CourseGroupBase
   ): Promise<CourseGroupMember | undefined> {
     const task = pipe(
       requestDto,
 
       // #1. transform dto
       parseActionData(
-        FindGroupMemberMapper.fromUpsertCourseGroupMemberRequestDto,
+        FindGroupMemberMapper.fromUpsertCourseGroupMemberRequestDto(group),
         this.logger,
         'SourceInvalidError'
       ),

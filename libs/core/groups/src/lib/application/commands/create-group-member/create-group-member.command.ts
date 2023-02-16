@@ -44,12 +44,16 @@ export class CreateGroupMemberHandler
     const task = pipe(
       createGroupMemberDto,
       // #1. validate the dto
-      parseData(CreateGroupMemberDto.check, this.logger, 'SourceInvalidError'),
+      parseData(
+        CreateGroupMemberDto.check,
+        this.logger,
+        'InternalRequestInvalidError'
+      ),
       // #2. transform the dto into a group
       parseActionData(
         CreateGroupMemberMapper.fromDto,
         this.logger,
-        'SourceInvalidError'
+        'InternalRequestInvalidError'
       ),
       // #3. save the group
       TE.chain((groupMember) =>

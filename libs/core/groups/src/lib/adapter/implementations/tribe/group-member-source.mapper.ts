@@ -5,25 +5,21 @@ import {
 import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
 import { Source } from '../../../domain/value-objects/source';
 import config from '../../../static/config';
-import {
-  TribeApiGroupMemberSource,
-  TribeApiGroupMemberSourceForCreate,
-} from './entities/group-member-source';
+import { TribeApiGroupMemberSourceForCreate } from './entities/group-member-source';
+import { TribeApiMemberSource } from './entities/member-source';
 
 export class TribeApiGroupMemberSourceMapper {
   public static toDomain(
-    sourceResponse: TribeApiGroupMemberSource,
+    sourceResponse: TribeApiMemberSource,
     source: Source,
     groupId: GroupSourceId
   ): GroupMemberSource {
     return GroupMemberSource.check({
-      id: sourceResponse.id,
-      groupId,
       source,
+      groupId,
+      memberId: sourceResponse.id,
+      memberEmail: sourceResponse.email,
       status: config.defaults.groupStatus,
-      name: sourceResponse.profile.name,
-      email: sourceResponse.email,
-      organisationName: 'Not provided',
     });
   }
 
@@ -34,7 +30,7 @@ export class TribeApiGroupMemberSourceMapper {
     domainEntity: GroupMemberSourceForCreate
   ): TribeApiGroupMemberSourceForCreate {
     const entity = {
-      user: domainEntity.id,
+      user: domainEntity.memberId,
     };
     return TribeApiGroupMemberSourceForCreate.check(entity);
   }

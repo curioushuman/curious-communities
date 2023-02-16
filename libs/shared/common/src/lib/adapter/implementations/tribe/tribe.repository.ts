@@ -287,15 +287,13 @@ export class TribeApiRepository<
    */
   tryCreateChild = (
     parentId: string,
-    entity: SourceTCreate,
-    processResult: TribeApiSaveOneProcessMethod<DomainT, SourceT>
-  ): TE.TaskEither<Error, DomainT> => {
+    entity: SourceTCreate
+  ): TE.TaskEither<Error, void> => {
     return TE.tryCatch(
       async () => {
         const uri = this.prepareMutateChildUri(parentId);
         const request$ = this.httpService.post<SourceT>(uri, entity);
-        const response = await firstValueFrom(request$);
-        return processResult(response.data);
+        await firstValueFrom(request$);
       },
       // NOTE: we don't use an error factory here, it is one level up
       (reason: TribeApiRepositoryError) => reason as Error

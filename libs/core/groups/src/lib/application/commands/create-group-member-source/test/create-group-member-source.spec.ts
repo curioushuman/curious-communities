@@ -96,7 +96,7 @@ defineFeature(feature, (test) => {
     });
 
     and('saved group member source is returned', () => {
-      expect(result.id).toBeDefined();
+      expect(result.memberId).toBeDefined();
     });
   });
 
@@ -104,7 +104,7 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request contains invalid data', () => {
-      const groupMember = GroupMemberBuilder().invalid().build();
+      const groupMember = GroupMemberBuilder().invalidOther().build();
       createGroupMemberSourceDto =
         GroupMemberSourceBuilder().buildCreateGroupMemberSourceDto(groupMember);
     });

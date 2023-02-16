@@ -1,4 +1,3 @@
-import { ExternalId } from '@curioushuman/common';
 import { CreateGroupMemberSourceDto } from '../../application/commands/create-group-member-source/create-group-member-source.dto';
 import { UpdateGroupMemberSourceDto } from '../../application/commands/update-group-member-source/update-group-member-source.dto';
 import { FindGroupMemberSourceDto } from '../../application/queries/find-group-member-source/find-group-member-source.dto';
@@ -8,11 +7,11 @@ import { GroupMemberSource } from '../../domain/entities/group-member-source';
 import { GroupMemberSourceStatus } from '../../domain/value-objects/group-member-source-status';
 import { GroupMemberResponseDto } from '../../infra/dto/group-member-response.dto';
 import { GroupMemberSourceResponseDto } from '../../infra/dto/group-member-source.response.dto';
-import { GroupMemberSourceMapper } from '../../infra/group-member-source.mapper';
 import { UpsertGroupMemberSourceRequestDto } from '../../infra/upsert-group-member-source/dto/upsert-group-member-source.request.dto';
 import config from '../../static/config';
 import { GroupMemberBuilder } from './group-member.builder';
 import { GroupSourceBuilder } from './group-source.builder';
+import { MemberBuilder } from './member.builder';
 
 /**
  * A builder for GroupMember Sources to play with in testing.
@@ -40,74 +39,66 @@ export const GroupMemberSourceBuilder = () => {
    * Default properties don't exist in source repository
    */
   const defaultProperties: GroupMemberSourceLooseMimic = {
-    id: '5008s1234519CjIPPU',
     source,
     groupId: '5008s1234519CjIAAU',
-
+    memberId: '5008s1234519CjIBB2',
+    memberEmail: 'james@brown.com',
     status: 'pending' as GroupMemberSourceStatus,
-    name: 'James Brown',
-    email: 'james@brown.com',
-    organisationName: 'James Co',
   };
   const overrides: GroupMemberSourceLooseMimic = {
-    id: defaultProperties.id,
     source: defaultProperties.source,
     groupId: defaultProperties.groupId,
-
+    memberId: defaultProperties.memberId,
+    memberEmail: defaultProperties.memberEmail,
     status: defaultProperties.status,
-    name: defaultProperties.name,
-    email: defaultProperties.email,
-    organisationName: defaultProperties.organisationName,
   };
 
   return {
     alpha() {
-      overrides.id = '5000K1234567GEYQA3';
-      overrides.name = 'Jim Brown';
+      overrides.memberId = '5000K1234567GEYQA3';
+      overrides.memberEmail = 'alpha@email.com';
       return this;
     },
 
     beta() {
-      overrides.id = '5008s000000y7LUAAY';
-      overrides.name = 'June Brown';
+      overrides.memberId = '5000K1234567GEYTE4';
+      overrides.memberEmail = 'beta@email.com';
       return this;
     },
 
     noMatchingSource() {
-      return this;
-    },
-
-    invalid() {
-      overrides.id = '';
-      return this;
-    },
-
-    invalidStatus() {
-      overrides.name = 'Jones Invalid';
-      overrides.status = 'this is invalid' as GroupMemberSourceStatus;
+      overrides.memberId = '5000K1234567GEYRE6';
+      overrides.memberEmail = 'nomatchy@email.com';
       return this;
     },
 
     exists() {
-      overrides.id = ExternalId.check('ThisSourceExists');
+      overrides.groupId = 'ThisSourceExists';
+      overrides.memberId = 'ThisSourceExists';
+      overrides.memberEmail = 'exists@email.com';
       return this;
     },
 
+    invalid() {
+      overrides.memberId = '';
+      overrides.memberEmail = '';
+      return this;
+    },
+
+    /**
+     * For this object we don't do updates
+     * It just returns the object
+     */
     updated() {
-      overrides.id = ExternalId.check('ThisSourceUsedForUpdating');
-      overrides.status = 'active' as GroupMemberSourceStatus;
-      return this;
-    },
-
-    updatedAlpha() {
-      overrides.id = ExternalId.check('ThisSourceUsedForUpdatingAlpha');
-      overrides.status = 'active' as GroupMemberSourceStatus;
+      overrides.memberId = 'ThisSourceExists';
+      overrides.memberId = 'ThisUsedForUpdating';
+      overrides.memberEmail = 'updated@email.com';
       return this;
     },
 
     doesntExist() {
-      overrides.id = ExternalId.check('DoesntExist');
-      overrides.email = 'doesnt@exist.com';
+      overrides.memberId = 'DoesntExist';
+      overrides.memberEmail = 'noexists@email.com';
       return this;
     },
 
@@ -123,18 +114,21 @@ export const GroupMemberSourceBuilder = () => {
     },
 
     buildGroupMemberSourceResponseDto(): GroupMemberSourceResponseDto {
-      const p = this.buildNoCheck();
-      return GroupMemberSourceMapper.toResponseDto(p);
+      const item = this.buildNoCheck();
+      return {
+        source: item.source,
+        groupId: item.groupId,
+        memberId: item.memberId,
+        memberEmail: item.memberEmail,
+        status: item.status,
+      } as GroupMemberSourceResponseDto;
     },
 
-    buildFindByIdSourceGroupMemberSourceDto(): FindGroupMemberSourceDto {
+    buildFindByMemberIdGroupMemberSourceDto(): FindGroupMemberSourceDto {
       const build = this.buildNoCheck();
       return {
-        identifier: 'idSource',
-        value: {
-          id: build.id,
-          source,
-        },
+        identifier: 'memberId',
+        value: build.memberId,
         source,
         parentId: build.groupId,
       } as FindGroupMemberSourceDto;
@@ -143,8 +137,8 @@ export const GroupMemberSourceBuilder = () => {
     buildFindByEmailGroupMemberSourceDto(): FindGroupMemberSourceDto {
       const build = this.buildNoCheck();
       return {
-        identifier: 'email',
-        value: build.email,
+        identifier: 'memberEmail',
+        value: build.memberEmail,
         source,
         parentId: build.groupId,
       } as FindGroupMemberSourceDto;
@@ -165,7 +159,9 @@ export const GroupMemberSourceBuilder = () => {
     buildCreateGroupMemberSourceDto(
       g?: GroupMember
     ): CreateGroupMemberSourceDto {
-      const groupMember = g || GroupMemberBuilder().noSourceExists().build();
+      const member = MemberBuilder().doesntExist().build();
+      const groupMember =
+        g || GroupMemberBuilder().noSourceExists().build(member);
       const groupSource = GroupSourceBuilder().exists().build();
       return {
         groupSource,

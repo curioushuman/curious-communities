@@ -62,7 +62,7 @@ defineFeature(feature, (test) => {
     );
   });
 
-  test('Successfully finding a groupMember source by Source Id', ({
+  test('Successfully finding a groupMember source by Member Id', ({
     given,
     and,
     when,
@@ -75,7 +75,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findGroupMemberSourceDto = GroupMemberSourceBuilder()
         .exists()
-        .buildFindByIdSourceGroupMemberSourceDto();
+        .buildFindByMemberIdGroupMemberSourceDto();
     });
 
     when('I attempt to find a groupMember source', async () => {
@@ -85,11 +85,11 @@ defineFeature(feature, (test) => {
     });
 
     and('a record should have been returned', () => {
-      expect(result.id).toBeDefined();
+      expect(result.memberId).toBeDefined();
     });
   });
 
-  test('Successfully finding a groupMember source by email', ({
+  test('Successfully finding a groupMember source by Member email', ({
     given,
     and,
     when,
@@ -112,7 +112,7 @@ defineFeature(feature, (test) => {
     });
 
     and('a record should have been returned', () => {
-      expect(result.id).toBeDefined();
+      expect(result.memberId).toBeDefined();
     });
   });
 
@@ -122,7 +122,7 @@ defineFeature(feature, (test) => {
     given('the request is valid', () => {
       findGroupMemberSourceDto = GroupMemberSourceBuilder()
         .doesntExist()
-        .buildFindByIdSourceGroupMemberSourceDto();
+        .buildFindByEmailGroupMemberSourceDto();
     });
 
     and('the groupMember source does NOT exist in the DB', () => {
@@ -150,7 +150,7 @@ defineFeature(feature, (test) => {
     given('the request contains invalid data', () => {
       findGroupMemberSourceDto = GroupMemberSourceBuilder()
         .invalid()
-        .buildFindByIdSourceGroupMemberSourceDto();
+        .buildFindByMemberIdGroupMemberSourceDto();
     });
 
     when('I attempt to find a groupMember source', async () => {

@@ -10,6 +10,7 @@ import {
   CourseGroupMemberBaseResponseDto,
   CourseGroupMemberResponseDto,
 } from './dto/course-group-member.response.dto';
+import { MemberMapper } from './member.mapper';
 import { StandardGroupMemberMapper } from './standard-group-member.mapper';
 
 export class CourseGroupMemberMapper {
@@ -20,6 +21,7 @@ export class CourseGroupMemberMapper {
     return {
       ...base,
       group: CourseGroupMapper.toBaseResponseDto(groupMember.group),
+      member: MemberMapper.toResponseDto(groupMember.member),
     };
   }
 
@@ -42,6 +44,7 @@ export class CourseGroupMemberMapper {
     return {
       ...base,
       group: CourseGroupMapper.fromResponseDtoToBase(dto.group),
+      member: MemberMapper.fromResponseDto(dto.member),
     };
   }
 

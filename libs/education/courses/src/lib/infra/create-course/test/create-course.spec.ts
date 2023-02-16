@@ -206,7 +206,7 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a undefined as a result', () => {
+    then('I should receive undefined as a result', () => {
       expect(error).toBeUndefined();
       expect(result).toBeUndefined();
     });

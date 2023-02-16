@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EdAppApiRepositoryError } from './repository.error-factory.types';
+import { EdAppApiRepositoryError } from './__types__';
 import { BasicRepositoryErrorFactory } from '../common/repository.error-factory';
 
 /**

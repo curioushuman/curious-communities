@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Auth0ApiRepositoryError } from './repository.error-factory.types';
 import { BasicRepositoryErrorFactory } from '../common/repository.error-factory';
+import { Auth0ApiRepositoryError } from './__types__';
 
 /**
  * Factory to interpret and produce consistent errors from Auth0.

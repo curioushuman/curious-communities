@@ -1,7 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber';
 
 import { LoggableLogger } from '@curioushuman/loggable';
-import { DynamoDbRepository } from '../dynamodb.repository';
+import { DynamoDbRepository } from '../repository';
 
 type TestEntity = {
   id: string;

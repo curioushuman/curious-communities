@@ -9,10 +9,7 @@ import { RepositoryAuthenticationError } from '@curioushuman/error-factory';
 import { executeTask, logAction } from '@curioushuman/fp-ts-utils';
 import { TribeApiRepositoryErrorFactory } from './repository.error-factory';
 import { confirmEnvVars } from '../../../utils/functions';
-import {
-  TribeApiAuthResponse,
-  TribeApiAuthResponseAxios,
-} from './types/auth-response';
+import { TribeApiAuthResponse, TribeApiAuthResponseAxios } from './__types__';
 import { URLSearchParams } from 'url';
 
 /**

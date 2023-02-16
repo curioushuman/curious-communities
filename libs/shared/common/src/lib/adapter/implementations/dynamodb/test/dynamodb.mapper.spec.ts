@@ -1,7 +1,7 @@
 import { SourceInvalidError } from '@curioushuman/error-factory';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 
-import { DynamoDbMapper } from '../dynamodb.mapper';
+import { DynamoDbMapper } from '../mapper';
 import { TestSourceIdSource } from './value-objects//test-source-id-source';
 
 type TestItem = {

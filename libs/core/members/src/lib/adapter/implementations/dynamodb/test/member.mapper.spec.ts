@@ -32,6 +32,7 @@ defineFeature(feature, (test) => {
     validPersistenceItem = {
       primaryKey: member.id,
       sortKey: member.id,
+      Member_Id: member.id,
       Member_SourceIdCRM: 'CRM#crm.id',
       Member_SourceIdAUTH: 'AUTH#auth.id',
       Member_SourceIdCOMMUNITY: 'COMMUNITY#community.id',
@@ -70,18 +71,16 @@ defineFeature(feature, (test) => {
     validPersistenceKeys = {
       primaryKey: validPersistenceItem.primaryKey,
       sortKey: validPersistenceItem.sortKey,
-      Sk_Member_Email: validPersistenceItem.Member_Email as string,
-      Sk_Member_SourceIdCRM: validPersistenceItem.Member_SourceIdCRM as string,
-      Sk_Member_SourceIdAUTH:
-        validPersistenceItem.Member_SourceIdAUTH as string,
-      Sk_Member_SourceIdCOMMUNITY:
-        validPersistenceItem.Member_SourceIdCOMMUNITY as string,
-      'Sk_Member_SourceIdMICRO-COURSE': validPersistenceItem[
-        'Member_SourceIdMICRO-COURSE'
-      ] as string,
+      Sk_Member_Email: validPersistenceItem.primaryKey as string,
+      Sk_Member_SourceIdCRM: validPersistenceItem.primaryKey as string,
+      Sk_Member_SourceIdAUTH: validPersistenceItem.primaryKey as string,
+      Sk_Member_SourceIdCOMMUNITY: validPersistenceItem.primaryKey as string,
+      'Sk_Member_SourceIdMICRO-COURSE':
+        validPersistenceItem.primaryKey as string,
     };
 
     validPersistenceAttributes = {
+      Member_Id: validPersistenceItem.Member_Id as string,
       Member_Status: validPersistenceItem.Member_Status as string,
       Member_Name: validPersistenceItem.Member_Name as string,
       Member_Email: validPersistenceItem.Member_Email as string,

@@ -6,11 +6,11 @@ Scenario: Successfully find one group source by id
   When I request the source by ID
   Then a source corresponding to that ID should be returned
 
-Scenario: Successfully find one group source by email
+Scenario: Successfully find one group source by name
   Given I am authorised to access the source
   And a matching record exists at the source
-  When I request the source by email
-  Then a source corresponding to that email should be returned
+  When I request the source by name
+  Then a source corresponding to that name should be returned
 
 # Scenario: Fail; Unable to authenticate with source repository
 # Handled in authenticate.feature

@@ -99,7 +99,7 @@ export const MemberSourceBuilder = () => {
     exists() {
       overrides.id = ExternalId.check('ThisSourceExists');
       overrides.name = 'Jade Green';
-      overrides.email = 'jade@green.com';
+      overrides.email = 'exists@email.com';
       return this;
     },
 
@@ -228,7 +228,7 @@ export const MemberSourceBuilder = () => {
     buildUpdateByEmailUpsertMemberSourceRequestDto(): UpsertMemberSourceRequestDto {
       const member = MemberBuilder().existsByEmail().buildMemberResponseDto();
       member.sourceIds = [];
-      member.email = 'exists@byemail.com';
+      member.email = 'exists@email.com';
       return {
         source,
         member,

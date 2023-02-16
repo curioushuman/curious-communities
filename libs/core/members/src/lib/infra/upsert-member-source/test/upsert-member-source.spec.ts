@@ -177,8 +177,9 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request is valid', () => {
-      upsertMemberSourceDto =
-        MemberSourceBuilder().buildUpdateByEmailUpsertMemberSourceRequestDto();
+      upsertMemberSourceDto = MemberSourceBuilder()
+        .exists()
+        .buildUpdateByEmailUpsertMemberSourceRequestDto();
     });
 
     and('a matching record is found at the source', async () => {

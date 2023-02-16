@@ -1,4 +1,5 @@
-import { Array, Record, Static, String } from 'runtypes';
+import { Record, Static, String } from 'runtypes';
+import { MemberDto } from './member.dto';
 import { StandardGroupBaseResponseDto } from './standard-group.response.dto';
 
 /**
@@ -12,10 +13,6 @@ export const StandardGroupMemberBaseResponseDto = Record({
   memberId: String,
   groupId: String,
   status: String,
-  sourceIds: Array(String),
-  name: String,
-  email: String,
-  organisationName: String,
   accountOwner: String,
 });
 
@@ -39,6 +36,7 @@ export type StandardGroupMemberBaseResponseDto = Static<
 export const StandardGroupMemberResponseDto =
   StandardGroupMemberBaseResponseDto.extend({
     group: StandardGroupBaseResponseDto,
+    member: MemberDto,
   });
 
 /**

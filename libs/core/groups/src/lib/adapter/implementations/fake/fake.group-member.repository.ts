@@ -13,108 +13,80 @@ import {
   GroupMemberRepository,
 } from '../../ports/group-member.repository';
 import { GroupMemberBuilder } from '../../../test/builders/group-member.builder';
-import { GroupMemberSourceIdSourceValue } from '../../../domain/value-objects/group-member-source-id-source';
-import { prepareExternalIdSource } from '@curioushuman/common';
-import { Source } from '../../../domain/value-objects/source';
-import { GroupMemberSourceId } from '../../../domain/value-objects/group-member-source-id';
 import { GroupMemberStatus } from '../../../domain/value-objects/group-member-status';
 import { ParticipantId } from '../../../domain/value-objects/participant-id';
 import { CourseGroupMember } from '../../../domain/entities/course-group-member';
-import { GroupMemberName } from '../../../domain/value-objects/group-member-name';
+import { MemberId } from '../../../domain/value-objects/member-id';
+import { GroupId } from '../../../domain/value-objects/group-id';
+import { MemberBuilder } from '../../../test/builders/member.builder';
 
 @Injectable()
 export class FakeGroupMemberRepository implements GroupMemberRepository {
   private groupMembers: GroupMember[] = [];
 
-  private renameGroupMember<T extends GroupMember | GroupMemberBase>(
+  private restatusGroupMember<T extends GroupMember | GroupMemberBase>(
     groupMember: T
   ): T {
-    groupMember.name = 'Bland base name' as GroupMemberName;
+    groupMember.status = 'pending' as GroupMemberStatus;
     return groupMember;
   }
 
   constructor() {
-    this.groupMembers.push(GroupMemberBuilder().exists().buildNoCheck());
+    const memberExists = MemberBuilder().exists().build();
+    const memberUpdated = MemberBuilder().updated().build();
     this.groupMembers.push(
-      this.renameGroupMember(GroupMemberBuilder().updated().buildNoCheck())
+      GroupMemberBuilder().exists().buildNoCheck(memberExists)
     );
     this.groupMembers.push(
-      this.renameGroupMember(GroupMemberBuilder().updatedAlpha().buildNoCheck())
+      GroupMemberBuilder()
+        .existsAlpha()
+        .buildCourseGroupMemberNoCheck(memberExists)
     );
     this.groupMembers.push(
-      this.renameGroupMember(
-        GroupMemberBuilder().updatedCourse().buildCourseGroupMemberNoCheck()
+      this.restatusGroupMember(
+        GroupMemberBuilder().updated().buildNoCheck(memberUpdated)
       )
     );
     this.groupMembers.push(
-      this.renameGroupMember(
+      this.restatusGroupMember(
+        GroupMemberBuilder().updatedAlpha().buildNoCheck(memberUpdated)
+      )
+    );
+    this.groupMembers.push(
+      this.restatusGroupMember(
+        GroupMemberBuilder()
+          .updatedCourse()
+          .buildCourseGroupMemberNoCheck(memberUpdated)
+      )
+    );
+    this.groupMembers.push(
+      this.restatusGroupMember(
         GroupMemberBuilder()
           .updatedCourseAlpha()
-          .buildCourseGroupMemberNoCheck()
+          .buildCourseGroupMemberNoCheck(memberUpdated)
       )
-    );
-    this.groupMembers.push(
-      GroupMemberBuilder().existsAlpha().buildCourseGroupMemberNoCheck()
     );
     const invalidSource = GroupMemberBuilder().invalidOther().buildNoCheck();
     invalidSource.status = 'pending' as GroupMemberStatus;
     this.groupMembers.push(invalidSource);
-    // console.log(this.groupMembers);
+    console.log(this.groupMembers);
   }
 
   /**
-   * Find by internal ID
+   * Find by member ID
    *
    * ? Should the value check be extracted into it's own (functional) step?
    */
-  // findOneById = (value: GroupMemberId): TE.TaskEither<Error, GroupMember> => {
-  //   return TE.tryCatch(
-  //     async () => {
-  //       const id = GroupMemberId.check(value);
-  //       const groupMember = this.groupMembers.find((cs) => cs.id === id);
-  //       return pipe(
-  //         groupMember,
-  //         O.fromNullable,
-  //         O.fold(
-  //           () => {
-  //             // this mimics an API or DB call throwing an error
-  //             throw new NotFoundException(
-  //               `GroupMember with id ${id} not found`
-  //             );
-  //           },
-  //           // this mimics the fact that all non-fake adapters
-  //           // will come with a mapper, which will perform a check
-  //           // prior to return
-  //           (groupMember) => groupMember
-  //         )
-  //       );
-  //     },
-  //     (reason: unknown) => reason as Error
-  //   );
-  // };
-
-  /**
-   * Find by ID from a particular source
-   *
-   * ? Should the value check be extracted into it's own (functional) step?
-   */
-  findOneByIdSourceValue = (
-    value: GroupMemberSourceIdSourceValue
-  ): TE.TaskEither<Error, GroupMember> => {
+  findOneByMemberId = (props: {
+    value: MemberId;
+    parentId: GroupId;
+  }): TE.TaskEither<Error, GroupMember> => {
     return TE.tryCatch(
       async () => {
-        const idSourceValue = GroupMemberSourceIdSourceValue.check(value);
-        const idSource = prepareExternalIdSource(
-          idSourceValue,
-          GroupMemberSourceId,
-          Source
+        const memberId = MemberId.check(props.value);
+        const groupMember = this.groupMembers.find(
+          (gm) => gm.groupId === props.parentId && gm.member.id === memberId
         );
-        const groupMember = this.groupMembers.find((cs) => {
-          const matches = cs.sourceIds.filter(
-            (sId) => sId.id === idSource.id && sId.source === idSource.source
-          );
-          return matches.length > 0;
-        });
         return pipe(
           groupMember,
           O.fromNullable,
@@ -122,7 +94,7 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
             () => {
               // this mimics an API or DB call throwing an error
               throw new NotFoundException(
-                `GroupMember with idSource ${idSourceValue} not found`
+                `GroupMember with memberId ${memberId} not found`
               );
             },
             // this mimics the fact that all non-fake adapters
@@ -141,13 +113,18 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
    *
    * ? Should the value check be extracted into it's own (functional) step?
    */
-  findOneByParticipantId = (
-    value: ParticipantId
-  ): TE.TaskEither<Error, CourseGroupMember> => {
+  findOneByParticipantId = (props: {
+    value: ParticipantId;
+    parentId: GroupId;
+  }): TE.TaskEither<Error, CourseGroupMember> => {
     return TE.tryCatch(
       async () => {
+        const participantId = ParticipantId.check(props.value);
         const groupMember = this.groupMembers.find(
-          (gm) => 'participantId' in gm && gm.participantId === value
+          (gm) =>
+            gm.group.id === props.parentId &&
+            'participantId' in gm &&
+            gm.participantId === participantId
         );
         return pipe(
           groupMember,
@@ -156,7 +133,7 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
             () => {
               // this mimics an API or DB call throwing an error
               throw new NotFoundException(
-                `GroupMember with participantId ${value} not found`
+                `GroupMember with participantId ${participantId} not found`
               );
             },
             // if it has a participantId, it's a CourseGroupMember
@@ -173,7 +150,7 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
    */
   findOneBy: Record<GroupMemberIdentifier, GroupMemberFindMethod> = {
     // id: this.findOneById,
-    idSourceValue: this.findOneByIdSourceValue,
+    memberId: this.findOneByMemberId,
     participantId: this.findOneByParticipantId,
   };
 

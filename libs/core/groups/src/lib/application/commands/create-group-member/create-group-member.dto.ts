@@ -1,7 +1,7 @@
 import { Null, Optional, Record, Static } from 'runtypes';
 import { GroupBase } from '../../../domain/entities/group';
 import { GroupMemberSource } from '../../../domain/entities/group-member-source';
-import { ParticipantDto } from '../../../domain/entities/participant.dto';
+import { ParticipantDto } from '../../../infra/dto/participant.dto';
 
 /**
  * This is the form of data our repository will expect for the command

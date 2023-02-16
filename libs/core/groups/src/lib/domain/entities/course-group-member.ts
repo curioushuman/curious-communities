@@ -7,6 +7,7 @@ import {
   StandardGroupMemberBase,
   StandardGroupMemberIdentifiers,
 } from './standard-group-member';
+import { Member } from './member';
 
 /**
  * Course group entity
@@ -30,8 +31,8 @@ export type CourseGroupMemberBase = Static<typeof CourseGroupMemberBase>;
  */
 export const CourseGroupMember = CourseGroupMemberBase.extend({
   group: CourseGroupBase,
-
-  // we could include things like open and close dates here
+  // we could also include things like open and close dates here
+  member: Member,
 });
 
 /**

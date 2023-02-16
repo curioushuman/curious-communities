@@ -7,8 +7,9 @@ import {
 import { isCourseGroupBase } from '../../../domain/entities/group';
 import { GroupMember } from '../../../domain/entities/group-member';
 import { GroupMemberSource } from '../../../domain/entities/group-member-source';
-import { ParticipantDto } from '../../../domain/entities/participant.dto';
 import { StandardGroupMember } from '../../../domain/entities/standard-group-member';
+import { ParticipantDto } from '../../../infra/dto/participant.dto';
+import { MemberMapper } from '../../../infra/member.mapper';
 import { UpsertCourseGroupMemberRequestDto } from '../../../infra/upsert-course-group-member/dto/upsert-course-group-member.request.dto';
 import { UpdateGroupMemberDto } from './update-group-member.dto';
 
@@ -49,14 +50,12 @@ export class UpdateGroupMemberMapper extends UpdateMapper {
 
       // TODO: mapping of participant status to GM statuses
       status: participant.status,
-
-      name: participant.name,
-      email: participant.email,
-      organisationName: participant.organisationName,
     });
+    const member = MemberMapper.fromResponseDto(participant.member);
     return {
       ...updatedGroupMemberBase,
       group,
+      member,
     };
   }
 
@@ -73,9 +72,6 @@ export class UpdateGroupMemberMapper extends UpdateMapper {
       ...groupMember,
       id: groupMember.id,
       status: source.status,
-      name: source.name,
-      email: source.email,
-      organisationName: source.organisationName,
     });
   }
 }

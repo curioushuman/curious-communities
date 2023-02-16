@@ -4,7 +4,6 @@ import {
   StandardGroupMemberBaseResponseDto,
   StandardGroupMemberResponseDto,
 } from './dto/standard-group-member.response.dto';
-import { prepareGroupMemberExternalIdSource } from '../domain/entities/group-member';
 import { GroupMemberSourceIdSource } from '../domain/value-objects/group-member-source-id-source';
 import { StandardGroupMapper } from './standard-group.mapper';
 import {
@@ -12,6 +11,7 @@ import {
   StandardGroupMemberBase,
 } from '../domain/entities/standard-group-member';
 import config from '../static/config';
+import { MemberMapper } from './member.mapper';
 
 export class StandardGroupMemberMapper {
   public static toResponseDtoIdSource(idSource: GroupMemberSourceIdSource) {
@@ -26,6 +26,7 @@ export class StandardGroupMemberMapper {
     const dto = {
       ...baseDto,
       group: StandardGroupMapper.toBaseResponseDto(groupMember.group),
+      member: MemberMapper.toResponseDto(groupMember.member),
     };
     return dto;
   }
@@ -39,14 +40,6 @@ export class StandardGroupMemberMapper {
       memberId: groupMember.memberId,
       groupId: groupMember.groupId,
       status: groupMember.status,
-
-      sourceIds: groupMember.sourceIds.map(
-        StandardGroupMemberMapper.toResponseDtoIdSource
-      ),
-
-      name: groupMember.name,
-      email: groupMember.email,
-      organisationName: groupMember.organisationName,
 
       accountOwner: groupMember.accountOwner,
     };
@@ -62,6 +55,7 @@ export class StandardGroupMemberMapper {
     return {
       ...base,
       group: StandardGroupMapper.fromResponseDtoToBase(dto.group),
+      member: MemberMapper.fromResponseDto(dto.member),
     };
   }
 
@@ -74,13 +68,6 @@ export class StandardGroupMemberMapper {
       status: dto.status,
       memberId: dto.memberId,
       groupId: dto.groupId,
-
-      sourceIds: dto.sourceIds.map(prepareGroupMemberExternalIdSource),
-
-      name: dto.name,
-      email: dto.email,
-      organisationName: dto.organisationName,
-
       accountOwner: dto.accountOwner,
     };
     return StandardGroupMemberBase.check(groupMember);

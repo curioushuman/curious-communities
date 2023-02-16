@@ -5,12 +5,11 @@ import { pipe } from 'fp-ts/lib/function';
 
 import { LoggableLogger } from '@curioushuman/loggable';
 import {
-  confirmSourceId,
   SourceRepository,
   TribeApiRepositoryProps,
   TribeApiRepository,
-  TribeApiSaveOneProcessMethod,
 } from '@curioushuman/common';
+import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 
 import {
   GroupMemberSource,
@@ -27,11 +26,11 @@ import {
 } from './entities/group-member-source';
 import { TribeApiGroupMemberSourceMapper } from './group-member-source.mapper';
 import { Source } from '../../../domain/value-objects/source';
-import { GroupMemberSourceIdSource } from '../../../domain/value-objects/group-member-source-id-source';
 import { GroupMemberSourceId } from '../../../domain/value-objects/group-member-source-id';
 import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
-import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
-import { GroupMemberEmail } from '../../../domain/value-objects/group-member-email';
+import { MemberEmail } from '../../../domain/value-objects/member-email';
+import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
+import { TribeApiMemberSource } from './entities/member-source';
 
 /**
  * Repository for GroupMemberSource at Tribe
@@ -42,7 +41,7 @@ export class TribeApiGroupMemberSourceRepository
 {
   private tribeApiRepository: TribeApiRepository<
     GroupMemberSource,
-    TribeApiGroupMemberSource,
+    TribeApiMemberSource,
     TribeApiGroupMemberSourceForCreate
   >;
 
@@ -69,10 +68,10 @@ export class TribeApiGroupMemberSourceRepository
 
   processFindAll =
     (source: Source, parentId: GroupSourceId) =>
-    (item: TribeApiGroupMemberSource): GroupMemberSource => {
+    (item: TribeApiMemberSource): GroupMemberSource => {
       // is it what we expected?
       // will throw error if not
-      const groupItem = TribeApiGroupMemberSource.check(item);
+      const groupItem = TribeApiMemberSource.check(item);
 
       // NOTE: if the response was invalid, an error would have been thrown
       // could this similarly be in a serialisation decorator?
@@ -85,7 +84,7 @@ export class TribeApiGroupMemberSourceRepository
 
   private findOneChild(
     field: keyof GroupMemberSource,
-    value: GroupMemberSourceId | GroupMemberEmail
+    value: GroupMemberSourceId | MemberEmail
   ): (
     children: GroupMemberSource[]
   ) => TE.TaskEither<Error, GroupMemberSource> {
@@ -105,17 +104,12 @@ export class TribeApiGroupMemberSourceRepository
   /**
    * TODO
    * - [ ] support paging
-   * - [ ] remove the type casting on the id
    */
-  findOneByIdSource = (props: {
-    value: GroupMemberSourceIdSource;
+  findOneByMemberId = (props: {
+    value: MemberSourceId;
     parentId: GroupSourceId;
   }): TE.TaskEither<Error, GroupMemberSource> => {
-    // NOTE: this will throw an error if the value is invalid
-    const id = confirmSourceId<GroupMemberSourceIdSource>(
-      GroupMemberSourceIdSource.check(props.value),
-      this.SOURCE
-    );
+    const memberId = MemberSourceId.check(props.value);
     const parentId = GroupSourceId.check(props.parentId);
     return pipe(
       this.tribeApiRepository.tryFindAllChildren(
@@ -123,8 +117,7 @@ export class TribeApiGroupMemberSourceRepository
         this.processFindAll(this.SOURCE, parentId),
         { limit: 1000 }
       ),
-      // NOTE: this shouldn't need a type cast...
-      TE.chain(this.findOneChild('id', id as GroupMemberSourceId))
+      TE.chain(this.findOneChild('memberId', memberId))
     );
   };
 
@@ -132,11 +125,11 @@ export class TribeApiGroupMemberSourceRepository
    * TODO
    * - [ ] support paging
    */
-  findOneByEmail = (props: {
-    value: GroupMemberEmail;
+  findOneByMemberEmail = (props: {
+    value: MemberEmail;
     parentId: GroupSourceId;
   }): TE.TaskEither<Error, GroupMemberSource> => {
-    const email = GroupMemberEmail.check(props.value);
+    const memberEmail = MemberEmail.check(props.value);
     const parentId = GroupSourceId.check(props.parentId);
     return pipe(
       this.tribeApiRepository.tryFindAllChildren(
@@ -144,7 +137,7 @@ export class TribeApiGroupMemberSourceRepository
         this.processFindAll(this.SOURCE, parentId),
         { limit: 1000 }
       ),
-      TE.chain(this.findOneChild('email', email))
+      TE.chain(this.findOneChild('memberEmail', memberEmail))
     );
   };
 
@@ -153,8 +146,8 @@ export class TribeApiGroupMemberSourceRepository
    */
   findOneBy: Record<GroupMemberSourceIdentifier, GroupMemberSourceFindMethod> =
     {
-      idSource: this.findOneByIdSource,
-      email: this.findOneByEmail,
+      memberId: this.findOneByMemberId,
+      memberEmail: this.findOneByMemberEmail,
     };
 
   findOne = (
@@ -164,60 +157,40 @@ export class TribeApiGroupMemberSourceRepository
   };
 
   /**
-   * This function is handed to the repository to process the response
-   */
-  processSaveOne =
-    (
-      source: Source,
-      parentId: GroupSourceId
-    ): TribeApiSaveOneProcessMethod<
-      GroupMemberSource,
-      TribeApiGroupMemberSource
-    > =>
-    (item) => {
-      return TribeApiGroupMemberSourceMapper.toDomain(item, source, parentId);
-    };
-
-  /**
    * Create a record
+   *
+   * NOTE: tryCreateChild returns void
    */
-  create = (props: {
-    groupMember: GroupMemberSourceForCreate;
-    parentId: GroupSourceId;
-  }): TE.TaskEither<Error, GroupMemberSource> => {
+  create = (
+    groupMember: GroupMemberSourceForCreate
+  ): TE.TaskEither<Error, GroupMemberSource> => {
     // NOTE: this will throw an error if the value is invalid
-    const entity = TribeApiGroupMemberSourceMapper.toSourceForCreate(
-      props.groupMember
-    );
-    return this.tribeApiRepository.tryCreateChild(
-      props.parentId,
-      entity,
-      this.processSaveOne(this.SOURCE, props.parentId)
+    const entity =
+      TribeApiGroupMemberSourceMapper.toSourceForCreate(groupMember);
+    return pipe(
+      this.tribeApiRepository.tryCreateChild(groupMember.groupId, entity),
+      TE.chain(() => TE.right(groupMember))
     );
   };
 
   /**
    * Update a record
    *
-   * NOTE: there is no update for this repository
+   * NOTE: there is no update for this repository for this object
    */
-  update = (props: {
-    groupMember: GroupMemberSource;
-    parentId: GroupSourceId;
-  }): TE.TaskEither<Error, GroupMemberSource> => {
-    return TE.right(props.groupMember);
+  update = (
+    groupMember: GroupMemberSource
+  ): TE.TaskEither<Error, GroupMemberSource> => {
+    return TE.right(groupMember);
   };
 
   /**
    * Delete a record
    */
-  delete = (props: {
-    groupMember: GroupMemberSource;
-    parentId: GroupSourceId;
-  }): TE.TaskEither<Error, void> => {
+  delete = (groupMember: GroupMemberSource): TE.TaskEither<Error, void> => {
     return this.tribeApiRepository.tryDeleteChild(
-      props.parentId,
-      props.groupMember.id
+      groupMember.groupId,
+      groupMember.memberId
     );
   };
 }

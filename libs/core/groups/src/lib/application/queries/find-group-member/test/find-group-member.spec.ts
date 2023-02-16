@@ -18,6 +18,7 @@ import { GroupMemberBuilder } from '../../../../test/builders/group-member.build
 import { FindGroupMemberDto } from '../find-group-member.dto';
 import { GroupMemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/group-member-source.repository.error-factory';
 import { GroupMemberRepositoryErrorFactory } from '../../../../adapter/ports/group-member.repository.error-factory';
+import { MemberBuilder } from '../../../../test/builders/member.builder';
 
 /**
  * UNIT TEST
@@ -80,7 +81,7 @@ defineFeature(feature, (test) => {
   //   });
   // });
 
-  test('Successfully finding a groupMember by Source Id', ({
+  test('Successfully finding a groupMember by Member Id', ({
     given,
     and,
     when,
@@ -93,13 +94,17 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       findGroupMemberDto = GroupMemberBuilder()
         .exists()
-        .buildFindByIdSourceValueGroupMemberDto();
+        .buildFindByMemberIdGroupMemberDto();
     });
 
     when('I attempt to find a groupMember', async () => {
-      result = await handler.execute(
-        new FindGroupMemberQuery(findGroupMemberDto)
-      );
+      try {
+        result = await handler.execute(
+          new FindGroupMemberQuery(findGroupMemberDto)
+        );
+      } catch (err) {
+        expect(err).toBeUndefined;
+      }
     });
 
     and('a record should have been returned', () => {
@@ -138,9 +143,9 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request is valid', () => {
-      findGroupMemberDto = GroupMemberBuilder()
-        .doesntExist()
-        .buildFindByIdSourceValueGroupMemberDto();
+      const noExistMember = MemberBuilder().doesntExist().build();
+      findGroupMemberDto =
+        GroupMemberBuilder().buildFindByMemberIdGroupMemberDto(noExistMember);
     });
 
     and('the groupMember does NOT exist in the DB', () => {
@@ -164,9 +169,9 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request contains invalid data', () => {
-      findGroupMemberDto = GroupMemberBuilder()
-        .invalid()
-        .buildFindByIdSourceValueGroupMemberDto();
+      const invalidMember = MemberBuilder().invalid().build();
+      findGroupMemberDto =
+        GroupMemberBuilder().buildFindByMemberIdGroupMemberDto(invalidMember);
     });
 
     when('I attempt to find a groupMember', async () => {

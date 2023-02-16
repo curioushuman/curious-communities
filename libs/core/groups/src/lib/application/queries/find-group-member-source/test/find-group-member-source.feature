@@ -1,11 +1,11 @@
 Feature: Find GroupMember Source
 
-Scenario: Successfully finding a groupMember source by Source Id
+Scenario: Successfully finding a groupMember source by Member Id
   Given the request is valid
   When I attempt to find a groupMember source
   Then a record should have been returned
 
-Scenario: Successfully finding a groupMember source by email
+Scenario: Successfully finding a groupMember source by Member email
   Given the request is valid
   When I attempt to find a groupMember source
   Then a record should have been returned

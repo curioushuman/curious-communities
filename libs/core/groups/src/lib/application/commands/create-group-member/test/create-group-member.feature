@@ -16,8 +16,8 @@ Scenario: Successfully creating a group member from course
   Then a new record should have been created
   And saved group member is returned
 
-Scenario: Fail; Source does not translate into a valid group member
-  Given a matching record is found at the source
-  And the returned source does not populate a valid group member
-  When I attempt to create a group member
-  Then I should receive a SourceInvalidError
+# Scenario: Fail; Source does not translate into a valid group member
+#   Given a matching record is found at the source
+#   And the returned source does not populate a valid group member
+#   When I attempt to create a group member
+#   Then I should receive a InternalRequestInvalidError

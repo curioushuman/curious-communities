@@ -10,9 +10,9 @@ import {
   GroupMemberSourceIdentifier,
   GroupMemberSourceIdentifiers,
 } from '../../domain/entities/group-member-source';
-import { GroupMemberEmail } from '../../domain/value-objects/group-member-email';
-import { GroupMemberSourceIdSource } from '../../domain/value-objects/group-member-source-id-source';
 import { GroupSourceId } from '../../domain/value-objects/group-source-id';
+import { MemberEmail } from '../../domain/value-objects/member-email';
+import { MemberSourceId } from '../../domain/value-objects/member-source-id';
 
 /**
  * Type for the findOne method interface within repository
@@ -48,8 +48,8 @@ export abstract class GroupMemberSourceRepositoryRead
    * NOTES
    * - will throw NotFoundException if not found
    */
-  abstract findOneByIdSource(props: {
-    value: GroupMemberSourceIdSource;
+  abstract findOneByMemberId(props: {
+    value: MemberSourceId;
     parentId: GroupSourceId;
   }): TaskEither<Error, GroupMemberSource>;
 
@@ -59,8 +59,8 @@ export abstract class GroupMemberSourceRepositoryRead
    * NOTES
    * - will throw NotFoundException if not found
    */
-  abstract findOneByEmail(props: {
-    value: GroupMemberEmail;
+  abstract findOneByMemberEmail(props: {
+    value: MemberEmail;
     parentId: GroupSourceId;
   }): TaskEither<Error, GroupMemberSource>;
 }
@@ -69,16 +69,14 @@ export abstract class GroupMemberSourceRepositoryReadWrite extends GroupMemberSo
   /**
    * Create/update a group
    */
-  abstract create(props: {
-    groupMember: GroupMemberSourceForCreate;
-    parentId: GroupSourceId;
-  }): TaskEither<Error, GroupMemberSource>;
+  abstract create(
+    groupMember: GroupMemberSourceForCreate
+  ): TaskEither<Error, GroupMemberSource>;
 
   /**
    * Create/update a group
    */
-  abstract update(props: {
-    groupMember: GroupMemberSource;
-    parentId: GroupSourceId;
-  }): TaskEither<Error, GroupMemberSource>;
+  abstract update(
+    groupMember: GroupMemberSource
+  ): TaskEither<Error, GroupMemberSource>;
 }

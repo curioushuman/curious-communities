@@ -2,7 +2,7 @@ import { UpdateMapper } from '@curioushuman/common';
 import { Group, GroupBase } from '../../../domain/entities/group';
 import { GroupSource } from '../../../domain/entities/group-source';
 import { createGroupSlug } from '../../../domain/value-objects/group-slug';
-import { CourseDto } from '../../../domain/entities/course.dto';
+import { CourseDto } from '../../../infra/dto/course.dto';
 import { UpsertCourseGroupRequestDto } from '../../../infra/upsert-course-group/dto/upsert-course-group.request.dto';
 import { UpdateGroupDto } from './update-group.dto';
 import { CourseGroupBase } from '../../../domain/entities/course-group';

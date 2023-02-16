@@ -1,14 +1,8 @@
-import { Record, Static, String } from 'runtypes';
-import { GroupMemberEmail } from '../../../../domain/value-objects/group-member-email';
-import { GroupMemberName } from '../../../../domain/value-objects/group-member-name';
+import { Record, Static } from 'runtypes';
 import { GroupMemberSourceId } from '../../../../domain/value-objects/group-member-source-id';
-
-/**
- * Some personal info stored in a sub-object
- */
-export const TribeApiGroupMemberSourceProfile = Record({
-  name: GroupMemberName,
-});
+import { GroupSourceId } from '../../../../domain/value-objects/group-source-id';
+import { MemberEmail } from '../../../../domain/value-objects/member-email';
+import { MemberSourceId } from '../../../../domain/value-objects/member-source-id';
 
 /**
  * This represents data we expect from Tribe
@@ -16,9 +10,9 @@ export const TribeApiGroupMemberSourceProfile = Record({
  * - Tribe generally loves to return them as Null
  */
 export const TribeApiGroupMemberSource = Record({
-  id: GroupMemberSourceId,
-  email: GroupMemberEmail,
-  profile: TribeApiGroupMemberSourceProfile,
+  groupId: GroupSourceId,
+  memberId: MemberSourceId,
+  memberEmail: MemberEmail,
 });
 
 export type TribeApiGroupMemberSource = Static<

@@ -2,7 +2,7 @@ import { Static, String } from 'runtypes';
 import config from '../../static/config';
 import { CourseGroupBaseResponseDto } from './course-group.response.dto';
 import { GroupMemberResponseDto } from './group-member-response.dto';
-import { GroupBaseResponseDto } from './group-response.dto';
+import { MemberDto } from './member.dto';
 import { StandardGroupMemberBaseResponseDto } from './standard-group-member.response.dto';
 
 /**
@@ -47,6 +47,7 @@ export function isCourseGroupMemberResponseDto(
 export const CourseGroupMemberResponseDto =
   CourseGroupMemberBaseResponseDto.extend({
     group: CourseGroupBaseResponseDto,
+    member: MemberDto,
   });
 
 /**

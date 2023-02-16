@@ -21,6 +21,7 @@ export class CreateGroupSourceMapper {
     return GroupSourceForCreate.check({
       status: group.status,
       name: group.name,
+      slug: group.slug,
     });
   }
 }

@@ -1,3 +1,4 @@
+import { GroupBase } from '../../../domain/entities/group';
 import { UpsertCourseGroupMemberRequestDto } from '../../../infra/upsert-course-group-member/dto/upsert-course-group-member.request.dto';
 import { FindGroupMemberDto } from './find-group-member.dto';
 
@@ -7,11 +8,14 @@ import { FindGroupMemberDto } from './find-group-member.dto';
  */
 export class FindGroupMemberMapper {
   public static fromUpsertCourseGroupMemberRequestDto(
-    dto: UpsertCourseGroupMemberRequestDto
-  ): FindGroupMemberDto {
-    return {
-      identifier: 'participantId',
-      value: dto.participant.id,
-    } as FindGroupMemberDto;
+    group: GroupBase
+  ): (dto: UpsertCourseGroupMemberRequestDto) => FindGroupMemberDto {
+    return (dto: UpsertCourseGroupMemberRequestDto) => {
+      return {
+        identifier: 'participantId',
+        value: dto.participant.id,
+        parentId: group.id,
+      } as FindGroupMemberDto;
+    };
   }
 }

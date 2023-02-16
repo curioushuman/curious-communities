@@ -4,6 +4,8 @@ import { UpsertGroupMemberSourceRequestDto } from '../../../infra/upsert-group-m
 import { CreateGroupMemberSourceDto } from './create-group-member-source.dto';
 import { GroupMemberMapper } from '../../../infra/group-member.mapper';
 import { GroupSource } from '../../../domain/entities/group-source';
+import { findSourceId } from '@curioushuman/common';
+import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 
 export class CreateGroupMemberSourceMapper {
   public static fromUpsertRequestDto(
@@ -19,12 +21,21 @@ export class CreateGroupMemberSourceMapper {
     groupSource: GroupSource
   ): (groupMember: GroupMember) => GroupMemberSourceForCreate {
     return (groupMember: GroupMember) => {
+      const memberSourceIdSource = findSourceId(
+        groupMember.member.sourceIds,
+        groupSource.source
+      );
+      if (!memberSourceIdSource) {
+        throw new InternalRequestInvalidError(
+          `Member ${groupMember.member.id} does not exist at source: ${groupSource.source}`
+        );
+      }
       return GroupMemberSourceForCreate.check({
+        source: groupSource.source,
         groupId: groupSource.id,
+        memberId: memberSourceIdSource.id,
+        memberEmail: groupMember.member.email,
         status: groupMember.status,
-        name: groupMember.name,
-        email: groupMember.email,
-        organisationName: groupMember.organisationName,
       });
     };
   }

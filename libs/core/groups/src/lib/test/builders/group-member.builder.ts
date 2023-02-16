@@ -1,4 +1,3 @@
-import { prepareExternalIdSourceValue } from '@curioushuman/common';
 import { CreateGroupMemberDto } from '../../application/commands/create-group-member/create-group-member.dto';
 import { UpdateGroupMemberDto } from '../../application/commands/update-group-member/update-group-member.dto';
 import { FindGroupMemberDto } from '../../application/queries/find-group-member/find-group-member.dto';
@@ -7,8 +6,6 @@ import {
   StandardGroupMember,
   StandardGroupMemberBase,
 } from '../../domain/entities/standard-group-member';
-import { GroupMemberSource } from '../../domain/entities/group-member-source';
-import { GroupMemberSourceIdSource } from '../../domain/value-objects/group-member-source-id-source';
 import { GroupMemberStatus } from '../../domain/value-objects/group-member-status';
 import { GroupMemberType } from '../../domain/value-objects/group-member-type';
 import {
@@ -17,13 +14,15 @@ import {
 } from '../../infra/dto/standard-group-member.response.dto';
 import { UpsertCourseGroupMemberRequestDto } from '../../infra/upsert-course-group-member/dto/upsert-course-group-member.request.dto';
 import config from '../../static/config';
-import { GroupMemberSourceBuilder } from './group-member-source.builder';
 import { GroupBuilder } from './group.builder';
 import { CourseGroupMember } from '../../domain/entities/course-group-member';
 import {
   CourseGroupMemberBaseResponseDto,
   CourseGroupMemberResponseDto,
 } from '../../infra/dto/course-group-member.response.dto';
+import { MemberBuilder } from './member.builder';
+import { Member } from '../../domain/entities/member';
+import { MemberResponseDto } from '@curioushuman/cc-members-service';
 
 /**
  * A builder for GroupMembers to play with in testing.
@@ -51,21 +50,11 @@ export const GroupMemberBuilder = () => {
    */
   const defaultProperties: GroupMemberLooseMimic = {
     _type: config.defaults.groupTypeStandard as GroupMemberType,
-    id: '6fce9d10-aeed-4bb1-8c8c-92094f1982ff',
+    id: '6fce9d10-aeed-4bb1-8c8c-92094f1984ff',
     memberId: 'bd4dfd87-70c1-4a6f-b590-b3bbfce99f51',
     groupId: '5aad9387-2bfb-4391-82b3-8501a4fca58e',
 
-    sourceIds: [
-      {
-        id: '5008s1234519CjIPPU',
-        source: config.defaults.primaryAccountSource,
-      },
-    ],
-
     status: 'pending' as GroupMemberStatus,
-    name: 'James Brown',
-    email: 'james@brown.com',
-    organisationName: 'James Co',
     accountOwner: config.defaults.accountOwner,
   };
   const overrides: GroupMemberLooseMimic = {
@@ -74,13 +63,7 @@ export const GroupMemberBuilder = () => {
     memberId: defaultProperties.memberId,
     groupId: defaultProperties.groupId,
 
-    sourceIds: defaultProperties.sourceIds,
-
     status: defaultProperties.status,
-    name: defaultProperties.name,
-    email: defaultProperties.email,
-    organisationName: defaultProperties.organisationName,
-
     accountOwner: defaultProperties.accountOwner,
   };
   /**
@@ -93,77 +76,50 @@ export const GroupMemberBuilder = () => {
   };
 
   return {
-    setSource(source: GroupMemberSource) {
-      overrides.sourceIds = [
-        {
-          id: source.id,
-          source: config.defaults.primaryAccountSource,
-        },
-      ];
-    },
-
     alpha() {
-      // ID DOES NOT EXIST IN SOURCE REPO/DB
-      const source = GroupMemberSourceBuilder().alpha().buildNoCheck();
-      this.setSource(source);
+      overrides.id = '039b8745-7e57-4ec5-a68c-2522fac48d03';
       return this;
     },
 
     beta() {
-      // ID DOES NOT EXIST IN SOURCE REPO/DB
-      const source = GroupMemberSourceBuilder().beta().buildNoCheck();
-      this.setSource(source);
-      return this;
-    },
-
-    invalidSource() {
-      const source = GroupMemberSourceBuilder().invalid().buildNoCheck();
-      this.setSource(source);
-      return this;
-    },
-
-    invalidStatus() {
-      const source = GroupMemberSourceBuilder().invalidStatus().buildNoCheck();
-      this.setSource(source);
+      overrides.id = '039b8745-7e57-4ec5-a68c-2522fac48d03';
       return this;
     },
 
     noSourceExists() {
-      overrides.sourceIds = [];
-      overrides.email = 'no@exist.com';
+      // we have no real manner of distinguishing at this level
+      // it all comes down to relationships
+      // handled below
+      // TODO: is there a better way?
       return this;
     },
 
     noMatchingSource() {
-      overrides.sourceIds = [
-        {
-          id: 'NothingCanBeFoundForThis',
-          source: config.defaults.primaryAccountSource,
-        },
-      ];
+      // we have no real manner of distinguishing at this level
+      // it all comes down to relationships
+      // handled below
+      // TODO: is there a better way?
       return this;
     },
 
     invalid() {
-      overrides.sourceIds = [
-        {
-          id: 'ThisIsMeaningless',
-          source: 'THISISSOINVALIDRIGHTNOW',
-        },
-      ];
+      // we have no real manner of distinguishing at this level
+      // it all comes down to relationships
+      // handled below
+      // TODO: is there a better way?
+      overrides.id = 'ed3f9919-cd1e-4e8d-8829-64a833858567';
       return this;
     },
 
     invalidOther() {
-      overrides.name = '';
+      overrides.groupId = '';
       overrides.id = '1e72ef98-f21e-4e0a-aff1-a45ed7328456';
+      overrides.status = '';
       return this;
     },
 
     exists() {
-      const source = GroupMemberSourceBuilder().exists().buildNoCheck();
-      this.setSource(source);
-      overrides.name = source.name;
+      // pop the default one in
       return this;
     },
 
@@ -173,18 +129,14 @@ export const GroupMemberBuilder = () => {
     },
 
     updated() {
-      const source = GroupMemberSourceBuilder().updated().buildNoCheck();
-      this.setSource(source);
       overrides.id = '2f829239-b878-468c-80b0-8a0d3dfae027';
-      overrides.name = 'Name Updated';
+      overrides.status = 'active';
       return this;
     },
 
     updatedAlpha() {
-      const source = GroupMemberSourceBuilder().updatedAlpha().buildNoCheck();
-      this.setSource(source);
       overrides.id = '88d9b47c-75dc-4be8-b2ee-93e578510399';
-      overrides.name = 'Name Updated alpha';
+      overrides.status = 'active';
       return this;
     },
 
@@ -218,17 +170,6 @@ export const GroupMemberBuilder = () => {
         'c0de1be9-6c00-4fb7-88c7-ca53f5af51ce';
       courseGroupMemberOverrides.participantId =
         'f7cc9761-1581-4c96-9486-94fecaa78bca';
-      overrides.sourceIds = [
-        {
-          id: 'NoExisty',
-          source: config.defaults.primaryAccountSource,
-        },
-      ];
-      return this;
-    },
-
-    fromSource(source: GroupMemberSource) {
-      this.setSource(source);
       return this;
     },
 
@@ -252,77 +193,86 @@ export const GroupMemberBuilder = () => {
      * UPDATE: no longer checking in builder
      * too many unnecessary issues
      */
-    build(): StandardGroupMember {
-      return this.buildNoCheck();
+    build(m?: Member): StandardGroupMember {
+      return this.buildNoCheck(m);
     },
 
-    buildNoCheck(): StandardGroupMember {
+    buildNoCheck(m?: Member): StandardGroupMember {
       const groupMemberBase = {
         ...defaultProperties,
         ...overrides,
       };
       const group = GroupBuilder().exists().buildBaseNoCheck();
+      const member = m || MemberBuilder().build();
       return {
         ...groupMemberBase,
         group,
+        member,
       } as StandardGroupMember;
     },
 
-    buildCourseGroupMember(): CourseGroupMember {
-      return this.buildCourseGroupMemberNoCheck();
+    buildCourseGroupMember(m?: Member): CourseGroupMember {
+      return this.buildCourseGroupMemberNoCheck(m);
     },
 
-    buildCourseGroupMemberNoCheck(): CourseGroupMember {
+    buildCourseGroupMemberNoCheck(m?: Member): CourseGroupMember {
       const groupMemberBase = {
         ...defaultProperties,
         ...overrides,
         ...courseGroupMemberOverrides,
       };
       const group = GroupBuilder().existsCourse().buildCourseGroupBaseNoCheck();
-      // the above two checks are sufficient
+      const member = m || MemberBuilder().build();
+      // the above checks are sufficient
       return {
         ...groupMemberBase,
         group,
+        member,
       } as CourseGroupMember;
     },
 
-    buildFindByIdSourceValueGroupMemberDto(): FindGroupMemberDto {
-      const sourceId = this.buildNoCheck().sourceIds[0];
+    buildFindByMemberIdGroupMemberDto(m?: Member): FindGroupMemberDto {
+      const groupMember = this.exists().buildNoCheck();
+      const member = m || MemberBuilder().exists().build();
       return {
-        identifier: 'idSourceValue',
-        value: prepareExternalIdSourceValue(sourceId.id, sourceId.source),
+        identifier: 'memberId',
+        value: member.id,
+        parentId: groupMember.groupId,
       } as FindGroupMemberDto;
     },
 
     buildFindByParticipantIdGroupMemberDto(): FindGroupMemberDto {
+      const groupMember = this.existsAlpha().buildCourseGroupMemberNoCheck();
       return {
         identifier: 'participantId',
-        value: this.buildCourseGroupMemberNoCheck().participantId,
+        value: groupMember.participantId,
+        parentId: 'b2b28292-563b-4f3c-8df4-995470b46275',
       } as FindGroupMemberDto;
     },
 
-    buildCreateGroupMemberDto(gms?: GroupMemberSource): CreateGroupMemberDto {
-      // default is successful path
-      const groupMemberSource =
-        gms || GroupMemberSourceBuilder().beta().buildNoCheck();
-      return { groupMemberSource } as CreateGroupMemberDto;
-    },
+    // buildCreateGroupMemberDto(gms?: GroupMemberSource): CreateGroupMemberDto {
+    //   // default is successful path
+    //   const groupMemberSource =
+    //     gms || GroupMemberSourceBuilder().beta().buildNoCheck();
+    //     // not ideal but...
+    //     groupMemberSource.memberId = MemberBuilder().beta().build().id;
+
+    //   return { groupMemberSource } as CreateGroupMemberDto;
+    // },
 
     buildCreateCourseGroupMemberDto(): CreateGroupMemberDto {
       const build = this.doesntExist().buildCourseGroupMemberNoCheck();
       const group = GroupBuilder().existsCourse().buildCourseGroupBaseNoCheck();
+      const member = MemberBuilder().alpha().buildDto();
       return {
         group,
         participant: {
           id: 'f21cd3d7-a7a9-471b-929a-8180c7dd2368',
           memberId: build.memberId,
           courseId: group.courseId,
-          groupId: 'SourceIdSoNoMatter',
           status: build.status,
-          name: build.name,
-          email: build.email,
-          organisationName: build.organisationName,
           accountOwner: build.accountOwner,
+          member,
         },
       } as CreateGroupMemberDto;
     },
@@ -330,91 +280,82 @@ export const GroupMemberBuilder = () => {
     buildCreateCourseGroupMemberRequestDto(): UpsertCourseGroupMemberRequestDto {
       const build = this.doesntExist().buildCourseGroupMemberNoCheck();
       const group = GroupBuilder().existsCourse().buildCourseGroupBaseNoCheck();
+      const member = MemberBuilder().beta().buildDto();
       return {
         participant: {
-          id: '47c847fa-b2ee-4ee7-aa92-fe81dad8a6aa',
+          id: 'f21cd3d7-a7a9-471b-929a-8180c7dd2368',
           memberId: build.memberId,
           courseId: group.courseId,
-          groupId: 'SourceIdSoNoMatter',
           status: build.status,
-          name: build.name,
-          email: build.email,
-          organisationName: build.organisationName,
           accountOwner: build.accountOwner,
+          member,
         },
       } as UpsertCourseGroupMemberRequestDto;
     },
 
-    buildUpdateGroupMemberDto(gms?: GroupMemberSource): UpdateGroupMemberDto {
-      // default is successful path
-      const groupMemberSource =
-        gms || GroupMemberSourceBuilder().updated().buildNoCheck();
-      const groupMember = this.buildNoCheck();
-      return { groupMemberSource, groupMember } as UpdateGroupMemberDto;
-    },
+    // buildUpdateGroupMemberDto(gms?: GroupMemberSource): UpdateGroupMemberDto {
+    //   // default is successful path
+    //   const groupMemberSource =
+    //     gms || GroupMemberSourceBuilder().updated().buildNoCheck();
+    //   const groupMember = this.buildNoCheck();
+    //   return { groupMemberSource, groupMember } as UpdateGroupMemberDto;
+    // },
 
     buildUpdateCourseGroupMemberDto(): UpdateGroupMemberDto {
-      const groupMember = this.buildCourseGroupMemberNoCheck();
+      const member = MemberBuilder().exists().build();
+      const groupMember = this.buildCourseGroupMemberNoCheck(member);
       const group = GroupBuilder().existsCourse().buildCourseGroupBaseNoCheck();
+      const memberDto = MemberBuilder().exists().buildDto();
       return {
         groupMember,
         participant: {
           id: groupMember.participantId,
           memberId: groupMember.memberId,
           courseId: group.courseId,
-          groupId: 'SourceIdSoNoMatter',
           status: groupMember.status,
-          name: groupMember.name === '' ? '' : `${groupMember.name} updated`,
-          email: groupMember.email,
-          organisationName: groupMember.organisationName,
           accountOwner: groupMember.accountOwner,
+          member: memberDto,
         },
       } as UpdateGroupMemberDto;
     },
 
     buildUpdateCourseGroupMemberRequestDto(): UpsertCourseGroupMemberRequestDto {
-      const groupMember = this.buildCourseGroupMemberNoCheck();
+      const member = MemberBuilder().exists().build();
+      const memberDto = MemberBuilder().exists().buildDto();
+      const groupMember = this.buildCourseGroupMemberNoCheck(member);
       const group = GroupBuilder().existsCourse().buildCourseGroupBaseNoCheck();
       return {
         participant: {
           id: groupMember.participantId,
           memberId: groupMember.memberId,
           courseId: group.courseId,
-          groupId: 'SourceIdSoNoMatter',
           status: groupMember.status,
-          name: groupMember.name === '' ? '' : `${groupMember.name} updated`,
-          email: groupMember.email,
-          organisationName: groupMember.organisationName,
           accountOwner: groupMember.accountOwner,
+          member: memberDto,
         },
       } as UpsertCourseGroupMemberRequestDto;
     },
 
     buildGroupMemberBaseResponseDto(): StandardGroupMemberBaseResponseDto {
-      const sourceIds = overrides.sourceIds as GroupMemberSourceIdSource[];
       const dto = {
         ...defaultProperties,
         ...overrides,
-        sourceIds: sourceIds.map((idSource) =>
-          prepareExternalIdSourceValue(idSource.id, idSource.source)
-        ),
       };
       delete dto.group;
+      delete dto.member;
       return dto as StandardGroupMemberBaseResponseDto;
     },
 
-    buildGroupMemberResponseDto(): StandardGroupMemberResponseDto {
-      const sourceIds = overrides.sourceIds as GroupMemberSourceIdSource[];
-      const groupResponseDto = GroupBuilder()
-        .exists()
-        .buildGroupBaseResponseDto();
+    buildGroupMemberResponseDto(
+      m?: MemberResponseDto
+    ): StandardGroupMemberResponseDto {
+      const group = GroupBuilder().exists().buildGroupBaseResponseDto();
+      const member = m || MemberBuilder().exists().buildDto();
       const dto = {
         ...defaultProperties,
         ...overrides,
-        sourceIds: sourceIds.map((idSource) =>
-          prepareExternalIdSourceValue(idSource.id, idSource.source)
-        ),
-        group: groupResponseDto,
+        group,
+        member,
       };
       return dto as StandardGroupMemberResponseDto;
     },
@@ -427,19 +368,24 @@ export const GroupMemberBuilder = () => {
         sourceIds: [],
       };
       delete dto.group;
+      delete dto.member;
       return dto as CourseGroupMemberBaseResponseDto;
     },
 
-    buildCourseGroupMemberResponseDto(): CourseGroupMemberResponseDto {
-      const groupResponseDto = GroupBuilder()
+    buildCourseGroupMemberResponseDto(
+      m?: MemberResponseDto
+    ): CourseGroupMemberResponseDto {
+      const group = GroupBuilder()
         .existsCourse()
         .buildCourseGroupBaseResponseDto();
+      const member = m || MemberBuilder().exists().buildDto();
       const dto = {
         ...defaultProperties,
         ...overrides,
         ...courseGroupMemberOverrides,
         sourceIds: [],
-        group: groupResponseDto,
+        group,
+        member,
       };
       return dto as CourseGroupMemberResponseDto;
     },

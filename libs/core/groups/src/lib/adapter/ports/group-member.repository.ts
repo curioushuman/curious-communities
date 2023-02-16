@@ -1,4 +1,7 @@
-import { RepositoryFindOne, RepositoryFindMethod } from '@curioushuman/common';
+import {
+  RepositoryFindOneWithParent,
+  RepositoryFindOneWithParentMethod,
+} from '@curioushuman/common';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
@@ -6,12 +9,14 @@ import {
   GroupMemberIdentifier,
   GroupMemberIdentifiers,
 } from '../../domain/entities/group-member';
-import { GroupMemberSourceIdSourceValue } from '../../domain/value-objects/group-member-source-id-source';
+import { GroupId } from '../../domain/value-objects/group-id';
+import { MemberId } from '../../domain/value-objects/member-id';
 import { ParticipantId } from '../../domain/value-objects/participant-id';
 
-export type GroupMemberFindMethod = RepositoryFindMethod<
+export type GroupMemberFindMethod = RepositoryFindOneWithParentMethod<
   GroupMemberIdentifiers,
-  GroupMember
+  GroupMember,
+  GroupId
 >;
 
 /**
@@ -21,10 +26,11 @@ export type GroupMemberFindMethod = RepositoryFindMethod<
  * - repos for child entities, by default, ALWAYS include the parent
  */
 export abstract class GroupMemberRepository
-  implements RepositoryFindOne<GroupMemberIdentifiers, GroupMember>
+  implements
+    RepositoryFindOneWithParent<GroupMemberIdentifiers, GroupMember, GroupId>
 {
   /**
-   * FindBy interface
+   * FindOneWithParent interface
    */
   abstract findOneBy: Record<GroupMemberIdentifier, GroupMemberFindMethod>;
   abstract findOne(identifier: GroupMemberIdentifier): GroupMemberFindMethod;
@@ -44,18 +50,20 @@ export abstract class GroupMemberRepository
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findOneByIdSourceValue(
-    value: GroupMemberSourceIdSourceValue
-  ): TaskEither<Error, GroupMember>;
+  abstract findOneByMemberId(props: {
+    value: MemberId;
+    parentId: GroupId;
+  }): TaskEither<Error, GroupMember>;
 
   /**
    * Find a group member by the given participant ID
    *
    * NOTE: will throw NotFoundException if not found
    */
-  abstract findOneByParticipantId(
-    id: ParticipantId
-  ): TaskEither<Error, GroupMember>;
+  abstract findOneByParticipantId(props: {
+    value: ParticipantId;
+    parentId: GroupId;
+  }): TaskEither<Error, GroupMember>;
 
   /**
    * Create/update a groupMember

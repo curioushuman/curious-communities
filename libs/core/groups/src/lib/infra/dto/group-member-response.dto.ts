@@ -5,6 +5,7 @@ import {
   CourseGroupMemberResponseDto,
 } from './course-group-member.response.dto';
 import { CourseGroupBaseResponseDto } from './course-group.response.dto';
+import { MemberDto } from './member.dto';
 import {
   StandardGroupMemberBaseResponseDto,
   StandardGroupMemberResponseDto,
@@ -30,7 +31,7 @@ export type GroupMemberResponseDto = Static<typeof GroupMemberResponseDto>;
 export const parseGroupMemberResponseDto = (
   groupMemberResponse: GroupMemberResponseDto
 ): GroupMemberResponseDto => {
-  const { group, ...groupMemberBaseResponse } = groupMemberResponse;
+  const { group, member, ...groupMemberBaseResponse } = groupMemberResponse;
 
   let parsedGroupBase;
   let parsedGroupMemberBase;
@@ -49,5 +50,6 @@ export const parseGroupMemberResponseDto = (
   return {
     ...parsedGroupMemberBase,
     group: parsedGroupBase,
+    member: MemberDto.check(member),
   };
 };

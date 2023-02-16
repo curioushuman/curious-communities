@@ -1,5 +1,5 @@
 import { Record, Static } from 'runtypes';
-import { CourseDto } from '../../../domain/entities/course.dto';
+import { CourseDto } from '../../dto/course.dto';
 
 /**
  * DTO that accepts any of the identifiers

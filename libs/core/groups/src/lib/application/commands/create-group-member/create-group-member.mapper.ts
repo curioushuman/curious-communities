@@ -7,10 +7,11 @@ import {
 import { GroupBase, isCourseGroupBase } from '../../../domain/entities/group';
 import { GroupMember } from '../../../domain/entities/group-member';
 import { GroupMemberSource } from '../../../domain/entities/group-member-source';
-import { ParticipantDto } from '../../../domain/entities/participant.dto';
 import { StandardGroupMember } from '../../../domain/entities/standard-group-member';
 import { createGroupMemberId } from '../../../domain/value-objects/group-member-id';
 import { GroupMemberType } from '../../../domain/value-objects/group-member-type';
+import { ParticipantDto } from '../../../infra/dto/participant.dto';
+import { MemberMapper } from '../../../infra/member.mapper';
 import { UpsertCourseGroupMemberRequestDto } from '../../../infra/upsert-course-group-member/dto/upsert-course-group-member.request.dto';
 import config from '../../../static/config';
 import { CreateGroupMemberDto } from './create-group-member.dto';
@@ -49,28 +50,20 @@ export class CreateGroupMemberMapper {
       _type: config.defaults.groupTypeCourse as GroupMemberType,
       id: createGroupMemberId(),
       groupId: group.id,
+      memberId: participant.memberId,
       courseId: group.courseId,
       participantId: participant.id,
-      memberId: participant.memberId,
-      sourceIds: [
-        {
-          id: participant.id,
-          source: config.defaults.primaryAccountSource,
-        },
-      ],
 
       // TODO: mapping of participant status to GM statuses
       status: participant.status,
 
-      name: participant.name,
-      email: participant.email,
-      organisationName: participant.organisationName,
-
       accountOwner: participant.accountOwner,
     });
+    const member = MemberMapper.fromResponseDto(participant.member);
     return {
       ...groupMemberBase,
       group,
+      member,
     };
   }
 
@@ -88,17 +81,7 @@ export class CreateGroupMemberMapper {
       id: createGroupMemberId(),
       groupId: group.id,
       memberId: 'TBD',
-      sourceIds: [
-        {
-          id: source.id,
-          source: source.source,
-        },
-      ],
       status: source.status,
-
-      name: source.name,
-      email: source.email,
-      organisationName: source.organisationName,
 
       accountOwner: 'TBD',
     });

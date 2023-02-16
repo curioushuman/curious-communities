@@ -1,4 +1,4 @@
-Feature: Upsert GroupMember
+Feature: Upsert CourseGroupMember
 
 Scenario: Successfully creating a group member
   Given the request is valid

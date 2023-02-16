@@ -98,7 +98,7 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
   }): TE.TaskEither<Error, GroupMember> => {
     // Set the parameters.
     const params = this.dynamoDbRepository.prepareParamsQueryOne({
-      indexId: `participantId`,
+      indexId: `participant-id`,
       value: props.value,
     });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);

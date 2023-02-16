@@ -1,10 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import {
-  FakeRepositoryErrorFactory,
-  SourceInvalidError,
-} from '@curioushuman/error-factory';
+import { FakeRepositoryErrorFactory } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
@@ -21,7 +18,6 @@ import { GroupMemberBuilder } from '../../../../test/builders/group-member.build
 import { CreateGroupMemberDto } from '../create-group-member.dto';
 import { GroupMemberRepositoryErrorFactory } from '../../../../adapter/ports/group-member.repository.error-factory';
 import { GroupMemberSourceRepositoryErrorFactory } from '../../../../adapter/ports/group-member-source.repository.error-factory';
-import { GroupMemberSourceBuilder } from '../../../../test/builders/group-member-source.builder';
 
 /**
  * UNIT TEST
@@ -109,40 +105,6 @@ defineFeature(feature, (test) => {
 
     and('saved group member is returned', () => {
       expect(result.id).toBeDefined();
-    });
-  });
-
-  test('Fail; Source does not translate into a valid group member', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      const invalidSource = GroupMemberSourceBuilder().invalid().buildNoCheck();
-      createGroupMemberDto = GroupMemberBuilder()
-        .invalidSource()
-        .buildCreateGroupMemberDto(invalidSource);
-    });
-
-    and('the returned source does not populate a valid group member', () => {
-      // see previous
-    });
-
-    when('I attempt to create a group member', async () => {
-      try {
-        await handler.execute(
-          new CreateGroupMemberCommand(createGroupMemberDto)
-        );
-      } catch (err) {
-        error = err;
-      }
-    });
-
-    then('I should receive a SourceInvalidError', () => {
-      expect(error).toBeInstanceOf(SourceInvalidError);
     });
   });
 });

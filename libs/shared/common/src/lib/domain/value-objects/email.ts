@@ -7,7 +7,7 @@ import { Static, String } from 'runtypes';
 export const EmailRegex = /^\S+@\S+\.\S+$/;
 
 export const Email = String.withBrand('Email').withConstraint(
-  (maybeEmail) => EmailRegex.test(maybeEmail) || 'Invalid Contact slug'
+  (maybeEmail) => EmailRegex.test(maybeEmail) || 'Invalid email'
 );
 
 export type Email = Static<typeof Email>;

@@ -2,9 +2,9 @@ import {
   GroupMemberSourceIdentifier,
   GroupMemberSourceIdentifiers,
 } from '../../../domain/entities/group-member-source';
-import { GroupMemberEmail } from '../../../domain/value-objects/group-member-email';
-import { GroupMemberSourceIdSource } from '../../../domain/value-objects/group-member-source-id-source';
 import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
+import { MemberEmail } from '../../../domain/value-objects/member-email';
+import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
 import { Source } from '../../../domain/value-objects/source';
 
 /**
@@ -54,8 +54,8 @@ type FindGroupMemberSourceDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindGroupMemberSourceDtoParsers = {
-  idSource: (dto) => GroupMemberSourceIdSource.check(dto.value),
-  email: (dto) => GroupMemberEmail.check(dto.value),
+  memberId: (dto) => MemberSourceId.check(dto.value),
+  memberEmail: (dto) => MemberEmail.check(dto.value),
 };
 
 /**

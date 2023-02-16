@@ -14,8 +14,7 @@ import { GroupSource } from '../../../../domain/entities/group-source';
 import { GroupSourceId } from '../../../../domain/value-objects/group-source-id';
 import { TribeApiGroupSourceRepository } from '../group-source.repository';
 import { GroupSourceRepositoryErrorFactory } from '../../../ports/group-source.repository.error-factory';
-import { GroupSourceBuilder } from '../../../../test/builders/group-source.builder';
-import { GroupEmail } from '../../../../domain/value-objects/group-email';
+import { GroupName } from '../../../../domain/value-objects/group-name';
 import { GroupSourceIdSource } from '../../../../domain/value-objects/group-source-id-source';
 
 /**
@@ -40,7 +39,7 @@ defineFeature(feature, (test) => {
   let repository: TribeApiGroupSourceRepository;
   let groupSourceId: GroupSourceId;
   let groupSourceIdSource: GroupSourceIdSource;
-  let groupEmail: GroupEmail;
+  let groupName: GroupName;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -83,10 +82,10 @@ defineFeature(feature, (test) => {
     and('a matching record exists at the source', async () => {
       // this is the simpler version
       // I know this ID exists, it'll do for now
-      groupSourceId = '5fb59b15628186115ab8eecb' as GroupSourceId;
+      groupSourceId = '602ac5101d5f77deefd636b6' as GroupSourceId;
       groupSourceIdSource = {
         id: groupSourceId,
-        source: 'MICRO-COURSE',
+        source: 'COMMUNITY',
       };
     });
 
@@ -106,7 +105,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Successfully find one group source by email', ({
+  test('Successfully find one group source by name', ({
     given,
     and,
     when,
@@ -121,20 +120,20 @@ defineFeature(feature, (test) => {
 
     and('a matching record exists at the source', async () => {
       // this is the simpler version
-      // I know this email exists (as alternate), it'll do for now
-      groupEmail = 'michaelkelly@asiapacificforum.net' as GroupEmail;
+      // I know this name exists (as alternate), it'll do for now
+      groupName = 'Samoa OMB - Introduction to gender equality' as GroupName;
     });
 
-    when('I request the source by email', async () => {
+    when('I request the source by name', async () => {
       try {
-        result = await executeTask(repository.findOneByEmail(groupEmail));
+        result = await executeTask(repository.findOneByName(groupName));
       } catch (err) {
         error = err;
         expect(error).toBeUndefined();
       }
     });
 
-    then('a source corresponding to that email should be returned', () => {
+    then('a source corresponding to that name should be returned', () => {
       expect(result.id).toBeDefined();
     });
   });
@@ -153,9 +152,8 @@ defineFeature(feature, (test) => {
     });
 
     and('a matching record DOES NOT exist at the source', () => {
-      groupSourceId = GroupSourceBuilder().noMatchingSource().buildNoCheck().id;
       groupSourceIdSource = {
-        id: groupSourceId,
+        id: '602ac5101d5f77deefd64444',
         source: 'COMMUNITY',
       };
     });

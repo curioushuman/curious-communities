@@ -91,7 +91,7 @@ defineFeature(feature, (test) => {
     then('a new record should have been created', async () => {
       try {
         checkGroupSource = await executeTask(
-          repository.findOneByEmail(groupSourceForCreate.email)
+          repository.findOneByName(groupSourceForCreate.name)
         );
       } catch (err) {
         if ('response' in err) {
@@ -110,7 +110,7 @@ defineFeature(feature, (test) => {
   afterAll(async () => {
     try {
       const groupCreated = await executeTask(
-        repository.findOneByEmail(groupSourceForCreate.email)
+        repository.findOneByName(groupSourceForCreate.name)
       );
       if (groupCreated) {
         await executeTask(repository.delete(groupCreated.id));

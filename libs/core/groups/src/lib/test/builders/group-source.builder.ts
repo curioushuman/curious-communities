@@ -4,7 +4,10 @@ import { UpdateGroupSourceDto } from '../../application/commands/update-group-so
 import { FindGroupSourceDto } from '../../application/queries/find-group-source/find-group-source.dto';
 import { GroupBase } from '../../domain/entities/group';
 
-import { GroupSource } from '../../domain/entities/group-source';
+import {
+  GroupSource,
+  GroupSourceForCreate,
+} from '../../domain/entities/group-source';
 import { GroupSourceStatus } from '../../domain/value-objects/group-source-status';
 import { GroupBaseResponseDto } from '../../infra/dto/group-response.dto';
 import { UpsertGroupSourceRequestDto } from '../../infra/upsert-group-source/dto/upsert-group-source.request.dto';
@@ -109,6 +112,13 @@ export const GroupSourceBuilder = () => {
         ...defaultProperties,
         ...overrides,
       } as GroupSource;
+    },
+
+    buildForCreate(): GroupSourceForCreate {
+      return {
+        ...defaultProperties,
+        ...overrides,
+      } as GroupSourceForCreate;
     },
 
     buildFindByIdSourceValueGroupSourceDto(): FindGroupSourceDto {

@@ -13,9 +13,9 @@ import { GroupSourceRepositoryReadWrite } from '../../../ports/group-source.repo
 import { GroupSource } from '../../../../domain/entities/group-source';
 import { TribeApiGroupSourceRepository } from '../group-source.repository';
 import { GroupSourceRepositoryErrorFactory } from '../../../ports/group-source.repository.error-factory';
-import { GroupSourceBuilder } from '../../../../test/builders/group-source.builder';
 import { GroupSourceId } from '../../../../domain/value-objects/group-source-id';
-import { GroupEmail } from '../../../../domain/value-objects/group-email';
+import { GroupName } from '../../../../domain/value-objects/group-name';
+import { GroupSlug } from '../../../../domain/value-objects/group-slug';
 
 /**
  * INTEGRATION TEST
@@ -67,10 +67,13 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request is valid', () => {
-      groupSourceForUpdate = GroupSourceBuilder().updated().buildNoCheck();
-      groupSourceForUpdate.id = '5fb59b15628186115ab8eecb' as GroupSourceId;
-      groupSourceForUpdate.email =
-        'michaelkelly@asiapacificforum.net' as GroupEmail;
+      groupSourceForUpdate = {
+        id: '602ac5101d5f77deefd636b6' as GroupSourceId,
+        name: 'Samoa OMB - Introduction to gender equality' as GroupName,
+        slug: 'samoa-intro-to-gender-equality' as GroupSlug,
+        source: 'COMMUNITY',
+        status: 'active',
+      };
     });
 
     when('I attempt to update a group source', async () => {
@@ -92,7 +95,7 @@ defineFeature(feature, (test) => {
         checkGroupSource = await executeTask(
           repository.findOneByIdSource({
             id: groupSourceForUpdate.id,
-            source: 'MICRO-COURSE',
+            source: 'COMMUNITY',
           })
         );
       } catch (err) {
@@ -105,7 +108,7 @@ defineFeature(feature, (test) => {
     });
 
     and('saved group source is returned', () => {
-      expect(groupSourceUpdated.email).toEqual(checkGroupSource.email);
+      expect(groupSourceUpdated.name).toEqual(checkGroupSource.name);
     });
   });
 });

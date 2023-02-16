@@ -20,10 +20,10 @@ import {
   ServiceNotFoundError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { logAction } from '@curioushuman/fp-ts-utils';
 
 import { dashToCamelCase, generateUniqueId } from '../../../utils/functions';
-import { SqsMessageBase, SqsServiceProps } from './sqs.service.types';
-import { logAction } from '@curioushuman/fp-ts-utils';
+import { SqsMessageBase, SqsServiceProps } from './__types__';
 
 /**
  * A service for engaging with SQS

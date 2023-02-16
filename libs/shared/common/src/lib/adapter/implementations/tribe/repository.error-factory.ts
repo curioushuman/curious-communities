@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TribeApiRepositoryError } from './repository.error-factory.types';
+import { TribeApiRepositoryError } from './__types__';
 import { BasicRepositoryErrorFactory } from '../common/repository.error-factory';
 
 /**

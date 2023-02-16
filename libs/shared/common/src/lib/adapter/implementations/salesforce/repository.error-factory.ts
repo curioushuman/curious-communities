@@ -6,7 +6,7 @@ import {
   SalesforceApiRepositoryErrorDataObject,
   SalesforceApiRepositoryErrorOrArray,
   SalesforceApiRepositoryErrorResponse,
-} from './repository.error-factory.types';
+} from './__types__';
 
 /**
  * Factory to interpret and produce consistent errors from the riddled mess

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { RepositoryErrorFactory } from '@curioushuman/error-factory';
-import { BettermodeApiRepositoryError } from './repository.error-factory.types';
+import { BettermodeApiRepositoryError } from './__types__';
 
 /**
  * Factory to interpret and produce consistent errors from EdApp.

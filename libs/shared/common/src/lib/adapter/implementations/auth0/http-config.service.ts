@@ -9,7 +9,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryAuthenticationError } from '@curioushuman/error-factory';
 import { executeTask, logAction } from '@curioushuman/fp-ts-utils';
 import { Auth0ApiRepositoryErrorFactory } from './repository.error-factory';
-import { Auth0ApiAuthResponse } from './types/auth-response';
+import { Auth0ApiAuthResponse } from './__types__';
 import { confirmEnvVars } from '../../../utils/functions';
 
 /**

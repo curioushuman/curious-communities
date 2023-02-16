@@ -12,7 +12,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryAuthenticationError } from '@curioushuman/error-factory';
 import { executeTask, logAction } from '@curioushuman/fp-ts-utils';
 import { SalesforceApiRepositoryErrorFactory } from './repository.error-factory';
-import { SalesforceApiAuthResponse } from './types/auth-response';
+import { SalesforceApiAuthResponse } from './__types__';
 import { confirmEnvVars } from '../../../utils/functions';
 
 /**

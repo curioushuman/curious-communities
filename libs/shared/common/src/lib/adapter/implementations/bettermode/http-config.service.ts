@@ -12,7 +12,7 @@ import { confirmEnvVars } from '../../../utils/functions';
 import {
   BettermodeApiAuthResponse,
   BettermodeApiAuthResponseAxios,
-} from './types/auth-response';
+} from './__types__';
 
 /**
  * Setting up Authorization header and other HTTP config options

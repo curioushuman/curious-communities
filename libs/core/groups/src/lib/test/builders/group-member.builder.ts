@@ -23,6 +23,7 @@ import {
 import { MemberBuilder } from './member.builder';
 import { Member } from '../../domain/entities/member';
 import { MemberResponseDto } from '@curioushuman/cc-members-service';
+import { UpdateGroupMemberRequestDto } from '../../infra/update-group-member/dto/update-group-member.request.dto';
 
 /**
  * A builder for GroupMembers to play with in testing.
@@ -108,6 +109,7 @@ export const GroupMemberBuilder = () => {
       // handled below
       // TODO: is there a better way?
       overrides.id = 'ed3f9919-cd1e-4e8d-8829-64a833858567';
+      overrides.status = '';
       return this;
     },
 
@@ -319,7 +321,7 @@ export const GroupMemberBuilder = () => {
       } as UpdateGroupMemberDto;
     },
 
-    buildUpdateCourseGroupMemberRequestDto(): UpsertCourseGroupMemberRequestDto {
+    buildUpsertUpdateCourseGroupMemberRequestDto(): UpsertCourseGroupMemberRequestDto {
       const member = MemberBuilder().exists().build();
       const memberDto = MemberBuilder().exists().buildDto();
       const groupMember = this.buildCourseGroupMemberNoCheck(member);
@@ -334,6 +336,16 @@ export const GroupMemberBuilder = () => {
           member: memberDto,
         },
       } as UpsertCourseGroupMemberRequestDto;
+    },
+
+    buildUpdateGroupMemberRequestDto(
+      m?: MemberResponseDto
+    ): UpdateGroupMemberRequestDto {
+      const memberDto = m || MemberBuilder().updated().buildDto();
+      const groupMember = this.buildGroupMemberResponseDto(memberDto);
+      return {
+        groupMember,
+      } as UpdateGroupMemberRequestDto;
     },
 
     buildGroupMemberBaseResponseDto(): StandardGroupMemberBaseResponseDto {

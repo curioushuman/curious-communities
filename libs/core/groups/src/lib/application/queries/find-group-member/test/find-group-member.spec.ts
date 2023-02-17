@@ -92,6 +92,7 @@ defineFeature(feature, (test) => {
 
     given('the request is valid', () => {
       // we know this to exist in our fake repo
+
       findGroupMemberDto = GroupMemberBuilder()
         .exists()
         .buildFindByMemberIdGroupMemberDto();
@@ -103,7 +104,7 @@ defineFeature(feature, (test) => {
           new FindGroupMemberQuery(findGroupMemberDto)
         );
       } catch (err) {
-        expect(err).toBeUndefined;
+        expect(err).toBeUndefined();
       }
     });
 

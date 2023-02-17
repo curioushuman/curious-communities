@@ -112,7 +112,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       updateGroupMemberDto = GroupMemberBuilder()
         .updatedCourse()
-        .buildUpdateCourseGroupMemberRequestDto();
+        .buildUpsertUpdateCourseGroupMemberRequestDto();
     });
 
     and('the group member exists in the repository', async () => {

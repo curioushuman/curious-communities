@@ -9,7 +9,9 @@ import { GroupMember } from '../../../domain/entities/group-member';
 import { GroupMemberSource } from '../../../domain/entities/group-member-source';
 import { StandardGroupMember } from '../../../domain/entities/standard-group-member';
 import { ParticipantDto } from '../../../infra/dto/participant.dto';
+import { GroupMemberMapper } from '../../../infra/group-member.mapper';
 import { MemberMapper } from '../../../infra/member.mapper';
+import { UpdateGroupMemberRequestDto } from '../../../infra/update-group-member/dto/update-group-member.request.dto';
 import { UpsertCourseGroupMemberRequestDto } from '../../../infra/upsert-course-group-member/dto/upsert-course-group-member.request.dto';
 import { UpdateGroupMemberDto } from './update-group-member.dto';
 
@@ -21,7 +23,19 @@ export class UpdateGroupMemberMapper extends UpdateMapper {
       ({ groupMember, participant: dto.participant } as UpdateGroupMemberDto);
   }
 
+  public static fromUpdateGroupMemberRequestDto(
+    dto: UpdateGroupMemberRequestDto
+  ): UpdateGroupMemberDto {
+    return {
+      groupMember: GroupMemberMapper.fromResponseDto(dto.groupMember),
+    } as UpdateGroupMemberDto;
+  }
+
   public static fromDto(dto: UpdateGroupMemberDto): GroupMember {
+    // this supports the vanilla update from just the record itself
+    if (!dto.participant && !dto.groupMemberSource) {
+      return dto.groupMember;
+    }
     // Type casting here as we know if participant is null then groupMemberSource is not null
     return dto.participant
       ? UpdateGroupMemberMapper.fromParticipantToGroupMember(

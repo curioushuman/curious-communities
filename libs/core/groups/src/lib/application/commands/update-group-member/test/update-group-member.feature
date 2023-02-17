@@ -1,5 +1,12 @@
 Feature: Update GroupMember
 
+# Scenario: Successfully updating a group member
+#   Given the request is valid
+#   And the source does exist in our DB
+#   When I attempt to update a group member
+#   Then the related record should have been updated in the repository
+#   And saved group member is returned
+
 # Scenario: Successfully updating a group member from source
 #   Given a matching record is found at the source
 #   And the returned source populates a valid group member

@@ -67,14 +67,14 @@ export abstract class GroupMemberSourceRepositoryRead
 
 export abstract class GroupMemberSourceRepositoryReadWrite extends GroupMemberSourceRepositoryRead {
   /**
-   * Create/update a group
+   * Create a group
    */
   abstract create(
     groupMember: GroupMemberSourceForCreate
   ): TaskEither<Error, GroupMemberSource>;
 
   /**
-   * Create/update a group
+   * Update a group
    */
   abstract update(
     groupMember: GroupMemberSource

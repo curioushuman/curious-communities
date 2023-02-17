@@ -15,10 +15,7 @@ import {
   UpdateGroupMemberDto,
 } from './update-group-member.dto';
 import { UpdateGroupMemberMapper } from './update-group-member.mapper';
-import {
-  GroupMember,
-  GroupMemberBase,
-} from '../../../domain/entities/group-member';
+import { GroupMember } from '../../../domain/entities/group-member';
 import { GroupMemberRepositoryErrorFactory } from '../../../adapter/ports/group-member.repository.error-factory';
 import { RepositoryItemUpdateError } from '@curioushuman/error-factory';
 
@@ -57,23 +54,13 @@ export class UpdateGroupMemberHandler
       )
     );
 
-    // #2 grab the groupMember out
     const { groupMember } = validDto;
 
+    // #2 validate/parse the groupMember from the DTO
+    const parsedGroupMember = this.parseDto(validDto);
+
     const task = pipe(
-      validDto,
-      // #4. update the entity, from the course/source
-      parseData(
-        UpdateGroupMemberMapper.fromDto,
-        this.logger,
-        'InternalRequestInvalidError'
-      ),
-      // #3. make sure an update is required
-      parseData(
-        UpdateGroupMemberMapper.requiresUpdate<GroupMemberBase>(groupMember),
-        this.logger,
-        'InternalRequestInvalidError'
-      ),
+      parsedGroupMember,
 
       // #4. update the entity, from the source; if required
       O.fromNullable,
@@ -99,5 +86,29 @@ export class UpdateGroupMemberHandler
     );
 
     return executeTask(task);
+  }
+
+  parseDto(validDto: UpdateGroupMemberDto): GroupMember | undefined {
+    const { groupMember, participant, groupMemberSource } = validDto;
+    // if no participant or groupMemberSource it means we're doing a straight update
+    // so we skip the requiresUpdate check
+    if (!participant && !groupMemberSource) {
+      return groupMember;
+    }
+    return pipe(
+      validDto,
+      // #4. update the entity, from the course/source
+      parseData(
+        UpdateGroupMemberMapper.fromDto,
+        this.logger,
+        'InternalRequestInvalidError'
+      ),
+      // #3. make sure an update is required
+      parseData(
+        UpdateGroupMemberMapper.requiresUpdate<GroupMember>(groupMember),
+        this.logger,
+        'InternalRequestInvalidError'
+      )
+    );
   }
 }

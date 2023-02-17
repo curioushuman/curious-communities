@@ -85,7 +85,9 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
       async () => {
         const memberId = MemberId.check(props.value);
         const groupMember = this.groupMembers.find(
-          (gm) => gm.groupId === props.parentId && gm.member.id === memberId
+          (gm) =>
+            (gm.group.id === props.parentId || gm.groupId === props.parentId) &&
+            gm.member.id === memberId
         );
         return pipe(
           groupMember,
@@ -122,7 +124,7 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
         const participantId = ParticipantId.check(props.value);
         const groupMember = this.groupMembers.find(
           (gm) =>
-            gm.group.id === props.parentId &&
+            (gm.group.id === props.parentId || gm.groupId === props.parentId) &&
             'participantId' in gm &&
             gm.participantId === participantId
         );

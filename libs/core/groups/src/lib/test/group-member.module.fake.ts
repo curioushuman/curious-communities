@@ -29,10 +29,12 @@ import { FindGroupSourceHandler } from '../application/queries/find-group-source
 import { GroupSourceRepositoryRead } from '../adapter/ports/group-source.repository';
 import { FakeGroupSourceRepository } from '../adapter/implementations/fake/fake.group-source.repository';
 import { GroupSourceRepositoryErrorFactory } from '../adapter/ports/group-source.repository.error-factory';
+import { UpdateGroupMemberController } from '../infra/update-group-member/update-group-member.controller';
 
 const controllers = [
   UpsertCourseGroupMemberController,
   UpsertGroupMemberSourceController,
+  UpdateGroupMemberController,
 ];
 
 const handlers = [

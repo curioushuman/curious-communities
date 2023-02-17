@@ -3,7 +3,10 @@ import { UpdateGroupMemberSourceDto } from '../../application/commands/update-gr
 import { FindGroupMemberSourceDto } from '../../application/queries/find-group-member-source/find-group-member-source.dto';
 import { GroupMember } from '../../domain/entities/group-member';
 
-import { GroupMemberSource } from '../../domain/entities/group-member-source';
+import {
+  GroupMemberSource,
+  GroupMemberSourceForCreate,
+} from '../../domain/entities/group-member-source';
 import { GroupMemberSourceStatus } from '../../domain/value-objects/group-member-source-status';
 import { GroupMemberResponseDto } from '../../infra/dto/group-member-response.dto';
 import { GroupMemberSourceResponseDto } from '../../infra/dto/group-member-source.response.dto';
@@ -111,6 +114,13 @@ export const GroupMemberSourceBuilder = () => {
         ...defaultProperties,
         ...overrides,
       } as GroupMemberSource;
+    },
+
+    buildForCreate(): GroupMemberSourceForCreate {
+      return {
+        ...defaultProperties,
+        ...overrides,
+      } as GroupMemberSourceForCreate;
     },
 
     buildGroupMemberSourceResponseDto(): GroupMemberSourceResponseDto {

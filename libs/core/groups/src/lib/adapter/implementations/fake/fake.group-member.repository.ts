@@ -69,7 +69,7 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
     const invalidSource = GroupMemberBuilder().invalidOther().buildNoCheck();
     invalidSource.status = 'pending' as GroupMemberStatus;
     this.groupMembers.push(invalidSource);
-    console.log(this.groupMembers);
+    // console.log(this.groupMembers);
   }
 
   /**

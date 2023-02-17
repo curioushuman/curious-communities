@@ -1,10 +1,7 @@
-import { prepareExternalIdSourceValue } from '@curioushuman/common';
-
 import {
   StandardGroupMemberBaseResponseDto,
   StandardGroupMemberResponseDto,
 } from './dto/standard-group-member.response.dto';
-import { GroupMemberSourceIdSource } from '../domain/value-objects/group-member-source-id-source';
 import { StandardGroupMapper } from './standard-group.mapper';
 import {
   StandardGroupMember,
@@ -14,10 +11,6 @@ import config from '../static/config';
 import { MemberMapper } from './member.mapper';
 
 export class StandardGroupMemberMapper {
-  public static toResponseDtoIdSource(idSource: GroupMemberSourceIdSource) {
-    return prepareExternalIdSourceValue(idSource.id, idSource.source);
-  }
-
   public static toResponseDto(
     groupMember: StandardGroupMember
   ): StandardGroupMemberResponseDto {

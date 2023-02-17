@@ -77,7 +77,6 @@ defineFeature(feature, (test) => {
 
     and('the group member does not exist in the repository', async () => {
       groupMembers = await executeTask(repository.all());
-      console.log(groupMembers);
       groupMembersBefore = groupMembers.length;
     });
 

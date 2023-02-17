@@ -76,7 +76,6 @@ defineFeature(feature, (test) => {
     given('the request is valid', async () => {
       updateGroupMemberSourceDto =
         GroupMemberSourceBuilder().buildUpdateGroupMemberSourceDto();
-      console.log(updateGroupMemberSourceDto);
     });
 
     and('a matching record is found at the source', async () => {

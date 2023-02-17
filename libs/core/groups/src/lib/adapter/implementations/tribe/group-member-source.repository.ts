@@ -8,8 +8,11 @@ import {
   SourceRepository,
   TribeApiRepositoryProps,
   TribeApiRepository,
+  RestApiFindAllProps,
+  RestApiFindAllResponse,
 } from '@curioushuman/common';
 import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
+import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import {
   GroupMemberSource,
@@ -20,13 +23,9 @@ import {
   GroupMemberSourceFindMethod,
   GroupMemberSourceRepositoryReadWrite,
 } from '../../ports/group-member-source.repository';
-import {
-  TribeApiGroupMemberSource,
-  TribeApiGroupMemberSourceForCreate,
-} from './entities/group-member-source';
+import { TribeApiGroupMemberSourceForCreate } from './entities/group-member-source';
 import { TribeApiGroupMemberSourceMapper } from './group-member-source.mapper';
 import { Source } from '../../../domain/value-objects/source';
-import { GroupMemberSourceId } from '../../../domain/value-objects/group-member-source-id';
 import { GroupSourceId } from '../../../domain/value-objects/group-source-id';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
 import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
@@ -56,7 +55,7 @@ export class TribeApiGroupMemberSourceRepository
     // set up the repository
     const props: TribeApiRepositoryProps = {
       sourceName: 'members',
-      sourceRuntype: TribeApiGroupMemberSource,
+      sourceRuntype: TribeApiMemberSource,
       parentSourceName: 'groups',
     };
     this.tribeApiRepository = new TribeApiRepository(
@@ -82,63 +81,67 @@ export class TribeApiGroupMemberSourceRepository
       );
     };
 
-  private findOneChild(
-    field: keyof GroupMemberSource,
-    value: GroupMemberSourceId | MemberEmail
-  ): (
-    children: GroupMemberSource[]
-  ) => TE.TaskEither<Error, GroupMemberSource> {
-    return (children: GroupMemberSource[]) => {
-      const member = children.find((c) => c[field] === value);
-      if (!member) {
-        return TE.left(
-          new RepositoryItemNotFoundError(
-            `GroupMember not found for identifier: ${value}`
-          )
-        );
-      }
-      return TE.right(member);
-    };
-  }
+  /**
+   * Find all objects
+   */
+  findAll = (
+    parentId: GroupSourceId,
+    props?: RestApiFindAllProps
+  ): TE.TaskEither<Error, RestApiFindAllResponse<GroupMemberSource>> => {
+    return this.tribeApiRepository.tryFindAllChildren(
+      parentId,
+      this.processFindAll(this.SOURCE, parentId),
+      this.tribeApiRepository.prepareFindAllProps(props)
+    );
+  };
 
   /**
-   * TODO
-   * - [ ] support paging
+   * Non-specific function to find one object from a list of all of them
+   * Recursive to enable paged results returned from the repository
    */
+  findOneFromAll = (
+    parentId: GroupSourceId,
+    field: keyof Pick<GroupMemberSource, 'memberId' | 'memberEmail'>,
+    value: MemberSourceId | MemberEmail,
+    page = 1
+  ): TE.TaskEither<Error, GroupMemberSource> => {
+    return TE.tryCatch(
+      async () => {
+        const result = await executeTask(
+          this.findAll(parentId, { page, limit: 100 })
+        );
+        const item = result.items.find((i) => i[field] === value);
+        if (item) {
+          return item;
+        }
+        if (result.next === false) {
+          throw new RepositoryItemNotFoundError(
+            `Group not found for ${field}: ${value}`
+          );
+        }
+        return await executeTask(
+          this.findOneFromAll(parentId, field, value, page + 1)
+        );
+      },
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: unknown) => reason as Error
+    );
+  };
+
   findOneByMemberId = (props: {
     value: MemberSourceId;
     parentId: GroupSourceId;
   }): TE.TaskEither<Error, GroupMemberSource> => {
     const memberId = MemberSourceId.check(props.value);
-    const parentId = GroupSourceId.check(props.parentId);
-    return pipe(
-      this.tribeApiRepository.tryFindAllChildren(
-        parentId,
-        this.processFindAll(this.SOURCE, parentId),
-        { limit: 1000 }
-      ),
-      TE.chain(this.findOneChild('memberId', memberId))
-    );
+    return this.findOneFromAll(props.parentId, 'memberId', memberId);
   };
 
-  /**
-   * TODO
-   * - [ ] support paging
-   */
   findOneByMemberEmail = (props: {
     value: MemberEmail;
     parentId: GroupSourceId;
   }): TE.TaskEither<Error, GroupMemberSource> => {
     const memberEmail = MemberEmail.check(props.value);
-    const parentId = GroupSourceId.check(props.parentId);
-    return pipe(
-      this.tribeApiRepository.tryFindAllChildren(
-        parentId,
-        this.processFindAll(this.SOURCE, parentId),
-        { limit: 1000 }
-      ),
-      TE.chain(this.findOneChild('memberEmail', memberEmail))
-    );
+    return this.findOneFromAll(props.parentId, 'memberEmail', memberEmail);
   };
 
   /**

@@ -1,4 +1,4 @@
-import { TribeApiRepository, confirmEnvVars } from '@curioushuman/common';
+import { TribeApiRepository } from '@curioushuman/common';
 
 import {
   GroupSource,
@@ -40,8 +40,6 @@ export class TribeApiGroupSourceMapper {
   public static toSourceForCreate(
     domainEntity: GroupSourceForCreate
   ): TribeApiGroupSourceForCreate {
-    const requiredEnvVars = ['MEMBERS_DEFAULT_PASSWORD'];
-    confirmEnvVars(requiredEnvVars);
     const entity = {
       name: domainEntity.name,
       slug: domainEntity.slug,
@@ -55,9 +53,10 @@ export class TribeApiGroupSourceMapper {
   public static toSourceForUpdate(
     domainEntity: GroupSource
   ): TribeApiGroupSourceForUpdate {
-    return TribeApiGroupSourceForUpdate.check({
+    const entity = {
       name: domainEntity.name,
       slug: domainEntity.slug,
-    });
+    };
+    return TribeApiGroupSourceForUpdate.check(entity);
   }
 }

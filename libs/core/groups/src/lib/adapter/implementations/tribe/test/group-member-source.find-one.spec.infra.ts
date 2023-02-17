@@ -9,13 +9,13 @@ import {
   TribeApiRepositoryErrorFactory,
 } from '@curioushuman/common';
 
-import { GroupSourceRepositoryReadWrite } from '../../../ports/group-source.repository';
-import { GroupSource } from '../../../../domain/entities/group-source';
+import { GroupMemberSourceRepositoryReadWrite } from '../../../ports/group-member-source.repository';
+import { GroupMemberSource } from '../../../../domain/entities/group-member-source';
+import { TribeApiGroupMemberSourceRepository } from '../group-member-source.repository';
+import { GroupMemberSourceRepositoryErrorFactory } from '../../../ports/group-member-source.repository.error-factory';
+import { MemberSourceId } from '../../../../domain/value-objects/member-source-id';
 import { GroupSourceId } from '../../../../domain/value-objects/group-source-id';
-import { TribeApiGroupSourceRepository } from '../group-source.repository';
-import { GroupSourceRepositoryErrorFactory } from '../../../ports/group-source.repository.error-factory';
-import { GroupName } from '../../../../domain/value-objects/group-name';
-import { GroupSourceIdSource } from '../../../../domain/value-objects/group-source-id-source';
+import { MemberEmail } from '../../../../domain/value-objects/member-email';
 
 /**
  * INTEGRATION TEST
@@ -31,15 +31,13 @@ import { GroupSourceIdSource } from '../../../../domain/value-objects/group-sour
 // Tribe API is suuuper slow
 jest.setTimeout(20000);
 
-const feature = loadFeature('./group-source.find-one.infra.feature', {
+const feature = loadFeature('./group-member-source.find-one.infra.feature', {
   loadRelativePath: true,
 });
 
 defineFeature(feature, (test) => {
-  let repository: TribeApiGroupSourceRepository;
+  let repository: TribeApiGroupMemberSourceRepository;
   let groupSourceId: GroupSourceId;
-  let groupSourceIdSource: GroupSourceIdSource;
-  let groupName: GroupName;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -51,28 +49,33 @@ defineFeature(feature, (test) => {
       providers: [
         LoggableLogger,
         {
-          provide: GroupSourceRepositoryReadWrite,
-          useClass: TribeApiGroupSourceRepository,
+          provide: GroupMemberSourceRepositoryReadWrite,
+          useClass: TribeApiGroupMemberSourceRepository,
         },
         {
-          provide: GroupSourceRepositoryErrorFactory,
+          provide: GroupMemberSourceRepositoryErrorFactory,
           useClass: TribeApiRepositoryErrorFactory,
         },
       ],
     }).compile();
 
-    repository = moduleRef.get<GroupSourceRepositoryReadWrite>(
-      GroupSourceRepositoryReadWrite
-    ) as TribeApiGroupSourceRepository;
+    repository = moduleRef.get<GroupMemberSourceRepositoryReadWrite>(
+      GroupMemberSourceRepositoryReadWrite
+    ) as TribeApiGroupMemberSourceRepository;
+
+    // this is the simpler version
+    // I know this ID exists, it'll do for now
+    groupSourceId = '616609d6165a9354cc963968' as GroupSourceId;
   });
 
-  test('Successfully find one group source by id', ({
+  test('Successfully find one group member source by member id', ({
     given,
     and,
     when,
     then,
   }) => {
-    let result: GroupSource;
+    let groupMemberSourceId: MemberSourceId;
+    let result: GroupMemberSource;
     let error: Error;
 
     given('I am authorised to access the source', () => {
@@ -82,36 +85,39 @@ defineFeature(feature, (test) => {
     and('a matching record exists at the source', async () => {
       // this is the simpler version
       // I know this ID exists, it'll do for now
-      groupSourceId = '602ac5101d5f77deefd636b6' as GroupSourceId;
-      groupSourceIdSource = {
-        id: groupSourceId,
-        source: 'COMMUNITY',
-      };
+      groupMemberSourceId = '5fb59b15628186115ab8eecb' as MemberSourceId;
     });
 
     when('I request the source by ID', async () => {
       try {
         result = await executeTask(
-          repository.findOneByIdSource(groupSourceIdSource)
+          repository.findOneByMemberId({
+            value: groupMemberSourceId,
+            parentId: groupSourceId,
+          })
         );
       } catch (err) {
-        error = err;
+        if ('response' in err) {
+          console.log(err.response);
+        }
+        error = err as Error;
         expect(error).toBeUndefined();
       }
     });
 
     then('a source corresponding to that ID should be returned', () => {
-      expect(result.id).toEqual(groupSourceId);
+      expect(result.memberId).toEqual(groupMemberSourceId);
     });
   });
 
-  test('Successfully find one group source by name', ({
+  test('Successfully find one group member source by email', ({
     given,
     and,
     when,
     then,
   }) => {
-    let result: GroupSource;
+    let groupMemberEmail: MemberEmail;
+    let result: GroupMemberSource;
     let error: Error;
 
     given('I am authorised to access the source', () => {
@@ -121,20 +127,28 @@ defineFeature(feature, (test) => {
     and('a matching record exists at the source', async () => {
       // this is the simpler version
       // I know this name exists (as alternate), it'll do for now
-      groupName = 'Admins' as GroupName;
+      groupMemberEmail = 'michaelkelly@asiapacificforum.net' as MemberEmail;
     });
 
-    when('I request the source by name', async () => {
+    when('I request the source by email', async () => {
       try {
-        result = await executeTask(repository.findOneByName(groupName));
+        result = await executeTask(
+          repository.findOneByMemberEmail({
+            value: groupMemberEmail,
+            parentId: groupSourceId,
+          })
+        );
       } catch (err) {
+        if ('response' in err) {
+          console.log(err.response);
+        }
         error = err;
         expect(error).toBeUndefined();
       }
     });
 
-    then('a source corresponding to that name should be returned', () => {
-      expect(result.id).toBeDefined();
+    then('a source corresponding to that email should be returned', () => {
+      expect(result.memberEmail).toEqual(groupMemberEmail);
     });
   });
 
@@ -144,7 +158,8 @@ defineFeature(feature, (test) => {
     when,
     then,
   }) => {
-    let result: GroupSource;
+    let groupMemberSourceId: MemberSourceId;
+    let result: GroupMemberSource;
     let error: Error;
 
     given('I am authorised to access the source', () => {
@@ -152,16 +167,16 @@ defineFeature(feature, (test) => {
     });
 
     and('a matching record DOES NOT exist at the source', () => {
-      groupSourceIdSource = {
-        id: '602ac5101d5f77deefd64444',
-        source: 'COMMUNITY',
-      };
+      groupMemberSourceId = '5f18c98dc5e54200075dAAAA' as MemberSourceId;
     });
 
     when('I request the source by ID', async () => {
       try {
         result = await executeTask(
-          repository.findOneByIdSource(groupSourceIdSource)
+          repository.findOneByMemberId({
+            value: groupMemberSourceId,
+            parentId: groupSourceId,
+          })
         );
       } catch (err) {
         error = err;

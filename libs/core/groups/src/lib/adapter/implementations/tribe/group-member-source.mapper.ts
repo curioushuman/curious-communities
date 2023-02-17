@@ -29,7 +29,7 @@ export class TribeApiGroupMemberSourceMapper {
   public static toSourceForCreate(
     domainEntity: GroupMemberSourceForCreate
   ): TribeApiGroupMemberSourceForCreate {
-    const entity = {
+    const entity: TribeApiGroupMemberSourceForCreate = {
       user: domainEntity.memberId,
     };
     return TribeApiGroupMemberSourceForCreate.check(entity);

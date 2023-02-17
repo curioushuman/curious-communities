@@ -121,7 +121,7 @@ defineFeature(feature, (test) => {
     and('a matching record exists at the source', async () => {
       // this is the simpler version
       // I know this name exists (as alternate), it'll do for now
-      groupName = 'Samoa OMB - Introduction to gender equality' as GroupName;
+      groupName = 'Admins' as GroupName;
     });
 
     when('I request the source by name', async () => {

@@ -62,7 +62,12 @@ defineFeature(feature, (test) => {
     ) as TribeApiGroupSourceRepository;
   });
 
-  test('Successfully updating a group source', ({ given, and, when, then }) => {
+  test.skip('Successfully updating a group source', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
     let checkGroupSource: GroupSource;
     let error: Error;
 

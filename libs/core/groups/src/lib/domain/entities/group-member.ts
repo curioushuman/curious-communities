@@ -1,8 +1,4 @@
 import { Static, Union } from 'runtypes';
-import { prepareExternalIdSource } from '@curioushuman/common';
-import { GroupMemberSourceId } from '../value-objects/group-member-source-id';
-import { GroupMemberSourceIdSource } from '../value-objects/group-member-source-id-source';
-import { Source } from '../value-objects/source';
 import {
   CourseGroupMember,
   CourseGroupMemberBase,
@@ -76,12 +72,3 @@ export function isCourseGroupMember(
 export type GroupMemberIdentifiers = StandardGroupMemberIdentifiers &
   CourseGroupMemberIdentifiers;
 export type GroupMemberIdentifier = keyof GroupMemberIdentifiers;
-
-/**
- * Convenience function to prepare a GroupSourceIdSource
- */
-export function prepareGroupMemberExternalIdSource(
-  idSourceValue: string
-): GroupMemberSourceIdSource {
-  return prepareExternalIdSource(idSourceValue, GroupMemberSourceId, Source);
-}

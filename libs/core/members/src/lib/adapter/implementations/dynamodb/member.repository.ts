@@ -76,9 +76,8 @@ export class DynamoDbMemberRepository implements MemberRepository {
   }
 
   findOneById = (value: MemberId): TE.TaskEither<Error, Member> => {
-    const params = this.dynamoDbRepository.prepareParamsGet({
+    const params = this.dynamoDbRepository.prepareParamsGetOne({
       primaryKey: value,
-      sortKey: value,
     });
     return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   };

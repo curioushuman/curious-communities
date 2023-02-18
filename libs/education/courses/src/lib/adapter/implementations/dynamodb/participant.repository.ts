@@ -72,9 +72,8 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
    * ! UPDATE: removed until we figure out the best way to do this
    */
   // findOneById = (value: ParticipantId): TE.TaskEither<Error, Participant> => {
-  //   const params = this.dynamoDbRepository.prepareParamsGet({
+  //   const params = this.dynamoDbRepository.prepareParamsGetOne({
   //     primaryKey: value,
-  //     sortKey: value,
   //   });
   //   return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   // };

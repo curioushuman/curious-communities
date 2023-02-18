@@ -16,10 +16,13 @@ import { LoggableLogger } from '@curioushuman/loggable';
 
 import { DynamoDbItem } from './entities/item';
 import {
+  DynamoDBFindAllProcessMethod,
+  DynamoDbFindAllResponse,
   DynamoDbFindOneParams,
   DynamoDBFindOneProcessMethod,
   DynamoDbRepositoryGetOneProps,
   DynamoDbRepositoryProps,
+  DynamoDbRepositoryQueryAllProps,
   DynamoDbRepositoryQueryOneProps,
   DynamoDbSaveParams,
   DynamoDBSaveProcessMethod,
@@ -28,6 +31,11 @@ import { dashToCamelCase } from '../../../utils/functions';
 
 /**
  * A base repository for DynamoDb
+ *
+ * TODO:
+ * - [ ] can we do something about the use of Record<string, unknown>
+ *       instead of PersistenceT. DDB will only accept that it returns
+ *       Record<string, unknown>, but... we need to intercept that fact here.
  */
 export class DynamoDbRepository<DomainT, PersistenceT>
   implements OnModuleDestroy
@@ -169,18 +177,28 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   public prepareParamsGet(
     props: DynamoDbRepositoryGetOneProps
   ): GetCommandInput {
+    return {
+      TableName: this.tableName,
+      Key: props,
+    };
+  }
+
+  /**
+   * Convenience function to build params for the get command
+   * when used in a findOne context.
+   */
+  public prepareParamsGetOne(
+    props: DynamoDbRepositoryGetOneProps
+  ): GetCommandInput {
     const { primaryKey, sortKey } = props;
     // if only the primary key is provided
     // we assume they want the parent record
     // our pattern for parent records is for pk and sk to match
     const sk = sortKey || primaryKey;
-    return {
-      TableName: this.tableName,
-      Key: {
-        primaryKey,
-        sortKey: sk,
-      },
-    };
+    return this.prepareParamsGet({
+      primaryKey,
+      sortKey: sk,
+    });
   }
 
   /**
@@ -190,6 +208,11 @@ export class DynamoDbRepository<DomainT, PersistenceT>
    *
    * NOTE: this function relies on the fact you'll have set up GSI's
    * for each of the identifiers.
+   *
+   * * NOTE: ALSO RELIES ON THE FACT that for individual records, the
+   * * pk and sk will match
+   *
+   * ! THIS ISN'T GOING TO WORK LONG TERM
    */
   public prepareParamsQueryOne(
     props: DynamoDbRepositoryQueryOneProps
@@ -207,6 +230,38 @@ export class DynamoDbRepository<DomainT, PersistenceT>
       },
       TableName: this.tableName,
       IndexName: this.globalIndexes[indexId],
+    };
+  }
+
+  /**
+   * Convenience function to grab all records for a given item in an index
+   *
+   * This allows for
+   * - providing an index, or querying the table
+   * - providing a keyName, or using the defaults
+   *
+   * ! NOTE: currently only supports ALL by primaryKey
+   * * Someday will support filters etc
+   */
+  public prepareParamsQueryAll(
+    props: DynamoDbRepositoryQueryAllProps
+  ): QueryCommandInput {
+    const { indexId, keyName, value } = props;
+    let primaryKey = 'primaryKey';
+    let IndexName: string | undefined = undefined;
+    if (indexId) {
+      const kName = keyName || this.prepareName(indexId);
+      primaryKey = `${this.entityName}_${kName}`;
+      IndexName = this.globalIndexes[indexId];
+    }
+    const KeyConditionExpression = `${primaryKey} = :v`;
+    return {
+      KeyConditionExpression,
+      ExpressionAttributeValues: {
+        ':v': value,
+      },
+      TableName: this.tableName,
+      IndexName,
     };
   }
 
@@ -244,6 +299,39 @@ export class DynamoDbRepository<DomainT, PersistenceT>
         this.logger.debug(response);
 
         return processResult(response.Items?.[0], params);
+      },
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: unknown) => reason as Error
+    );
+  };
+
+  private prepareFindAllResponse(
+    response: Record<string, unknown>[] | undefined,
+    processResult: DynamoDBFindAllProcessMethod<DomainT>
+  ): DynamoDbFindAllResponse<DomainT> {
+    if (!response) {
+      return [];
+    }
+    return response.map(processResult);
+  }
+
+  /**
+   * Obtain all records for a given item based on params
+   */
+  public tryQueryAll = (
+    params: QueryCommandInput,
+    processResult: DynamoDBFindAllProcessMethod<DomainT>
+  ): TE.TaskEither<Error, DynamoDbFindAllResponse<DomainT>> => {
+    return TE.tryCatch(
+      async () => {
+        // get the item
+        const response = await this.docClient.send(new QueryCommand(params));
+
+        // ? logging?
+        // If anything do logging specific to QueryCommand or AWS stats
+        this.logger.debug(response);
+
+        return this.prepareFindAllResponse(response.Items, processResult);
       },
       // NOTE: we don't use an error factory here, it is one level up
       (reason: unknown) => reason as Error

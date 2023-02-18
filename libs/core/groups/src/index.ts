@@ -10,7 +10,11 @@ export * from './lib/infra/upsert-group-source/upsert-group-source.controller';
 export * from './lib/infra/upsert-group-member-source/upsert-group-member-source.controller';
 
 // types
+export * from './lib/infra/dto/course.dto';
+export * from './lib/infra/dto/participant.dto';
+export * from './lib/infra/dto/course-group.response.dto';
 export * from './lib/infra/dto/standard-group.response.dto';
 export * from './lib/infra/dto/group-source.response.dto';
+export * from './lib/infra/dto/course-group-member.response.dto';
 export * from './lib/infra/dto/standard-group-member.response.dto';
 export * from './lib/infra/dto/group-member-source.response.dto';

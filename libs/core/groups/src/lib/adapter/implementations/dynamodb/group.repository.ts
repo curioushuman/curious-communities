@@ -78,9 +78,8 @@ export class DynamoDbGroupRepository implements GroupRepository {
   findOneById = (value: GroupId): TE.TaskEither<Error, GroupBase> => {
     // Set the parameters.
     // Group in DDB has PK = groupId and SK = groupId
-    const params = this.dynamoDbRepository.prepareParamsGet({
+    const params = this.dynamoDbRepository.prepareParamsGetOne({
       primaryKey: value,
-      sortKey: value,
     });
     return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   };

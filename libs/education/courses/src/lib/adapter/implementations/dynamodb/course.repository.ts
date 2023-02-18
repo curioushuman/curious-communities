@@ -75,9 +75,8 @@ export class DynamoDbCourseRepository implements CourseRepository {
   findOneById = (value: CourseId): TE.TaskEither<Error, CourseBase> => {
     // Set the parameters.
     // Course in DDB has PK = courseId and SK = courseId
-    const params = this.dynamoDbRepository.prepareParamsGet({
+    const params = this.dynamoDbRepository.prepareParamsGetOne({
       primaryKey: value,
-      sortKey: value,
     });
     return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   };

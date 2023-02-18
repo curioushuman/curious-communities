@@ -28,10 +28,13 @@ import {
 } from '../../domain/entities/group-member';
 import { GroupBase } from '../../domain/entities/group';
 import { StandardGroupMemberMapper } from '../standard-group-member.mapper';
-import { GroupMemberResponseDto } from '../dto/group-member-response.dto';
+import { GroupMemberResponseDto } from '../dto/group-member.response.dto';
 
 /**
- * Controller for create group operations
+ * Controller for update group member operations
+ *
+ * TODO:
+ * - [ ] whole thing could be done in fp-ts
  */
 @Controller()
 export class UpdateGroupMemberController {

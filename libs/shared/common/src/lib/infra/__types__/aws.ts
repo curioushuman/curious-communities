@@ -1,6 +1,11 @@
 import { EventBridgeEvent } from 'aws-lambda';
 
 /**
+ * What the input would look like if someone 'put's it to an eventBus
+ */
+export type EventbridgePutEvent<T> = EventBridgeEvent<'putEvent', T>;
+
+/**
  * What the data looks like when eventBus used as a lambda destination
  *
  * Not ideal, but I couldn't find reference to a type to use here
@@ -11,11 +16,6 @@ interface LambdaDestinationReplica<T> {
   responseContext: unknown;
   responsePayload: T;
 }
-
-/**
- * What the input would look like if someone 'put's it to an eventBus
- */
-export type EventbridgePutEvent<T> = EventBridgeEvent<'putEvent', T>;
 
 /**
  * What input looks like when EventBridge used as lambda destination
@@ -59,6 +59,16 @@ interface SqsMessage<T> {
  */
 export interface SqsAsEventSourceEvent<T> {
   Records: SqsMessage<T>[];
+}
+
+/**
+ * SQS event source event predicate
+ * https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
+ */
+export function isSqsEventSourceEvent<T extends SqsAsEventSourceEvent<T>>(
+  event: unknown
+): event is SqsAsEventSourceEvent<T> {
+  return (event as SqsAsEventSourceEvent<T>).Records !== undefined;
 }
 
 /**

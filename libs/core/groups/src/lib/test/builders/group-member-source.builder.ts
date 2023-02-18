@@ -8,7 +8,7 @@ import {
   GroupMemberSourceForCreate,
 } from '../../domain/entities/group-member-source';
 import { GroupMemberSourceStatus } from '../../domain/value-objects/group-member-source-status';
-import { GroupMemberResponseDto } from '../../infra/dto/group-member-response.dto';
+import { GroupMemberResponseDto } from '../../infra/dto/group-member.response.dto';
 import { GroupMemberSourceResponseDto } from '../../infra/dto/group-member-source.response.dto';
 import { UpsertGroupMemberSourceRequestDto } from '../../infra/upsert-group-member-source/dto/upsert-group-member-source.request.dto';
 import config from '../../static/config';

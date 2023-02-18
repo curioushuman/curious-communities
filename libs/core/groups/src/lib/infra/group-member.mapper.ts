@@ -1,5 +1,5 @@
 import { StandardGroupMemberMapper } from './standard-group-member.mapper';
-import { GroupMemberResponseDto } from './dto/group-member-response.dto';
+import { GroupMemberResponseDto } from './dto/group-member.response.dto';
 import {
   GroupMember,
   isCourseGroupMember,

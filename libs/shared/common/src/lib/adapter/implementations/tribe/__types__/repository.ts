@@ -35,7 +35,7 @@ export type TribeApiFindAllResponse<SourceT> = SourceT[];
  * Type contract for processing findAll results from DynamoDB
  */
 export type TribeApiFindAllProcessMethod<DomainT, SourceT> = (
-  item?: SourceT
+  item: SourceT
 ) => DomainT;
 
 /**

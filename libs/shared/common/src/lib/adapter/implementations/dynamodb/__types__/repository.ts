@@ -27,6 +27,15 @@ export interface DynamoDbRepositoryGetOneProps {
 }
 
 /**
+ * Props for DynamoDbRepository.queryAll
+ */
+export interface DynamoDbRepositoryQueryAllProps {
+  indexId?: string;
+  keyName?: string;
+  value: string | number;
+}
+
+/**
  * Props for DynamoDbRepository.queryOne
  */
 export interface DynamoDbRepositoryQueryOneProps {
@@ -38,10 +47,22 @@ export interface DynamoDbRepositoryQueryOneProps {
 /**
  * Type contract for processing findOne results from DynamoDB
  */
-export type DynamoDBFindOneProcessMethod<T> = (
+export type DynamoDBFindOneProcessMethod<DomainT> = (
   item?: Record<string, unknown>,
   params?: DynamoDbFindOneParams
-) => T;
+) => DomainT;
+
+/**
+ * Type contract for processing findAll results from DynamoDB
+ */
+export type DynamoDBFindAllProcessMethod<DomainT> = (
+  item: Record<string, unknown>
+) => DomainT;
+
+/**
+ * Response for findAll
+ */
+export type DynamoDbFindAllResponse<T> = T[];
 
 /**
  * Type contract for processing findOne results from DynamoDB

@@ -15,17 +15,28 @@ import { StandardGroupBase } from './standard-group';
 import { Member } from './member';
 
 /**
- * Type for course group member base entity
+ * Type for group member base entity
  */
 export type GroupMemberBase = StandardGroupMemberBase | CourseGroupMemberBase;
 
 /**
- * Type for course group member entity
+ * Type for group member entity
  *
  * Note: Is Runtype, as used for validation in command
  */
 export const GroupMember = Union(StandardGroupMember, CourseGroupMember);
 export type GroupMember = Static<typeof GroupMember>;
+
+/**
+ * Type for what can be updated on a group member, en masse
+ */
+export const GroupMemberForMultiUpdate = StandardGroupMemberBase.pick('status');
+/**
+ * Type for what can be updated on a group member, en masse
+ */
+export type GroupMemberForMultiUpdate = Static<
+  typeof GroupMemberForMultiUpdate
+>;
 
 /**
  * An alternative parser, instead of GroupMember.check()

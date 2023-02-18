@@ -3,6 +3,8 @@ import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 
 /**
  * Props required to initialize lambda event subscription
+ *
+ *
  */
 export interface LambdaEventSubscriptionProps {
   lambdaEntry: string;
@@ -18,4 +20,5 @@ export interface LambdaEventSubscriptionProps {
   ruleSource?: string;
   ruleDetailType?: string;
   eventPattern?: events.EventPattern;
+  lambdaArns?: string[];
 }

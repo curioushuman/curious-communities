@@ -30,6 +30,10 @@ import { GroupId } from '../../../domain/value-objects/group-id';
  * NOTES:
  * - repos for parent entities, by default, do not return children
  * - we're using composition rather than inheritance here
+ *
+ * TODO:
+ * - [ ] can we do something about the use of Record<string, unknown>
+ *       instead of PersistenceT.
  */
 @Injectable()
 export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
@@ -50,7 +54,7 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
   }
 
   processFindOne(
-    item?: Record<string, unknown>,
+    item?: GroupsItem,
     params?: DynamoDbFindOneParams
   ): GroupMember {
     // did we find anything?
@@ -69,13 +73,22 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
     return DynamoDbGroupMemberMapper.toDomain(groupMemberItem);
   }
 
+  processFindAll(item: GroupsItem): GroupMember {
+    // is it what we expected?
+    // will throw error if not
+    const groupMemberItem = DynamoDbGroupMember.check(item);
+
+    // NOTE: if the response was invalid, an error would have been thrown
+    // could this similarly be in a serialisation decorator?
+    return DynamoDbGroupMemberMapper.toDomain(groupMemberItem);
+  }
+
   /**
    * ! UPDATE: removed until we figure out the best way to do this
    */
   // findOneById = (value: GroupMemberId): TE.TaskEither<Error, GroupMember> => {
-  //   const params = this.dynamoDbRepository.prepareParamsGet({
+  //   const params = this.dynamoDbRepository.prepareParamsGetOne({
   //     primaryKey: value,
-  //     sortKey: value,
   //   });
   //   return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   // };
@@ -114,6 +127,17 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
 
   findOne = (identifier: GroupMemberIdentifier): GroupMemberFindMethod => {
     return this.findOneBy[identifier];
+  };
+
+  findAll = (props: {
+    parentId: GroupId;
+  }): TE.TaskEither<Error, GroupMember[]> => {
+    // Set the parameters.
+    // this will obtain all groupMembers for a given group
+    const params = this.dynamoDbRepository.prepareParamsQueryAll({
+      value: props.parentId,
+    });
+    return this.dynamoDbRepository.tryQueryAll(params, this.processFindOne);
   };
 
   processSave(

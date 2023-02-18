@@ -66,6 +66,16 @@ export abstract class GroupMemberRepository
   }): TaskEither<Error, GroupMember>;
 
   /**
+   * Find all group members
+   *
+   * ! NOTE: currently only supports parentId
+   * * Someday will support filters etc
+   */
+  abstract findAll(props: {
+    parentId: GroupId;
+  }): TaskEither<Error, GroupMember[]>;
+
+  /**
    * Create/update a groupMember
    *
    * NOTE: full groupMember, not just the base

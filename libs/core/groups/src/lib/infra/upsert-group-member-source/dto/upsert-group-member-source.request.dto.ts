@@ -3,7 +3,7 @@ import { Source } from '../../../domain/value-objects/source';
 import {
   GroupMemberResponseDto,
   parseGroupMemberResponseDto,
-} from '../../dto/group-member-response.dto';
+} from '../../dto/group-member.response.dto';
 
 /**
  * Externally facing DTO for upsert function

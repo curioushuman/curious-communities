@@ -2,7 +2,7 @@ import { Record, Static } from 'runtypes';
 import {
   GroupMemberResponseDto,
   parseGroupMemberResponseDto,
-} from '../../dto/group-member-response.dto';
+} from '../../dto/group-member.response.dto';
 
 /**
  * DTO that accepts any of the identifiers

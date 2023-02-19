@@ -34,17 +34,24 @@ export class UpdateGroupMemberMultiController {
     this.logger.setContext(UpdateGroupMemberMultiController.name);
   }
 
+  /**
+   * Updates a group member with the mass update
+   * OR just passes the group member through if no mass update
+   */
   private prepareUpdateDto(
     member: GroupMember,
     validDto: UpdateGroupMemberMultiRequestDto
   ): UpdateGroupMemberRequestDto {
     // overwrite the current data, with the mass update data
-    const groupMember = {
-      ...member,
-      ...validDto.groupMemberUpdate,
-    };
+    const groupMember = validDto.groupMemberUpdate
+      ? {
+          ...member,
+          ...validDto.groupMemberUpdate,
+        }
+      : member;
     return {
       groupMember: GroupMemberMapper.toResponseDto(groupMember),
+      requestSource: 'internal',
     };
   }
 

@@ -43,7 +43,7 @@ export abstract class GroupMemberSourceRepositoryRead
   ): GroupMemberSourceFindMethod;
 
   /**
-   * Find a group by the given ID
+   * Find a group member by the given ID
    *
    * NOTES
    * - will throw NotFoundException if not found
@@ -54,7 +54,7 @@ export abstract class GroupMemberSourceRepositoryRead
   }): TaskEither<Error, GroupMemberSource>;
 
   /**
-   * Find a group by the given email
+   * Find a group member by the given email
    *
    * NOTES
    * - will throw NotFoundException if not found
@@ -67,16 +67,21 @@ export abstract class GroupMemberSourceRepositoryRead
 
 export abstract class GroupMemberSourceRepositoryReadWrite extends GroupMemberSourceRepositoryRead {
   /**
-   * Create a group
+   * Create a group member
    */
   abstract create(
     groupMember: GroupMemberSourceForCreate
   ): TaskEither<Error, GroupMemberSource>;
 
   /**
-   * Update a group
+   * Update a group member
    */
   abstract update(
     groupMember: GroupMemberSource
   ): TaskEither<Error, GroupMemberSource>;
+
+  /**
+   * Delete a group member
+   */
+  abstract delete(groupMember: GroupMemberSource): TaskEither<Error, void>;
 }

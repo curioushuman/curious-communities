@@ -30,6 +30,9 @@ import { GroupMemberSourceMapper } from '../group-member-source.mapper';
 import { GroupSource } from '../../domain/entities/group-source';
 import { FindGroupSourceMapper } from '../../application/queries/find-group-source/find-group-source.mapper';
 import { FindGroupSourceQuery } from '../../application/queries/find-group-source/find-group-source.query';
+import { GroupSourceStatusEnum } from '../../domain/value-objects/group-source-status';
+import { GroupMemberStatusEnum } from '../../domain/value-objects/group-member-status';
+import { DeleteGroupMemberSourceCommand } from '../../application/commands/delete-group-member-source/delete-group-member-source.command';
 
 /**
  * Controller for upsert groupMemberSource operations
@@ -68,6 +71,10 @@ export class UpsertGroupMemberSourceController {
       parseData(parseUpsertGroupMemberSourceRequestDto, this.logger)
     );
 
+    // extract some values
+    const { groupMember } = validDto;
+    const { group } = groupMember;
+
     // #2. find groupMemberSource and groupSource
     // NOTE: These will error if they need to
     // specifically findGroup; inc. if no group
@@ -76,7 +83,15 @@ export class UpsertGroupMemberSourceController {
       this.findGroupMemberSource(validDto),
     ]);
 
-    // #3. upsert group member source
+    // #3. work out if a groupMemberSource should in fact not exist
+    if (
+      group.status !== GroupSourceStatusEnum.ACTIVE &&
+      groupMember.status !== GroupMemberStatusEnum.ACTIVE
+    ) {
+      return await executeTask(this.deleteGroupMemberSource(groupMemberSource));
+    }
+
+    // #4. upsert group member source
     const upsertTask = groupMemberSource
       ? this.updateGroupMemberSource(validDto, groupMemberSource)
       : this.createGroupMemberSource(validDto, groupSource);
@@ -89,6 +104,26 @@ export class UpsertGroupMemberSourceController {
           parseData(GroupMemberSourceMapper.toResponseDto, this.logger)
         )
       : undefined;
+  }
+
+  private deleteGroupMemberSource(
+    groupMemberSource: GroupMemberSource | undefined
+  ): TE.TaskEither<Error, undefined> {
+    if (!groupMemberSource) {
+      return TE.right(undefined);
+    }
+    const deleteDto = {
+      groupMemberSource,
+    };
+    return TE.tryCatch(
+      async () => {
+        const command = new DeleteGroupMemberSourceCommand(deleteDto);
+        return await this.commandBus.execute<DeleteGroupMemberSourceCommand>(
+          command
+        );
+      },
+      (error: unknown) => error as Error
+    );
   }
 
   private createGroupMemberSource(

@@ -14,7 +14,7 @@ import {
 
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { DynamoDbItem } from './entities/item';
+import { DynamoDbDiscriminatedItem, DynamoDbItem } from './entities/item';
 import {
   DynamoDBFindAllProcessMethod,
   DynamoDbFindAllResponse,
@@ -34,8 +34,9 @@ import { dashToCamelCase } from '../../../utils/functions';
  *
  * TODO:
  * - [ ] can we do something about the use of Record<string, unknown>
- *       instead of PersistenceT. DDB will only accept that it returns
- *       Record<string, unknown>, but... we need to intercept that fact here.
+ *       instead of DynamoDbDiscriminatedItem<PersistenceT>.
+ *       DDB will only accept that it returns Record<string, unknown>,
+ *       but... we need to intercept that fact here.
  */
 export class DynamoDbRepository<DomainT, PersistenceT>
   implements OnModuleDestroy
@@ -209,10 +210,12 @@ export class DynamoDbRepository<DomainT, PersistenceT>
    * NOTE: this function relies on the fact you'll have set up GSI's
    * for each of the identifiers.
    *
-   * * NOTE: ALSO RELIES ON THE FACT that for individual records, the
-   * * pk and sk will match
-   *
-   * ! THIS ISN'T GOING TO WORK LONG TERM
+   * NOTES:
+   * - we use filter expression to only return the requested record
+   *   i.e. within the given index, the key is props.value but there
+   *   could be numerous records of varying types. The point of this
+   *   function is to return one record, of the type specified by this
+   *   repository. So we use entityType to filter out the rest.
    */
   public prepareParamsQueryOne(
     props: DynamoDbRepositoryQueryOneProps
@@ -220,13 +223,13 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     const { indexId, keyName, value } = props;
     const kName = keyName || this.prepareName(indexId);
     const primaryKey = `${this.entityName}_${kName}`;
-    const sortKey = `Sk_${this.entityName}_${kName}`;
-    // because we just want the one record returned, we match to pk and sk
-    const KeyConditionExpression = `${primaryKey} = :v AND ${sortKey} = :v`;
+    const KeyConditionExpression = `${primaryKey} = :v`;
     return {
       KeyConditionExpression,
+      FilterExpression: 'entityType = :e',
       ExpressionAttributeValues: {
         ':v': value,
+        ':e': this.entityName,
       },
       TableName: this.tableName,
       IndexName: this.globalIndexes[indexId],
@@ -234,13 +237,15 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   }
 
   /**
-   * Convenience function to grab all records for a given item in an index
+   * Convenience function to grab all records for a given item in an item collection
    *
    * This allows for
    * - providing an index, or querying the table
    * - providing a keyName, or using the defaults
    *
-   * ! NOTE: currently only supports ALL by primaryKey
+   * NOTES
+   * - we use filter expression to return only the records of this type
+   * ! IMPORTANT: currently only supports ALL by primaryKey
    * * Someday will support filters etc
    */
   public prepareParamsQueryAll(
@@ -257,8 +262,10 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     const KeyConditionExpression = `${primaryKey} = :v`;
     return {
       KeyConditionExpression,
+      FilterExpression: 'entityType = :e',
       ExpressionAttributeValues: {
         ':v': value,
+        ':e': this.entityName,
       },
       TableName: this.tableName,
       IndexName,
@@ -339,14 +346,25 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   };
 
   /**
+   * Adding a discriminator to the item
+   * Will help with queries
+   */
+  public prepareDiscriminatedType(
+    item: DynamoDbItem<PersistenceT>
+  ): DynamoDbDiscriminatedItem<PersistenceT> {
+    return {
+      ...item,
+      entityType: this.entityName,
+    };
+  }
+
+  /**
    * Convenience function to build params for the put command
    */
-  public preparePutParams(
-    item: DynamoDbItem<PersistenceT> | undefined
-  ): PutCommandInput {
+  public preparePutParams(item: DynamoDbItem<PersistenceT>): PutCommandInput {
     return {
       TableName: this.tableName,
-      Item: item,
+      Item: this.prepareDiscriminatedType(item),
     };
   }
 

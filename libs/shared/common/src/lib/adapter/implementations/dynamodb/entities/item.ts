@@ -23,3 +23,10 @@ export type DynamoDbItemKeys = Static<typeof DynamoDbItemKeys>;
  * TODO: there is probably a more elegant way of doing this.
  */
 export type DynamoDbItem<T> = DynamoDbItemKeys & T;
+
+/**
+ * Discriminating type to help separation of rows from DDB query
+ */
+export type DynamoDbDiscriminatedItem<T> = DynamoDbItem<T> & {
+  entityType: string;
+};

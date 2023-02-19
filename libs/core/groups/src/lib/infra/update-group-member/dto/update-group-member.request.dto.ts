@@ -1,4 +1,5 @@
-import { Record, Static } from 'runtypes';
+import { Optional, Record, Static } from 'runtypes';
+import { RequestSource } from '@curioushuman/common';
 import {
   GroupMemberResponseDto,
   parseGroupMemberResponseDto,
@@ -9,6 +10,7 @@ import {
  */
 export const UpdateGroupMemberRequestDto = Record({
   groupMember: GroupMemberResponseDto,
+  requestSource: Optional(RequestSource),
 });
 
 /**

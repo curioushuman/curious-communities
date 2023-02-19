@@ -10,6 +10,7 @@ import {
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryItemUpdateError } from '@curioushuman/error-factory';
+import { REQUEST_SOURCE_EXTERNAL } from '@curioushuman/common';
 
 import {
   parseUpdateGroupMemberRequestDto,
@@ -66,12 +67,15 @@ export class UpdateGroupMemberController {
     // NOTE: These will error if they need to
     // specifically findGroup; inc. if no group
     // ? this kind of logic is questionable in a controller!!!
-    // we are not going to use the group OR groupMember here, but we need to check if it exists
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [group, groupMember] = await Promise.all([
-      this.findGroup(validDto),
-      this.findGroupMember(validDto),
-    ]);
+    // NOTE: if request was internal, we can skip these checks
+    if (validDto.requestSource === REQUEST_SOURCE_EXTERNAL) {
+      // we are not going to use the group OR groupMember here, but we need to check if it exists
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [group, groupMember] = await Promise.all([
+        this.findGroup(validDto),
+        this.findGroupMember(validDto),
+      ]);
+    }
 
     // #3. update group member
     // we're type casting here as we would have thrown an error if the groupMember was undefined

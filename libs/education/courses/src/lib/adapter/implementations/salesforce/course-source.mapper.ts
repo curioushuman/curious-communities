@@ -1,6 +1,9 @@
 import { Timestamp } from '@curioushuman/common';
 import { CourseSource } from '../../../domain/entities/course-source';
-import { CourseSourceStatus } from '../../../domain/value-objects/course-source-status';
+import {
+  CourseSourceStatus,
+  CourseSourceStatusEnum,
+} from '../../../domain/value-objects/course-source-status';
 import { Source } from '../../../domain/value-objects/source';
 import { SalesforceApiCourseSource } from './entities/course-source';
 
@@ -45,13 +48,13 @@ export class SalesforceApiCourseSourceMapper {
     dateClosed: Timestamp | undefined
   ): CourseSourceStatus {
     if (!dateOpen) {
-      return 'pending' as CourseSourceStatus;
+      return CourseSourceStatusEnum.PENDING;
     }
     const now = Date.now();
     if (now < dateOpen || (dateClosed && now > dateClosed)) {
-      return 'closed' as CourseSourceStatus;
+      return CourseSourceStatusEnum.CLOSED;
     }
-    return 'open' as CourseSourceStatus;
+    return CourseSourceStatusEnum.ACTIVE;
   }
 
   public static prepareTimestamp(

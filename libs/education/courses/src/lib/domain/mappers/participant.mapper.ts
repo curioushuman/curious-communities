@@ -12,8 +12,7 @@ import {
  */
 export class ParticipantMapper {
   /**
-   * Currently doesn't do anything as they align.
-   * But if they ever diverge, this is where you'd do it
+   * Maps external to internal status
    */
   public static fromSourceStatus(
     status: ParticipantSourceStatus

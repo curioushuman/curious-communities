@@ -35,6 +35,7 @@ export class CreateGroupMemberSourceMapper {
         groupId: groupSource.id,
         memberId: memberSourceIdSource.id,
         memberEmail: groupMember.member.email,
+        // TODO: add status mapping, from group member to group member source
         status: groupMember.status,
       });
     };

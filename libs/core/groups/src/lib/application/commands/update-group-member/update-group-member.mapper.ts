@@ -9,7 +9,8 @@ import { GroupMember } from '../../../domain/entities/group-member';
 import { GroupMemberSource } from '../../../domain/entities/group-member-source';
 import { StandardGroupMember } from '../../../domain/entities/standard-group-member';
 import { ParticipantDto } from '../../../infra/dto/participant.dto';
-import { GroupMemberMapper } from '../../../infra/group-member.mapper';
+import { GroupMemberMapper as InfraGroupMemberMapper } from '../../../infra/group-member.mapper';
+import { GroupMemberMapper as DomainGroupMemberMapper } from '../../../domain/mappers/group-member.mapper';
 import { MemberMapper } from '../../../infra/member.mapper';
 import { UpdateGroupMemberRequestDto } from '../../../infra/update-group-member/dto/update-group-member.request.dto';
 import { UpsertCourseGroupMemberRequestDto } from '../../../infra/upsert-course-group-member/dto/upsert-course-group-member.request.dto';
@@ -27,7 +28,7 @@ export class UpdateGroupMemberMapper extends UpdateMapper {
     dto: UpdateGroupMemberRequestDto
   ): UpdateGroupMemberDto {
     return {
-      groupMember: GroupMemberMapper.fromResponseDto(dto.groupMember),
+      groupMember: InfraGroupMemberMapper.fromResponseDto(dto.groupMember),
     } as UpdateGroupMemberDto;
   }
 
@@ -62,8 +63,7 @@ export class UpdateGroupMemberMapper extends UpdateMapper {
       ...groupMemberBase,
       id: groupMember.id,
 
-      // TODO: mapping of participant status to GM statuses
-      status: participant.status,
+      status: DomainGroupMemberMapper.fromParticipantStatus(participant.status),
     });
     const member = MemberMapper.fromResponseDto(participant.member);
     return {

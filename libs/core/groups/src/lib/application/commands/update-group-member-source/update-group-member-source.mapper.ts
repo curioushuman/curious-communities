@@ -25,7 +25,7 @@ export class UpdateGroupMemberSourceMapper extends UpdateMapper {
         memberId: groupMemberSource.memberId,
         memberEmail: groupMemberSource.memberEmail,
         source: groupMemberSource.source,
-        // TODO: map the statuses
+        // TODO: add status mapping, from group member to group member source
         status: groupMember.status,
       });
   }

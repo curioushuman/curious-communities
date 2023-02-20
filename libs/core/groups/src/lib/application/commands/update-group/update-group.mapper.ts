@@ -7,6 +7,8 @@ import { UpsertCourseGroupRequestDto } from '../../../infra/upsert-course-group/
 import { UpdateGroupDto } from './update-group.dto';
 import { CourseGroupBase } from '../../../domain/entities/course-group';
 import { StandardGroupBase } from '../../../domain/entities/standard-group';
+import { GroupMapper } from '../../../domain/mappers/group.mapper';
+import config from '../../../static/config';
 
 export class UpdateGroupMapper extends UpdateMapper {
   public static fromUpsertCourseGroupRequestDto(
@@ -37,9 +39,15 @@ export class UpdateGroupMapper extends UpdateMapper {
       id: group.id,
       slug: createGroupSlug(course.name),
       name: course.name,
+      status: GroupMapper.fromCourseStatus(course.status),
     });
   }
 
+  /**
+   * ! THIS IS UNFINISHED
+   * We haven't had to employ it yet
+   * I just wanted to make sure we could support it
+   */
   public static fromSourceToGroup(
     source: GroupSource,
     group: GroupBase
@@ -49,6 +57,7 @@ export class UpdateGroupMapper extends UpdateMapper {
       id: group.id,
       slug: createGroupSlug(source.name),
       name: source.name,
+      status: config.defaults.groupStatus,
     });
   }
 }

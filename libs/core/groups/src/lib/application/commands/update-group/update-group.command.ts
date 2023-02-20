@@ -45,19 +45,13 @@ export class UpdateGroupHandler implements ICommandHandler<UpdateGroupCommand> {
       parseData(UpdateGroupDto.check, this.logger, 'SourceInvalidError')
     );
 
-    // #2 grab the group out
     const { group } = validDto;
 
+    // #2 validate/parse the groupMember from the DTO
+    const parsedGroup = this.parseDto(validDto);
+
     const task = pipe(
-      validDto,
-      // #4. update the entity, from the course/source
-      parseData(UpdateGroupMapper.fromDto, this.logger, 'SourceInvalidError'),
-      // #3. make sure an update is required
-      parseData(
-        UpdateGroupMapper.requiresUpdate<GroupBase>(group),
-        this.logger,
-        'SourceInvalidError'
-      ),
+      parsedGroup,
 
       // #4. update the entity, from the source; if required
       O.fromNullable,
@@ -83,5 +77,29 @@ export class UpdateGroupHandler implements ICommandHandler<UpdateGroupCommand> {
     );
 
     return executeTask(task);
+  }
+
+  parseDto(validDto: UpdateGroupDto): GroupBase | undefined {
+    const { group, course, groupSource } = validDto;
+    // if no participant or groupSource it means we're doing a straight update
+    // so we skip the requiresUpdate check
+    if (!course && !groupSource) {
+      return group;
+    }
+    return pipe(
+      validDto,
+      // #4. update the entity, from the course/source
+      parseData(
+        UpdateGroupMapper.fromDto,
+        this.logger,
+        'InternalRequestInvalidError'
+      ),
+      // #3. make sure an update is required
+      parseData(
+        UpdateGroupMapper.requiresUpdate<GroupBase>(group),
+        this.logger,
+        'InternalRequestInvalidError'
+      )
+    );
   }
 }

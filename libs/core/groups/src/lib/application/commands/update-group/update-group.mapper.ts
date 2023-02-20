@@ -31,6 +31,10 @@ export class UpdateGroupMapper extends UpdateMapper {
   }
 
   public static fromDto(dto: UpdateGroupDto): GroupBase {
+    // this supports the vanilla update from just the record itself
+    if (!dto.course && !dto.groupSource) {
+      return dto.group;
+    }
     // Type casting here as we know if course is null then groupSource is not null
     return dto.course
       ? UpdateGroupMapper.fromCourseToGroup(dto.course, dto.group)

@@ -14,6 +14,8 @@ import { GroupMemberSource } from '../../../domain/entities/group-member-source'
 import { executeTask } from '@curioushuman/fp-ts-utils';
 import { GroupMemberBuilder } from '../../../test/builders/group-member.builder';
 import { MemberBuilder } from '../../../test/builders/member.builder';
+import { GroupStatusEnum } from '../../../domain/value-objects/group-status';
+import { MemberStatusEnum } from '../../../domain/value-objects/member-status';
 
 /**
  * INTEGRATION TEST
@@ -84,6 +86,11 @@ defineFeature(feature, (test) => {
         GroupMemberSourceBuilder().buildCreateUpsertGroupMemberSourceRequestDto(
           groupMemberDto
         );
+      // make sure they're active, or they'll be deleted
+      upsertGroupMemberSourceDto.groupMember.group.status =
+        GroupStatusEnum.ACTIVE;
+      upsertGroupMemberSourceDto.groupMember.member.status =
+        MemberStatusEnum.ACTIVE;
     });
 
     and('no matching record is found at the source', async () => {

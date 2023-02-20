@@ -1,8 +1,8 @@
 import { Null, Optional, Record, Static, String } from 'runtypes';
 import { CourseSourceId } from '../../../../domain/value-objects/course-source-id';
-import { ParticipantEmail } from '../../../../domain/value-objects/member-email';
-import { ParticipantName } from '../../../../domain/value-objects/member-name';
-import { ParticipantOrganisationName } from '../../../../domain/value-objects/member-organisation-name';
+import { MemberEmail } from '../../../../domain/value-objects/member-email';
+import { MemberName } from '../../../../domain/value-objects/member-name';
+import { MemberOrganisationName } from '../../../../domain/value-objects/member-organisation-name';
 import { ParticipantSourceId } from '../../../../domain/value-objects/participant-source-id';
 
 /**
@@ -21,9 +21,9 @@ export const SalesforceApiParticipantSource = Record({
   // Can't use literals, as the check fails
   // Status__c: ParticipantSourceStatus,
   Status__c: String,
-  Contact_full_name__c: ParticipantName,
-  Contact_email__c: ParticipantEmail,
-  SYS_Organisation_name__c: Optional(ParticipantOrganisationName.Or(Null)),
+  Contact_full_name__c: MemberName,
+  Contact_email__c: MemberEmail,
+  SYS_Organisation_name__c: Optional(MemberOrganisationName.Or(Null)),
 });
 
 export type SalesforceApiParticipantSource = Static<

@@ -10,7 +10,7 @@ import {
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryItemUpdateError } from '@curioushuman/error-factory';
-import { REQUEST_SOURCE_EXTERNAL } from '@curioushuman/common';
+import { REQUEST_SOURCE_INTERNAL } from '@curioushuman/common';
 
 import {
   parseUpdateGroupMemberRequestDto,
@@ -68,7 +68,7 @@ export class UpdateGroupMemberController {
     // specifically findGroup; inc. if no group
     // ? this kind of logic is questionable in a controller!!!
     // NOTE: if request was internal, we can skip these checks
-    if (validDto.requestSource === REQUEST_SOURCE_EXTERNAL) {
+    if (validDto.requestSource !== REQUEST_SOURCE_INTERNAL) {
       // we are not going to use the group OR groupMember here, but we need to check if it exists
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [group, groupMember] = await Promise.all([

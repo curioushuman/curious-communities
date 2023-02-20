@@ -32,6 +32,7 @@ import {
   StandardGroupBase,
 } from '../../domain/entities/standard-group';
 import { CourseDto } from '../../infra/dto/course.dto';
+import { UpdateGroupRequestDto } from '../../infra/update-group/dto/update-group.request.dto';
 
 /**
  * A builder for Groups to play with in testing.
@@ -380,6 +381,13 @@ export const GroupBuilder = () => {
           accountOwner: group.accountOwner as string,
         } as CourseDto,
       } as UpsertCourseGroupRequestDto;
+    },
+
+    buildUpdateGroupRequestDto(): UpdateGroupRequestDto {
+      const group = this.buildGroupBaseResponseDto();
+      return {
+        group,
+      } as UpdateGroupRequestDto;
     },
 
     buildGroupResponseDto(): StandardGroupResponseDto {

@@ -21,8 +21,13 @@ import { UpdateGroupHandler } from '../application/commands/update-group/update-
 import { UpsertGroupSourceController } from '../infra/upsert-group-source/upsert-group-source.controller';
 import { CreateGroupSourceHandler } from '../application/commands/create-group-source/create-group-source.command';
 import { UpdateGroupSourceHandler } from '../application/commands/update-group-source/update-group-source.command';
+import { UpdateGroupController } from '../infra/update-group/update-group.controller';
 
-const controllers = [UpsertCourseGroupController, UpsertGroupSourceController];
+const controllers = [
+  UpsertCourseGroupController,
+  UpsertGroupSourceController,
+  UpdateGroupController,
+];
 
 const handlers = [
   CreateGroupHandler,

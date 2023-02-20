@@ -2,10 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
-import {
-  RepositoryItemNotFoundError,
-  RequestInvalidError,
-} from '@curioushuman/error-factory';
+import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { GroupMemberModule } from '../../../test/group-member.module.fake';

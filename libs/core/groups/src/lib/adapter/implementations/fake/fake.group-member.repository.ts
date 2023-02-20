@@ -163,6 +163,16 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
     return this.findOneBy[identifier];
   };
 
+  findAll = (props: {
+    parentId: GroupId;
+  }): TE.TaskEither<Error, GroupMember[]> => {
+    return TE.right(
+      this.groupMembers.filter(
+        (groupMember) => groupMember.groupId === props.parentId
+      )
+    );
+  };
+
   save = (groupMember: GroupMember): TE.TaskEither<Error, GroupMember> => {
     return TE.tryCatch(
       async () => {

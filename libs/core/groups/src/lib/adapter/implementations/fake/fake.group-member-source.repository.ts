@@ -149,6 +149,29 @@ export class FakeGroupMemberSourceRepository
     );
   };
 
+  delete = (groupMember: GroupMemberSource): TE.TaskEither<Error, void> => {
+    return TE.tryCatch(
+      async () => {
+        // extract all elements from the DB array
+        const remainingGroupMembers = this.groupMemberSources.splice(
+          0,
+          this.groupMemberSources.length
+        );
+
+        // add them back in, only if they don't match the ID of the groupMember
+        remainingGroupMembers.forEach((gm) => {
+          if (
+            gm.memberId !== groupMember.memberId &&
+            gm.groupId !== groupMember.groupId
+          ) {
+            this.groupMemberSources.push(gm);
+          }
+        });
+      },
+      (reason: unknown) => reason as Error
+    );
+  };
+
   all = (): TE.TaskEither<Error, GroupMemberSource[]> => {
     return TE.right(this.groupMemberSources);
   };

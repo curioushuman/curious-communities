@@ -1,9 +1,12 @@
 import { Static } from 'runtypes';
-import { MemberSourceStatus } from './member-source-status';
+import { prepareEnumRuntype } from '@curioushuman/common';
+import { MemberSourceStatusEnum } from './member-source-status';
 
 /**
- * ? Should we define the list twice?
+ * Internal influenced by external
  */
-export const MemberStatus = MemberSourceStatus.withBrand('MemberStatus');
+export const MemberStatusEnum = MemberSourceStatusEnum;
+
+export const MemberStatus = prepareEnumRuntype(MemberStatusEnum);
 
 export type MemberStatus = Static<typeof MemberStatus>;

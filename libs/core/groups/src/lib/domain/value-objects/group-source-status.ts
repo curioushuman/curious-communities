@@ -1,19 +1,15 @@
-import { Literal, Static, Union } from 'runtypes';
+import { Static } from 'runtypes';
+import { prepareEnumRuntype } from '@curioushuman/common';
 
+/**
+ * ? Should this be in a common library?
+ */
 export const GroupSourceStatusEnum = {
   PENDING: 'pending',
   ACTIVE: 'active',
   CLOSED: 'closed',
 } as const;
 
-// TODO: get this working, to simplify the below
-// const GroupSourceStatusValues = Object.keys(GroupSourceStatusEnum).map((key) => Literal(GroupSourceStatusEnum[key]));
-
-export const GroupSourceStatus = Union(
-  Literal(GroupSourceStatusEnum.PENDING),
-  Literal(GroupSourceStatusEnum.ACTIVE),
-  Literal(GroupSourceStatusEnum.CLOSED)
-  // ...GroupSourceStatusValues
-);
+export const GroupSourceStatus = prepareEnumRuntype(GroupSourceStatusEnum);
 
 export type GroupSourceStatus = Static<typeof GroupSourceStatus>;

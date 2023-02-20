@@ -8,7 +8,10 @@ import {
   GroupSource,
   GroupSourceForCreate,
 } from '../../domain/entities/group-source';
-import { GroupSourceStatus } from '../../domain/value-objects/group-source-status';
+import {
+  GroupSourceStatus,
+  GroupSourceStatusEnum,
+} from '../../domain/value-objects/group-source-status';
 import { GroupBaseResponseDto } from '../../infra/dto/group-response.dto';
 import { UpsertGroupSourceRequestDto } from '../../infra/upsert-group-source/dto/upsert-group-source.request.dto';
 import config from '../../static/config';
@@ -35,7 +38,7 @@ export const GroupSourceBuilder = () => {
   const defaultProperties: GroupSourceLooseMimic = {
     id: '5008s1234519CjIPPU',
     source,
-    status: 'pending' as GroupSourceStatus,
+    status: GroupSourceStatusEnum.PENDING as GroupSourceStatus,
     name: 'Brown group',
     slug: 'brown-group',
   };

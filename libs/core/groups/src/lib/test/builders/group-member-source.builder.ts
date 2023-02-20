@@ -7,7 +7,10 @@ import {
   GroupMemberSource,
   GroupMemberSourceForCreate,
 } from '../../domain/entities/group-member-source';
-import { GroupMemberSourceStatus } from '../../domain/value-objects/group-member-source-status';
+import {
+  GroupMemberSourceStatus,
+  GroupMemberSourceStatusEnum,
+} from '../../domain/value-objects/group-member-source-status';
 import { GroupMemberResponseDto } from '../../infra/dto/group-member.response.dto';
 import { GroupMemberSourceResponseDto } from '../../infra/dto/group-member-source.response.dto';
 import { UpsertGroupMemberSourceRequestDto } from '../../infra/upsert-group-member-source/dto/upsert-group-member-source.request.dto';
@@ -46,7 +49,7 @@ export const GroupMemberSourceBuilder = () => {
     groupId: '5008s1234519CjIAAU',
     memberId: '5008s1234519CjIBB2',
     memberEmail: 'james@brown.com',
-    status: 'pending' as GroupMemberSourceStatus,
+    status: GroupMemberSourceStatusEnum.PENDING as GroupMemberSourceStatus,
   };
   const overrides: GroupMemberSourceLooseMimic = {
     source: defaultProperties.source,

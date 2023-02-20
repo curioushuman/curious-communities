@@ -11,7 +11,7 @@ import { CreateParticipantRequestDto } from '../../infra/create-participant/dto/
 import { CreateParticipantDto } from '../../application/commands/create-participant/create-participant.dto';
 import { ParticipantSourceBuilder } from './participant-source.builder';
 import config from '../../static/config';
-import { ParticipantStatus } from '../../domain/value-objects/participant-status';
+import { ParticipantStatusEnum } from '../../domain/value-objects/participant-status';
 import { UpdateParticipantRequestDto } from '../../infra/update-participant/dto/update-participant.request.dto';
 import { UpdateParticipantDto } from '../../application/commands/update-participant/update-participant.dto';
 import { FindParticipantDto } from '../../application/queries/find-participant/find-participant.dto';
@@ -53,7 +53,7 @@ export const ParticipantBuilder = () => {
     id: '6fce9d10-aeed-4bb1-8c8c-92094f1982ff',
     memberId: 'bd4dfd87-70c1-4a6f-b590-b3bbfce99f51',
     courseId: '5aad9387-2bfb-4391-82b3-8501a4fca58e',
-    status: 'pending' as ParticipantStatus,
+    status: ParticipantStatusEnum.PENDING,
 
     sourceIds: [
       {

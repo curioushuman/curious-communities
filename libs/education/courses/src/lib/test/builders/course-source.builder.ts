@@ -2,7 +2,7 @@ import { ExternalId } from '@curioushuman/common';
 import { FindCourseSourceDto } from '../../application/queries/find-course-source/find-course-source.dto';
 
 import { CourseSource } from '../../domain/entities/course-source';
-import { CourseSourceStatus } from '../../domain/value-objects/course-source-status';
+import { CourseSourceStatusEnum } from '../../domain/value-objects/course-source-status';
 import config from '../../static/config';
 
 /**
@@ -41,7 +41,7 @@ export const CourseSourceBuilder = () => {
   const defaultProperties: CourseSourceLooseMimic = {
     id: '5008s1234519CjIAAU',
     source,
-    status: 'open' as CourseSourceStatus,
+    status: CourseSourceStatusEnum.PENDING,
     name: 'Learn to be a dancer',
     dateOpen: timestamps[2],
     dateClosed: timestamps[0],

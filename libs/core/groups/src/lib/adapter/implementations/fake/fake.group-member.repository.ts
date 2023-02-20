@@ -13,7 +13,10 @@ import {
   GroupMemberRepository,
 } from '../../ports/group-member.repository';
 import { GroupMemberBuilder } from '../../../test/builders/group-member.builder';
-import { GroupMemberStatus } from '../../../domain/value-objects/group-member-status';
+import {
+  GroupMemberStatus,
+  GroupMemberStatusEnum,
+} from '../../../domain/value-objects/group-member-status';
 import { ParticipantId } from '../../../domain/value-objects/participant-id';
 import { CourseGroupMember } from '../../../domain/entities/course-group-member';
 import { MemberId } from '../../../domain/value-objects/member-id';
@@ -27,7 +30,7 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
   private restatusGroupMember<T extends GroupMember | GroupMemberBase>(
     groupMember: T
   ): T {
-    groupMember.status = 'pending' as GroupMemberStatus;
+    groupMember.status = GroupMemberStatusEnum.PENDING as GroupMemberStatus;
     return groupMember;
   }
 
@@ -67,7 +70,7 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
       )
     );
     const invalidSource = GroupMemberBuilder().invalidOther().buildNoCheck();
-    invalidSource.status = 'pending' as GroupMemberStatus;
+    invalidSource.status = GroupMemberStatusEnum.PENDING;
     this.groupMembers.push(invalidSource);
     // console.log(this.groupMembers);
   }

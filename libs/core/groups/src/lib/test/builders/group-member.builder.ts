@@ -6,7 +6,10 @@ import {
   StandardGroupMember,
   StandardGroupMemberBase,
 } from '../../domain/entities/standard-group-member';
-import { GroupMemberStatus } from '../../domain/value-objects/group-member-status';
+import {
+  GroupMemberStatus,
+  GroupMemberStatusEnum,
+} from '../../domain/value-objects/group-member-status';
 import { GroupMemberType } from '../../domain/value-objects/group-member-type';
 import {
   StandardGroupMemberBaseResponseDto,
@@ -55,7 +58,7 @@ export const GroupMemberBuilder = () => {
     memberId: 'bd4dfd87-70c1-4a6f-b590-b3bbfce99f51',
     groupId: '5aad9387-2bfb-4391-82b3-8501a4fca58e',
 
-    status: 'pending' as GroupMemberStatus,
+    status: GroupMemberStatusEnum.PENDING as GroupMemberStatus,
     accountOwner: config.defaults.accountOwner,
   };
   const overrides: GroupMemberLooseMimic = {

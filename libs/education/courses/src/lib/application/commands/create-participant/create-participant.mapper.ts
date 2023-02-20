@@ -11,10 +11,10 @@ import { CourseBase } from '../../../domain/entities/course';
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 import { ParticipantSourceMapper } from '../../../infra/participant-source.mapper';
 import { CourseMapper } from '../../../infra/course.mapper';
-import { ParticipantStatus } from '../../../domain/value-objects/participant-status';
 import { AccountSlug } from '../../../domain/value-objects/account-slug';
 import { Member } from '../../../domain/entities/member';
 import { MemberMapper } from '../../../infra/member.mapper';
+import { ParticipantMapper } from '../../../domain/mappers/participant.mapper';
 
 export class CreateParticipantMapper {
   public static fromRequestDto(
@@ -41,7 +41,7 @@ export class CreateParticipantMapper {
   ): ParticipantFromSource {
     const participantFromSource = {
       id: createParticipantId(),
-      status: source.status as ParticipantStatus,
+      status: ParticipantMapper.fromSourceStatus(source.status),
       sourceIds: [
         {
           id: source.id,

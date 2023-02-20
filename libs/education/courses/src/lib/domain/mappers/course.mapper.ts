@@ -4,6 +4,7 @@ import { CourseBase } from '../entities/course';
 import { CourseSource } from '../entities/course-source';
 import { AccountSlug } from '../value-objects/account-slug';
 import { CourseName } from '../value-objects/course-name';
+import { CourseSourceStatus } from '../value-objects/course-source-status';
 import { CourseStatus } from '../value-objects/course-status';
 
 /**
@@ -20,11 +21,19 @@ import { CourseStatus } from '../value-objects/course-status';
  * - at some point you may need to include a status mapping function
  */
 export class CourseMapper {
+  /**
+   * Currently doesn't do anything as they align.
+   * But if they ever diverge, this is where you'd do it
+   */
+  public static fromSourceStatus(status: CourseSourceStatus): CourseStatus {
+    return status as CourseStatus;
+  }
+
   public static fromSourceToCourseBase(
     source: CourseSource
   ): Omit<CourseBase, 'id' | 'slug'> {
     return {
-      status: source.status as CourseStatus,
+      status: CourseMapper.fromSourceStatus(source.status),
 
       sourceIds: [
         {

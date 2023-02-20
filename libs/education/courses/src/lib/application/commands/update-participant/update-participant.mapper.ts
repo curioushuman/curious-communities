@@ -2,6 +2,7 @@ import { UpdateMapper } from '@curioushuman/common';
 
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 import { Participant } from '../../../domain/entities/participant';
+import { ParticipantMapper } from '../../../domain/mappers/participant.mapper';
 
 /**
  * TODO
@@ -20,7 +21,7 @@ export class UpdateParticipantMapper extends UpdateMapper {
     return (source: ParticipantSource) => {
       return Participant.check({
         ...participant,
-        status: source.status,
+        status: ParticipantMapper.fromSourceStatus(source.status),
       });
     };
   }

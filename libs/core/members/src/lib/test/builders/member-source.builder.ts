@@ -8,7 +8,7 @@ import {
   MemberSourceForCreate,
 } from '../../domain/entities/member-source';
 import { MemberName } from '../../domain/value-objects/member-name';
-import { MemberSourceStatus } from '../../domain/value-objects/member-source-status';
+import { MemberSourceStatusEnum } from '../../domain/value-objects/member-source-status';
 import {
   FindByEmailMemberSourceRequestDto,
   FindByIdSourceValueMemberSourceRequestDto,
@@ -45,7 +45,7 @@ export const MemberSourceBuilder = () => {
   const defaultProperties: MemberSourceLooseMimic = {
     id: '5008s1234519CjIPPU',
     source,
-    status: 'pending' as MemberSourceStatus,
+    status: MemberSourceStatusEnum.PENDING,
 
     name: 'James Brown',
     email: 'james@brown.com',

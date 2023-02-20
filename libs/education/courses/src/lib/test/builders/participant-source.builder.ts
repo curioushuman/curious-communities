@@ -2,7 +2,10 @@ import { ExternalId, prepareExternalIdSourceValue } from '@curioushuman/common';
 import { FindParticipantSourceDto } from '../../application/queries/find-participant-source/find-participant-source.dto';
 
 import { ParticipantSource } from '../../domain/entities/participant-source';
-import { ParticipantSourceStatus } from '../../domain/value-objects/participant-source-status';
+import {
+  ParticipantSourceStatus,
+  ParticipantSourceStatusEnum,
+} from '../../domain/value-objects/participant-source-status';
 import { ParticipantSourceResponseDto } from '../../infra/dto/participant-source.response.dto';
 import { FindParticipantSourceRequestDto } from '../../infra/find-participant-source/dto/find-participant-source.request.dto';
 import { ParticipantSourceMapper } from '../../infra/participant-source.mapper';
@@ -39,7 +42,7 @@ export const ParticipantSourceBuilder = () => {
     courseId: '5008s1234519CjIAAU',
     memberEmail: 'james@brown.com',
 
-    status: 'pending' as ParticipantSourceStatus,
+    status: ParticipantSourceStatusEnum.PENDING as ParticipantSourceStatus,
   };
   const overrides: ParticipantSourceLooseMimic = {
     id: defaultProperties.id,

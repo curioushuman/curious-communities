@@ -1,4 +1,5 @@
-import { Literal, Static, Union } from 'runtypes';
+import { Static } from 'runtypes';
+import { prepareEnumRuntype } from '@curioushuman/common';
 import { GroupMemberStatusEnum } from './group-member-status';
 
 /**
@@ -7,14 +8,8 @@ import { GroupMemberStatusEnum } from './group-member-status';
  */
 export const GroupMemberSourceStatusEnum = GroupMemberStatusEnum;
 
-// TODO: get this working, to simplify the below
-// const GroupMemberSourceStatusValues = Object.keys(GroupMemberSourceStatusEnum).map((key) => Literal(GroupMemberSourceStatusEnum[key]));
-
-export const GroupMemberSourceStatus = Union(
-  Literal(GroupMemberSourceStatusEnum.PENDING),
-  Literal(GroupMemberSourceStatusEnum.ACTIVE),
-  Literal(GroupMemberSourceStatusEnum.CANCELLED)
-  // ...GroupMemberSourceStatusValues
+export const GroupMemberSourceStatus = prepareEnumRuntype(
+  GroupMemberSourceStatusEnum
 );
 
 export type GroupMemberSourceStatus = Static<typeof GroupMemberSourceStatus>;

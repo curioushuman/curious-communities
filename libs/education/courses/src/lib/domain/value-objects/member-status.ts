@@ -1,9 +1,16 @@
-import { Literal, Static, Union } from 'runtypes';
+import { prepareEnumRuntype } from '@curioushuman/common';
+import { Static } from 'runtypes';
 
-export const MemberStatus = Union(
-  Literal('pending'),
-  Literal('active'),
-  Literal('cancelled')
-);
+/**
+ * ? Should this be in a common library?
+ */
+export const MemberStatusEnum: Record<string, string> = {
+  PENDING: 'pending',
+  ACTIVE: 'active',
+  DISABLED: 'disabled',
+  UNKNOWN: 'unknown',
+} as const;
+
+export const MemberStatus = prepareEnumRuntype(MemberStatusEnum);
 
 export type MemberStatus = Static<typeof MemberStatus>;

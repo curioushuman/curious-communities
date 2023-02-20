@@ -9,7 +9,10 @@ import {
 import { Group } from '../../domain/entities/group';
 import { GroupSource } from '../../domain/entities/group-source';
 import { GroupSourceIdSource } from '../../domain/value-objects/group-source-id-source';
-import { GroupStatus } from '../../domain/value-objects/group-status';
+import {
+  GroupStatus,
+  GroupStatusEnum,
+} from '../../domain/value-objects/group-status';
 import { GroupType } from '../../domain/value-objects/group-type';
 import {
   StandardGroupBaseResponseDto,
@@ -65,7 +68,7 @@ export const GroupBuilder = () => {
       },
     ],
 
-    status: 'pending' as GroupStatus,
+    status: GroupStatusEnum.PENDING as GroupStatus,
     slug: 'brown-group',
     name: 'Brown group',
     accountOwner: config.defaults.accountOwner,

@@ -12,7 +12,10 @@ import { CreateCourseDto } from '../../application/commands/create-course/create
 import { CourseSourceBuilder } from './course-source.builder';
 import config from '../../static/config';
 import { createCourseSlug } from '../../domain/value-objects/course-slug';
-import { CourseStatus } from '../../domain/value-objects/course-status';
+import {
+  CourseStatus,
+  CourseStatusEnum,
+} from '../../domain/value-objects/course-status';
 import { UpdateCourseRequestDto } from '../../infra/update-course/dto/update-course.request.dto';
 import { UpdateCourseDto } from '../../application/commands/update-course/update-course.dto';
 import { FindCourseDto } from '../../application/queries/find-course/find-course.dto';
@@ -58,7 +61,7 @@ export const CourseBuilder = () => {
   const defaultProperties: CourseLooseMimic = {
     id: '8e925369-7dd5-4d92-b2a0-fba16384ce79',
     slug: 'learn_to_be_a_dancer',
-    status: 'open' as CourseStatus,
+    status: CourseStatusEnum.PENDING as CourseStatus,
 
     sourceIds: [
       {

@@ -16,7 +16,7 @@ import { ParticipantSourceIdSourceValue } from '../../../domain/value-objects/pa
 import { prepareExternalIdSource } from '@curioushuman/common';
 import { Source } from '../../../domain/value-objects/source';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
-import { ParticipantStatus } from '../../../domain/value-objects/participant-status';
+import { ParticipantStatusEnum } from '../../../domain/value-objects/participant-status';
 
 @Injectable()
 export class FakeParticipantRepository implements ParticipantRepository {
@@ -25,7 +25,7 @@ export class FakeParticipantRepository implements ParticipantRepository {
   constructor() {
     this.participants.push(ParticipantBuilder().exists().build());
     const invalidSource = ParticipantBuilder().invalidOther().buildNoCheck();
-    invalidSource.status = 'pending' as ParticipantStatus;
+    invalidSource.status = ParticipantStatusEnum.PENDING;
     this.participants.push(invalidSource);
   }
 

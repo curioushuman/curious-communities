@@ -1,10 +1,15 @@
 import { Static } from 'runtypes';
-import { ParticipantSourceStatus } from './participant-source-status';
+import { prepareEnumRuntype } from '@curioushuman/common';
 
 /**
- * ? Should we define the list twice?
+ * Similar to external, but we fold registered into pending
  */
-export const ParticipantStatus =
-  ParticipantSourceStatus.withBrand('ParticipantStatus');
+export const ParticipantStatusEnum: Record<string, string> = {
+  PENDING: 'pending',
+  ACTIVE: 'active',
+  DISABLED: 'disabled',
+  UNKNOWN: 'unknown',
+} as const;
+export const ParticipantStatus = prepareEnumRuntype(ParticipantStatusEnum);
 
 export type ParticipantStatus = Static<typeof ParticipantStatus>;

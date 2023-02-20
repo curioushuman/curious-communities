@@ -1,8 +1,8 @@
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
 import { Member } from '../../domain/entities/member';
 import config from '../../static/config';
-import { MemberStatus } from '../../domain/value-objects/member-status';
 import { MemberDto } from '../../infra/dto/member.dto';
-import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import { MemberStatusEnum } from '../../domain/value-objects/member-status';
 
 /**
  * A builder for Members to play with in testing.
@@ -30,7 +30,7 @@ export const MemberBuilder = () => {
    */
   const defaultProperties: MemberLooseMimic = {
     id: '6fce9d10-aeed-4bb1-8c8c-92094f1982ff',
-    status: 'pending' as MemberStatus,
+    status: MemberStatusEnum.PENDING,
 
     sourceIds: [
       {

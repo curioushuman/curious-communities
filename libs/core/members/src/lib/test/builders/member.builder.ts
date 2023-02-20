@@ -8,7 +8,7 @@ import {
 import { CreateMemberDto } from '../../application/commands/create-member/create-member.dto';
 import { MemberSourceBuilder } from './member-source.builder';
 import config from '../../static/config';
-import { MemberStatus } from '../../domain/value-objects/member-status';
+import { MemberStatusEnum } from '../../domain/value-objects/member-status';
 import { UpdateMemberRequestDto } from '../../infra/update-member/dto/update-member.request.dto';
 import { UpdateMemberDto } from '../../application/commands/update-member/update-member.dto';
 import { FindMemberDto } from '../../application/queries/find-member/find-member.dto';
@@ -46,7 +46,7 @@ export const MemberBuilder = () => {
    */
   const defaultProperties: MemberLooseMimic = {
     id: '6fce9d10-aeed-4bb1-8c8c-92094f1982ff',
-    status: 'pending' as MemberStatus,
+    status: MemberStatusEnum.PENDING,
 
     sourceIds: [
       {

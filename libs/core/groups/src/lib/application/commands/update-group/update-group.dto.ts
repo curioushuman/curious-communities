@@ -11,6 +11,6 @@ export const UpdateGroupDto = Record({
   group: GroupBase,
   course: Optional(CourseDto.Or(Null)),
   groupSource: Optional(GroupSource.Or(Null)),
-}).withConstraint((dto) => !!(dto.course || dto.groupSource));
+});
 
 export type UpdateGroupDto = Static<typeof UpdateGroupDto>;

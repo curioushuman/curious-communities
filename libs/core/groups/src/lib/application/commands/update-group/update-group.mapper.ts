@@ -7,8 +7,10 @@ import { UpsertCourseGroupRequestDto } from '../../../infra/upsert-course-group/
 import { UpdateGroupDto } from './update-group.dto';
 import { CourseGroupBase } from '../../../domain/entities/course-group';
 import { StandardGroupBase } from '../../../domain/entities/standard-group';
-import { GroupMapper } from '../../../domain/mappers/group.mapper';
+import { GroupMapper as DomainGroupMapper } from '../../../domain/mappers/group.mapper';
+import { GroupMapper as InfraGroupMapper } from '../../..//infra/group.mapper';
 import config from '../../../static/config';
+import { UpdateGroupRequestDto } from '../../../infra/update-group/dto/update-group.request.dto';
 
 export class UpdateGroupMapper extends UpdateMapper {
   public static fromUpsertCourseGroupRequestDto(
@@ -18,6 +20,14 @@ export class UpdateGroupMapper extends UpdateMapper {
       group,
       course: dto.course,
     });
+  }
+
+  public static fromUpdateGroupRequestDto(
+    dto: UpdateGroupRequestDto
+  ): UpdateGroupDto {
+    return {
+      group: InfraGroupMapper.fromResponseDtoToBase(dto.group),
+    };
   }
 
   public static fromDto(dto: UpdateGroupDto): GroupBase {
@@ -39,7 +49,7 @@ export class UpdateGroupMapper extends UpdateMapper {
       id: group.id,
       slug: createGroupSlug(course.name),
       name: course.name,
-      status: GroupMapper.fromCourseStatus(course.status),
+      status: DomainGroupMapper.fromCourseStatus(course.status),
     });
   }
 

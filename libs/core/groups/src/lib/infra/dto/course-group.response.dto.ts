@@ -1,7 +1,7 @@
 import { Array, Static, String } from 'runtypes';
 import config from '../../static/config';
 import { CourseGroupMemberBaseResponseDto } from './course-group-member.response.dto';
-import { GroupBaseResponseDto } from './group-response.dto';
+import { GroupBaseResponseDto } from './group.response.dto';
 import { StandardGroupBaseResponseDto } from './standard-group.response.dto';
 
 /**

@@ -2,7 +2,7 @@ import { GroupSourceForCreate } from '../../../domain/entities/group-source';
 import { GroupBase } from '../../../domain/entities/group';
 import { UpsertGroupSourceRequestDto } from '../../../infra/upsert-group-source/dto/upsert-group-source.request.dto';
 import { CreateGroupSourceDto } from './create-group-source.dto';
-import { GroupMapper } from '../../../infra/group.mapper ';
+import { GroupMapper } from '../../../infra/group.mapper';
 
 /**
  * TODO

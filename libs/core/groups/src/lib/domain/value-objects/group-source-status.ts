@@ -8,6 +8,7 @@ export const GroupSourceStatusEnum = {
   PENDING: 'pending',
   ACTIVE: 'active',
   CLOSED: 'closed',
+  UNKNOWN: 'unknown',
 } as const;
 
 export const GroupSourceStatus = prepareEnumRuntype(GroupSourceStatusEnum);

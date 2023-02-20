@@ -8,6 +8,7 @@ import { GroupBase, isCourseGroupBase } from '../../../domain/entities/group';
 import { GroupMember } from '../../../domain/entities/group-member';
 import { GroupMemberSource } from '../../../domain/entities/group-member-source';
 import { StandardGroupMember } from '../../../domain/entities/standard-group-member';
+import { GroupMemberMapper } from '../../../domain/mappers/group-member.mapper';
 import { createGroupMemberId } from '../../../domain/value-objects/group-member-id';
 import { GroupMemberType } from '../../../domain/value-objects/group-member-type';
 import { ParticipantDto } from '../../../infra/dto/participant.dto';
@@ -54,8 +55,7 @@ export class CreateGroupMemberMapper {
       courseId: group.courseId,
       participantId: participant.id,
 
-      // TODO: mapping of participant status to GM statuses
-      status: participant.status,
+      status: GroupMemberMapper.fromParticipantStatus(participant.status),
 
       accountOwner: participant.accountOwner,
     });

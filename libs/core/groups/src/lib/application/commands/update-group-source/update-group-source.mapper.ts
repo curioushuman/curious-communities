@@ -23,6 +23,7 @@ export class UpdateGroupSourceMapper extends UpdateMapper {
       GroupSource.check({
         id: groupSource.id,
         source: groupSource.source,
+        // TODO: add status mapping, from group to group source
         status: group.status,
         name: group.name,
         slug: group.slug,

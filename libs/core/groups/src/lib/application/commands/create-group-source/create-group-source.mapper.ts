@@ -19,6 +19,7 @@ export class CreateGroupSourceMapper {
 
   public static fromGroupToSource(group: GroupBase): GroupSourceForCreate {
     return GroupSourceForCreate.check({
+      // TODO: add status mapping, from group to group source
       status: group.status,
       name: group.name,
       slug: group.slug,

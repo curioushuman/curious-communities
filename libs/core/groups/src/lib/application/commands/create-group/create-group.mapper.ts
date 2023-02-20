@@ -6,9 +6,9 @@ import { CourseDto } from '../../../infra/dto/course.dto';
 import { UpsertCourseGroupRequestDto } from '../../../infra/upsert-course-group/dto/upsert-course-group.request.dto';
 import config from '../../../static/config';
 import { CreateGroupDto } from './create-group.dto';
-import { GroupStatus } from '../../../domain/value-objects/group-status';
 import { CourseGroupBase } from '../../../domain/entities/course-group';
 import { StandardGroupBase } from '../../../domain/entities/standard-group';
+import { GroupMapper } from '../../../domain/mappers/group.mapper';
 
 export class CreateGroupMapper {
   public static fromUpsertCourseGroupRequestDto(
@@ -31,12 +31,17 @@ export class CreateGroupMapper {
       courseId: course.id,
       sourceIds: [],
       slug: createGroupSlug(course.name),
-      status: config.defaults.groupStatus as GroupStatus,
+      status: GroupMapper.fromCourseStatus(course.status),
       name: course.name,
       accountOwner: course.accountOwner,
     });
   }
 
+  /**
+   * ! THIS IS UNFINISHED
+   * We haven't had to employ it yet
+   * I just wanted to make sure we could support it
+   */
   public static fromSourceToGroup(source: GroupSource): StandardGroupBase {
     return StandardGroupBase.check({
       _type: config.defaults.groupTypeStandard,

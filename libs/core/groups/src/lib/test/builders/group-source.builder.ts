@@ -12,7 +12,7 @@ import {
   GroupSourceStatus,
   GroupSourceStatusEnum,
 } from '../../domain/value-objects/group-source-status';
-import { GroupBaseResponseDto } from '../../infra/dto/group-response.dto';
+import { GroupBaseResponseDto } from '../../infra/dto/group.response.dto';
 import { UpsertGroupSourceRequestDto } from '../../infra/upsert-group-source/dto/upsert-group-source.request.dto';
 import config from '../../static/config';
 import { GroupBuilder } from './group.builder';

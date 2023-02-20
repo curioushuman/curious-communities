@@ -1,5 +1,5 @@
 import { Record, Static, String } from 'runtypes';
-import { GroupBaseResponseDto } from '../../dto/group-response.dto';
+import { GroupBaseResponseDto } from '../../dto/group.response.dto';
 
 /**
  * Externally facing DTO for upsert function

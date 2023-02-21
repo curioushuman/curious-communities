@@ -12,7 +12,7 @@ export class CcCoreLayersStack extends cdk.Stack {
 
     const fileLocation = '../../../dist/utils/layers';
 
-    // new ChLayer(this, 'cc-groups-service', { fileLocation });
+    new ChLayer(this, 'cc-groups-service', { fileLocation });
     new ChLayer(this, 'cc-members-service', { fileLocation });
   }
 }

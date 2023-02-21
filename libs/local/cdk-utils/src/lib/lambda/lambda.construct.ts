@@ -121,7 +121,16 @@ export class LambdaConstruct extends Construct {
   }
 
   /**
-   * Adds the Salesforce environment variables to the lambda
+   * Adds custom environment variables to the lambda
+   */
+  public addCustomEnvironmentVars(vars: Record<string, string>): void {
+    Object.keys(vars).forEach((key) => {
+      this.lambdaFunction.addEnvironment(key, vars[key]);
+    });
+  }
+
+  /**
+   * Adds local environment variables to the lambda
    */
   public addEnvironmentVars(vars: string[]): void {
     /**

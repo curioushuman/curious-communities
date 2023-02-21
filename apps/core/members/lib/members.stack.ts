@@ -214,17 +214,10 @@ export class MembersStack extends cdk.Stack {
         ),
         lambdaProps: this.lambdaProps,
         eventBus: internalEventBusConstruct.eventBus,
-        eventPattern: {
-          detailType: ['Lambda Function Invocation Result - Success'],
-          source: ['lambda'],
-          resources: [
-            `${createMemberLambdaConstruct.lambdaFunction.functionArn}:$LATEST`,
-            `${updateMemberLambdaConstruct.lambdaFunction.functionArn}:$LATEST`,
-          ],
-          // detail: {
-          //   responsePayload: [{ 'anything-but': null }],
-          // },
-        },
+        lambdaArns: [
+          createMemberLambdaConstruct.lambdaFunction.functionArn,
+          updateMemberLambdaConstruct.lambdaFunction.functionArn,
+        ],
       }
     );
 

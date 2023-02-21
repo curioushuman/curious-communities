@@ -2,14 +2,8 @@ import { Record, Static } from 'runtypes';
 import { GroupMemberResponseDto } from '@curioushuman/cc-groups-service';
 import {
   EventbridgePutEvent,
-  isSqsEventSourceEvent,
   SqsAsEventSourceEvent,
 } from '@curioushuman/common';
-
-/**
- * I am going to import the course DTO here
- * NOTE: from groups service, so we only include what is req'd by groups
- */
 
 export const UpdateGroupMemberRequestDto = Record({
   groupMember: GroupMemberResponseDto,
@@ -53,12 +47,11 @@ export type UpdateGroupMemberDtoOrEvent =
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: UpdateGroupMemberDtoOrEvent): unknown {
-  if ('participant' in incomingEvent) {
+  if ('groupMember' in incomingEvent) {
     return incomingEvent;
   }
-  if (isSqsEventSourceEvent(incomingEvent)) {
+  if ('Records' in incomingEvent) {
     return incomingEvent.Records[0].body;
   }
-  // ? why do I still need to typecast?
-  return (incomingEvent as UpdateGroupMemberPutEvent).detail;
+  return incomingEvent.detail;
 }

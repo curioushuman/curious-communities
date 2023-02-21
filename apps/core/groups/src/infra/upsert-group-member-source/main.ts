@@ -2,10 +2,10 @@ import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
-  upsertMemberSourceModules,
-  UpsertMemberSourceController,
-  MemberSourceResponseDto,
-} from '@curioushuman/cc-members-service';
+  upsertGroupMemberSourceModules,
+  UpsertGroupMemberSourceController,
+  GroupMemberSourceResponseDto,
+} from '@curioushuman/cc-groups-service';
 import {
   InternalRequestInvalidError,
   RequestInvalidError,
@@ -15,8 +15,8 @@ import { parseDto } from '@curioushuman/common';
 
 import {
   locateDto,
-  UpsertMemberSourceDtoOrEvent,
-  UpsertMemberSourceRequestDto,
+  UpsertGroupMemberSourceDtoOrEvent,
+  UpsertGroupMemberSourceRequestDto,
 } from './dto/request.dto';
 
 /**
@@ -28,7 +28,7 @@ import {
 /**
  * Init a logger
  */
-const logger = new LoggableLogger('UpsertMemberSourceFunction.handler');
+const logger = new LoggableLogger('UpsertGroupMemberSourceFunction.handler');
 
 /**
  * Hold a reference to your Nest app outside of the bootstrap function
@@ -42,19 +42,19 @@ const lambdaApps: Record<string, INestApplicationContext> = {};
  * i.e. we don't load Express, for optimization purposes
  */
 async function bootstrap(source: string) {
-  if (!(source in upsertMemberSourceModules)) {
+  if (!(source in upsertGroupMemberSourceModules)) {
     const error = new RequestInvalidError(`Source ${source} is not supported`);
     logger.error(error);
     throw error;
   }
   const app = await NestFactory.createApplicationContext(
-    upsertMemberSourceModules[source],
+    upsertGroupMemberSourceModules[source],
     {
       bufferLogs: true,
     }
   );
-  if ('applyDefaults' in upsertMemberSourceModules[source]) {
-    upsertMemberSourceModules[source].applyDefaults(app);
+  if ('applyDefaults' in upsertGroupMemberSourceModules[source]) {
+    upsertGroupMemberSourceModules[source].applyDefaults(app);
   }
   return app;
 }
@@ -85,8 +85,8 @@ async function waitForApp(source: string) {
  * - [ ] I'm not super chuffed about handing source in as a value (to controller)
  */
 export const handler = async (
-  requestDtoOrEvent: UpsertMemberSourceDtoOrEvent
-): Promise<MemberSourceResponseDto> => {
+  requestDtoOrEvent: UpsertGroupMemberSourceDtoOrEvent
+): Promise<GroupMemberSourceResponseDto | undefined> => {
   // grab the dto
   const requestDto = parseDto(requestDtoOrEvent, locateDto);
 
@@ -94,10 +94,10 @@ export const handler = async (
   logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
 
   // lambda level validation
-  if (!requestDto || !UpsertMemberSourceRequestDto.guard(requestDto)) {
+  if (!requestDto || !UpsertGroupMemberSourceRequestDto.guard(requestDto)) {
     // NOTE: this is a 500 error, not a 400
     const error = new InternalRequestInvalidError(
-      'Invalid request sent to UpsertMemberSourceFunction.Lambda'
+      'Invalid request sent to UpsertGroupMemberSourceFunction.Lambda'
     );
     // we straight out log this, as it's a problem our systems
     // aren't communicating properly.
@@ -107,7 +107,9 @@ export const handler = async (
 
   // init the app
   const app = await waitForApp(requestDto.source);
-  const upsertMemberController = app.get(UpsertMemberSourceController);
+  const upsertGroupMemberSourceController = app.get(
+    UpsertGroupMemberSourceController
+  );
 
   // perform the action
   // NOTE: no try/catch here. According to the docs:
@@ -117,8 +119,8 @@ export const handler = async (
   //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
-  return upsertMemberController.upsert({
+  return upsertGroupMemberSourceController.upsert({
     source: requestDto.source,
-    member: requestDto.member,
+    groupMember: requestDto.groupMember,
   });
 };

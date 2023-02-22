@@ -18,10 +18,13 @@ import { FindGroupQuery } from '../../application/queries/find-group/find-group.
 import { UpdateGroupCommand } from '../../application/commands/update-group/update-group.command';
 import { UpdateGroupMapper } from '../../application/commands/update-group/update-group.mapper';
 import { CourseGroupMapper } from '../course-group.mapper';
-import { Group, isCourseGroupBase } from '../../domain/entities/group';
+import { isCourseGroupBase } from '../../domain/entities/group';
 import { GroupBase } from '../../domain/entities/group';
 import { StandardGroupMapper } from '../standard-group.mapper';
-import { GroupBaseResponseDto } from '../dto/group.response.dto';
+import {
+  prepareUpsertResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for update group operations
@@ -48,7 +51,7 @@ export class UpdateGroupController {
    */
   public async update(
     requestDto: UpdateGroupRequestDto
-  ): Promise<GroupBaseResponseDto | undefined> {
+  ): Promise<ResponsePayload<'group-base'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -70,18 +73,24 @@ export class UpdateGroupController {
     const updatedGroup = await executeTask(this.updateGroup(validDto));
 
     // #4. return the response
-    if (updatedGroup === undefined) {
-      return undefined;
+    let payload = validDto.group;
+    if (updatedGroup) {
+      // if updated, return the updated group
+      const mapper = isCourseGroupBase(updatedGroup)
+        ? CourseGroupMapper.toBaseResponseDto
+        : StandardGroupMapper.toBaseResponseDto;
+      payload = pipe(updatedGroup, parseData(mapper, this.logger));
     }
-    const mapper = isCourseGroupBase(updatedGroup)
-      ? CourseGroupMapper.toBaseResponseDto
-      : StandardGroupMapper.toBaseResponseDto;
-    return pipe(updatedGroup, parseData(mapper, this.logger));
+
+    return pipe(
+      payload,
+      prepareUpsertResponsePayload('group-base', true, !updatedGroup)
+    );
   }
 
   private updateGroup(
     validDto: UpdateGroupRequestDto
-  ): TE.TaskEither<Error, Group | undefined> {
+  ): TE.TaskEither<Error, GroupBase | undefined> {
     return pipe(
       validDto,
       parseActionData(UpdateGroupMapper.fromUpdateGroupRequestDto, this.logger),

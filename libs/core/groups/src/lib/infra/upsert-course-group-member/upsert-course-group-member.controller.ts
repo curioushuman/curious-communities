@@ -23,10 +23,13 @@ import { FindGroupMemberMapper } from '../../application/queries/find-group-memb
 import { CreateGroupMemberMapper } from '../../application/commands/create-group-member/create-group-member.mapper';
 import { UpdateGroupMemberMapper } from '../../application/commands/update-group-member/update-group-member.mapper';
 import { CreateGroupMemberCommand } from '../../application/commands/create-group-member/create-group-member.command';
-import { CourseGroupMemberBaseResponseDto } from '../dto/course-group-member.response.dto';
 import { CourseGroupMemberMapper } from '../course-group-member.mapper';
 import { CourseGroupBase } from '../../domain/entities/course-group';
 import { CourseGroupMember } from '../../domain/entities/course-group-member';
+import {
+  prepareUpsertResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for create group operations
@@ -50,7 +53,7 @@ export class UpsertCourseGroupMemberController {
    */
   public async upsert(
     requestDto: UpsertCourseGroupMemberRequestDto
-  ): Promise<CourseGroupMemberBaseResponseDto | undefined> {
+  ): Promise<ResponsePayload<'course-group-member-base'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -68,14 +71,19 @@ export class UpsertCourseGroupMemberController {
       ? this.updateGroupMember(validDto, groupMember)
       : this.createGroupMember(validDto, group);
     const upsertedGroupMember = await executeTask(upsertTask);
+    // we know that at this point, groupMember would exist
+    const payload = upsertedGroupMember || (groupMember as CourseGroupMember);
 
     // #4. return the response
-    return upsertedGroupMember !== undefined
-      ? pipe(
-          upsertedGroupMember,
-          parseData(CourseGroupMemberMapper.toBaseResponseDto, this.logger)
-        )
-      : undefined;
+    return pipe(
+      payload,
+      parseData(CourseGroupMemberMapper.toBaseResponseDto, this.logger),
+      prepareUpsertResponsePayload(
+        'course-group-member-base',
+        !!groupMember,
+        groupMember && !upsertedGroupMember
+      )
+    );
   }
 
   private createGroupMember(

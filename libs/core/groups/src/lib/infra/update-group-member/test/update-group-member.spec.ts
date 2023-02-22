@@ -121,8 +121,10 @@ defineFeature(feature, (test) => {
       }
     );
 
-    and('saved group member is returned', () => {
-      expect(result.id).toBeDefined();
+    and('saved group member is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
     });
   });
 

@@ -18,7 +18,6 @@ import { CreateGroupMemberSourceMapper } from '../../application/commands/create
 import { CreateGroupMemberSourceCommand } from '../../application/commands/create-group-member-source/create-group-member-source.command';
 import { UpdateGroupMemberSourceMapper } from '../../application/commands/update-group-member-source/update-group-member-source.mapper';
 import { UpdateGroupMemberSourceCommand } from '../../application/commands/update-group-member-source/update-group-member-source.command';
-import { GroupMemberSourceResponseDto } from '../dto/group-member-source.response.dto';
 import { FindGroupMemberSourceMapper } from '../../application/queries/find-group-member-source/find-group-member-source.mapper';
 import { FindGroupMemberSourceQuery } from '../../application/queries/find-group-member-source/find-group-member-source.query';
 import { GroupMemberSource } from '../../domain/entities/group-member-source';
@@ -33,6 +32,11 @@ import { FindGroupSourceQuery } from '../../application/queries/find-group-sourc
 import { GroupSourceStatusEnum } from '../../domain/value-objects/group-source-status';
 import { GroupMemberStatusEnum } from '../../domain/value-objects/group-member-status';
 import { DeleteGroupMemberSourceCommand } from '../../application/commands/delete-group-member-source/delete-group-member-source.command';
+import {
+  prepareDeleteResponsePayload,
+  prepareUpsertResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for upsert groupMemberSource operations
@@ -64,7 +68,7 @@ export class UpsertGroupMemberSourceController {
    */
   public async upsert(
     requestDto: UpsertGroupMemberSourceRequestDto
-  ): Promise<GroupMemberSourceResponseDto | undefined> {
+  ): Promise<ResponsePayload<'group-member-source'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -88,7 +92,16 @@ export class UpsertGroupMemberSourceController {
       group.status !== GroupSourceStatusEnum.ACTIVE &&
       groupMember.status !== GroupMemberStatusEnum.ACTIVE
     ) {
-      return await executeTask(this.deleteGroupMemberSource(groupMemberSource));
+      const groupMemberSourceDeleted = await executeTask(
+        this.deleteGroupMemberSource(groupMemberSource)
+      );
+      return pipe(
+        groupMemberSourceDeleted,
+        prepareDeleteResponsePayload(
+          'group-member-source',
+          !groupMemberSourceDeleted
+        )
+      );
     }
 
     // #4. upsert group member source
@@ -96,14 +109,20 @@ export class UpsertGroupMemberSourceController {
       ? this.updateGroupMemberSource(validDto, groupMemberSource)
       : this.createGroupMemberSource(validDto, groupSource);
     const upsertedGroupMemberSource = await executeTask(upsertTask);
+    // we know that at this point, groupMemberSource would exist
+    const payload =
+      upsertedGroupMemberSource || (groupMemberSource as GroupMemberSource);
 
-    // #4. return the response
-    return upsertedGroupMemberSource !== undefined
-      ? pipe(
-          upsertedGroupMemberSource,
-          parseData(GroupMemberSourceMapper.toResponseDto, this.logger)
-        )
-      : undefined;
+    // #5. return the response
+    return pipe(
+      payload,
+      parseData(GroupMemberSourceMapper.toResponseDto, this.logger),
+      prepareUpsertResponsePayload(
+        'group-member-source',
+        !!groupMemberSource,
+        groupMemberSource && !upsertedGroupMemberSource
+      )
+    );
   }
 
   private deleteGroupMemberSource(

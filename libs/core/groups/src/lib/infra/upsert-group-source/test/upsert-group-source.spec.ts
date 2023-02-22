@@ -95,8 +95,10 @@ defineFeature(feature, (test) => {
       expect(groupSources.length).toEqual(groupSourcesBefore + 1);
     });
 
-    and('the created record should be returned', async () => {
-      expect(result.id).toBeDefined();
+    and('the created record should be returned within payload', async () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('created');
+      expect(result.outcome).toEqual('success');
     });
   });
 
@@ -153,8 +155,10 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('the updated record should be returned', async () => {
-      expect(result.id).toBeDefined();
+    and('the updated record should be returned within payload', async () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
     });
   });
 
@@ -217,8 +221,10 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('the updated record should be returned', async () => {
-      expect(result.id).toBeDefined();
+    and('the updated record should be returned within payload', async () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
     });
   });
 

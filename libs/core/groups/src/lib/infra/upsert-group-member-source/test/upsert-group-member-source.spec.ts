@@ -114,8 +114,10 @@ defineFeature(feature, (test) => {
       );
     });
 
-    and('the created record should be returned', async () => {
-      expect(result.memberId).toBeDefined();
+    and('the created record should be returned within payload', async () => {
+      expect(result.detail.memberId).toBeDefined();
+      expect(result.event).toEqual('created');
+      expect(result.outcome).toEqual('success');
     });
   });
 
@@ -157,8 +159,10 @@ defineFeature(feature, (test) => {
       expect(groupMemberSources.length).toEqual(groupMemberSourcesLengthBefore);
     });
 
-    and('the updated record should be returned', async () => {
-      expect(result.memberId).toBeDefined();
+    and('the updated record should be returned within payload', async () => {
+      expect(result.detail.memberId).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
     });
   });
 
@@ -201,8 +205,10 @@ defineFeature(feature, (test) => {
       expect(groupMemberSources.length).toEqual(groupMemberSourcesLengthBefore);
     });
 
-    and('the updated record should be returned', async () => {
-      expect(result.memberId).toBeDefined();
+    and('the updated record should be returned within payload', async () => {
+      expect(result.detail.memberId).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
     });
   });
 

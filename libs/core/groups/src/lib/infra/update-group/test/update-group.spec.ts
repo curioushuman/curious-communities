@@ -2,7 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
-import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { GroupModule } from '../../../test/group.module.fake';
@@ -101,8 +100,10 @@ defineFeature(feature, (test) => {
       }
     );
 
-    and('saved group is returned', () => {
-      expect(result.id).toBeDefined();
+    and('saved group is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
     });
   });
 

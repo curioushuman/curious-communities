@@ -29,7 +29,10 @@ import {
 } from '../../domain/entities/group-member';
 import { GroupBase } from '../../domain/entities/group';
 import { StandardGroupMemberMapper } from '../standard-group-member.mapper';
-import { GroupMemberResponseDto } from '../dto/group-member.response.dto';
+import {
+  prepareUpsertResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for update group member operations
@@ -56,7 +59,7 @@ export class UpdateGroupMemberController {
    */
   public async update(
     requestDto: UpdateGroupMemberRequestDto
-  ): Promise<GroupMemberResponseDto | undefined> {
+  ): Promise<ResponsePayload<'group-member'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -84,13 +87,19 @@ export class UpdateGroupMemberController {
     );
 
     // #4. return the response
-    if (updatedGroupMember === undefined) {
-      return undefined;
+    let payload = validDto.groupMember;
+    if (updatedGroupMember) {
+      // if updated, return the updated group member
+      const mapper = isCourseGroupMember(updatedGroupMember)
+        ? CourseGroupMemberMapper.toResponseDto
+        : StandardGroupMemberMapper.toResponseDto;
+      payload = pipe(updatedGroupMember, parseData(mapper, this.logger));
     }
-    const mapper = isCourseGroupMember(updatedGroupMember)
-      ? CourseGroupMemberMapper.toResponseDto
-      : StandardGroupMemberMapper.toResponseDto;
-    return pipe(updatedGroupMember, parseData(mapper, this.logger));
+
+    return pipe(
+      payload,
+      prepareUpsertResponsePayload('group-member', true, !updatedGroupMember)
+    );
   }
 
   private updateGroupMember(

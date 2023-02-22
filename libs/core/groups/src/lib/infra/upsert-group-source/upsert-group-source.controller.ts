@@ -1,7 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
-import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
 import {
@@ -16,12 +15,18 @@ import { CreateGroupSourceMapper } from '../../application/commands/create-group
 import { CreateGroupSourceCommand } from '../../application/commands/create-group-source/create-group-source.command';
 import { UpdateGroupSourceMapper } from '../../application/commands/update-group-source/update-group-source.mapper';
 import { UpdateGroupSourceCommand } from '../../application/commands/update-group-source/update-group-source.command';
-import { GroupSourceResponseDto } from '../dto/group-source.response.dto';
 import { FindGroupSourceMapper } from '../../application/queries/find-group-source/find-group-source.mapper';
 import { FindGroupSourceQuery } from '../../application/queries/find-group-source/find-group-source.query';
 import { GroupSource } from '../../domain/entities/group-source';
-import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
+import {
+  RepositoryItemNotFoundError,
+  RepositoryItemUpdateError,
+} from '@curioushuman/error-factory';
 import { GroupSourceMapper } from '../group-source.mapper';
+import {
+  prepareUpsertResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for upsert group operations
@@ -50,13 +55,10 @@ export class UpsertGroupSourceController {
    *
    * So, we perform the find action first and separately; it'll error if it needs to.
    * Then we pipe that result into the rest of the function.
-   *
-   * TODO
-   * - [ ] at some point extract the update and create into a single, simpler, static function
    */
   public async upsert(
     requestDto: UpsertGroupSourceRequestDto
-  ): Promise<GroupSourceResponseDto> {
+  ): Promise<ResponsePayload<'group-source'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -67,60 +69,82 @@ export class UpsertGroupSourceController {
     // NOTE: These will error if they need to
     const groupSource = await this.find(validDto);
 
-    const task = pipe(
-      groupSource,
+    // #3. upsert group member source
+    const upsertTask = groupSource
+      ? this.updateGroupSource(validDto, groupSource)
+      : this.createGroupSource(validDto);
+    const upsertedGroupSource = await executeTask(upsertTask);
+    // we know that at this point, groupSource would exist
+    const payload = upsertedGroupSource || (groupSource as GroupSource);
 
-      // #3. based on whether or not we find anything, take the appropriate action
-      // groupSource could be null
-      O.fromNullable,
-      O.fold(
-        // if it is, then create
-        () =>
-          pipe(
-            validDto,
-            parseActionData(
-              CreateGroupSourceMapper.fromUpsertRequestDto,
-              this.logger
-            ),
-            TE.chain((createDto) =>
-              TE.tryCatch(
-                async () => {
-                  const command = new CreateGroupSourceCommand(createDto);
-                  return await this.commandBus.execute<CreateGroupSourceCommand>(
-                    command
-                  );
-                },
-                (error: unknown) => error as Error
-              )
-            )
-          ),
-        // otherwise update
-        (ms) =>
-          pipe(
-            validDto,
-            parseActionData(
-              UpdateGroupSourceMapper.fromUpsertRequestDto(ms),
-              this.logger
-            ),
-            TE.chain((updateDto) =>
-              TE.tryCatch(
-                async () => {
-                  const command = new UpdateGroupSourceCommand(updateDto);
-                  return await this.commandBus.execute<UpdateGroupSourceCommand>(
-                    command
-                  );
-                },
-                (error: unknown) => error as Error
-              )
-            )
-          )
+    // #4. return the response
+    return pipe(
+      payload,
+      parseData(GroupSourceMapper.toResponseDto, this.logger),
+      prepareUpsertResponsePayload(
+        'group-source',
+        !!groupSource,
+        groupSource && !upsertedGroupSource
+      )
+    );
+  }
+
+  private createGroupSource(
+    validDto: UpsertGroupSourceRequestDto
+  ): TE.TaskEither<Error, GroupSource> {
+    return pipe(
+      validDto,
+      parseActionData(
+        CreateGroupSourceMapper.fromUpsertRequestDto,
+        this.logger
+      ),
+      TE.chain((createDto) =>
+        TE.tryCatch(
+          async () => {
+            const command = new CreateGroupSourceCommand(createDto);
+            return await this.commandBus.execute<CreateGroupSourceCommand>(
+              command
+            );
+          },
+          (error: unknown) => error as Error
+        )
+      )
+    );
+  }
+
+  private updateGroupSource(
+    validDto: UpsertGroupSourceRequestDto,
+    groupSource: GroupSource
+  ): TE.TaskEither<Error, GroupSource | undefined> {
+    return pipe(
+      validDto,
+      parseActionData(
+        UpdateGroupSourceMapper.fromUpsertRequestDto(groupSource),
+        this.logger
+      ),
+      TE.chain((updateDto) =>
+        TE.tryCatch(
+          async () => {
+            const command = new UpdateGroupSourceCommand(updateDto);
+            return await this.commandBus.execute<UpdateGroupSourceCommand>(
+              command
+            );
+          },
+          (error: unknown) => error as Error
+        )
       ),
 
-      // #5. transform to the response DTO
-      TE.chain(parseActionData(GroupSourceMapper.toResponseDto, this.logger))
+      // Catch the update error specifically
+      // try/catch doesn't seem to work in lambda handler
+      // so instead of throwing this error, we're returning undefined
+      // to indicate to lambda to not continue with lambda level flows
+      // TODO: this is a bit of a hack, need to figure out a better way
+      TE.orElse((err) => {
+        return err instanceof RepositoryItemUpdateError
+          ? TE.right(undefined)
+          : TE.left(err);
+      })
     );
-
-    return executeTask(task);
   }
 
   private find(

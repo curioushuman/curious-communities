@@ -5,7 +5,7 @@ Scenario: Successfully updating a group member
   And the group member exists in the repository
   When I attempt to update a group member
   Then an existing record should have been updated in the repository
-  And saved group member is returned
+  And saved group member is returned within payload
 
 Scenario: Fail; Group does not exist
   Given the request is valid
@@ -18,6 +18,8 @@ Scenario: Fail; Group member does not exist
   And the group member does not exist in the repository
   When I attempt to update a group member
   Then I should receive a RepositoryItemNotFoundError
+
+# TODO - no change
 
 # TODO - needs to be RE-implemented
 # Scenario: Fail; Invalid request

@@ -5,14 +5,16 @@ Scenario: Successfully creating a group
   And the group does not exist in the repository
   When I attempt to upsert a group
   Then a new record should have been created in the repository
-  And saved group is returned
+  And saved group is returned within payload
 
 Scenario: Successfully updating a group
   Given the request is valid
   And the group exists in the repository
   When I attempt to upsert a group
   Then an existing record should have been updated in the repository
-  And saved group is returned
+  And saved group is returned within payload
+
+# TODO - no change
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

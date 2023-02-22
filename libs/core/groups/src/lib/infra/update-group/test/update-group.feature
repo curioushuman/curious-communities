@@ -5,13 +5,15 @@ Scenario: Successfully updating a group
   And the group exists in the repository
   When I attempt to update a group
   Then an existing record should have been updated in the repository
-  And saved group is returned
+  And saved group is returned within payload
 
 # Scenario: Fail; Group does not exist
 #   Given the request is valid
 #   And the group does not exist in the repository
 #   When I attempt to update a group
 #   Then I should receive a RepositoryItemNotFoundError
+
+# TODO - no change
 
 # TODO - requestSource paths
 

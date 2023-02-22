@@ -16,7 +16,6 @@ import {
 
 import { UpsertCourseGroupRequestDto } from './dto/upsert-course-group.request.dto';
 import { CreateGroupCommand } from '../../application/commands/create-group/create-group.command';
-import { CourseGroupBaseResponseDto } from '../dto/course-group.response.dto';
 import { CourseGroupMapper } from '../course-group.mapper';
 import { FindGroupMapper } from '../../application/queries/find-group/find-group.mapper';
 import { FindGroupQuery } from '../../application/queries/find-group/find-group.query';
@@ -24,6 +23,10 @@ import { CreateGroupMapper } from '../../application/commands/create-group/creat
 import { UpdateGroupCommand } from '../../application/commands/update-group/update-group.command';
 import { UpdateGroupMapper } from '../../application/commands/update-group/update-group.mapper';
 import { CourseGroupBase } from '../../domain/entities/course-group';
+import {
+  prepareUpsertResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for create group operations
@@ -47,7 +50,7 @@ export class UpsertCourseGroupController {
    */
   public async upsert(
     requestDto: UpsertCourseGroupRequestDto
-  ): Promise<CourseGroupBaseResponseDto | undefined> {
+  ): Promise<ResponsePayload<'course-group-base'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -63,14 +66,19 @@ export class UpsertCourseGroupController {
       ? this.updateGroup(validDto, group)
       : this.createGroup(validDto);
     const upsertedGroup = await executeTask(upsertTask);
+    // we know that at this point, group would exist
+    const payload = upsertedGroup || (group as CourseGroupBase);
 
     // #4. return the response
-    return upsertedGroup !== undefined
-      ? pipe(
-          upsertedGroup,
-          parseData(CourseGroupMapper.toBaseResponseDto, this.logger)
-        )
-      : undefined;
+    return pipe(
+      payload,
+      parseData(CourseGroupMapper.toBaseResponseDto, this.logger),
+      prepareUpsertResponsePayload(
+        'course-group-base',
+        !!group,
+        group && !upsertedGroup
+      )
+    );
   }
 
   private createGroup(

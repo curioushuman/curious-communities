@@ -13,7 +13,6 @@ import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 
 import { CreateMemberRequestDto } from './dto/create-member.request.dto';
 import { CreateMemberCommand } from '../../application/commands/create-member/create-member.command';
-import { MemberResponseDto } from '../dto/member.response.dto';
 import { MemberMapper } from '../member.mapper';
 import { MemberSource } from '../../domain/entities/member-source';
 import { FindMemberMapper } from '../../application/queries/find-member/find-member.mapper';
@@ -22,6 +21,10 @@ import { Member } from '../../domain/entities/member';
 import { CreateMemberDto } from '../../application/commands/create-member/create-member.dto';
 import { FindMemberSourceMapper } from '../../application/queries/find-member-source/find-member-source.mapper';
 import { FindMemberSourceQuery } from '../../application/queries/find-member-source/find-member-source.query';
+import {
+  prepareResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for create member operations
@@ -42,12 +45,14 @@ export class CreateMemberController {
   /**
    * Public method to create a member
    *
+   * ! POSSIBLE DEPRECATION
+   *
    * TODO:
    * - [ ] whole thing could be done in fp-ts
    */
   public async create(
     requestDto: CreateMemberRequestDto
-  ): Promise<MemberResponseDto | undefined> {
+  ): Promise<ResponsePayload<'member'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -71,7 +76,11 @@ export class CreateMemberController {
         `Member already exists with id: ${member.id}`,
         'RepositoryItemConflictError'
       );
-      return undefined;
+      return pipe(
+        member,
+        parseData(MemberMapper.toResponseDto, this.logger),
+        prepareResponsePayload('member', 'created', 'failure')
+      );
     }
 
     // #3. create the member
@@ -85,7 +94,8 @@ export class CreateMemberController {
     // #4. transform to the response DTO
     return pipe(
       createdMember,
-      parseData(MemberMapper.toResponseDto, this.logger)
+      parseData(MemberMapper.toResponseDto, this.logger),
+      prepareResponsePayload('member', 'created', 'success')
     );
   }
 

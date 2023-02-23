@@ -5,7 +5,7 @@ Scenario: Successfully updating a member
   And a matching record is found at the source
   When I attempt to update a member
   Then the related record should have been updated
-  And saved member is returned
+  And saved member is returned within payload
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

@@ -1,7 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import * as TE from 'fp-ts/lib/TaskEither';
-import * as O from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/function';
 
 import {
@@ -10,18 +9,24 @@ import {
   parseData,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
+import {
+  RepositoryItemNotFoundError,
+  RepositoryItemUpdateError,
+} from '@curioushuman/error-factory';
 
 import { UpsertMemberSourceRequestDto } from './dto/upsert-member-source.request.dto';
 import { CreateMemberSourceMapper } from '../../application/commands/create-member-source/create-member-source.mapper';
 import { CreateMemberSourceCommand } from '../../application/commands/create-member-source/create-member-source.command';
 import { UpdateMemberSourceMapper } from '../../application/commands/update-member-source/update-member-source.mapper';
 import { UpdateMemberSourceCommand } from '../../application/commands/update-member-source/update-member-source.command';
-import { MemberSourceResponseDto } from '../dto/member-source.response.dto';
 import { MemberSourceMapper } from '../member-source.mapper';
 import { FindMemberSourceMapper } from '../../application/queries/find-member-source/find-member-source.mapper';
 import { FindMemberSourceQuery } from '../../application/queries/find-member-source/find-member-source.query';
 import { MemberSource } from '../../domain/entities/member-source';
-import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
+import {
+  prepareUpsertResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for upsert member operations
@@ -56,7 +61,7 @@ export class UpsertMemberSourceController {
    */
   public async upsert(
     requestDto: UpsertMemberSourceRequestDto
-  ): Promise<MemberSourceResponseDto> {
+  ): Promise<ResponsePayload<'member-source'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -67,60 +72,82 @@ export class UpsertMemberSourceController {
     // NOTE: These will error if they need to
     const memberSource = await this.find(validDto);
 
-    const task = pipe(
-      memberSource,
+    // #3. upsert member member source
+    const upsertTask = memberSource
+      ? this.updateMemberSource(validDto, memberSource)
+      : this.createMemberSource(validDto);
+    const upsertedMemberSource = await executeTask(upsertTask);
+    // we know that at this point, memberSource would exist
+    const payload = upsertedMemberSource || (memberSource as MemberSource);
 
-      // #3. based on whether or not we find anything, take the appropriate action
-      // memberSource could be null
-      O.fromNullable,
-      O.fold(
-        // if it is, then create
-        () =>
-          pipe(
-            validDto,
-            parseActionData(
-              CreateMemberSourceMapper.fromUpsertRequestDto,
-              this.logger
-            ),
-            TE.chain((createDto) =>
-              TE.tryCatch(
-                async () => {
-                  const command = new CreateMemberSourceCommand(createDto);
-                  return await this.commandBus.execute<CreateMemberSourceCommand>(
-                    command
-                  );
-                },
-                (error: unknown) => error as Error
-              )
-            )
-          ),
-        // otherwise update
-        (ms) =>
-          pipe(
-            validDto,
-            parseActionData(
-              UpdateMemberSourceMapper.fromUpsertRequestDto(ms),
-              this.logger
-            ),
-            TE.chain((updateDto) =>
-              TE.tryCatch(
-                async () => {
-                  const command = new UpdateMemberSourceCommand(updateDto);
-                  return await this.commandBus.execute<UpdateMemberSourceCommand>(
-                    command
-                  );
-                },
-                (error: unknown) => error as Error
-              )
-            )
-          )
+    // #4. return the response
+    return pipe(
+      payload,
+      parseData(MemberSourceMapper.toResponseDto, this.logger),
+      prepareUpsertResponsePayload(
+        'member-source',
+        !!memberSource,
+        memberSource && !upsertedMemberSource
+      )
+    );
+  }
+
+  private createMemberSource(
+    validDto: UpsertMemberSourceRequestDto
+  ): TE.TaskEither<Error, MemberSource> {
+    return pipe(
+      validDto,
+      parseActionData(
+        CreateMemberSourceMapper.fromUpsertRequestDto,
+        this.logger
+      ),
+      TE.chain((createDto) =>
+        TE.tryCatch(
+          async () => {
+            const command = new CreateMemberSourceCommand(createDto);
+            return await this.commandBus.execute<CreateMemberSourceCommand>(
+              command
+            );
+          },
+          (error: unknown) => error as Error
+        )
+      )
+    );
+  }
+
+  private updateMemberSource(
+    validDto: UpsertMemberSourceRequestDto,
+    memberSource: MemberSource
+  ): TE.TaskEither<Error, MemberSource | undefined> {
+    return pipe(
+      validDto,
+      parseActionData(
+        UpdateMemberSourceMapper.fromUpsertRequestDto(memberSource),
+        this.logger
+      ),
+      TE.chain((updateDto) =>
+        TE.tryCatch(
+          async () => {
+            const command = new UpdateMemberSourceCommand(updateDto);
+            return await this.commandBus.execute<UpdateMemberSourceCommand>(
+              command
+            );
+          },
+          (error: unknown) => error as Error
+        )
       ),
 
-      // #5. transform to the response DTO
-      TE.chain(parseActionData(MemberSourceMapper.toResponseDto, this.logger))
+      // Catch the update error specifically
+      // try/catch doesn't seem to work in lambda handler
+      // so instead of throwing this error, we're returning undefined
+      // to indicate to lambda to not continue with lambda level flows
+      // TODO: this is a bit of a hack, need to figure out a better way
+      TE.orElse((err) => {
+        return err instanceof RepositoryItemUpdateError
+          ? TE.right(undefined)
+          : TE.left(err);
+      })
     );
-
-    return executeTask(task);
   }
 
   private find(

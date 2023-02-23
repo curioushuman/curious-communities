@@ -26,3 +26,4 @@ export * from './lib/infra/dto/course-group-member.response.dto';
 export * from './lib/infra/dto/group-member.response.dto';
 export * from './lib/infra/dto/standard-group-member.response.dto';
 export * from './lib/infra/dto/group-member-source.response.dto';
+export * from './lib/infra/dto/response-payload';

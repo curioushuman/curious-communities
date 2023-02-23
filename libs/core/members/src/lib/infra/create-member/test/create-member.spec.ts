@@ -99,8 +99,10 @@ defineFeature(feature, (test) => {
       expect(members.length).toEqual(membersBefore + 1);
     });
 
-    and('saved member is returned', () => {
-      expect(result.id).toBeDefined();
+    and('saved member is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('created');
+      expect(result.outcome).toEqual('success');
     });
   });
 
@@ -142,8 +144,10 @@ defineFeature(feature, (test) => {
       expect(members.length).toEqual(membersBefore + 1);
     });
 
-    and('saved member is returned', () => {
-      expect(result.id).toBeDefined();
+    and('saved member is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('created');
+      expect(result.outcome).toEqual('success');
     });
   });
 
@@ -260,8 +264,9 @@ defineFeature(feature, (test) => {
     //   expect(error).toBeInstanceOf(RepositoryItemConflictError);
     // });
     then('I should receive undefined', () => {
-      expect(result).toBeUndefined();
-      expect(error).toBeUndefined();
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('created');
+      expect(result.outcome).toEqual('failure');
     });
   });
 });

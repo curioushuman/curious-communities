@@ -119,8 +119,10 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('saved member is returned', () => {
-      expect(result.id).toBeDefined();
+    and('saved member is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
     });
   });
 
@@ -308,8 +310,9 @@ defineFeature(feature, (test) => {
     });
 
     and('no result is returned', () => {
-      expect(result).toBeUndefined();
-      expect(error).toBeUndefined();
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('no-change');
     });
   });
 });

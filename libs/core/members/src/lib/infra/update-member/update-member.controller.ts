@@ -13,7 +13,6 @@ import { RepositoryItemUpdateError } from '@curioushuman/error-factory';
 
 import { UpdateMemberRequestDto } from './dto/update-member.request.dto';
 import { UpdateMemberCommand } from '../../application/commands/update-member/update-member.command';
-import { MemberResponseDto } from '../dto/member.response.dto';
 import { MemberMapper } from '../member.mapper';
 import { MemberSource } from '../../domain/entities/member-source';
 import { FindMemberMapper } from '../../application/queries/find-member/find-member.mapper';
@@ -22,6 +21,10 @@ import { Member } from '../../domain/entities/member';
 import { UpdateMemberDto } from '../../application/commands/update-member/update-member.dto';
 import { FindMemberSourceMapper } from '../../application/queries/find-member-source/find-member-source.mapper';
 import { FindMemberSourceQuery } from '../../application/queries/find-member-source/find-member-source.query';
+import {
+  prepareUpsertResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for update member operations
@@ -49,7 +52,7 @@ export class UpdateMemberController {
    */
   public async update(
     requestDto: UpdateMemberRequestDto
-  ): Promise<MemberResponseDto | undefined> {
+  ): Promise<ResponsePayload<'member'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -75,10 +78,22 @@ export class UpdateMemberController {
     // #3. execute the command
     const updatedMember = await this.updateMember(updateDto);
 
-    // #4. transform to the response DTO
-    return updatedMember !== undefined
-      ? pipe(updatedMember, parseData(MemberMapper.toResponseDto, this.logger))
-      : undefined;
+    // #4. return the response
+    let payload = pipe(
+      member,
+      parseData(MemberMapper.toResponseDto, this.logger)
+    );
+    if (updatedMember) {
+      payload = pipe(
+        updatedMember,
+        parseData(MemberMapper.toResponseDto, this.logger)
+      );
+    }
+
+    return pipe(
+      payload,
+      prepareUpsertResponsePayload('member', true, !updatedMember)
+    );
   }
 
   private updateMember(updateDto: UpdateMemberDto): Promise<Member> {

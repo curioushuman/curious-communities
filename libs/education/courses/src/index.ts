@@ -15,5 +15,5 @@ export * from './lib/update-participant.module';
 
 // types
 export * from './lib/infra/dto/participant.response.dto';
-
 export * from './lib/infra/dto/course.response.dto';
+export * from './lib/infra/dto/response-payload';

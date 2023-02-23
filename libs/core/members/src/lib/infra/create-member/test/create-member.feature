@@ -4,13 +4,13 @@ Scenario: Successfully creating a member by Source Id
   Given the request is valid
   When I attempt to create a member
   Then a new record should have been created
-  And saved member is returned
+  And saved member is returned within payload
 
 Scenario: Successfully creating a member by email
   Given the request is valid
   When I attempt to create a member
   Then a new record should have been created
-  And saved member is returned
+  And saved member is returned within payload
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

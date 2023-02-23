@@ -1,4 +1,4 @@
-import { Record, Static } from 'runtypes';
+import { Optional, Record, Static } from 'runtypes';
 import { Participant } from '../../../domain/entities/participant';
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 
@@ -8,7 +8,7 @@ import { ParticipantSource } from '../../../domain/entities/participant-source';
 
 export const UpdateParticipantDto = Record({
   participant: Participant,
-  participantSource: ParticipantSource,
+  participantSource: Optional(ParticipantSource),
 });
 
 export type UpdateParticipantDto = Static<typeof UpdateParticipantDto>;

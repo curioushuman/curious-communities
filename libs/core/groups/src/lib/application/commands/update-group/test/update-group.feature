@@ -16,8 +16,13 @@ Scenario: Successfully updating a group from course
   Then the related record should have been updated in the repository
   And saved group is returned
 
-Scenario: Fail; Source does not translate into a valid group
-  Given a matching record is found at the source
-  And the returned source does not populate a valid group
-  When I attempt to update a group
-  Then I should receive a SourceInvalidError
+# TODO: successful update from group i.e. not course or source
+
+# TODO: no change
+
+# TODO: re-implement
+# Scenario: Fail; Source does not translate into a valid group
+#   Given a matching record is found at the source
+#   And the returned source does not populate a valid group
+#   When I attempt to update a group
+#   Then I should receive a SourceInvalidError

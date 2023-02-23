@@ -12,7 +12,6 @@ import { LoggableLogger } from '@curioushuman/loggable';
 
 import { UpdateParticipantRequestDto } from './dto/update-participant.request.dto';
 import { UpdateParticipantCommand } from '../../application/commands/update-participant/update-participant.command';
-import { ParticipantResponseDto } from '../dto/participant.response.dto';
 import { ParticipantMapper } from '../participant.mapper';
 import { ParticipantSource } from '../../domain/entities/participant-source';
 import { FindParticipantMapper } from '../../application/queries/find-participant/find-participant.mapper';
@@ -21,6 +20,10 @@ import { Participant } from '../../domain/entities/participant';
 import { UpdateParticipantDto } from '../../application/commands/update-participant/update-participant.dto';
 import { FindParticipantSourceMapper } from '../../application/queries/find-participant-source/find-participant-source.mapper';
 import { FindParticipantSourceQuery } from '../../application/queries/find-participant-source/find-participant-source.query';
+import {
+  prepareResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for update participant operations
@@ -54,7 +57,7 @@ export class UpdateParticipantController {
    */
   public async update(
     requestDto: UpdateParticipantRequestDto
-  ): Promise<ParticipantResponseDto> {
+  ): Promise<ResponsePayload<'participant'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -85,7 +88,7 @@ export class UpdateParticipantController {
       parseActionData(
         UpdateParticipantDto.check,
         this.logger,
-        'SourceInvalidError'
+        'RequestInvalidError'
       ),
 
       // #4. call the command
@@ -103,7 +106,8 @@ export class UpdateParticipantController {
       ),
 
       // #5. transform to the response DTO
-      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger))
+      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger)),
+      TE.map(prepareResponsePayload('participant', 'updated', 'success'))
     );
 
     return executeTask(task);

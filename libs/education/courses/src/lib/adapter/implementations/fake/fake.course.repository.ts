@@ -25,13 +25,21 @@ import { CourseName } from '../../../domain/value-objects/course-name';
 export class FakeCourseRepository implements CourseRepository {
   private courses: Course[] = [];
 
+  private renameCourse = (course: Course): Course => {
+    return Course.check({
+      ...course,
+      name: 'Renamed Course' as CourseName,
+    });
+  };
+
   constructor() {
     this.courses.push(CourseBuilder().exists().build());
+    this.courses.push(this.renameCourse(CourseBuilder().updated().build()));
     const invalidSource = CourseBuilder().invalidSource().buildNoCheck();
     invalidSource.name = 'Invalid Source' as CourseName;
     this.courses.push(invalidSource);
-    // console.log(this.courses);
-    // this.courses.forEach((c) => console.log(c.sourceIds));
+    console.log(this.courses);
+    this.courses.forEach((c) => console.log(c.sourceIds));
   }
 
   findOneById = (id: CourseSourceId): TE.TaskEither<Error, Course> => {

@@ -140,12 +140,14 @@ export const ParticipantBuilder = () => {
     exists() {
       const source = ParticipantSourceBuilder().exists().build();
       this.setSource(source);
+      overrides.id = '1e72ef98-f21e-4e0a-aff1-a45ed7328345';
       return this;
     },
 
     updated() {
       const source = ParticipantSourceBuilder().updated().build();
       this.setSource(source);
+      overrides.id = '1e72ef98-f21e-4e0a-aff1-a45ed7328789';
       return this;
     },
 
@@ -259,7 +261,9 @@ export const ParticipantBuilder = () => {
       } as FindByIdSourceValueParticipantRequestDto;
     },
 
-    buildUpdateParticipantDto(ps?: ParticipantSource): UpdateParticipantDto {
+    buildUpdateParticipantFromSourceDto(
+      ps?: ParticipantSource
+    ): UpdateParticipantDto {
       // default is successful path
       const participantSource =
         ps || ParticipantSourceBuilder().updated().build();

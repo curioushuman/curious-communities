@@ -9,8 +9,11 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { CreateParticipantRequestDto } from './dto/create-participant.request.dto';
 import { CreateParticipantMapper } from '../../application/commands/create-participant/create-participant.mapper';
 import { CreateParticipantCommand } from '../../application/commands/create-participant/create-participant.command';
-import { ParticipantResponseDto } from '../dto/participant.response.dto';
 import { ParticipantMapper } from '../participant.mapper';
+import {
+  prepareResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for create participant operations
@@ -47,7 +50,7 @@ export class CreateParticipantController {
    */
   public async create(
     requestDto: CreateParticipantRequestDto
-  ): Promise<ParticipantResponseDto> {
+  ): Promise<ResponsePayload<'participant'>> {
     const task = pipe(
       requestDto,
 
@@ -74,7 +77,8 @@ export class CreateParticipantController {
       ),
 
       // #4. transform to the response DTO
-      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger))
+      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger)),
+      TE.map(prepareResponsePayload('participant', 'created', 'success'))
     );
 
     return executeTask(task);

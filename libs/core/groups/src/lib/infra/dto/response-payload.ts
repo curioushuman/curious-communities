@@ -31,18 +31,18 @@ interface ResponsePayloadEntityDetailMap {
   /** group */
   group: GroupBaseResponseDto;
   'group-base': GroupBaseResponseDto;
-  'course-group-base': CourseGroupBaseResponseDto;
-  'standard-group-base': StandardGroupBaseResponseDto;
   'course-group': CourseGroupResponseDto;
+  'course-group-base': CourseGroupBaseResponseDto;
   'standard-group': StandardGroupResponseDto;
+  'standard-group-base': StandardGroupBaseResponseDto;
   /** group source */
   'group-source': GroupSourceResponseDto;
 
   /** group member */
   'group-member': GroupMemberResponseDto;
   'course-group-member': CourseGroupMemberResponseDto;
-  'standard-group-member': StandardGroupMemberResponseDto;
   'course-group-member-base': CourseGroupMemberBaseResponseDto;
+  'standard-group-member': StandardGroupMemberResponseDto;
   'standard-group-member-base': StandardGroupMemberBaseResponseDto;
   /** group member source; allow for undefined during delete */
   'group-member-source': GroupMemberSourceResponseDto | undefined;

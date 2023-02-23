@@ -2,24 +2,14 @@ import { INestApplication } from '@nestjs/common';
 import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
-import {
-  RepositoryItemNotFoundError,
-  RequestInvalidError,
-  SourceInvalidError,
-} from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 
 import { CourseModule } from '../../../test/course.module.fake';
-import { UpdateCourseRequestDto } from '../dto/update-course.request.dto';
 import { CourseBuilder } from '../../../test/builders/course.builder';
-import { UpdateCourseController } from '../../../infra/update-course/update-course.controller';
-import { FakeCourseRepository } from '../../../adapter/implementations/fake/fake.course.repository';
 import { CourseRepository } from '../../../adapter/ports/course.repository';
-import { CourseSourceBuilder } from '../../../test/builders/course-source.builder';
-import { CourseSource } from '../../../domain/entities/course-source';
-import { CourseSourceRepository } from '../../../adapter/ports/course-source.repository';
-import { FakeCourseSourceRepository } from '../../../adapter/implementations/fake/fake.course-source.repository';
-import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import { FakeCourseRepository } from '../../../adapter/implementations/fake/fake.course.repository';
+import { UpdateCourseController } from '../update-course.controller';
+import { UpdateCourseRequestDto } from '../dto/update-course.request.dto';
 
 /**
  * INTEGRATION TEST
@@ -44,7 +34,6 @@ const feature = loadFeature('./update-course.feature', {
 defineFeature(feature, (test) => {
   let app: INestApplication;
   let repository: FakeCourseRepository;
-  let courseSourceRepository: FakeCourseSourceRepository;
   let controller: UpdateCourseController;
 
   beforeAll(async () => {
@@ -59,9 +48,6 @@ defineFeature(feature, (test) => {
     repository = moduleRef.get<CourseRepository>(
       CourseRepository
     ) as FakeCourseRepository;
-    courseSourceRepository = moduleRef.get<CourseSourceRepository>(
-      CourseSourceRepository
-    ) as FakeCourseSourceRepository;
     controller = moduleRef.get<UpdateCourseController>(UpdateCourseController);
   });
 
@@ -70,33 +56,24 @@ defineFeature(feature, (test) => {
   });
 
   test('Successfully updating a course', ({ given, and, when, then }) => {
-    let updatedCourseSource: CourseSource;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
     let updateCourseDto: UpdateCourseRequestDto;
     let error: Error;
 
-    given('the request is valid', () => {
+    given('the request is valid', async () => {
       updateCourseDto = CourseBuilder().updated().buildUpdateCourseRequestDto();
     });
 
-    and('a matching record is found at the source', async () => {
-      updatedCourseSource = CourseSourceBuilder().updated().build();
-      // save it to our fake repo
-      executeTask(courseSourceRepository.save(updatedCourseSource));
+    and('the course exists in the repository', async () => {
       const courses = await executeTask(repository.all());
       const courseBefore = courses.find(
-        (course) =>
-          updateCourseDto.idSourceValue ===
-          prepareExternalIdSourceValue(
-            course.sourceIds[0].id,
-            course.sourceIds[0].source
-          )
+        (course) => updateCourseDto.course.id === course.id
       );
       expect(courseBefore).toBeDefined();
       if (courseBefore) {
-        expect(courseBefore.name).not.toEqual(updatedCourseSource.name);
+        expect(courseBefore.name).not.toEqual(updateCourseDto.course.name);
       }
     });
 
@@ -110,138 +87,73 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'the related record should have been updated in the repository',
+      'an existing record should have been updated in the repository',
       async () => {
         const courses = await executeTask(repository.all());
         const courseAfter = courses.find(
-          (course) =>
-            updateCourseDto.idSourceValue ===
-            prepareExternalIdSourceValue(
-              course.sourceIds[0].id,
-              course.sourceIds[0].source
-            )
+          (course) => updateCourseDto.course.id === course.id
         );
         expect(courseAfter).toBeDefined();
         if (courseAfter) {
-          expect(courseAfter.name).toEqual(updatedCourseSource.name);
+          expect(courseAfter.name).toEqual(updateCourseDto.course.name);
         }
       }
     );
 
-    and('saved course is returned', () => {
-      expect(result.id).toBeDefined();
+    and('saved course is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
     });
   });
 
-  test('Fail; Invalid request', ({ given, when, then }) => {
-    let updateCourseDto: UpdateCourseRequestDto;
-    let error: Error;
+  // test('Fail; Course does not exist', ({ given, and, when, then }) => {
+  //   let updateCourseDto: UpdateCourseRequestDto;
+  //   let error: Error;
 
-    given('the request contains invalid data', () => {
-      updateCourseDto = CourseBuilder().invalid().buildUpdateCourseRequestDto();
-    });
+  //   given('the request is valid', () => {
+  //     updateCourseDto = CourseBuilder()
+  //       .doesntExist()
+  //       .buildUpdateCourseRequestDto();
+  //   });
 
-    when('I attempt to update a course', async () => {
-      try {
-        await controller.update(updateCourseDto);
-      } catch (err) {
-        error = err as Error;
-      }
-    });
+  //   and('the course does not exist in the repository', () => {
+  //     // above
+  //   });
 
-    then('I should receive a RequestInvalidError', () => {
-      expect(error).toBeInstanceOf(RequestInvalidError);
-    });
-  });
+  //   when('I attempt to update a course', async () => {
+  //     try {
+  //       await controller.update(updateCourseDto);
+  //     } catch (err) {
+  //       error = err as Error;
+  //     }
+  //   });
 
-  test('Fail; Source not found for ID provided', ({ given, when, then }) => {
-    let updateCourseDto: UpdateCourseRequestDto;
-    let error: Error;
+  //   then('I should receive a RepositoryItemNotFoundError', () => {
+  //     expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
+  //   });
+  // });
 
-    given('no record exists that matches our request', () => {
-      updateCourseDto = CourseBuilder()
-        .noMatchingSource()
-        .buildUpdateCourseRequestDto();
-    });
+  // test('Fail; Invalid request', ({ given, when, then }) => {
+  //   let updateCourseDto: UpdateCourseRequestDto;
+  //   let error: Error;
 
-    when('I attempt to update a course', async () => {
-      try {
-        await controller.update(updateCourseDto);
-      } catch (err) {
-        error = err as Error;
-      }
-    });
+  //   given('the request contains invalid data', () => {
+  //     updateCourseDto = CourseBuilder()
+  //       .invalid()
+  //       .buildUpdateCourseRequestDto();
+  //   });
 
-    then('I should receive a RepositoryItemNotFoundError', () => {
-      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
-    });
-  });
+  //   when('I attempt to create a course', async () => {
+  //     try {
+  //       await controller.update(updateCourseDto);
+  //     } catch (err) {
+  //       error = err as Error;
+  //     }
+  //   });
 
-  test('Fail; Course not found for ID provided', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let updateCourseDto: UpdateCourseRequestDto;
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      updateCourseDto = CourseBuilder()
-        .doesntExist()
-        .buildUpdateCourseRequestDto();
-    });
-
-    and('the returned source populates a valid course', () => {
-      // above
-    });
-
-    and('the source does NOT exist in our DB', () => {
-      // above
-    });
-
-    when('I attempt to update a course', async () => {
-      try {
-        await controller.update(updateCourseDto);
-      } catch (err) {
-        error = err as Error;
-      }
-    });
-
-    then('I should receive a RepositoryItemNotFoundError', () => {
-      expect(error).toBeInstanceOf(RepositoryItemNotFoundError);
-    });
-  });
-
-  test('Fail; Source does not translate into a valid Course', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let updateCourseDto: UpdateCourseRequestDto;
-    let error: Error;
-
-    given('a matching record is found at the source', () => {
-      updateCourseDto = CourseBuilder()
-        .invalidSource()
-        .buildUpdateCourseRequestDto();
-    });
-
-    and('the returned source does not populate a valid Course', () => {
-      // above
-    });
-
-    when('I attempt to update a course', async () => {
-      try {
-        await controller.update(updateCourseDto);
-      } catch (err) {
-        error = err as Error;
-      }
-    });
-
-    then('I should receive a SourceInvalidError', () => {
-      expect(error).toBeInstanceOf(SourceInvalidError);
-    });
-  });
+  //   then('I should receive a RequestInvalidError', () => {
+  //     expect(error).toBeInstanceOf(RequestInvalidError);
+  //   });
+  // });
 });

@@ -24,9 +24,12 @@ export class FakeParticipantRepository implements ParticipantRepository {
 
   constructor() {
     this.participants.push(ParticipantBuilder().exists().build());
+    this.participants.push(ParticipantBuilder().updated().build());
     const invalidSource = ParticipantBuilder().invalidOther().buildNoCheck();
     invalidSource.status = ParticipantStatusEnum.PENDING;
     this.participants.push(invalidSource);
+    // console.log(this.participants);
+    // this.participants.forEach((p) => console.log(p.sourceIds));
   }
 
   /**

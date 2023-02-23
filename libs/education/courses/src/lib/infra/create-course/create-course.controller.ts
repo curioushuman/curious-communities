@@ -13,18 +13,23 @@ import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 
 import { CreateCourseRequestDto } from './dto/create-course.request.dto';
 import { CreateCourseCommand } from '../../application/commands/create-course/create-course.command';
-import { CourseBaseResponseDto } from '../dto/course.response.dto';
 import { CourseMapper } from '../course.mapper';
 import { CourseSource } from '../../domain/entities/course-source';
 import { FindCourseMapper } from '../../application/queries/find-course/find-course.mapper';
 import { FindCourseQuery } from '../../application/queries/find-course/find-course.query';
-import { Course } from '../../domain/entities/course';
+import { CourseBase } from '../../domain/entities/course';
 import { CreateCourseDto } from '../../application/commands/create-course/create-course.dto';
 import { FindCourseSourceMapper } from '../../application/queries/find-course-source/find-course-source.mapper';
 import { FindCourseSourceQuery } from '../../application/queries/find-course-source/find-course-source.query';
+import {
+  prepareResponsePayload,
+  ResponsePayload,
+} from '../dto/response-payload';
 
 /**
  * Controller for create course operations
+ *
+ * ! POTENTIAL FOR DEPRECATION
  */
 @Controller()
 export class CreateCourseController {
@@ -38,7 +43,7 @@ export class CreateCourseController {
 
   public async create(
     requestDto: CreateCourseRequestDto
-  ): Promise<CourseBaseResponseDto | void> {
+  ): Promise<ResponsePayload<'course-base'>> {
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
@@ -62,16 +67,18 @@ export class CreateCourseController {
         `Course already exists with id: ${course.id}`,
         'RepositoryItemConflictError'
       );
-      return undefined;
+      return pipe(
+        course,
+        parseData(CourseMapper.toBaseResponseDto, this.logger),
+        prepareResponsePayload('course-base', 'created', 'failure')
+      );
     }
 
     // otherwise, crack on
-    const createDto = {
-      courseSource,
-    };
-
     const task = pipe(
-      createDto,
+      {
+        courseSource,
+      },
 
       // #3. validate the command dto
       // NOTE: this will also occur in the command itself
@@ -92,7 +99,8 @@ export class CreateCourseController {
       ),
 
       // #5. transform to the response DTO
-      TE.chain(parseActionData(CourseMapper.toBaseResponseDto, this.logger))
+      TE.chain(parseActionData(CourseMapper.toBaseResponseDto, this.logger)),
+      TE.map(prepareResponsePayload('course-base', 'created', 'success'))
     );
 
     return executeTask(task);
@@ -100,7 +108,7 @@ export class CreateCourseController {
 
   private findCourse(
     requestDto: CreateCourseRequestDto
-  ): Promise<Course | undefined> {
+  ): Promise<CourseBase | undefined> {
     const task = pipe(
       requestDto,
 
@@ -108,7 +116,7 @@ export class CreateCourseController {
       parseActionData(
         FindCourseMapper.fromCreateCourseRequestDto,
         this.logger,
-        'SourceInvalidError'
+        'RequestInvalidError'
       ),
 
       // #2. call the query

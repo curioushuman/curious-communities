@@ -98,8 +98,10 @@ defineFeature(feature, (test) => {
       expect(participants.length).toEqual(participantsBefore + 1);
     });
 
-    and('saved participant is returned', () => {
-      expect(result.id).toBeDefined();
+    and('saved participant is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('created');
+      expect(result.outcome).toEqual('success');
     });
   });
 

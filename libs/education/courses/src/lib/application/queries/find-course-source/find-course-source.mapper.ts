@@ -1,42 +1,36 @@
 import { FindCourseSourceDto } from './find-course-source.dto';
 import { CreateCourseRequestDto } from '../../../infra/create-course/dto/create-course.request.dto';
 import { prepareCourseExternalIdSource } from '../../../domain/entities/course';
-import config from '../../../static/config';
 import { Source } from '../../../domain/value-objects/source';
-import { UpdateCourseRequestDto } from '../../../infra/update-course/dto/update-course.request.dto';
+import { UpsertCourseRequestDto } from '../../../infra/upsert-course/dto/upsert-course.request.dto';
 
 /**
  * TODO
  * - find base abstract class for mappers
  */
 export class FindCourseSourceMapper {
-  /**
-   * NOTE: currently hard coded to default source
-   * if we ever move to multiple possible sources
-   * draw from your other microservices e.g. groups
-   */
-  public static fromCreateCourseRequestDto(
-    dto: CreateCourseRequestDto
+  public static fromIdSourceValue(
+    idSourceValue: string,
+    sourceOverride?: Source
   ): FindCourseSourceDto {
+    const value = prepareCourseExternalIdSource(idSourceValue);
+    const source = Source.check(sourceOverride || value.source);
     return {
       identifier: 'idSource',
-      value: prepareCourseExternalIdSource(dto.idSourceValue),
-      source: Source.check(config.defaults.primaryAccountSource),
+      value,
+      source,
     };
   }
 
-  /**
-   * NOTE: currently hard coded to default source
-   * if we ever move to multiple possible sources
-   * draw from your other microservices e.g. groups
-   */
-  public static fromUpdateCourseRequestDto(
-    dto: UpdateCourseRequestDto
+  public static fromCreateCourseRequestDto(
+    dto: CreateCourseRequestDto
   ): FindCourseSourceDto {
-    return {
-      identifier: 'idSource',
-      value: prepareCourseExternalIdSource(dto.idSourceValue),
-      source: Source.check(config.defaults.primaryAccountSource),
-    };
+    return FindCourseSourceMapper.fromIdSourceValue(dto.idSourceValue);
+  }
+
+  public static fromUpsertCourseRequestDto(
+    dto: UpsertCourseRequestDto
+  ): FindCourseSourceDto {
+    return FindCourseSourceMapper.fromIdSourceValue(dto.idSourceValue);
   }
 }

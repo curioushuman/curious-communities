@@ -12,11 +12,11 @@ Scenario: Fail; Source does not translate into a valid Participant
   Given a matching record is found at the source
   And the returned source does not populate a valid Participant
   When I attempt to update a participant
-  Then I should receive a SourceInvalidError
+  Then I should receive a InternalRequestInvalidError
 
 Scenario: Fail; Source is an invalid status to be updated in admin
   Given a matching record is found at the source
   And the returned source has an invalid status
   When I attempt to update a participant
-  Then I should receive a SourceInvalidError
+  Then I should receive a InternalRequestInvalidError
 

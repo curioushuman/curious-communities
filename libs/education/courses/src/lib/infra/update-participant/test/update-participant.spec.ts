@@ -82,7 +82,7 @@ defineFeature(feature, (test) => {
     given('the request is valid', () => {
       // we know this to exist in our fake repo
       updateParticipantDto = ParticipantBuilder()
-        .exists()
+        .updated()
         .buildUpdateParticipantRequestDto();
     });
 
@@ -130,15 +130,16 @@ defineFeature(feature, (test) => {
         );
         expect(participantAfter).toBeDefined();
         if (participantAfter) {
-          expect(participantAfter.status).toEqual(
-            updatedParticipantSource.status
-          );
+          // NOTE: cancelled is converted to disabled
+          expect(participantAfter.status).toEqual('disabled');
         }
       }
     );
 
-    and('saved participant is returned', () => {
-      expect(result.id).toBeDefined();
+    and('saved participant is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
     });
   });
 

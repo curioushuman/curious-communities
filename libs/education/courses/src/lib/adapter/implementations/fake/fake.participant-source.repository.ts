@@ -23,6 +23,7 @@ export class FakeParticipantSourceRepository
 
   constructor() {
     this.participantSources.push(ParticipantSourceBuilder().exists().build());
+    this.participantSources.push(ParticipantSourceBuilder().updated().build());
     this.participantSources.push(
       ParticipantSourceBuilder().invalidSource().buildNoCheck()
     );

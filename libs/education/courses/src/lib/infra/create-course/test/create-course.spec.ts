@@ -72,7 +72,7 @@ defineFeature(feature, (test) => {
 
     given('the request is valid', () => {
       // we know this to exist in our fake repo
-      createCourseDto = CourseBuilder().beta().buildCreateCourseRequestDto();
+      createCourseDto = CourseBuilder().beta().buildUpsertCourseRequestDto();
     });
 
     and('a matching record is found at the source', async () => {
@@ -97,8 +97,10 @@ defineFeature(feature, (test) => {
       }
     );
 
-    and('saved course is returned', () => {
-      expect(result.id).toBeDefined();
+    and('saved course is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('created');
+      expect(result.outcome).toEqual('success');
     });
   });
 
@@ -107,7 +109,7 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request contains invalid data', () => {
-      createCourseDto = CourseBuilder().invalid().buildCreateCourseRequestDto();
+      createCourseDto = CourseBuilder().invalid().buildUpsertCourseRequestDto();
     });
 
     when('I attempt to create a course', async () => {
@@ -130,7 +132,7 @@ defineFeature(feature, (test) => {
     given('no record exists that matches our request', () => {
       createCourseDto = CourseBuilder()
         .noMatchingSource()
-        .buildCreateCourseRequestDto();
+        .buildUpsertCourseRequestDto();
     });
 
     when('I attempt to create a course', async () => {
@@ -158,7 +160,7 @@ defineFeature(feature, (test) => {
     given('a matching record is found at the source', () => {
       createCourseDto = CourseBuilder()
         .invalidSource()
-        .buildCreateCourseRequestDto();
+        .buildUpsertCourseRequestDto();
     });
 
     and('the returned source does not populate a valid Course', () => {
@@ -195,7 +197,7 @@ defineFeature(feature, (test) => {
     });
 
     and('the source DOES already exist in our DB', () => {
-      createCourseDto = CourseBuilder().exists().buildCreateCourseRequestDto();
+      createCourseDto = CourseBuilder().exists().buildUpsertCourseRequestDto();
     });
 
     when('I attempt to create a course', async () => {
@@ -207,8 +209,9 @@ defineFeature(feature, (test) => {
     });
 
     then('I should receive undefined as a result', () => {
-      expect(error).toBeUndefined();
-      expect(result).toBeUndefined();
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('created');
+      expect(result.outcome).toEqual('failure');
     });
   });
 });

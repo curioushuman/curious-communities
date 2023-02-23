@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import {
   FakeRepositoryErrorFactory,
-  SourceInvalidError,
+  InternalRequestInvalidError,
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -21,6 +21,7 @@ import { UpdateParticipantDto } from '../update-participant.dto';
 import { ParticipantSourceBuilder } from '../../../../test/builders/participant-source.builder';
 import { ParticipantRepositoryErrorFactory } from '../../../../adapter/ports/participant.repository.error-factory';
 import { ParticipantSourceRepositoryErrorFactory } from '../../../../adapter/ports/participant-source.repository.error-factory';
+import { ParticipantSource } from '../../../../domain/entities/participant-source';
 
 /**
  * UNIT TEST
@@ -77,7 +78,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       updateParticipantDto = ParticipantBuilder()
         .updated()
-        .buildUpdateParticipantDto();
+        .buildUpdateParticipantFromSourceDto();
     });
 
     and('the returned source populates a valid participant', async () => {
@@ -92,7 +93,7 @@ defineFeature(feature, (test) => {
       expect(participantBefore).toBeDefined();
       if (participantBefore) {
         expect(participantBefore.status).not.toEqual(
-          updateParticipantDto.participantSource.status
+          (updateParticipantDto.participantSource as ParticipantSource).status
         );
       }
     });
@@ -111,15 +112,15 @@ defineFeature(feature, (test) => {
       'the related record should have been updated in the repository',
       async () => {
         const participants = await executeTask(repository.all());
+        console.log(participants);
         const participantAfter = participants.find(
           (participant) =>
             participant.id === updateParticipantDto.participant.id
         );
         expect(participantAfter).toBeDefined();
         if (participantAfter) {
-          expect(participantAfter.status).toEqual(
-            updateParticipantDto.participantSource.status
-          );
+          // NOTE: cancelled is converted into disabled
+          expect(participantAfter.status).toEqual('disabled');
         }
       }
     );
@@ -143,7 +144,7 @@ defineFeature(feature, (test) => {
         .buildNoCheck();
       updateParticipantDto = ParticipantBuilder()
         .invalidSource()
-        .buildUpdateParticipantDto(participantSource);
+        .buildUpdateParticipantFromSourceDto(participantSource);
     });
 
     and('the returned source does not populate a valid Participant', () => {
@@ -160,8 +161,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a SourceInvalidError', () => {
-      expect(error).toBeInstanceOf(SourceInvalidError);
+    then('I should receive a InternalRequestInvalidError', () => {
+      expect(error).toBeInstanceOf(InternalRequestInvalidError);
     });
   });
 
@@ -180,7 +181,7 @@ defineFeature(feature, (test) => {
     and('the returned source has an invalid status', () => {
       updateParticipantDto = ParticipantBuilder()
         .invalidOther()
-        .buildUpdateParticipantDto();
+        .buildUpdateParticipantFromSourceDto();
     });
 
     when('I attempt to update a participant', async () => {
@@ -193,8 +194,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a SourceInvalidError', () => {
-      expect(error).toBeInstanceOf(SourceInvalidError);
+    then('I should receive a InternalRequestInvalidError', () => {
+      expect(error).toBeInstanceOf(InternalRequestInvalidError);
     });
   });
 });

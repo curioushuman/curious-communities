@@ -11,6 +11,7 @@ import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
 import { Source } from '../../../domain/value-objects/source';
 import { CreateCourseRequestDto } from '../../../infra/create-course/dto/create-course.request.dto';
 import { UpdateCourseRequestDto } from '../../../infra/update-course/dto/update-course.request.dto';
+import { UpsertCourseRequestDto } from '../../../infra/upsert-course/dto/upsert-course.request.dto';
 
 export class FindCourseMapper {
   public static fromFindRequestDto(dto: FindCourseRequestDto): FindCourseDto {
@@ -36,6 +37,13 @@ export class FindCourseMapper {
     } as FindCourseDto;
   }
 
+  public static fromIdSourceValue(value: string): FindCourseDto {
+    return {
+      identifier: 'idSourceValue',
+      value,
+    } as FindCourseDto;
+  }
+
   public static fromFindByIdSourceValueRequestDto(
     dto: FindByIdSourceValueCourseRequestDto
   ): FindCourseDto {
@@ -45,27 +53,28 @@ export class FindCourseMapper {
       CourseSourceId,
       Source
     );
-    return {
-      identifier: 'idSourceValue',
-      value,
-    } as FindCourseDto;
+    return FindCourseMapper.fromIdSourceValue(value);
   }
 
   public static fromCreateCourseRequestDto(
     dto: CreateCourseRequestDto
   ): FindCourseDto {
-    return {
-      identifier: 'idSourceValue',
-      value: dto.idSourceValue,
-    } as FindCourseDto;
+    return FindCourseMapper.fromIdSourceValue(dto.idSourceValue);
+  }
+
+  public static fromUpsertCourseRequestDto(
+    dto: UpsertCourseRequestDto
+  ): FindCourseDto {
+    return FindCourseMapper.fromIdSourceValue(dto.idSourceValue);
   }
 
   public static fromUpdateCourseRequestDto(
     dto: UpdateCourseRequestDto
   ): FindCourseDto {
+    const value = CourseId.check(dto.course.id);
     return {
-      identifier: 'idSourceValue',
-      value: dto.idSourceValue,
+      identifier: 'id',
+      value,
     } as FindCourseDto;
   }
 }

@@ -2,13 +2,26 @@ import { UpdateMapper } from '@curioushuman/common';
 
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 import { Participant } from '../../../domain/entities/participant';
-import { ParticipantMapper } from '../../../domain/mappers/participant.mapper';
+import { ParticipantMapper as DomainParticipantMapper } from '../../../domain/mappers/participant.mapper';
+// import { ParticipantMapper as InfraParticipantMapper } from '../../../infra/participant.mapper';
+// import { UpdateParticipantRequestDto } from '../../../infra/update-participant/dto/update-participant.request.dto';
+// import { UpdateParticipantDto } from './update-participant.dto';
 
 /**
  * TODO
  * - create base abstract class for mappers
  */
 export class UpdateParticipantMapper extends UpdateMapper {
+  // public static fromUpdateParticipantRequestDto(
+  //   dto: UpdateParticipantRequestDto
+  // ): UpdateParticipantDto {
+  //   return {
+  //     participant: InfraParticipantMapper.fromResponseDtoToBase(
+  //       dto.participant
+  //     ),
+  //   };
+  // }
+
   /**
    * Returning an anonymous function here so we can combine the values
    * from both an existing course, and the source that will be overriding it
@@ -19,9 +32,14 @@ export class UpdateParticipantMapper extends UpdateMapper {
     participant: Participant
   ): (source: ParticipantSource) => Participant {
     return (source: ParticipantSource) => {
+      console.log('status', source.status);
+      console.log(
+        'status',
+        DomainParticipantMapper.fromSourceStatus(source.status)
+      );
       return Participant.check({
         ...participant,
-        status: ParticipantMapper.fromSourceStatus(source.status),
+        status: DomainParticipantMapper.fromSourceStatus(source.status),
       });
     };
   }

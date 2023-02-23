@@ -5,7 +5,7 @@ Scenario: Successfully updating a participant
   And a matching record is found at the source
   When I attempt to update a participant
   Then the related record should have been updated in the repository
-  And saved participant is returned
+  And saved participant is returned within payload
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

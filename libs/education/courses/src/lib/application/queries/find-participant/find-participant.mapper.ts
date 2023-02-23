@@ -57,12 +57,16 @@ export class FindParticipantMapper {
     } as FindParticipantDto;
   }
 
+  public static fromIdSourceValue(value: string): FindParticipantDto {
+    return {
+      identifier: 'idSourceValue',
+      value: value,
+    } as FindParticipantDto;
+  }
+
   public static fromUpdateParticipantRequestDto(
     dto: UpdateParticipantRequestDto
   ): FindParticipantDto {
-    return {
-      identifier: 'idSourceValue',
-      value: dto.idSourceValue,
-    } as FindParticipantDto;
+    return FindParticipantMapper.fromIdSourceValue(dto.idSourceValue);
   }
 }

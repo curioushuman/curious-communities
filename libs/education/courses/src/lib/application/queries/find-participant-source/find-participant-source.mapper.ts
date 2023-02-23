@@ -1,7 +1,6 @@
 import { FindParticipantSourceDto } from './find-participant-source.dto';
 import { prepareParticipantExternalIdSource } from '../../../domain/entities/participant';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
-import config from '../../../static/config';
 import { Source } from '../../../domain/value-objects/source';
 import { UpdateParticipantRequestDto } from '../../../infra/update-participant/dto/update-participant.request.dto';
 import { parseExternalIdSourceValue } from '@curioushuman/common';
@@ -15,29 +14,28 @@ import { FindParticipantSourceRequestDto } from '../../../infra/find-participant
  * - find base abstract class for mappers
  */
 export class FindParticipantSourceMapper {
-  public static fromFindRequestDto(
-    dto: FindParticipantSourceRequestDto
+  public static fromIdSourceValue(
+    idSourceValue: string
   ): FindParticipantSourceDto {
     // this will throw an error if the value is not valid
-    parseExternalIdSourceValue(dto.idSourceValue, ParticipantSourceId, Source);
-    const value = prepareParticipantExternalIdSource(dto.idSourceValue);
+    parseExternalIdSourceValue(idSourceValue, ParticipantSourceId, Source);
+    const value = prepareParticipantExternalIdSource(idSourceValue);
     return {
       identifier: 'idSource',
       value,
-      source: Source.check(config.defaults.primaryAccountSource),
+      source: Source.check(value.source),
     };
+  }
+
+  public static fromFindRequestDto(
+    dto: FindParticipantSourceRequestDto
+  ): FindParticipantSourceDto {
+    return FindParticipantSourceMapper.fromIdSourceValue(dto.idSourceValue);
   }
 
   public static fromUpdateParticipantRequestDto(
     dto: UpdateParticipantRequestDto
   ): FindParticipantSourceDto {
-    // this will throw an error if the value is not valid
-    parseExternalIdSourceValue(dto.idSourceValue, ParticipantSourceId, Source);
-    const value = prepareParticipantExternalIdSource(dto.idSourceValue);
-    return {
-      identifier: 'idSource',
-      value,
-      source: Source.check(config.defaults.primaryAccountSource),
-    };
+    return FindParticipantSourceMapper.fromIdSourceValue(dto.idSourceValue);
   }
 }

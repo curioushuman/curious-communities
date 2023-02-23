@@ -168,6 +168,7 @@ export const CourseBuilder = () => {
     exists() {
       const source = CourseSourceBuilder().exists().build();
       this.setSource(source);
+      overrides.id = '8e925369-7dd5-4d92-b2a0-fba16384ce91';
       overrides.name = source.name;
       overrides.slug = createCourseSlug(source);
       return this;
@@ -176,6 +177,7 @@ export const CourseBuilder = () => {
     updated() {
       const source = CourseSourceBuilder().updated().build();
       this.setSource(source);
+      overrides.id = '8e925369-7dd5-4d92-b2a0-fba16384ce90';
       overrides.name = source.name;
       overrides.slug = createCourseSlug(source);
       return this;
@@ -243,14 +245,20 @@ export const CourseBuilder = () => {
       return { courseSource } as CreateCourseDto;
     },
 
-    buildUpdateCourseDto(cs?: CourseSource): UpdateCourseDto {
+    buildUpdateCourseDto(): UpdateCourseDto {
+      // default is successful path
+      const course = this.buildNoCheck();
+      return { course } as UpdateCourseDto;
+    },
+
+    buildUpdateCourseFromSourceDto(cs?: CourseSource): UpdateCourseDto {
       // default is successful path
       const courseSource = cs || CourseSourceBuilder().updated().build();
       const course = this.buildNoCheck();
       return { courseSource, course } as UpdateCourseDto;
     },
 
-    buildCreateCourseRequestDto(): CreateCourseRequestDto {
+    buildUpsertCourseRequestDto(): CreateCourseRequestDto {
       const sourceIds = this.buildNoCheck().sourceIds;
       if (!sourceIds) {
         return {
@@ -265,18 +273,25 @@ export const CourseBuilder = () => {
       } as CreateCourseRequestDto;
     },
 
+    // buildUpdateCourseRequestDto(): UpdateCourseRequestDto {
+    //   const sourceIds = this.buildNoCheck().sourceIds;
+    //   if (!sourceIds) {
+    //     return {
+    //       idSourceValue: '',
+    //     } as CreateCourseRequestDto;
+    //   }
+    //   return {
+    //     idSourceValue: prepareExternalIdSourceValue(
+    //       sourceIds[0].id,
+    //       sourceIds[0].source
+    //     ),
+    //   } as UpdateCourseRequestDto;
+    // },
+
     buildUpdateCourseRequestDto(): UpdateCourseRequestDto {
-      const sourceIds = this.buildNoCheck().sourceIds;
-      if (!sourceIds) {
-        return {
-          idSourceValue: '',
-        } as CreateCourseRequestDto;
-      }
+      const courseDto = this.buildCourseBaseResponseDto();
       return {
-        idSourceValue: prepareExternalIdSourceValue(
-          sourceIds[0].id,
-          sourceIds[0].source
-        ),
+        course: courseDto,
       } as UpdateCourseRequestDto;
     },
 

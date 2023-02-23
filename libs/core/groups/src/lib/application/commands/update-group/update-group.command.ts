@@ -47,13 +47,13 @@ export class UpdateGroupHandler implements ICommandHandler<UpdateGroupCommand> {
 
     const { group } = validDto;
 
-    // #2 validate/parse the groupMember from the DTO
+    // #2 validate/parse the group from the DTO
     const parsedGroup = this.parseDto(validDto);
 
     const task = pipe(
       parsedGroup,
 
-      // #4. update the entity, from the source; if required
+      // #3. update the entity, from the source; if required
       O.fromNullable,
       O.fold(
         // if null, return the original group
@@ -81,7 +81,7 @@ export class UpdateGroupHandler implements ICommandHandler<UpdateGroupCommand> {
 
   parseDto(validDto: UpdateGroupDto): GroupBase | undefined {
     const { group, course, groupSource } = validDto;
-    // if no participant or groupSource it means we're doing a straight update
+    // if no course or groupSource it means we're doing a straight update
     // so we skip the requiresUpdate check
     if (!course && !groupSource) {
       return group;

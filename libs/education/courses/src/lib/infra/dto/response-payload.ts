@@ -4,48 +4,30 @@ import {
   CoAwsResponsePayload,
 } from '@curioushuman/common';
 import {
-  CourseGroupMemberBaseResponseDto,
-  CourseGroupMemberResponseDto,
-} from './course-group-member.response.dto';
+  CourseBaseResponseDto,
+  CourseResponseDto,
+} from './course.response.dto';
+import { ParticipantSourceResponseDto } from './participant-source.response.dto';
 import {
-  CourseGroupBaseResponseDto,
-  CourseGroupResponseDto,
-} from './course-group.response.dto';
-import { GroupMemberSourceResponseDto } from './group-member-source.response.dto';
-import { GroupMemberResponseDto } from './group-member.response.dto';
-import { GroupSourceResponseDto } from './group-source.response.dto';
-import { GroupBaseResponseDto } from './group.response.dto';
-import {
-  StandardGroupMemberBaseResponseDto,
-  StandardGroupMemberResponseDto,
-} from './standard-group-member.response.dto';
-import {
-  StandardGroupBaseResponseDto,
-  StandardGroupResponseDto,
-} from './standard-group.response.dto';
+  ParticipantBaseResponseDto,
+  ParticipantResponseDto,
+} from './participant.response.dto';
 
 /**
  * These are the responses currently supported by the API
  */
 interface ResponsePayloadEntityDetailMap {
-  /** group */
-  group: GroupBaseResponseDto;
-  'group-base': GroupBaseResponseDto;
-  'course-group': CourseGroupResponseDto;
-  'course-group-base': CourseGroupBaseResponseDto;
-  'standard-group': StandardGroupResponseDto;
-  'standard-group-base': StandardGroupBaseResponseDto;
-  /** group source */
-  'group-source': GroupSourceResponseDto;
+  /** course */
+  course: CourseResponseDto;
+  'course-base': CourseBaseResponseDto;
+  /** course source */
+  // 'course-source': CourseSourceResponseDto;
 
-  /** group member */
-  'group-member': GroupMemberResponseDto;
-  'course-group-member': CourseGroupMemberResponseDto;
-  'course-group-member-base': CourseGroupMemberBaseResponseDto;
-  'standard-group-member': StandardGroupMemberResponseDto;
-  'standard-group-member-base': StandardGroupMemberBaseResponseDto;
-  /** group member source; allow for undefined during delete */
-  'group-member-source': GroupMemberSourceResponseDto | undefined;
+  /** participant */
+  participant: ParticipantResponseDto;
+  'participant-base': ParticipantBaseResponseDto;
+  /** participant source */
+  'participant-source': ParticipantSourceResponseDto;
 }
 
 export type ResponsePayloadEntityName = keyof ResponsePayloadEntityDetailMap;
@@ -67,7 +49,7 @@ export const prepareResponsePayload =
   ): ((
     entityDetail: ResponsePayloadEntityDetailMap[N]
   ) => ResponsePayload<N>) =>
-  (entityDetail: ResponsePayloadEntityDetailMap[N]) => ({
+  (entityDetail) => ({
     event,
     outcome,
     entity: entityName,

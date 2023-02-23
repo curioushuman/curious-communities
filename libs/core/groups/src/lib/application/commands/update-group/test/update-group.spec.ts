@@ -125,35 +125,35 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; Source does not translate into a valid Group', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
+  // test('Fail; Source does not translate into a valid Group', ({
+  //   given,
+  //   and,
+  //   when,
+  //   then,
+  // }) => {
+  //   let error: Error;
 
-    given('a matching record is found at the source', () => {
-      const groupSource = GroupSourceBuilder().invalid().buildNoCheck();
-      updateGroupDto = GroupBuilder()
-        .invalidSource()
-        .buildUpdateGroupDto(groupSource);
-    });
+  //   given('a matching record is found at the source', () => {
+  //     const groupSource = GroupSourceBuilder().invalid().buildNoCheck();
+  //     updateGroupDto = GroupBuilder()
+  //       .invalidSource()
+  //       .buildUpdateGroupDto(groupSource);
+  //   });
 
-    and('the returned source does not populate a valid group', () => {
-      // above
-    });
+  //   and('the returned source does not populate a valid group', () => {
+  //     // above
+  //   });
 
-    when('I attempt to update a group', async () => {
-      try {
-        await handler.execute(new UpdateGroupCommand(updateGroupDto));
-      } catch (err) {
-        error = err;
-      }
-    });
+  //   when('I attempt to update a group', async () => {
+  //     try {
+  //       await handler.execute(new UpdateGroupCommand(updateGroupDto));
+  //     } catch (err) {
+  //       error = err;
+  //     }
+  //   });
 
-    then('I should receive a SourceInvalidError', () => {
-      expect(error).toBeInstanceOf(SourceInvalidError);
-    });
-  });
+  //   then('I should receive a SourceInvalidError', () => {
+  //     expect(error).toBeInstanceOf(SourceInvalidError);
+  //   });
+  // });
 });

@@ -1,4 +1,4 @@
-import { Record, Static } from 'runtypes';
+import { Optional, Record, Static } from 'runtypes';
 import { CourseBase } from '../../../domain/entities/course';
 import { CourseSource } from '../../../domain/entities/course-source';
 
@@ -8,7 +8,7 @@ import { CourseSource } from '../../../domain/entities/course-source';
 
 export const UpdateCourseDto = Record({
   course: CourseBase,
-  courseSource: CourseSource,
+  courseSource: Optional(CourseSource),
 });
 
 export type UpdateCourseDto = Static<typeof UpdateCourseDto>;

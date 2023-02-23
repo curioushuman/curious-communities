@@ -4,7 +4,7 @@ Scenario: Successfully creating a participant
   Given the request is valid
   When I attempt to create a participant
   Then a new record should have been created
-  And saved participant is returned
+  And saved participant is returned within payload
 
 Scenario: Fail; Invalid request
   Given the request contains invalid data

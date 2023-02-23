@@ -17,10 +17,12 @@ import { FindCourseHandler } from '../application/queries/find-course/find-cours
 import { CourseSourceRepositoryErrorFactory } from '../adapter/ports/course-source.repository.error-factory';
 import { CourseRepositoryErrorFactory } from '../adapter/ports/course.repository.error-factory';
 import { FindCourseSourceHandler } from '../application/queries/find-course-source/find-course-source.query';
+import { UpsertCourseController } from '../infra/upsert-course/upsert-course.controller';
 
 const controllers = [
   CreateCourseController,
   UpdateCourseController,
+  UpsertCourseController,
   FindCourseController,
 ];
 

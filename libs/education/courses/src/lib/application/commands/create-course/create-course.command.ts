@@ -44,7 +44,11 @@ export class CreateCourseHandler
     // #1. validate the dto
     const validDto = pipe(
       createCourseDto,
-      parseData(CreateCourseDto.check, this.logger, 'SourceInvalidError')
+      parseData(
+        CreateCourseDto.check,
+        this.logger,
+        'InternalRequestInvalidError'
+      )
     );
 
     const { courseSource } = validDto;

@@ -21,6 +21,7 @@ export class FakeCourseSourceRepository implements CourseSourceRepository {
 
   constructor() {
     this.courseSources.push(CourseSourceBuilder().exists().build());
+    this.courseSources.push(CourseSourceBuilder().updated().build());
     this.courseSources.push(
       CourseSourceBuilder().invalidSource().buildNoCheck()
     );

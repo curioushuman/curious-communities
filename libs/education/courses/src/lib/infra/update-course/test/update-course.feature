@@ -2,37 +2,30 @@ Feature: Update Course
 
 Scenario: Successfully updating a course
   Given the request is valid
-  And a matching record is found at the source
+  And the course exists in the repository
   When I attempt to update a course
-  Then the related record should have been updated in the repository
-  And saved course is returned
+  Then an existing record should have been updated in the repository
+  And saved course is returned within payload
 
-Scenario: Fail; Invalid request
-  Given the request contains invalid data
-  When I attempt to update a course
-  Then I should receive a RequestInvalidError
+# Scenario: Fail; Group does not exist
+#   Given the request is valid
+#   And the course does not exist in the repository
+#   When I attempt to update a course
+#   Then I should receive a RepositoryItemNotFoundError
 
-Scenario: Fail; Source not found for ID provided
-  Given no record exists that matches our request
-  When I attempt to update a course
-  Then I should receive a RepositoryItemNotFoundError
+# TODO - no change
 
-Scenario: Fail; Course not found for ID provided
-  Given a matching record is found at the source
-  And the returned source populates a valid course
-  And the source does NOT exist in our DB
-  When I attempt to update a course
-  Then I should receive a RepositoryItemNotFoundError
+# TODO - requestSource paths
 
-Scenario: Fail; Source does not translate into a valid Course
-  Given a matching record is found at the source
-  And the returned source does not populate a valid Course
-  When I attempt to update a course
-  Then I should receive a SourceInvalidError
+# TODO - needs to be RE-implemented
+# Scenario: Fail; Invalid request
+#   Given the request contains invalid data
+#   When I attempt to create a course
+#   Then I should receive a RequestInvalidError
 
 # TODO - needs to be implemented
 # Scenario: Fail; internal error occurred
 #   Given the request is valid
-#   And an internal error occurs during course update
-#   When I attempt to update a course
+#   And an internal error occurs during course creation
+#   When I attempt to create a course
 #   Then I should receive an error

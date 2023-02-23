@@ -93,8 +93,8 @@ export const ParticipantSourceBuilder = () => {
     },
 
     updated() {
-      overrides.id = ExternalId.check('ThisSourceExists');
-      overrides.status = 'registered' as ParticipantSourceStatus;
+      overrides.id = ExternalId.check('ThisSourceUsedForUpdating');
+      overrides.status = 'cancelled' as ParticipantSourceStatus;
       return this;
     },
 

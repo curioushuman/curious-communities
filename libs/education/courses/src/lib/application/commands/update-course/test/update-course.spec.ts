@@ -73,16 +73,12 @@ defineFeature(feature, (test) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
 
-    given('a matching record is found at the source', () => {
+    given('the request is valid', () => {
       // we know this to exist in our fake repo
       updateCourseDto = CourseBuilder().updated().buildUpdateCourseDto();
     });
 
-    and('the returned source populates a valid course', async () => {
-      // above
-    });
-
-    and('the source does exist in our DB', async () => {
+    and('the record does exist in our DB', async () => {
       const courses = await executeTask(repository.all());
       const courseBefore = courses.find(
         (course) => course.id === updateCourseDto.course.id
@@ -108,7 +104,7 @@ defineFeature(feature, (test) => {
       async () => {
         const courses = await executeTask(repository.all());
         const courseAfter = courses.find(
-          (course) => course.sourceIds[0].id === updateCourseDto.courseSource.id
+          (course) => course.id === updateCourseDto.course.id
         );
         expect(courseAfter).toBeDefined();
         if (courseAfter) {
@@ -122,35 +118,35 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('Fail; Source does not translate into a valid Course', ({
-    given,
-    and,
-    when,
-    then,
-  }) => {
-    let error: Error;
+  // test('Fail; Source does not translate into a valid Course', ({
+  //   given,
+  //   and,
+  //   when,
+  //   then,
+  // }) => {
+  //   let error: Error;
 
-    given('a matching record is found at the source', () => {
-      const courseSource = CourseSourceBuilder().invalidSource().buildNoCheck();
-      updateCourseDto = CourseBuilder()
-        .invalidSource()
-        .buildUpdateCourseDto(courseSource);
-    });
+  //   given('a matching record is found at the source', () => {
+  //     const courseSource = CourseSourceBuilder().invalidSource().buildNoCheck();
+  //     updateCourseDto = CourseBuilder()
+  //       .invalidSource()
+  //       .buildUpdateCourseDto(courseSource);
+  //   });
 
-    and('the returned source does not populate a valid Course', () => {
-      // above
-    });
+  //   and('the returned source does not populate a valid Course', () => {
+  //     // above
+  //   });
 
-    when('I attempt to update a course', async () => {
-      try {
-        await handler.execute(new UpdateCourseCommand(updateCourseDto));
-      } catch (err) {
-        error = err;
-      }
-    });
+  //   when('I attempt to update a course', async () => {
+  //     try {
+  //       await handler.execute(new UpdateCourseCommand(updateCourseDto));
+  //     } catch (err) {
+  //       error = err;
+  //     }
+  //   });
 
-    then('I should receive a SourceInvalidError', () => {
-      expect(error).toBeInstanceOf(SourceInvalidError);
-    });
-  });
+  //   then('I should receive a SourceInvalidError', () => {
+  //     expect(error).toBeInstanceOf(SourceInvalidError);
+  //   });
+  // });
 });

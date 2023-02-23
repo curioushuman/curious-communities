@@ -1,15 +1,16 @@
-import { Record, Static, String } from 'runtypes';
+import { Optional, Record, Static } from 'runtypes';
+import { RequestSource } from '@curioushuman/common';
+import { CourseBaseResponseDto } from '../../dto/course.response.dto';
 
 /**
- * This is the form of data we expect as input into our application
- *
- * NOTE: this has been updated to accept strings. As this is the external
- * facing DTO, this will be OK. We then need to validate as we proceed
- * further into application layers.
+ * DTO that accepts any of the identifiers
  */
-
 export const UpdateCourseRequestDto = Record({
-  idSourceValue: String,
+  course: CourseBaseResponseDto,
+  requestSource: Optional(RequestSource),
 });
 
+/**
+ * DTO that accepts any of the identifiers
+ */
 export type UpdateCourseRequestDto = Static<typeof UpdateCourseRequestDto>;

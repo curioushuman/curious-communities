@@ -67,6 +67,7 @@ export type SupportedResourceType =
   | 'Role'
   | 'Rule'
   | 'SfnParallel'
+  | 'SfnPass'
   | 'SfnStateMachine'
   | 'SfnTask'
   | 'SsmParameter'

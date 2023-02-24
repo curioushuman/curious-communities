@@ -2,9 +2,10 @@ import { Record, Static } from 'runtypes';
 
 import { MemberResponseDto } from '@curioushuman/cc-members-service';
 import {
+  CoAwsRequestPayload,
   EventBridgeAsLambdaDestinationEvent,
   EventbridgePutEvent,
-  isLambdaDestinationEvent,
+  isResponsePayload,
 } from '@curioushuman/common';
 
 /**
@@ -23,16 +24,29 @@ export type UpsertMemberSourceMultiRequestDto = Static<
 >;
 
 /**
+ * The data could be handed to us as the above DTO, OR a response payload
+ */
+export type UpsertMemberSourceMultiRequestPayload =
+  CoAwsRequestPayload<MemberResponseDto>;
+
+/**
+ * A type to manage the two types of input we support
+ */
+export type UpsertMemberSourceMultiRequestDtoOrPayload =
+  | UpsertMemberSourceMultiRequestDto
+  | UpsertMemberSourceMultiRequestPayload;
+
+/**
  * What the input would look like if someone 'put's it to an eventBus
  */
 export type UpsertMemberSourceMultiPutEvent =
-  EventbridgePutEvent<UpsertMemberSourceMultiRequestDto>;
+  EventbridgePutEvent<UpsertMemberSourceMultiRequestDtoOrPayload>;
 
 /**
  * A lambda destination wrapped in an event
  */
 export type UpsertMemberSourceMultiAsDestinationEvent =
-  EventBridgeAsLambdaDestinationEvent<MemberResponseDto>;
+  EventBridgeAsLambdaDestinationEvent<UpsertMemberSourceMultiRequestDtoOrPayload>;
 
 /**
  * The two types of event we support
@@ -46,7 +60,7 @@ export type UpsertMemberSourceMultiEvent =
  * Straight up DTO or an event
  */
 export type UpsertMemberSourceMultiDtoOrEvent =
-  | UpsertMemberSourceMultiRequestDto
+  | UpsertMemberSourceMultiRequestDtoOrPayload
   | UpsertMemberSourceMultiEvent;
 
 /**
@@ -58,13 +72,25 @@ export type UpsertMemberSourceMultiDtoOrEvent =
 export function locateDto(
   incomingEvent: UpsertMemberSourceMultiDtoOrEvent
 ): unknown {
-  if ('member' in incomingEvent) {
-    return incomingEvent;
+  if (
+    'member' in incomingEvent ||
+    isResponsePayload<MemberResponseDto>(incomingEvent)
+  ) {
+    return prepareDtoFromPayload(incomingEvent);
   }
-  if (isLambdaDestinationEvent(incomingEvent)) {
-    return incomingEvent.detail.responsePayload === null
-      ? null
-      : { member: incomingEvent.detail.responsePayload };
+  if ('responsePayload' in incomingEvent.detail) {
+    return prepareDtoFromPayload(incomingEvent.detail.responsePayload);
   }
-  return incomingEvent.detail;
+  return prepareDtoFromPayload(incomingEvent.detail);
+}
+
+export function prepareDtoFromPayload(
+  incomingEvent: UpsertMemberSourceMultiRequestDtoOrPayload
+): UpsertMemberSourceMultiRequestDto {
+  if (isResponsePayload<MemberResponseDto>(incomingEvent)) {
+    return {
+      member: incomingEvent.detail,
+    };
+  }
+  return incomingEvent;
 }

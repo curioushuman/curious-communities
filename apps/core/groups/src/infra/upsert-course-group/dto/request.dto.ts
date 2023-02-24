@@ -4,7 +4,6 @@ import {
   CoAwsRequestPayload,
   EventBridgeAsLambdaDestinationEvent,
   EventbridgePutEvent,
-  isLambdaDestinationEvent,
   isResponsePayload,
 } from '@curioushuman/common';
 

@@ -1,7 +1,9 @@
 import { Record, Static } from 'runtypes';
 import { GroupMemberResponseDto } from '@curioushuman/cc-groups-service';
 import {
+  CoAwsRequestPayload,
   EventbridgePutEvent,
+  isResponsePayload,
   SqsAsEventSourceEvent,
 } from '@curioushuman/common';
 
@@ -14,16 +16,29 @@ export type UpdateGroupMemberRequestDto = Static<
 >;
 
 /**
+ * The data could be handed to us as the above DTO, OR a response payload
+ */
+export type UpdateGroupMemberRequestPayload =
+  CoAwsRequestPayload<GroupMemberResponseDto>;
+
+/**
+ * A type to manage the two types of input we support
+ */
+export type UpdateGroupMemberRequestDtoOrPayload =
+  | UpdateGroupMemberRequestDto
+  | UpdateGroupMemberRequestPayload;
+
+/**
  * What the input would look like if someone 'put's it to an eventBus
  */
 export type UpdateGroupMemberPutEvent =
-  EventbridgePutEvent<UpdateGroupMemberRequestDto>;
+  EventbridgePutEvent<UpdateGroupMemberRequestDtoOrPayload>;
 
 /**
  * What the input looks like when SQS is event source
  */
 export type UpdateGroupMemberSqsEvent =
-  SqsAsEventSourceEvent<UpdateGroupMemberRequestDto>;
+  SqsAsEventSourceEvent<UpdateGroupMemberRequestDtoOrPayload>;
 
 /**
  * The types of event we support
@@ -37,7 +52,7 @@ export type UpdateGroupMemberEvent =
  * Straight up DTO or an event
  */
 export type UpdateGroupMemberDtoOrEvent =
-  | UpdateGroupMemberRequestDto
+  | UpdateGroupMemberRequestDtoOrPayload
   | UpdateGroupMemberEvent;
 
 /**
@@ -47,11 +62,25 @@ export type UpdateGroupMemberDtoOrEvent =
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: UpdateGroupMemberDtoOrEvent): unknown {
-  if ('groupMember' in incomingEvent) {
-    return incomingEvent;
+  if (
+    'groupMember' in incomingEvent ||
+    isResponsePayload<GroupMemberResponseDto>(incomingEvent)
+  ) {
+    return prepareDtoFromPayload(incomingEvent);
   }
   if ('Records' in incomingEvent) {
-    return incomingEvent.Records[0].body;
+    return prepareDtoFromPayload(incomingEvent.Records[0].body);
   }
-  return incomingEvent.detail;
+  return prepareDtoFromPayload(incomingEvent.detail);
+}
+
+export function prepareDtoFromPayload(
+  incomingEvent: UpdateGroupMemberRequestDtoOrPayload
+): UpdateGroupMemberRequestDto {
+  if (isResponsePayload<GroupMemberResponseDto>(incomingEvent)) {
+    return {
+      groupMember: incomingEvent.detail,
+    };
+  }
+  return incomingEvent;
 }

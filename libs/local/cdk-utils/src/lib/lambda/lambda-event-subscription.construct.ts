@@ -10,9 +10,11 @@ import { LambdaConstruct } from './lambda.construct';
  * Convenience construct to create a lambda function and subscribe it to an event bus.
  *
  * You can give it:
- * - basic rule details as if it is a putEvent
- * - a list of lambdas, to listen to (as if this lambda was the destination)
- * - an event pattern; i.e. just as AWS allows
+ * - an entire event pattern, which will override anything else you give it
+ * - a ruleDetailType, which means you're using a putEvent or something more specific
+ *   - supports rule details and source
+ * - OR it defaults to assuming you're listening for a lambda success destination type event
+ *   - supports list of lambdas to listen for AND a detail pattern to pay attention to
  *
  * TODO:
  * - [ ] improve the incoming props interface
@@ -50,25 +52,43 @@ export class LambdaEventSubscription extends LambdaConstruct {
   private prepareEventPattern(
     props: LambdaEventSubscriptionProps
   ): events.EventPattern {
-    if (props.lambdaArns) {
-      return this.prepareLambdaListenersEventPattern(props.lambdaArns);
+    if (props.eventPattern) {
+      return props.eventPattern;
     }
-    return props.eventPattern || this.prepareRulesBasedEventPattern(props);
+    return props.ruleDetailType
+      ? this.prepareRulesBasedEventPattern(props)
+      : this.prepareLambdaListenersEventPattern(props);
+  }
+
+  private prepareResources(lambdaArns: string[] | undefined) {
+    if (!lambdaArns) {
+      return undefined;
+    }
+    return lambdaArns.map((lambdaArn) => `${lambdaArn}:$LATEST`);
   }
 
   private prepareLambdaListenersEventPattern(
-    lambdaArns: string[]
+    props: LambdaEventSubscriptionProps
   ): events.EventPattern {
+    if (!props.lambdaArns && !props.ruleDetails) {
+      throw new Error('Must provide either lambdaArns or ruleDetails');
+    }
     return {
       detailType: ['Lambda Function Invocation Result - Success'],
       source: ['lambda'],
-      resources: lambdaArns.map((lambdaArn) => `${lambdaArn}:$LATEST`),
+      resources: this.prepareResources(props.lambdaArns),
+      detail: {
+        responsePayload: props.ruleDetails,
+      },
     };
   }
 
   private prepareRulesBasedEventPattern(
     props: LambdaEventSubscriptionProps
   ): events.EventPattern {
+    if (!props.ruleSource && !props.ruleDetails) {
+      throw new Error('Must provide either ruleSource or ruleDetails');
+    }
     return {
       detailType: [props.ruleDetailType || 'putEvent'],
       source: props.ruleSource ? [props.ruleSource] : undefined,

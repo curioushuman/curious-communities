@@ -178,10 +178,12 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   public prepareParamsGet(
     props: DynamoDbRepositoryGetOneProps
   ): GetCommandInput {
-    return {
+    const params = {
       TableName: this.tableName,
       Key: props,
     };
+    this.logger.debug('prepareParamsQueryOne', params);
+    return params;
   }
 
   /**
@@ -224,7 +226,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     const kName = keyName || this.prepareName(indexId);
     const primaryKey = `${this.entityName}_${kName}`;
     const KeyConditionExpression = `${primaryKey} = :v`;
-    return {
+    const params = {
       KeyConditionExpression,
       FilterExpression: 'entityType = :e',
       ExpressionAttributeValues: {
@@ -234,6 +236,8 @@ export class DynamoDbRepository<DomainT, PersistenceT>
       TableName: this.tableName,
       IndexName: this.globalIndexes[indexId],
     };
+    this.logger.debug('prepareParamsQueryOne', params);
+    return params;
   }
 
   /**

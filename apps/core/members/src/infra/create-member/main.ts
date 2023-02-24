@@ -6,11 +6,21 @@ import {
   MutateMemberModule,
   CreateMemberController,
   MemberResponseDto,
+  ResponsePayload,
 } from '@curioushuman/cc-members-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { CreateMemberRequestDto } from './dto/request.dto';
+import {
+  CreateMemberDtoOrEvent,
+  CreateMemberRequestDto,
+  locateDto,
+} from './dto/request.dto';
+import {
+  checkForNullRequestPayload,
+  parseDto,
+  validateRequestPayload,
+} from '@curioushuman/common';
 
 /**
  * TODO
@@ -59,30 +69,31 @@ async function waitForApp() {
  *       an object that includes the result, and the member if necessary
  */
 export const handler = async (
-  requestDtoOrEvent:
-    | CreateMemberRequestDto
-    | EventBridgeEvent<'putEvent', CreateMemberRequestDto>
-): Promise<MemberResponseDto | void> => {
+  requestDtoOrEvent: CreateMemberDtoOrEvent
+): Promise<ResponsePayload<'member'>> => {
   // grab the dto
-  const requestDto =
-    'detail' in requestDtoOrEvent
-      ? requestDtoOrEvent.detail
-      : requestDtoOrEvent;
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  const logger = new LoggableLogger('CreateMemberFunction.handler');
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  const context = 'CreateMember.Lambda';
+  const logger = new LoggableLogger(context);
 
-  // lambda level validation
-  if (!CreateMemberRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to CreateMemberFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  // check for an immediate null; this was legacy behaviour
+  // NOTE: throws error
+  checkForNullRequestPayload({
+    requestPayload,
+    logger,
+  });
+
+  // log the request
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
+
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: CreateMemberRequestDto.guard,
+    logger,
+  });
 
   // init the app
   const app = await waitForApp();
@@ -91,7 +102,7 @@ export const handler = async (
   // call the controller
   // TODO: replace this with a try/catch, and throw the error in the controller
   return createMemberController.create({
-    email: requestDto.memberEmail,
-    idSourceValue: requestDto.memberIdSourceValue,
+    email: validRequestDto.memberEmail,
+    idSourceValue: validRequestDto.memberIdSourceValue,
   });
 };

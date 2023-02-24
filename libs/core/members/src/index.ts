@@ -15,3 +15,4 @@ export * from './lib/infra/upsert-member-source-multi/upsert-member-source-multi
 // types
 export * from './lib/infra/dto/member.response.dto';
 export * from './lib/infra/dto/member-source.response.dto';
+export * from './lib/infra/dto/response-payload';

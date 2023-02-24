@@ -5,13 +5,18 @@ import {
   upsertMemberSourceModules,
   UpsertMemberSourceController,
   MemberSourceResponseDto,
+  ResponsePayload,
 } from '@curioushuman/cc-members-service';
 import {
   InternalRequestInvalidError,
   RequestInvalidError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
-import { parseDto } from '@curioushuman/common';
+import {
+  checkForNullRequestPayload,
+  parseDto,
+  validateRequestPayload,
+} from '@curioushuman/common';
 
 import {
   locateDto,
@@ -28,7 +33,7 @@ import {
 /**
  * Init a logger
  */
-const logger = new LoggableLogger('UpsertMemberSourceFunction.handler');
+const logger = new LoggableLogger('UpsertMemberSource.lambda');
 
 /**
  * Hold a reference to your Nest app outside of the bootstrap function
@@ -86,27 +91,30 @@ async function waitForApp(source: string) {
  */
 export const handler = async (
   requestDtoOrEvent: UpsertMemberSourceDtoOrEvent
-): Promise<MemberSourceResponseDto> => {
+): Promise<ResponsePayload<'member-source'>> => {
   // grab the dto
-  const requestDto = parseDto(requestDtoOrEvent, locateDto);
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
+
+  // check for an immediate null; this was legacy behaviour
+  // NOTE: throws error
+  checkForNullRequestPayload({
+    requestPayload,
+    logger,
+  });
 
   // log the request
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
 
-  // lambda level validation
-  if (!requestDto || !UpsertMemberSourceRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to UpsertMemberSourceFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: UpsertMemberSourceRequestDto.guard,
+    logger,
+  });
 
   // init the app
-  const app = await waitForApp(requestDto.source);
+  const app = await waitForApp(validRequestDto.source);
   const upsertMemberController = app.get(UpsertMemberSourceController);
 
   // perform the action
@@ -118,7 +126,7 @@ export const handler = async (
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
   return upsertMemberController.upsert({
-    source: requestDto.source,
-    member: requestDto.member,
+    source: validRequestDto.source,
+    member: validRequestDto.member,
   });
 };

@@ -1,4 +1,8 @@
 import { Optional, Record, Static, String } from 'runtypes';
+import {
+  EventbridgePutEvent,
+  SqsAsEventSourceEvent,
+} from '@curioushuman/common';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -21,3 +25,45 @@ export const CreateMemberRequestDto = Record({
  * DTO that accepts any of the identifiers
  */
 export type CreateMemberRequestDto = Static<typeof CreateMemberRequestDto>;
+
+/**
+ * What the input would look like if someone 'put's it to an eventBus
+ */
+export type CreateMemberPutEvent = EventbridgePutEvent<CreateMemberRequestDto>;
+
+/**
+ * What the input looks like when SQS is event source
+ */
+export type CreateMemberSqsEvent =
+  SqsAsEventSourceEvent<CreateMemberRequestDto>;
+
+/**
+ * The types of event we support
+ */
+export type CreateMemberEvent = CreateMemberPutEvent | CreateMemberSqsEvent;
+
+/**
+ * The two types of input we support
+ * Straight up DTO or an event
+ */
+export type CreateMemberDtoOrEvent = CreateMemberRequestDto | CreateMemberEvent;
+
+/**
+ * This will determine what kind of input we have received
+ * and extract the data we need from it
+ *
+ * NOTE: validation of data is a separate step
+ */
+export function locateDto(incomingEvent: CreateMemberDtoOrEvent): unknown {
+  if (
+    'memberEmail' in incomingEvent ||
+    'memberIdSourceValue' in incomingEvent
+  ) {
+    return incomingEvent;
+  }
+  if ('Records' in incomingEvent) {
+    return incomingEvent.Records[0].body;
+  }
+  // we typecast here because TS isn't able to infer due to the double optional above
+  return (incomingEvent as CreateMemberPutEvent).detail;
+}

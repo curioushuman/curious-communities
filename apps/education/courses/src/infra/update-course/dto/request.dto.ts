@@ -1,7 +1,9 @@
 import { Record, Static } from 'runtypes';
 import { CourseBaseResponseDto } from '@curioushuman/cc-courses-service';
 import {
+  CoAwsRequestPayload,
   EventbridgePutEvent,
+  isResponsePayload,
   SqsAsEventSourceEvent,
 } from '@curioushuman/common';
 
@@ -21,15 +23,29 @@ export const UpdateCourseRequestDto = Record({
 export type UpdateCourseRequestDto = Static<typeof UpdateCourseRequestDto>;
 
 /**
+ * The data could be handed to us as the above DTO, OR a response payload
+ */
+export type UpdateCourseRequestPayload =
+  CoAwsRequestPayload<CourseBaseResponseDto>;
+
+/**
+ * A type to manage the two types of input we support
+ */
+export type UpdateCourseRequestDtoOrPayload =
+  | UpdateCourseRequestDto
+  | UpdateCourseRequestPayload;
+
+/**
  * What the input would look like if someone 'put's it to an eventBus
  */
-export type UpdateCoursePutEvent = EventbridgePutEvent<UpdateCourseRequestDto>;
+export type UpdateCoursePutEvent =
+  EventbridgePutEvent<UpdateCourseRequestDtoOrPayload>;
 
 /**
  * What the input looks like when SQS is event source
  */
 export type UpdateCourseSqsEvent =
-  SqsAsEventSourceEvent<UpdateCourseRequestDto>;
+  SqsAsEventSourceEvent<UpdateCourseRequestDtoOrPayload>;
 
 /**
  * The types of event we support
@@ -42,7 +58,9 @@ export type UpdateCourseEvent = UpdateCoursePutEvent | UpdateCourseSqsEvent;
  * The two types of input we support
  * Straight up DTO or an event
  */
-export type UpdateCourseDtoOrEvent = UpdateCourseRequestDto | UpdateCourseEvent;
+export type UpdateCourseDtoOrEvent =
+  | UpdateCourseRequestDtoOrPayload
+  | UpdateCourseEvent;
 
 /**
  * This will determine what kind of input we have received
@@ -51,11 +69,25 @@ export type UpdateCourseDtoOrEvent = UpdateCourseRequestDto | UpdateCourseEvent;
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: UpdateCourseDtoOrEvent): unknown {
-  if ('course' in incomingEvent) {
-    return incomingEvent;
+  if (
+    'course' in incomingEvent ||
+    isResponsePayload<CourseBaseResponseDto>(incomingEvent)
+  ) {
+    return prepareDtoFromPayload(incomingEvent);
   }
   if ('Records' in incomingEvent) {
-    return incomingEvent.Records[0].body;
+    return prepareDtoFromPayload(incomingEvent.Records[0].body);
   }
-  return incomingEvent.detail;
+  return prepareDtoFromPayload(incomingEvent.detail);
+}
+
+export function prepareDtoFromPayload(
+  incomingEvent: UpdateCourseRequestDtoOrPayload
+): UpdateCourseRequestDto {
+  if (isResponsePayload<CourseBaseResponseDto>(incomingEvent)) {
+    return {
+      course: incomingEvent.detail,
+    };
+  }
+  return incomingEvent;
 }

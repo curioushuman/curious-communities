@@ -1,9 +1,10 @@
 import { Record, Static } from 'runtypes';
 import { GroupBaseResponseDto } from '@curioushuman/cc-groups-service';
 import {
+  CoAwsRequestPayload,
   EventBridgeAsLambdaDestinationEvent,
   EventbridgePutEvent,
-  isLambdaDestinationEvent,
+  isResponsePayload,
   SqsAsEventSourceEvent,
 } from '@curioushuman/common';
 
@@ -21,22 +22,35 @@ export type UpdateGroupMemberMultiRequestDto = Static<
 >;
 
 /**
+ * The data could be handed to us as the above DTO, OR a response payload
+ */
+export type UpdateGroupMemberMultiRequestPayload =
+  CoAwsRequestPayload<GroupBaseResponseDto>;
+
+/**
+ * A type to manage the two types of input we support
+ */
+export type UpdateGroupMemberMultiRequestDtoOrPayload =
+  | UpdateGroupMemberMultiRequestDto
+  | UpdateGroupMemberMultiRequestPayload;
+
+/**
  * What the input looks like when lambda is subscribed as a destination
  */
 export type UpdateGroupMemberMultiAsDestinationEvent =
-  EventBridgeAsLambdaDestinationEvent<UpdateGroupMemberMultiRequestDto>;
+  EventBridgeAsLambdaDestinationEvent<UpdateGroupMemberMultiRequestDtoOrPayload>;
 
 /**
  * What the input would look like if someone 'put's it to an eventBus
  */
 export type UpdateGroupMemberMultiPutEvent =
-  EventbridgePutEvent<UpdateGroupMemberMultiRequestDto>;
+  EventbridgePutEvent<UpdateGroupMemberMultiRequestDtoOrPayload>;
 
 /**
  * What the input looks like when SQS is event source
  */
 export type UpdateGroupMemberMultiSqsEvent =
-  SqsAsEventSourceEvent<UpdateGroupMemberMultiRequestDto>;
+  SqsAsEventSourceEvent<UpdateGroupMemberMultiRequestDtoOrPayload>;
 
 /**
  * The types of event we support
@@ -51,7 +65,7 @@ export type UpdateGroupMemberMultiEvent =
  * Straight up DTO or an event
  */
 export type UpdateGroupMemberMultiDtoOrEvent =
-  | UpdateGroupMemberMultiRequestDto
+  | UpdateGroupMemberMultiRequestDtoOrPayload
   | UpdateGroupMemberMultiEvent;
 
 /**
@@ -63,13 +77,28 @@ export type UpdateGroupMemberMultiDtoOrEvent =
 export function locateDto(
   incomingEvent: UpdateGroupMemberMultiDtoOrEvent
 ): unknown {
-  if ('group' in incomingEvent) {
-    return incomingEvent;
+  if (
+    'group' in incomingEvent ||
+    isResponsePayload<GroupBaseResponseDto>(incomingEvent)
+  ) {
+    return prepareDtoFromPayload(incomingEvent);
   }
-  if (isLambdaDestinationEvent(incomingEvent)) {
-    return incomingEvent.detail.responsePayload;
+  if ('Records' in incomingEvent) {
+    return prepareDtoFromPayload(incomingEvent.Records[0].body);
   }
-  return 'Records' in incomingEvent
-    ? incomingEvent.Records[0].body
-    : incomingEvent.detail;
+  if ('responsePayload' in incomingEvent.detail) {
+    return prepareDtoFromPayload(incomingEvent.detail.responsePayload);
+  }
+  return prepareDtoFromPayload(incomingEvent.detail);
+}
+
+export function prepareDtoFromPayload(
+  incomingEvent: UpdateGroupMemberMultiRequestDtoOrPayload
+): UpdateGroupMemberMultiRequestDto {
+  if (isResponsePayload<GroupBaseResponseDto>(incomingEvent)) {
+    return {
+      group: incomingEvent.detail,
+    };
+  }
+  return incomingEvent;
 }

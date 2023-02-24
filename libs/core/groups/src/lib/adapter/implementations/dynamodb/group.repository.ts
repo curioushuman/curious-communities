@@ -108,7 +108,7 @@ export class DynamoDbGroupRepository implements GroupRepository {
   findOneByCourseId = (value: CourseId): TE.TaskEither<Error, GroupBase> => {
     // Set the parameters.
     const params = this.dynamoDbRepository.prepareParamsQueryOne({
-      indexId: 'courseId',
+      indexId: 'course-id',
       value,
     });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);

@@ -22,8 +22,8 @@ import {
 export class GroupsDynamoDbConstruct extends Construct {
   public table: dynamodb.Table;
 
-  constructor(scope: Construct, id: string) {
-    super(scope, id);
+  constructor(scope: Construct, stackId: string) {
+    super(scope, stackId);
 
     // for now, we're going to use streams for testing
     const stream =
@@ -34,7 +34,7 @@ export class GroupsDynamoDbConstruct extends Construct {
     /**
      * Groups table
      */
-    const [tableName, tableTitle] = resourceNameTitle(id, 'DynamoDbTable');
+    const [tableName, tableTitle] = resourceNameTitle(stackId, 'DynamoDbTable');
     this.table = new dynamodb.Table(this, tableTitle, {
       tableName,
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -66,7 +66,7 @@ export class GroupsDynamoDbConstruct extends Construct {
     // Global secondary index - group.SourceIdValue
     // Identifier
     const byGroupSourceIdCOMMUNITYValueIndexId = generateCompositeResourceId(
-      id,
+      stackId,
       'group-source-id-COMMUNITY'
     );
     const byGroupSourceIdCOMMUNITYValueGsiName = transformIdToResourceName(
@@ -89,7 +89,7 @@ export class GroupsDynamoDbConstruct extends Construct {
     // Global secondary index - group.SourceIdValue
     // Identifier
     const byGroupSourceIdMICROCOURSEValueIndexId = generateCompositeResourceId(
-      id,
+      stackId,
       'group-source-id-MICRO-COURSE'
     );
     const byGroupSourceIdMICROCOURSEValueGsiName = transformIdToResourceName(
@@ -111,7 +111,10 @@ export class GroupsDynamoDbConstruct extends Construct {
 
     // Global secondary index - group.slug
     // Identifier
-    const byGroupSlugIndexId = generateCompositeResourceId(id, 'group-slug');
+    const byGroupSlugIndexId = generateCompositeResourceId(
+      stackId,
+      'group-slug'
+    );
     const byGroupSlugGsiName = transformIdToResourceName(
       byGroupSlugIndexId,
       'DynamoDbGSI'
@@ -132,7 +135,7 @@ export class GroupsDynamoDbConstruct extends Construct {
     // Global secondary index - group.courseId
     // Identifier
     const byGroupCourseIdIndexId = generateCompositeResourceId(
-      id,
+      stackId,
       'group-course-id'
     );
     const byGroupCourseIdGsiName = transformIdToResourceName(
@@ -155,7 +158,7 @@ export class GroupsDynamoDbConstruct extends Construct {
     // Global secondary index - groupMember.participantId
     // Identifier
     const byGroupMemberParticipantIdIndexId = generateCompositeResourceId(
-      id,
+      stackId,
       'group-member-participant-id'
     );
     const byGroupMemberParticipantIdGsiName = transformIdToResourceName(
@@ -177,7 +180,7 @@ export class GroupsDynamoDbConstruct extends Construct {
 
     // Global secondary index - groupMember.memberId
     // Identifier
-    const byMemberIdIndexId = generateCompositeResourceId(id, 'member-id');
+    const byMemberIdIndexId = generateCompositeResourceId(stackId, 'member-id');
     const byMemberIdGsiName = transformIdToResourceName(
       byMemberIdIndexId,
       'DynamoDbGSI'

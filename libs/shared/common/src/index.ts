@@ -58,3 +58,4 @@ export * from './lib/application/services/sqs/sqs.service';
  * Infrastructure
  */
 export * from './lib/infra/__types__';
+export * from './lib/infra/utils';

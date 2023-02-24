@@ -98,6 +98,10 @@ export class GroupsStack extends cdk.Stack {
      * Triggers
      * - mostly the internal event bus i.e. when course created/updated
      * - also manually (mostly for testing)
+     *
+     * TODO:
+     * - [ ] get the $or working
+     *       https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns-content-based-filtering.html#eb-filtering-complex-example-or
      */
     const upsertCourseGroupLambdaId = generateCompositeResourceId(
       stackId,
@@ -113,10 +117,12 @@ export class GroupsStack extends cdk.Stack {
         ),
         lambdaProps: lambdaPropsWithDestination,
         eventBus: internalEventBusConstruct.eventBus,
+        // NOTE: we're not including the lambda ARNs in here
+        // which means this will respond to any lambda success that returns a payload of entity: course
         ruleDetails: {
-          object: ['course'],
+          entity: ['course-base'],
+          outcome: ['success'],
         },
-        ruleDescription: 'Update internal, to match the external',
       }
     );
 
@@ -298,7 +304,8 @@ export class GroupsStack extends cdk.Stack {
       upsertGroupSourceCOMMUNITYTask
     )
       .next(upsertGroupSourceMICROCOURSETask)
-      .next(updateGroupTask);
+      .next(updateGroupTask)
+      .next(upsertGroupSourceSfnSuccess);
 
     /**
      * State machine: Update group source
@@ -337,6 +344,9 @@ export class GroupsStack extends cdk.Stack {
         resources: [
           `${upsertCourseGroupLambdaConstruct.lambdaFunction.functionArn}:$LATEST`,
         ],
+        detail: {
+          outcome: ['success'],
+        },
       },
     });
     rule.addTarget(
@@ -363,10 +373,12 @@ export class GroupsStack extends cdk.Stack {
         ),
         lambdaProps: lambdaPropsWithDestination,
         eventBus: internalEventBusConstruct.eventBus,
+        // NOTE: we're not including the lambda ARNs in here
+        // which means this will respond to any lambda success that returns a payload of entity: participant
         ruleDetails: {
-          object: ['participant'],
+          entity: ['participant', 'participant-base'],
+          outcome: ['success'],
         },
-        ruleDescription: 'Update internal, to match the external',
       }
     );
 
@@ -401,6 +413,9 @@ export class GroupsStack extends cdk.Stack {
         lambdaArns: [
           upsertCourseGroupLambdaConstruct.lambdaFunction.functionArn,
         ],
+        ruleDetails: {
+          outcome: ['success'],
+        },
       }
     );
 
@@ -490,6 +505,9 @@ export class GroupsStack extends cdk.Stack {
           upsertCourseGroupMemberLambdaConstruct.lambdaFunction.functionArn,
           updateGroupMemberLambdaConstruct.lambdaFunction.functionArn,
         ],
+        ruleDetails: {
+          outcome: ['success'],
+        },
       }
     );
     upsertGroupMemberSourceLambdaConstruct.addEnvironmentEdApp();

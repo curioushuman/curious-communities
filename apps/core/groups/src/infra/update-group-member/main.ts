@@ -4,11 +4,14 @@ import { NestFactory } from '@nestjs/core';
 import {
   UpdateGroupMemberModule,
   UpdateGroupMemberController,
-  GroupMemberResponseDto,
+  ResponsePayload,
 } from '@curioushuman/cc-groups-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
-import { parseDto } from '@curioushuman/common';
+import {
+  checkForNullRequestPayload,
+  parseDto,
+  validateRequestPayload,
+} from '@curioushuman/common';
 
 import {
   locateDto,
@@ -69,39 +72,37 @@ async function waitForApp() {
  */
 export const handler = async (
   requestDtoOrEvent: UpdateGroupMemberDtoOrEvent
-): Promise<GroupMemberResponseDto | void> => {
+): Promise<ResponsePayload<'group-member'>> => {
   // grab the dto
-  const requestDto = parseDto(requestDtoOrEvent, locateDto);
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  // check for an immediate null
-  if (requestDto === null) {
-    // if it's null, it means nothing was created or updated
-    // TODO: there will be a better way to handle this
-    // but I'm uncertain of it for now
-    return;
-  }
+  const context = 'UpdateGroupMember.Lambda';
+  const logger = new LoggableLogger(context);
 
-  const logger = new LoggableLogger('UpdateGroupMemberFunction.handler');
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  // check for an immediate null; this was legacy behaviour
+  // NOTE: throws error
+  checkForNullRequestPayload({
+    requestPayload,
+    logger,
+  });
 
-  // lambda level validation
-  if (!requestDto || !UpdateGroupMemberRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to UpdateGroupMemberFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  // log the request
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
+
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: UpdateGroupMemberRequestDto.guard,
+    logger,
+  });
 
   // init the app
   const app = await waitForApp();
   const controller = app.get(UpdateGroupMemberController);
 
-  // try/catch doesn't work at this level
+  // try/catch doesn't (seem to) work at this level
   return controller.update({
-    groupMember: requestDto.groupMember,
+    groupMember: validRequestDto.groupMember,
   });
 };

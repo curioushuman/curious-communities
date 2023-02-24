@@ -5,11 +5,17 @@ import {
   UpdateGroupModule,
   UpdateGroupController,
   GroupBaseResponseDto,
+  ResponsePayload,
 } from '@curioushuman/cc-groups-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { UpdateGroupRequestDto } from './dto/request.dto';
+import {
+  locateDto,
+  UpdateGroupDtoOrEvent,
+  UpdateGroupRequestDto,
+} from './dto/request.dto';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO
@@ -60,29 +66,33 @@ async function waitForApp() {
  *   Which basically indicates success.
  */
 export const handler = async (
-  requestDto: UpdateGroupRequestDto
-): Promise<GroupBaseResponseDto | void> => {
-  const logger = new LoggableLogger('UpdateGroupFunction.handler');
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  requestDtoOrEvent: UpdateGroupDtoOrEvent
+): Promise<ResponsePayload<'group-base'>> => {
+  // grab the dto
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  // lambda level validation
-  if (!requestDto || !UpdateGroupRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to UpdateGroupFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  const context = 'UpdateGroup.Lambda';
+  const logger = new LoggableLogger(context);
+
+  // log the request
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
+
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: UpdateGroupRequestDto.guard,
+    logger,
+  });
 
   // init the app
   const app = await waitForApp();
   const controller = app.get(UpdateGroupController);
 
+  // ! I STILL NEED TO ADD THE GROUPSOURCES TO THE GROUP HERE
+
   // try/catch doesn't work at this level
   return controller.update({
-    group: requestDto.detail.responsePayload.group,
+    group: validRequestDto.detail.responsePayload.group,
   });
 };

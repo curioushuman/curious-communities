@@ -17,7 +17,7 @@ import {
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 import { CoursesDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/courses-dynamodb.construct';
-import { CreateParticipantConstruct } from '../src/infra/create-participant/create.construct';
+import { CreateParticipantConstruct } from '../src/infra/upsert-participant/upsert.construct';
 
 /**
  * These are the components required for the courses stack
@@ -98,65 +98,37 @@ export class CoursesStack extends cdk.Stack {
      */
 
     /**
-     * Function: Create Course
+     * Function: Upsert Course
+     *
+     * NOTE: create and update have both been removed for now
      */
-    const createCourseLambdaConstruct = new LambdaEventSubscription(
+    const upsertCourseLambdaConstruct = new LambdaEventSubscription(
       this,
-      generateCompositeResourceId(stackId, 'course-create'),
+      generateCompositeResourceId(stackId, 'course-upsert'),
       {
         lambdaEntry: pathResolve(
           __dirname,
-          '../src/infra/create-course/main.ts'
+          '../src/infra/upsert-course/main.ts'
         ),
         lambdaProps: lambdaPropsWithDestination,
         eventBus: externalEventBusConstruct.eventBus,
+        ruleDetailType: 'putEvent',
         ruleDetails: {
           object: ['course'],
-          type: ['created'],
+          type: ['created', 'updated'],
         },
         ruleDescription: 'Create internal, to match the external',
       }
     );
     // add salesforce env vars
-    createCourseLambdaConstruct.addEnvironmentSalesforce();
+    upsertCourseLambdaConstruct.addEnvironmentSalesforce();
 
     // allow the lambda access to the table
     coursesTableConstruct.table.grantReadData(
-      createCourseLambdaConstruct.lambdaFunction
+      upsertCourseLambdaConstruct.lambdaFunction
     );
     coursesTableConstruct.table.grantWriteData(
-      createCourseLambdaConstruct.lambdaFunction
-    );
-
-    /**
-     * Function: Update Course
-     */
-    const updateCourseLambdaConstruct = new LambdaEventSubscription(
-      this,
-      generateCompositeResourceId(stackId, 'course-update'),
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/update-course/main.ts'
-        ),
-        lambdaProps: lambdaPropsWithDestination,
-        eventBus: externalEventBusConstruct.eventBus,
-        ruleDetails: {
-          object: ['course'],
-          type: ['updated'],
-        },
-        ruleDescription: 'Update internal, to match the external',
-      }
-    );
-    // add salesforce env vars
-    updateCourseLambdaConstruct.addEnvironmentSalesforce();
-
-    // allow the lambda access to the table
-    coursesTableConstruct.table.grantReadData(
-      updateCourseLambdaConstruct.lambdaFunction
-    );
-    coursesTableConstruct.table.grantWriteData(
-      updateCourseLambdaConstruct.lambdaFunction
+      upsertCourseLambdaConstruct.lambdaFunction
     );
 
     /**
@@ -195,6 +167,7 @@ export class CoursesStack extends cdk.Stack {
     //   {
     //     lambdaProps: lambdaPropsWithDestination,
     //     externalEventBus: externalEventBusConstruct.eventBus,
+    //     ruleDetailType: 'putEvent',
     //     table: coursesTableConstruct.table,
     //   }
     // );
@@ -212,6 +185,7 @@ export class CoursesStack extends cdk.Stack {
     //     ),
     //     lambdaProps: lambdaPropsWithDestination,
     //     eventBus: externalEventBusConstruct.eventBus,
+    //     ruleDetailType: 'putEvent',
     //     ruleDetails: {
     //       object: ['participant'],
     //       type: ['updated'],

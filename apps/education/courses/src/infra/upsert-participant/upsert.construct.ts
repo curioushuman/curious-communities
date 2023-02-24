@@ -51,6 +51,8 @@ export class CreateParticipantConstruct extends Construct {
      * ! Must use naming convention for all step Ids
      * ! AND choices
      * ! AND state machine
+     *
+     * ! If pax exists, then divert to update
      */
 
     /**

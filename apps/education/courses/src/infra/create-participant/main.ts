@@ -6,6 +6,7 @@ import {
   CreateParticipantModule,
   CreateParticipantController,
   ParticipantResponseDto,
+  ResponsePayload,
 } from '@curioushuman/cc-courses-service';
 import {
   InternalRequestInvalidError,
@@ -13,7 +14,12 @@ import {
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { CreateParticipantRequestDto } from './dto/request.dto';
+import {
+  CreateParticipantPutEvent,
+  CreateParticipantRequestDto,
+  locateDto,
+} from './dto/request.dto';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO
@@ -67,50 +73,32 @@ async function waitForApp() {
  *   Which basically indicates success.
  */
 export const handler = async (
-  requestDtoOrEvent:
-    | CreateParticipantRequestDto
-    | EventBridgeEvent<'putEvent', CreateParticipantRequestDto>
-): Promise<ParticipantResponseDto | void> => {
+  requestDtoOrEvent: CreateParticipantPutEvent
+): Promise<ResponsePayload<'participant'>> => {
   // grab the dto
-  const requestDto =
-    'detail' in requestDtoOrEvent
-      ? requestDtoOrEvent.detail
-      : requestDtoOrEvent;
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  const logger = new LoggableLogger('CreateParticipantFunction.handler');
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  const context = 'CreateParticipant.Lambda';
+  const logger = new LoggableLogger(context);
 
-  // lambda level validation
-  if (!CreateParticipantRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to CreateParticipantFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  // log the request
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
+
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: CreateParticipantRequestDto.guard,
+    logger,
+  });
 
   // init the app
   const app = await waitForApp();
   const createParticipantController = app.get(CreateParticipantController);
 
-  // we're going to try catch here
-  // only to catch RepositoryItemConflictError
-  // to log it, not throw it
-  // to avoid the lambda retrying
-  try {
-    return createParticipantController.create({
-      participantSource: requestDto.participantSource,
-      course: requestDto.course,
-      member: requestDto.member,
-    });
-  } catch (error: unknown) {
-    if (error instanceof RepositoryItemConflictError) {
-      logger.log(error);
-      return;
-    }
-    throw error;
-  }
+  return createParticipantController.create({
+    participantSource: validRequestDto.participantSource,
+    course: validRequestDto.course,
+    member: validRequestDto.member,
+  });
 };

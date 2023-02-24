@@ -1,4 +1,9 @@
-import { Record, Static, String } from 'runtypes';
+import { Record, Static } from 'runtypes';
+import { CourseBaseResponseDto } from '@curioushuman/cc-courses-service';
+import {
+  EventbridgePutEvent,
+  SqsAsEventSourceEvent,
+} from '@curioushuman/common';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -10,7 +15,47 @@ import { Record, Static, String } from 'runtypes';
  */
 
 export const UpdateCourseRequestDto = Record({
-  courseIdSourceValue: String,
+  course: CourseBaseResponseDto,
 });
 
 export type UpdateCourseRequestDto = Static<typeof UpdateCourseRequestDto>;
+
+/**
+ * What the input would look like if someone 'put's it to an eventBus
+ */
+export type UpdateCoursePutEvent = EventbridgePutEvent<UpdateCourseRequestDto>;
+
+/**
+ * What the input looks like when SQS is event source
+ */
+export type UpdateCourseSqsEvent =
+  SqsAsEventSourceEvent<UpdateCourseRequestDto>;
+
+/**
+ * The types of event we support
+ *
+ * This allows us space to add additional event types
+ */
+export type UpdateCourseEvent = UpdateCoursePutEvent | UpdateCourseSqsEvent;
+
+/**
+ * The two types of input we support
+ * Straight up DTO or an event
+ */
+export type UpdateCourseDtoOrEvent = UpdateCourseRequestDto | UpdateCourseEvent;
+
+/**
+ * This will determine what kind of input we have received
+ * and extract the data we need from it
+ *
+ * NOTE: validation of data is a separate step
+ */
+export function locateDto(incomingEvent: UpdateCourseDtoOrEvent): unknown {
+  if ('course' in incomingEvent) {
+    return incomingEvent;
+  }
+  if ('Records' in incomingEvent) {
+    return incomingEvent.Records[0].body;
+  }
+  return incomingEvent.detail;
+}

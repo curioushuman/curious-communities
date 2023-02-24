@@ -8,7 +8,11 @@ import {
 } from '@curioushuman/cc-groups-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
-import { parseDto } from '@curioushuman/common';
+import {
+  checkForNullRequestPayload,
+  parseDto,
+  validateRequestPayload,
+} from '@curioushuman/common';
 
 import {
   locateDto,
@@ -69,32 +73,29 @@ async function waitForApp() {
  */
 export const handler = async (
   requestDtoOrEvent: UpdateGroupMemberMultiDtoOrEvent
-): Promise<GroupMemberResponseDto | void> => {
+): Promise<void> => {
   // grab the dto
-  const requestDto = parseDto(requestDtoOrEvent, locateDto);
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  // check for an immediate null
-  if (requestDto === null) {
-    // if it's null, it means nothing was created or updated
-    // TODO: there will be a better way to handle this
-    // but I'm uncertain of it for now
-    return;
-  }
+  const context = 'UpdateGroupMemberMulti.Lambda';
+  const logger = new LoggableLogger(context);
 
-  const logger = new LoggableLogger('UpdateGroupMemberMultiFunction.handler');
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  // check for an immediate null; this was legacy behaviour
+  // NOTE: throws error
+  checkForNullRequestPayload({
+    requestPayload,
+    logger,
+  });
 
-  // lambda level validation
-  if (!requestDto || !UpdateGroupMemberMultiRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to UpdateGroupMemberMultiFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
+
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: UpdateGroupMemberMultiRequestDto.guard,
+    logger,
+  });
 
   // init the app
   const app = await waitForApp();
@@ -102,6 +103,6 @@ export const handler = async (
 
   // try/catch doesn't work at this level
   return controller.update({
-    group: requestDto.group,
+    group: validRequestDto.group,
   });
 };

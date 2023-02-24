@@ -1,9 +1,11 @@
 import { Record, Static } from 'runtypes';
 import { CourseDto } from '@curioushuman/cc-groups-service';
 import {
+  CoAwsRequestPayload,
   EventBridgeAsLambdaDestinationEvent,
   EventbridgePutEvent,
   isLambdaDestinationEvent,
+  isResponsePayload,
 } from '@curioushuman/common';
 
 /**
@@ -20,16 +22,28 @@ export type UpsertCourseGroupRequestDto = Static<
 >;
 
 /**
+ * The data could be handed to us as the above DTO, OR a response payload
+ */
+export type UpsertCourseGroupRequestPayload = CoAwsRequestPayload<CourseDto>;
+
+/**
+ * A type to manage the two types of input we support
+ */
+export type UpsertCourseGroupRequestDtoOrPayload =
+  | UpsertCourseGroupRequestDto
+  | UpsertCourseGroupRequestPayload;
+
+/**
  * What the input would look like if someone 'put's it to an eventBus
  */
 export type UpsertCourseGroupPutEvent =
-  EventbridgePutEvent<UpsertCourseGroupRequestDto>;
+  EventbridgePutEvent<UpsertCourseGroupRequestDtoOrPayload>;
 
 /**
  * A lambda destination wrapped in an event
  */
 export type UpsertCourseGroupAsDestinationEvent =
-  EventBridgeAsLambdaDestinationEvent<CourseDto>;
+  EventBridgeAsLambdaDestinationEvent<UpsertCourseGroupRequestDtoOrPayload>;
 
 /**
  * The two types of event we support
@@ -43,7 +57,7 @@ export type UpsertCourseGroupEvent =
  * Straight up DTO or an event
  */
 export type UpsertCourseGroupDtoOrEvent =
-  | UpsertCourseGroupRequestDto
+  | UpsertCourseGroupRequestDtoOrPayload
   | UpsertCourseGroupEvent;
 
 /**
@@ -53,13 +67,25 @@ export type UpsertCourseGroupDtoOrEvent =
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: UpsertCourseGroupDtoOrEvent): unknown {
-  if ('course' in incomingEvent) {
-    return incomingEvent;
+  if (
+    'course' in incomingEvent ||
+    isResponsePayload<CourseDto>(incomingEvent)
+  ) {
+    return prepareDtoFromPayload(incomingEvent);
   }
-  if (isLambdaDestinationEvent(incomingEvent)) {
-    return incomingEvent.detail.responsePayload === null
-      ? null
-      : { member: incomingEvent.detail.responsePayload };
+  if ('responsePayload' in incomingEvent.detail) {
+    return prepareDtoFromPayload(incomingEvent.detail.responsePayload);
   }
-  return incomingEvent.detail;
+  return prepareDtoFromPayload(incomingEvent.detail);
+}
+
+export function prepareDtoFromPayload(
+  incomingEvent: UpsertCourseGroupRequestDtoOrPayload
+): UpsertCourseGroupRequestDto {
+  if (isResponsePayload<CourseDto>(incomingEvent)) {
+    return {
+      course: incomingEvent.detail,
+    };
+  }
+  return incomingEvent;
 }

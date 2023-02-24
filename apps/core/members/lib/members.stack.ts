@@ -119,6 +119,7 @@ export class MembersStack extends cdk.Stack {
         ),
         lambdaProps: lambdaPropsWithDestination,
         eventBus: externalEventBusConstruct.eventBus,
+        ruleDetailType: 'putEvent',
         ruleDetails: {
           object: ['member'],
           type: ['created'],
@@ -152,6 +153,7 @@ export class MembersStack extends cdk.Stack {
         ),
         lambdaProps: lambdaPropsWithDestination,
         eventBus: externalEventBusConstruct.eventBus,
+        ruleDetailType: 'putEvent',
         ruleDetails: {
           object: ['member'],
           type: ['updated'],
@@ -214,10 +216,14 @@ export class MembersStack extends cdk.Stack {
         ),
         lambdaProps: this.lambdaProps,
         eventBus: internalEventBusConstruct.eventBus,
+        // NOTE: no rule type required
         lambdaArns: [
           createMemberLambdaConstruct.lambdaFunction.functionArn,
           updateMemberLambdaConstruct.lambdaFunction.functionArn,
         ],
+        ruleDetails: {
+          outcome: ['success'],
+        },
       }
     );
 

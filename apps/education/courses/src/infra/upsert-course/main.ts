@@ -1,23 +1,17 @@
-import { EventBridgeEvent } from 'aws-lambda';
 import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
-  CreateParticipantModule,
-  CreateParticipantController,
-  ParticipantResponseDto,
+  UpsertCourseModule,
+  UpsertCourseController,
   ResponsePayload,
 } from '@curioushuman/cc-courses-service';
-import {
-  InternalRequestInvalidError,
-  RepositoryItemConflictError,
-} from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import {
-  CreateParticipantPutEvent,
-  CreateParticipantRequestDto,
   locateDto,
+  UpsertCourseDtoOrEvent,
+  UpsertCourseRequestDto,
 } from './dto/request.dto';
 import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
@@ -39,13 +33,10 @@ let lambdaApp: INestApplicationContext;
  * i.e. we don't load Express, for optimization purposes
  */
 async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(
-    CreateParticipantModule,
-    {
-      bufferLogs: true,
-    }
-  );
-  CreateParticipantModule.applyDefaults(app);
+  const app = await NestFactory.createApplicationContext(UpsertCourseModule, {
+    bufferLogs: true,
+  });
+  UpsertCourseModule.applyDefaults(app);
   return app;
 }
 
@@ -73,12 +64,12 @@ async function waitForApp() {
  *   Which basically indicates success.
  */
 export const handler = async (
-  requestDtoOrEvent: CreateParticipantPutEvent
-): Promise<ResponsePayload<'participant'>> => {
+  requestDtoOrEvent: UpsertCourseDtoOrEvent
+): Promise<ResponsePayload<'course-base'>> => {
   // grab the dto
   const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  const context = 'CreateParticipant.Lambda';
+  const context = 'UpsertCourse.Lambda';
   const logger = new LoggableLogger(context);
 
   // log the request
@@ -88,17 +79,23 @@ export const handler = async (
   // NOTE: throws error
   const validRequestDto = validateRequestPayload({
     requestPayload,
-    checkRequest: CreateParticipantRequestDto.guard,
+    checkRequest: UpsertCourseRequestDto.guard,
     logger,
   });
 
   // init the app
   const app = await waitForApp();
-  const createParticipantController = app.get(CreateParticipantController);
+  const upsertCourseController = app.get(UpsertCourseController);
 
-  return createParticipantController.create({
-    participantSource: validRequestDto.participantSource,
-    course: validRequestDto.course,
-    member: validRequestDto.member,
+  // perform the action
+  // NOTE: no try/catch here. According to the docs:
+  //  _"For async handlers, you can use `return` and `throw` to send a `response`
+  //    or `error`, respectively. Functions must use the async keyword to use
+  //    these methods to return a `response` or `error`."_
+  //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
+  // Error will be thrown during `executeTask` within the controller.
+  // SEE **Error handling and logging** in README for more info.
+  return upsertCourseController.upsert({
+    idSourceValue: validRequestDto.courseIdSourceValue,
   });
 };

@@ -6,11 +6,17 @@ import {
   UpdateCourseModule,
   UpdateCourseController,
   type CourseBaseResponseDto,
+  ResponsePayload,
 } from '@curioushuman/cc-courses-service';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { UpdateCourseRequestDto } from './dto/request.dto';
+import {
+  locateDto,
+  UpdateCourseDtoOrEvent,
+  UpdateCourseRequestDto,
+} from './dto/request.dto';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO
@@ -61,30 +67,24 @@ async function waitForApp() {
  *   Which basically indicates success.
  */
 export const handler = async (
-  requestDtoOrEvent:
-    | UpdateCourseRequestDto
-    | EventBridgeEvent<'putEvent', UpdateCourseRequestDto>
-): Promise<CourseBaseResponseDto> => {
+  requestDtoOrEvent: UpdateCourseDtoOrEvent
+): Promise<ResponsePayload<'course-base'>> => {
   // grab the dto
-  const requestDto =
-    'detail' in requestDtoOrEvent
-      ? requestDtoOrEvent.detail
-      : requestDtoOrEvent;
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  const logger = new LoggableLogger('UpdateCourseFunction.handler');
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  const context = 'UpdateCourse.Lambda';
+  const logger = new LoggableLogger(context);
 
-  // lambda level validation
-  if (!UpdateCourseRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to UpdateCourseFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  // log the request
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
+
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: UpdateCourseRequestDto.guard,
+    logger,
+  });
 
   // init the app
   const app = await waitForApp();
@@ -99,6 +99,6 @@ export const handler = async (
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
   return updateCourseController.update({
-    idSourceValue: requestDto.courseIdSourceValue,
+    course: validRequestDto.course,
   });
 };

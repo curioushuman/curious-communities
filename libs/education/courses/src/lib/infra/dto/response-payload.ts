@@ -2,6 +2,7 @@ import {
   CoAwsResponseEvent,
   CoAwsResponseOutcome,
   CoAwsResponsePayload,
+  CoAwsResponsePayloadRuleDetail,
 } from '@curioushuman/common';
 import {
   CourseBaseResponseDto,
@@ -37,6 +38,14 @@ export type ResponsePayloadEntityName = keyof ResponsePayloadEntityDetailMap;
  */
 export type ResponsePayload<N extends ResponsePayloadEntityName> =
   CoAwsResponsePayload<N, ResponsePayloadEntityDetailMap[N]>;
+
+/**
+ * This is the type we would use in AWS CDK context to help define rules for event subscriptions
+ *
+ * NOTE: we won't be able to use these within a CDK context until we've packaged these services properly
+ */
+export type ResponsePayloadRuleDetail<N extends ResponsePayloadEntityName> =
+  CoAwsResponsePayloadRuleDetail<N, ResponsePayloadEntityDetailMap[N]>;
 
 /**
  * Helper function to prepare the payload

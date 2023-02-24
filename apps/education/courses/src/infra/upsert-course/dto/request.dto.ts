@@ -1,5 +1,4 @@
-import { Record, Static } from 'runtypes';
-import { CourseBaseResponseDto } from '@curioushuman/cc-courses-service';
+import { Record, Static, String } from 'runtypes';
 import {
   EventbridgePutEvent,
   SqsAsEventSourceEvent,
@@ -8,41 +7,41 @@ import {
 /**
  * This is the form of data we expect as input into our Lambda
  *
- * NOTE: it is remarkably similar to the UpdateCourseRequestDto within Nest.
+ * NOTE: it is remarkably similar to the UpsertCourseRequestDto within Nest.
  * This is OK, as currently these two things are directly aligned. However,
  * at some point they may diverge; which is also OK. Hence the need for two
  * DTOs, for two different purposes.
  */
 
-export const UpdateCourseRequestDto = Record({
-  course: CourseBaseResponseDto,
+export const UpsertCourseRequestDto = Record({
+  courseIdSourceValue: String,
 });
 
-export type UpdateCourseRequestDto = Static<typeof UpdateCourseRequestDto>;
+export type UpsertCourseRequestDto = Static<typeof UpsertCourseRequestDto>;
 
 /**
  * What the input would look like if someone 'put's it to an eventBus
  */
-export type UpdateCoursePutEvent = EventbridgePutEvent<UpdateCourseRequestDto>;
+export type UpsertCoursePutEvent = EventbridgePutEvent<UpsertCourseRequestDto>;
 
 /**
  * What the input looks like when SQS is event source
  */
-export type UpdateCourseSqsEvent =
-  SqsAsEventSourceEvent<UpdateCourseRequestDto>;
+export type UpsertCourseSqsEvent =
+  SqsAsEventSourceEvent<UpsertCourseRequestDto>;
 
 /**
  * The types of event we support
  *
  * This allows us space to add additional event types
  */
-export type UpdateCourseEvent = UpdateCoursePutEvent | UpdateCourseSqsEvent;
+export type UpsertCourseEvent = UpsertCoursePutEvent | UpsertCourseSqsEvent;
 
 /**
  * The two types of input we support
  * Straight up DTO or an event
  */
-export type UpdateCourseDtoOrEvent = UpdateCourseRequestDto | UpdateCourseEvent;
+export type UpsertCourseDtoOrEvent = UpsertCourseRequestDto | UpsertCourseEvent;
 
 /**
  * This will determine what kind of input we have received
@@ -50,8 +49,8 @@ export type UpdateCourseDtoOrEvent = UpdateCourseRequestDto | UpdateCourseEvent;
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: UpdateCourseDtoOrEvent): unknown {
-  if ('course' in incomingEvent) {
+export function locateDto(incomingEvent: UpsertCourseDtoOrEvent): unknown {
+  if ('courseIdSourceValue' in incomingEvent) {
     return incomingEvent;
   }
   if ('Records' in incomingEvent) {

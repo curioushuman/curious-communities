@@ -6,6 +6,7 @@ import {
   CreateCourseModule,
   CreateCourseController,
   type CourseBaseResponseDto,
+  type ResponsePayload,
 } from '@curioushuman/cc-courses-service';
 import {
   InternalRequestInvalidError,
@@ -13,7 +14,12 @@ import {
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { CreateCourseRequestDto } from './dto/request.dto';
+import {
+  CreateCourseDtoOrEvent,
+  CreateCourseRequestDto,
+  locateDto,
+} from './dto/request.dto';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO
@@ -63,48 +69,29 @@ async function waitForApp() {
  * * We NOW return CourseBaseResponseDto
  */
 export const handler = async (
-  requestDtoOrEvent:
-    | CreateCourseRequestDto
-    | EventBridgeEvent<'putEvent', CreateCourseRequestDto>
-): Promise<CourseBaseResponseDto | void> => {
+  requestDtoOrEvent: CreateCourseDtoOrEvent
+): Promise<ResponsePayload<'course-base'>> => {
   // grab the dto
-  const requestDto =
-    'detail' in requestDtoOrEvent
-      ? requestDtoOrEvent.detail
-      : requestDtoOrEvent;
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  const logger = new LoggableLogger('CreateCourseFunction.handler');
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  const context = 'CreateCourse.Lambda';
+  const logger = new LoggableLogger(context);
 
-  // lambda level validation
-  if (!CreateCourseRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to CreateCourseFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
+
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: CreateCourseRequestDto.guard,
+    logger,
+  });
 
   // init the app
   const app = await waitForApp();
   const createCourseController = app.get(CreateCourseController);
 
-  // we're going to try catch here
-  // only to catch RepositoryItemConflictError
-  // to log it, not throw it
-  // to avoid the lambda retrying
-  try {
-    return createCourseController.create({
-      idSourceValue: requestDto.courseIdSourceValue,
-    });
-  } catch (error: unknown) {
-    if (error instanceof RepositoryItemConflictError) {
-      logger.log(error);
-      return;
-    }
-    throw error;
-  }
+  return createCourseController.create({
+    idSourceValue: validRequestDto.courseIdSourceValue,
+  });
 };

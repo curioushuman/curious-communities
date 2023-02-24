@@ -1,4 +1,5 @@
 import { Record, Static, String } from 'runtypes';
+import { EventbridgePutEvent } from '@curioushuman/common';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -16,3 +17,37 @@ export const UpdateParticipantRequestDto = Record({
 export type UpdateParticipantRequestDto = Static<
   typeof UpdateParticipantRequestDto
 >;
+
+/**
+ * What the input would look like if someone 'put's it to an eventBus
+ */
+export type UpdateParticipantPutEvent =
+  EventbridgePutEvent<UpdateParticipantRequestDto>;
+
+/**
+ * The types of event we support
+ *
+ * This allows us space to add additional event types
+ */
+export type UpdateParticipantEvent = UpdateParticipantPutEvent;
+
+/**
+ * The two types of input we support
+ * Straight up DTO or an event
+ */
+export type UpdateParticipantDtoOrEvent =
+  | UpdateParticipantRequestDto
+  | UpdateParticipantEvent;
+
+/**
+ * This will determine what kind of input we have received
+ * and extract the data we need from it
+ *
+ * NOTE: validation of data is a separate step
+ */
+export function locateDto(incomingEvent: UpdateParticipantDtoOrEvent): unknown {
+  if ('participantIdSourceValue' in incomingEvent) {
+    return incomingEvent;
+  }
+  return incomingEvent.detail;
+}

@@ -14,6 +14,8 @@ export * from './lib/lambda/layer.types';
 export * from './lib/lambda/layer-from.construct';
 export * from './lib/lambda/layer-from.types';
 
+export * from './lib/step-functions/upsert-source-multi.construct';
+
 export * from './lib/utils/name';
 export * from './lib/utils/name.types';
 

@@ -4,13 +4,9 @@ import { NestFactory } from '@nestjs/core';
 import {
   upsertGroupSourceModules,
   UpsertGroupSourceController,
-  GroupSourceResponseDto,
   ResponsePayload,
 } from '@curioushuman/cc-groups-service';
-import {
-  InternalRequestInvalidError,
-  RequestInvalidError,
-} from '@curioushuman/error-factory';
+import { RequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 import {
   checkForNullRequestPayload,

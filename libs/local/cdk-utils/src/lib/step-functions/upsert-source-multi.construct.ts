@@ -190,12 +190,13 @@ export class UpsertSourceMultiConstruct extends Construct {
     const input: Record<string, unknown> = {
       source: sfn.TaskInput.fromText(source),
     };
-    input[source] = sfn.JsonPath.objectAt(`$.${this.entityId}`);
+    input[this.entityId] = sfn.JsonPath.objectAt(`$.detail`);
     this.upsertTasks[source] = new tasks.LambdaInvoke(this, taskTitle, {
       lambdaFunction: this.lambdas.upsertSource.lambdaFunction,
+      integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
       inputPath: '$.detail.responsePayload',
       payload: sfn.TaskInput.fromObject({
-        token: sfn.JsonPath.taskToken,
+        // token: sfn.JsonPath.taskToken,
         input,
       }),
       // append the result to the sources object

@@ -3,9 +3,7 @@ import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
-import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
-import * as tasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { resolve as pathResolve } from 'path';
@@ -98,10 +96,6 @@ export class GroupsStack extends cdk.Stack {
      * Triggers
      * - mostly the internal event bus i.e. when course created/updated
      * - also manually (mostly for testing)
-     *
-     * TODO:
-     * - [ ] get the $or working
-     *       https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns-content-based-filtering.html#eb-filtering-complex-example-or
      */
     const upsertCourseGroupLambdaId = generateCompositeResourceId(
       stackId,
@@ -208,12 +202,12 @@ export class GroupsStack extends cdk.Stack {
     );
 
     /**
-     * Subscribing the state machine to the Update Course Group Lambda (destination) events
+     * Subscribing the state machine to the Upsert Course Group Lambda (destination) events
      */
-    const [upsertGroupSourceRuleName, upsertGroupSourceRuleTitle] =
+    const [upsertGroupSourceMultiRuleName, upsertGroupSourceMultiRuleTitle] =
       resourceNameTitle(upsertGroupSourceMultiId, 'Rule');
-    const rule = new events.Rule(this, upsertGroupSourceRuleTitle, {
-      ruleName: upsertGroupSourceRuleName,
+    const rule = new events.Rule(this, upsertGroupSourceMultiRuleTitle, {
+      ruleName: upsertGroupSourceMultiRuleName,
       eventBus: internalEventBusConstruct.eventBus,
       description: 'Upsert multiple group sources, based on internal event',
       eventPattern: {

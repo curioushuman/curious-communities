@@ -1,7 +1,10 @@
 import { Record, Static, String } from 'runtypes';
 
 import { GroupBaseResponseDto } from '@curioushuman/cc-groups-service';
-import { EventBridgeAsLambdaDestinationEvent } from '@curioushuman/common';
+import {
+  SfnTaskInputAsEventSource,
+  SfnTaskInputTextReplica,
+} from '@curioushuman/common';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -18,10 +21,18 @@ export type UpsertGroupSourceRequestDto = Static<
 >;
 
 /**
- * What the input looks like when lambda is subscribed as a destination
+ * A representation of the input structure we create during Sfn task definition
  */
-export type UpsertGroupSourceAsDestinationEvent =
-  EventBridgeAsLambdaDestinationEvent<UpsertGroupSourceRequestDto>;
+interface UpsertGroupSourceAsSfnTaskInput {
+  source: SfnTaskInputTextReplica;
+  group: GroupBaseResponseDto;
+}
+
+/**
+ * What the input looks like when called from step functions
+ */
+export type UpsertGroupSourceAsSfnTask =
+  SfnTaskInputAsEventSource<UpsertGroupSourceAsSfnTaskInput>;
 
 /**
  * The two types of input we support
@@ -29,7 +40,7 @@ export type UpsertGroupSourceAsDestinationEvent =
  */
 export type UpsertGroupSourceDtoOrEvent =
   | UpsertGroupSourceRequestDto
-  | UpsertGroupSourceAsDestinationEvent;
+  | UpsertGroupSourceAsSfnTask;
 
 /**
  * This will determine what kind of input we have received
@@ -41,5 +52,8 @@ export function locateDto(incomingEvent: UpsertGroupSourceDtoOrEvent): unknown {
   if ('group' in incomingEvent) {
     return incomingEvent;
   }
-  return incomingEvent.detail.responsePayload;
+  return {
+    source: incomingEvent.input.source.value,
+    group: incomingEvent.input.group,
+  };
 }

@@ -25,6 +25,7 @@ export class CourseGroupMapper {
     return {
       ...standardBase,
       courseId: group.courseId,
+      _type: 'course',
     };
   }
 

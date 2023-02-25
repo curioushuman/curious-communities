@@ -107,6 +107,7 @@ defineFeature(feature, (test) => {
 
     and('saved group is returned', () => {
       expect(result.id).toBeDefined();
+      expect(result._type).toEqual('course');
     });
   });
 

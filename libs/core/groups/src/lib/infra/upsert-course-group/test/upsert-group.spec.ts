@@ -97,6 +97,7 @@ defineFeature(feature, (test) => {
 
     and('saved group is returned within payload', () => {
       expect(result.detail.id).toBeDefined();
+      expect(result.detail._type).toEqual('course');
       expect(result.event).toEqual('created');
       expect(result.outcome).toEqual('success');
     });
@@ -154,6 +155,7 @@ defineFeature(feature, (test) => {
 
     and('saved group is returned within payload', () => {
       expect(result.detail.id).toBeDefined();
+      expect(result.detail._type).toEqual('course');
       expect(result.event).toEqual('updated');
       expect(result.outcome).toEqual('success');
     });

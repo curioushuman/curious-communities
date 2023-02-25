@@ -34,6 +34,7 @@ export class CourseGroupMemberMapper {
       ...standardBase,
       courseId: groupMember.courseId,
       participantId: groupMember.participantId,
+      _type: 'course',
     };
   }
 

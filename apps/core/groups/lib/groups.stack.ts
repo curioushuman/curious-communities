@@ -19,7 +19,7 @@ import {
   LambdaConstruct,
   generateCompositeResourceId,
   resourceNameTitle,
-  transformIdToResourceTitle,
+  UpsertSourceMultiConstruct,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -120,7 +120,7 @@ export class GroupsStack extends cdk.Stack {
         // NOTE: we're not including the lambda ARNs in here
         // which means this will respond to any lambda success that returns a payload of entity: course
         ruleDetails: {
-          entity: ['course-base'],
+          entity: ['course-base', 'course'],
           outcome: ['success'],
         },
       }
@@ -188,144 +188,22 @@ export class GroupsStack extends cdk.Stack {
     upsertGroupSourceLambdaConstruct.addEnvironmentTribe();
 
     /**
-     * State machine: Update group source multi
-     *
-     * TODO:
-     * - [ ] better error handling in addCatch
+     * State machine: Upsert group source multi
      */
-
-    // Our two end states
-    const upsertGroupSourceSfnFail = new sfn.Fail(
-      this,
-      'Group source multi update failed',
-      {}
-    );
-    const upsertGroupSourceSfnSuccess = new sfn.Succeed(
-      this,
-      'Group source multi update succeeded'
-    );
-
-    /**
-     * Task: upsert group source COMMUNITY
-     */
-    const upsertGroupSourceCOMMUNITYResourceId = generateCompositeResourceId(
-      upsertGroupSourceResourceId,
-      'COMMUNITY'
-    );
-    const upsertGroupSourceCOMMUNITYTaskTitle = transformIdToResourceTitle(
-      upsertGroupSourceCOMMUNITYResourceId,
-      'SfnTask'
-    );
-    const upsertGroupSourceCOMMUNITYTask = new tasks.LambdaInvoke(
-      this,
-      upsertGroupSourceCOMMUNITYTaskTitle,
-      {
-        lambdaFunction: upsertGroupSourceLambdaConstruct.lambdaFunction,
-        inputPath: '$.detail.responsePayload',
-        payload: sfn.TaskInput.fromObject({
-          token: sfn.JsonPath.taskToken,
-          input: {
-            source: sfn.TaskInput.fromText('COMMUNITY'),
-            // the input is from a lambda destination
-            group: sfn.JsonPath.objectAt('$.group'),
-          },
-        }),
-        // this append the output of this task to the input into this task
-        resultPath: '$.groupSources.COMMUNITY',
-      }
-    ).addCatch(upsertGroupSourceSfnFail);
-
-    /**
-     * Task: upsert group source MICROCOURSE
-     */
-    const upsertGroupSourceMICROCOURSEResourceId = generateCompositeResourceId(
-      upsertGroupSourceResourceId,
-      'MICRO-COURSE'
-    );
-    const upsertGroupSourceMICROCOURSETaskTitle = transformIdToResourceTitle(
-      upsertGroupSourceMICROCOURSEResourceId,
-      'SfnTask'
-    );
-    const upsertGroupSourceMICROCOURSETask = new tasks.LambdaInvoke(
-      this,
-      upsertGroupSourceMICROCOURSETaskTitle,
-      {
-        lambdaFunction: upsertGroupSourceLambdaConstruct.lambdaFunction,
-        inputPath: '$.detail.responsePayload',
-        payload: sfn.TaskInput.fromObject({
-          token: sfn.JsonPath.taskToken,
-          input: {
-            source: sfn.TaskInput.fromText('MICRO-COURSE'),
-            // the input is from a lambda destination
-            group: sfn.JsonPath.objectAt('$.group'),
-          },
-        }),
-        // this append the output of this task to the input into this task
-        resultPath: '$.groupSources.MICROCOURSE',
-      }
-    ).addCatch(upsertGroupSourceSfnFail);
-
-    /**
-     * Parallel: upsert group sources
-     *
-     * TODO: figure out if it's possible to run the same lambda in parallel
-     */
-    // const upsertGroupSourcesParallelTitle = transformIdToResourceTitle(
-    //   upsertGroupSourceResourceId,
-    //   'SfnParallel'
-    // );
-    // const upsertGroupSourcesParallel = new sfn.Parallel(
-    //   this,
-    //   upsertGroupSourcesParallelTitle
-    // );
-    // upsertGroupSourcesParallel.branch(upsertGroupSourceCOMMUNITYTask);
-    // upsertGroupSourcesParallel.branch(upsertGroupSourceMICROCOURSETask);
-
-    /**
-     * Task: update group
-     */
-    const updateGroupTaskTitle = transformIdToResourceTitle(
-      updateGroupResourceId,
-      'SfnTask'
-    );
-    const updateGroupTask = new tasks.LambdaInvoke(this, updateGroupTaskTitle, {
-      lambdaFunction: updateGroupLambdaConstruct.lambdaFunction,
-    }).addCatch(upsertGroupSourceSfnFail);
-
-    /**
-     * Step function definition
-     *
-     * TODO: see if you can get the parallel one working
-     */
-    // const upsertGroupSourceMultiDefinition = sfn.Chain.start(
-    //   upsertGroupSourcesParallel
-    // ).next(updateGroupTask);
-    const upsertGroupSourceMultiDefinition = sfn.Chain.start(
-      upsertGroupSourceCOMMUNITYTask
-    )
-      .next(upsertGroupSourceMICROCOURSETask)
-      .next(updateGroupTask)
-      .next(upsertGroupSourceSfnSuccess);
-
-    /**
-     * State machine: Update group source
-     */
-    const upsertGroupSourceMultiResourceId = generateCompositeResourceId(
+    const upsertGroupSourceMultiId = generateCompositeResourceId(
       stackId,
       'group-source-upsert-multi'
     );
-    const upsertGroupSourceMultiStateMachineTitle = transformIdToResourceTitle(
-      upsertGroupSourceMultiResourceId,
-      'SfnStateMachine'
-    );
-    const upsertGroupSourceMultiStateMachine = new sfn.StateMachine(
+    const upsertGroupSourceMultiConstruct = new UpsertSourceMultiConstruct(
       this,
-      upsertGroupSourceMultiStateMachineTitle,
+      upsertGroupSourceMultiId,
       {
-        definition: upsertGroupSourceMultiDefinition,
-        timeout: cdk.Duration.minutes(5),
-        tracingEnabled: true,
-        stateMachineType: sfn.StateMachineType.EXPRESS,
+        lambdas: {
+          updateDomain: updateGroupLambdaConstruct,
+          upsertSource: upsertGroupSourceLambdaConstruct,
+        },
+        entityId: 'group',
+        sources: ['COMMUNITY', 'MICRO-COURSE'],
       }
     );
 
@@ -333,24 +211,22 @@ export class GroupsStack extends cdk.Stack {
      * Subscribing the state machine to the Update Course Group Lambda (destination) events
      */
     const [upsertGroupSourceRuleName, upsertGroupSourceRuleTitle] =
-      resourceNameTitle(upsertGroupSourceResourceId, 'Rule');
+      resourceNameTitle(upsertGroupSourceMultiId, 'Rule');
     const rule = new events.Rule(this, upsertGroupSourceRuleTitle, {
       ruleName: upsertGroupSourceRuleName,
       eventBus: internalEventBusConstruct.eventBus,
-      description: 'Upsert group source, based on internal event',
+      description: 'Upsert multiple group sources, based on internal event',
       eventPattern: {
         detailType: ['Lambda Function Invocation Result - Success'],
         source: ['lambda'],
-        resources: [
-          `${upsertCourseGroupLambdaConstruct.lambdaFunction.functionArn}:$LATEST`,
-        ],
         detail: {
+          entity: ['course-group-base', 'group-base', 'standard-group-base'],
           outcome: ['success'],
         },
       },
     });
     rule.addTarget(
-      new targets.SfnStateMachine(upsertGroupSourceMultiStateMachine)
+      new targets.SfnStateMachine(upsertGroupSourceMultiConstruct.stateMachine)
     );
 
     /**

@@ -5,6 +5,7 @@ import { Construct } from 'constructs';
 import { LambdaConstruct } from '../lambda/lambda.construct';
 import {
   generateCompositeResourceId,
+  resourceNameTitle,
   transformIdToResourceTitle,
 } from '../utils/name';
 import { ResourceId } from '../utils/name.types';
@@ -33,13 +34,14 @@ export interface UpsertSourceMultiProps {
  *       https://github.com/aws-samples/serverless-patterns/blob/main/cdk-eventbridge-stepfunction-sqs/cdk/lib/eventbridge-stepfunction-sqs-stack.ts
  */
 export class UpsertSourceMultiConstruct extends Construct {
-  private stackId: string;
   private entityId: ResourceId;
   private lambdas: UpsertSourceMultiLambdas;
   private endStates!: Record<string, sfn.State>;
   private upsertTaskId: string;
+  private firstTaskKey!: string;
+  private lastTaskKey!: string;
 
-  public upsertTasks!: Record<string, sfn.TaskStateBase>;
+  public upsertTasks: Record<string, sfn.TaskStateBase> = {};
   public stateMachine: sfn.StateMachine;
 
   private prepareEndStates(): void {
@@ -61,13 +63,12 @@ export class UpsertSourceMultiConstruct extends Construct {
 
   constructor(
     scope: Construct,
-    stackId: string,
+    constructId: string,
     props: UpsertSourceMultiProps
   ) {
-    super(scope, stackId);
+    super(scope, constructId);
 
     // save some props
-    this.stackId = stackId;
     this.entityId = props.entityId;
     this.lambdas = props.lambdas;
 
@@ -78,16 +79,19 @@ export class UpsertSourceMultiConstruct extends Construct {
      * Tasks for upserting a source
      */
     this.upsertTaskId = generateCompositeResourceId(
-      this.stackId,
+      constructId,
       `${this.entityId}-source-upsert`
     );
-    props.sources.forEach(this.prepareUpsertSourceTask);
+    // doing it this way makes it anonymous, and detaches it from this
+    // props.sources.forEach(this.prepareUpsertSourceTask);
+    // this way retains state
+    props.sources.forEach((source) => this.prepareUpsertSourceTask(source));
 
     /**
-     * Parallel: upsert group sources
+     * Parallel: upsert sources
      */
     // const upsertSourcesParallelTitle = transformIdToResourceTitle(
-    //   stackId,
+    //   constructId,
     //   'SfnParallel'
     // );
     // const upsertSourcesParallel = new sfn.Parallel(
@@ -96,71 +100,62 @@ export class UpsertSourceMultiConstruct extends Construct {
     // );
     // upsertSourcesParallel.branch(upsertSourceCOMMUNITYTask);
     // upsertSourcesParallel.branch(upsertSourceMICROCOURSETask);
+    // const definition = sfn.Chain.start(
+    //   upsertSourcesParallel
+    // ).next(updateDomainTask);
 
     /**
-     * Task: update group
+     * Task: update domain
      */
     const updateResourceId = generateCompositeResourceId(
-      stackId,
+      constructId,
       `${this.entityId}-update`
     );
     const updateTaskTitle = transformIdToResourceTitle(
       updateResourceId,
       'SfnTask'
     );
+    // NOTE: this will move on to end state
     const updateTask = new tasks.LambdaInvoke(this, updateTaskTitle, {
       lambdaFunction: this.lambdas.updateDomain.lambdaFunction,
-    }).addCatch(this.endStates.fail);
+    })
+      .addCatch(this.endStates.fail)
+      .next(this.endStates.success);
 
     /**
-     * A quick pass to be able start the state machine
+     * Prepare the upsert tasks, chain them together with next()
      */
-    const startResourceId = generateCompositeResourceId(
-      updateResourceId,
-      'start'
-    );
-    const startPassTitle = transformIdToResourceTitle(
-      startResourceId,
-      'SfnPass'
-    );
-    const startPass = new sfn.Pass(this, startPassTitle);
-
-    /**
-     * Step function definition
-     */
-    const definition = sfn.Chain.start(startPass);
-
-    /**
-     * Add the upsertTasks to the definition
-     */
+    let previousTask: sfn.TaskStateBase;
     Object.keys(this.upsertTasks).forEach((key) => {
-      definition.next(this.upsertTasks[key]);
+      if (previousTask) {
+        previousTask.next(this.upsertTasks[key]);
+      }
+      previousTask = this.upsertTasks[key];
     });
-    // parallel version
-    // const definition = sfn.Chain.start(
-    //   upsertSourcesParallel
-    // ).next(updateGroupTask);
 
     /**
-     * Finish with the update task and success
+     * Connect the last task to the update task
      */
-    definition.next(updateTask).next(this.endStates.success);
+    this.upsertTasks[this.lastTaskKey].next(updateTask);
 
     /**
-     * State machine: Upsert group source multi
+     * Step function definition; start it with the first task
+     * The rest have been pre-chained
      */
-    const upsertSourceMultiResourceId = generateCompositeResourceId(
-      stackId,
-      `${this.entityId}-source-upsert-multi`
-    );
-    const upsertSourceMultiStateMachineTitle = transformIdToResourceTitle(
-      upsertSourceMultiResourceId,
-      'SfnStateMachine'
-    );
+    const definition = sfn.Chain.start(this.upsertTasks[this.firstTaskKey]);
+
+    /**
+     * State machine
+     */
+    const [
+      upsertSourceMultiStateMachineName,
+      upsertSourceMultiStateMachineTitle,
+    ] = resourceNameTitle(constructId, 'SfnStateMachine');
     this.stateMachine = new sfn.StateMachine(
       this,
       upsertSourceMultiStateMachineTitle,
       {
+        stateMachineName: upsertSourceMultiStateMachineName,
         definition,
         timeout: cdk.Duration.minutes(5),
         tracingEnabled: true,
@@ -170,21 +165,25 @@ export class UpsertSourceMultiConstruct extends Construct {
   }
 
   private prepareUpsertSourceTask(source: string): void {
+    if (!this.firstTaskKey) {
+      this.firstTaskKey = source;
+    }
+    this.lastTaskKey = source;
     const resourceId = generateCompositeResourceId(this.upsertTaskId, source);
     const taskTitle = transformIdToResourceTitle(resourceId, 'SfnTask');
+    const input: Record<string, unknown> = {
+      source: sfn.TaskInput.fromText(source),
+    };
+    input[source] = sfn.JsonPath.objectAt(`$.${this.entityId}`);
     this.upsertTasks[source] = new tasks.LambdaInvoke(this, taskTitle, {
       lambdaFunction: this.lambdas.upsertSource.lambdaFunction,
       inputPath: '$.detail.responsePayload',
       payload: sfn.TaskInput.fromObject({
         token: sfn.JsonPath.taskToken,
-        input: {
-          source: sfn.TaskInput.fromText(source),
-          // the input is from a lambda destination
-          group: sfn.JsonPath.objectAt('$.group'),
-        },
+        input,
       }),
-      // append the result to the groupSources object
-      resultPath: `$.groupSources.${source}`,
+      // append the result to the sources object
+      resultPath: `$.sources.${source}`,
     }).addCatch(this.endStates.fail);
   }
 }

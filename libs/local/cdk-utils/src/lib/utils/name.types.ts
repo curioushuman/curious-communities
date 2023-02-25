@@ -61,6 +61,7 @@ export type SupportedResourceType =
   | 'EventBus'
   | 'Lambda'
   | 'Layer'
+  | 'LogGroup'
   | 'Queue'
   | 'RequestValidator'
   | 'ResponseModel'

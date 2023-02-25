@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import * as logs from 'aws-cdk-lib/aws-logs';
 import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
 import * as tasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { Construct } from 'constructs';
@@ -145,6 +146,17 @@ export class UpsertSourceMultiConstruct extends Construct {
     const definition = sfn.Chain.start(this.upsertTasks[this.firstTaskKey]);
 
     /**
+     * Log group for state machine
+     */
+    const [upsertSourceMultiLogGroupName, upsertSourceMultiLogGroupTitle] =
+      resourceNameTitle(constructId, 'LogGroup');
+    const logGroup = new logs.LogGroup(this, upsertSourceMultiLogGroupTitle, {
+      logGroupName: upsertSourceMultiLogGroupName,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      retention: logs.RetentionDays.ONE_MONTH,
+    });
+
+    /**
      * State machine
      */
     const [
@@ -160,6 +172,10 @@ export class UpsertSourceMultiConstruct extends Construct {
         timeout: cdk.Duration.minutes(5),
         tracingEnabled: true,
         stateMachineType: sfn.StateMachineType.EXPRESS,
+        logs: {
+          destination: logGroup,
+          level: sfn.LogLevel.ALL,
+        },
       }
     );
   }

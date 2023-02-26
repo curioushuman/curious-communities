@@ -107,6 +107,8 @@ export class UpsertSourceMultiConstruct extends Construct {
 
     /**
      * Task: update domain
+     *
+     * NOTE: this will move on to end state
      */
     const updateResourceId = generateCompositeResourceId(
       constructId,
@@ -116,9 +118,19 @@ export class UpsertSourceMultiConstruct extends Construct {
       updateResourceId,
       'SfnTask'
     );
-    // NOTE: this will move on to end state
+    // first we'll set up the input structure
+    const input: Record<string, unknown> = {
+      sources: sfn.JsonPath.objectAt(`$.sources`),
+    };
+    input[this.entityId] = sfn.JsonPath.objectAt(
+      '$.detail.responsePayload.detail'
+    );
     const updateTask = new tasks.LambdaInvoke(this, updateTaskTitle, {
       lambdaFunction: this.lambdas.updateDomain.lambdaFunction,
+      integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
+      payload: sfn.TaskInput.fromObject({
+        input,
+      }),
     })
       .addCatch(this.endStates.fail)
       .next(this.endStates.success);
@@ -187,10 +199,18 @@ export class UpsertSourceMultiConstruct extends Construct {
     this.lastTaskKey = source;
     const resourceId = generateCompositeResourceId(this.upsertTaskId, source);
     const taskTitle = transformIdToResourceTitle(resourceId, 'SfnTask');
+
+    // input allows us to shape the data that is passed into our task/lambda
     const input: Record<string, unknown> = {
       source: sfn.TaskInput.fromText(source),
     };
-    input[this.entityId] = sfn.JsonPath.objectAt(`$.detail`);
+    input[this.entityId] = sfn.JsonPath.objectAt('$.detail');
+
+    // resultSelector allows us to shape the data that is returned from our task/lambda
+    const resultSelector: Record<string, unknown> = {
+      detail: sfn.JsonPath.objectAt('$.Payload'),
+    };
+
     this.upsertTasks[source] = new tasks.LambdaInvoke(this, taskTitle, {
       lambdaFunction: this.lambdas.upsertSource.lambdaFunction,
       integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
@@ -201,6 +221,7 @@ export class UpsertSourceMultiConstruct extends Construct {
       }),
       // append the result to the sources object
       resultPath: `$.sources.${source}`,
+      resultSelector,
     }).addCatch(this.endStates.fail);
   }
 }

@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 // Importing utilities for use in infrastructure processes
 // Initially we're going to import from local sources
@@ -45,5 +46,19 @@ export class CcEventsStack extends cdk.Stack {
         eventBusName: internalEventBusName,
       }
     );
+
+    /**
+     * For now we're creating a single role for all event buses
+     * This will be expanded upon in the future
+     */
+    const allEventbusRoleId = generateCompositeResourceId(stackId, 'all');
+    const [allEventbusRoleName, allEventbusRoleTitle] = resourceNameTitle(
+      allEventbusRoleId,
+      'Role'
+    );
+    const allEventsRole = new iam.Role(this, allEventbusRoleTitle, {
+      roleName: allEventbusRoleName,
+      assumedBy: new iam.ServicePrincipal('events.amazonaws.com'),
+    });
   }
 }

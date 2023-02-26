@@ -49,6 +49,13 @@ export interface SqsAsEventSourceEvent<T> {
 }
 
 /**
+ * Result of a step function task
+ */
+export interface SfnTaskResponsePayload<T> {
+  detail: T;
+}
+
+/**
  * Data added to the input via fromText
  */
 export interface SfnTaskInputTextReplica {

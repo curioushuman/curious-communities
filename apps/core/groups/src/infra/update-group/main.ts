@@ -4,18 +4,16 @@ import { NestFactory } from '@nestjs/core';
 import {
   UpdateGroupModule,
   UpdateGroupController,
-  GroupBaseResponseDto,
   ResponsePayload,
 } from '@curioushuman/cc-groups-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 import {
   locateDto,
   UpdateGroupDtoOrEvent,
   UpdateGroupRequestDto,
 } from './dto/request.dto';
-import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO
@@ -89,10 +87,8 @@ export const handler = async (
   const app = await waitForApp();
   const controller = app.get(UpdateGroupController);
 
-  // ! I STILL NEED TO ADD THE GROUPSOURCES TO THE GROUP HERE
-
   // try/catch doesn't work at this level
   return controller.update({
-    group: validRequestDto.detail.responsePayload.group,
+    group: validRequestDto.group,
   });
 };

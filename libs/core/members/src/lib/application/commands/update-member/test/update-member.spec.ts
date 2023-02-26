@@ -39,7 +39,6 @@ const feature = loadFeature('./update-member.feature', {
 
 defineFeature(feature, (test) => {
   let repository: FakeMemberRepository;
-  let memberSourceRepository: FakeMemberSourceRepository;
   let handler: UpdateMemberHandler;
   let updateMemberDto: UpdateMemberDto;
 
@@ -67,38 +66,26 @@ defineFeature(feature, (test) => {
     repository = moduleRef.get<MemberRepository>(
       MemberRepository
     ) as FakeMemberRepository;
-    memberSourceRepository = moduleRef.get<MemberSourceRepositoryReadWrite>(
-      MemberSourceRepositoryReadWrite
-    ) as FakeMemberSourceRepository;
     handler = moduleRef.get<UpdateMemberHandler>(UpdateMemberHandler);
   });
 
   test('Successfully updating a member', ({ given, and, when, then }) => {
-    let updatedMemberSource: MemberSource;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
 
-    given('a matching record is found at the source', () => {
-      // we know this to exist in our fake repo
+    given('the request is valid', () => {
       updateMemberDto = MemberBuilder().updated().buildUpdateMemberDto();
-    });
-
-    and('the returned source populates a valid member', async () => {
-      // this is an updated version of the `exists()` memberSource
-      updatedMemberSource = MemberSourceBuilder().updated().build();
-      // save it to our fake repo, we know it is valid
-      executeTask(memberSourceRepository.update(updatedMemberSource));
     });
 
     and('the source does exist in our DB', async () => {
       const members = await executeTask(repository.all());
       const memberBefore = members.find(
-        (member) => member.sourceIds[0].id === updateMemberDto.memberSource.id
+        (member) => member.id === updateMemberDto.member.id
       );
       expect(memberBefore).toBeDefined();
       if (memberBefore) {
-        expect(memberBefore.status).not.toEqual(updatedMemberSource.status);
+        expect(memberBefore.name).not.toEqual(updateMemberDto.member.name);
       }
     });
 
@@ -109,11 +96,64 @@ defineFeature(feature, (test) => {
     then('the related record should have been updated', async () => {
       const members = await executeTask(repository.all());
       const memberAfter = members.find(
-        (member) => member.sourceIds[0].id === updateMemberDto.memberSource.id
+        (member) => member.id === updateMemberDto.member.id
       );
       expect(memberAfter).toBeDefined();
       if (memberAfter) {
-        expect(memberAfter.status).toEqual(updatedMemberSource.status);
+        expect(memberAfter.name).toEqual(updateMemberDto.member.name);
+      }
+    });
+
+    and('saved member is returned', () => {
+      expect(result.id).toBeDefined();
+    });
+  });
+
+  test('Successfully updating a member from source', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
+    let memberSource: MemberSource;
+    // disabling no-explicit-any for testing purposes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
+
+    given('a matching record is found at the source', () => {
+      memberSource = MemberSourceBuilder().updated().build();
+      updateMemberDto = MemberBuilder()
+        .updated()
+        .buildUpdateFromSourceMemberDto(memberSource);
+    });
+
+    and('the returned source populates a valid member', async () => {
+      // above
+    });
+
+    and('the source does exist in our DB', async () => {
+      const members = await executeTask(repository.all());
+      const memberBefore = members.find(
+        (member) => member.sourceIds[0].id === memberSource.id
+      );
+      expect(memberBefore).toBeDefined();
+      if (memberBefore) {
+        expect(memberBefore.name).not.toEqual(memberSource.name);
+      }
+    });
+
+    when('I attempt to update a member', async () => {
+      result = await handler.execute(new UpdateMemberCommand(updateMemberDto));
+    });
+
+    then('the related record should have been updated', async () => {
+      const members = await executeTask(repository.all());
+      const memberAfter = members.find(
+        (member) => member.sourceIds[0].id === memberSource.id
+      );
+      expect(memberAfter).toBeDefined();
+      if (memberAfter) {
+        expect(memberAfter.name).toEqual(memberSource.name);
       }
     });
 
@@ -134,7 +174,7 @@ defineFeature(feature, (test) => {
       const memberSource = MemberSourceBuilder().invalidSource().buildNoCheck();
       updateMemberDto = MemberBuilder()
         .invalidSource()
-        .buildUpdateMemberDto(memberSource);
+        .buildUpdateFromSourceMemberDto(memberSource);
     });
 
     and('the returned source does not populate a valid Member', () => {

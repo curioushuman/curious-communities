@@ -18,6 +18,7 @@ import { MemberEmail } from '../../../domain/value-objects/member-email';
 import config from '../../../static/config';
 import { Source } from '../../../domain/value-objects/source';
 import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
+import { MemberName } from '../../../domain/value-objects/member-name';
 
 @Injectable()
 export class FakeMemberSourceRepository
@@ -25,9 +26,19 @@ export class FakeMemberSourceRepository
 {
   private memberSources: MemberSource[] = [];
 
+  private renameMember(member: MemberSource): MemberSource {
+    member.name = 'Bland base name' as MemberName;
+    return member;
+  }
+
   constructor() {
     this.memberSources.push(MemberSourceBuilder().exists().build());
-    this.memberSources.push(MemberSourceBuilder().updated().build());
+    this.memberSources.push(
+      this.renameMember(MemberSourceBuilder().updated().build())
+    );
+    this.memberSources.push(
+      this.renameMember(MemberSourceBuilder().updatedAlpha().build())
+    );
     this.memberSources.push(
       MemberSourceBuilder().invalidSource().buildNoCheck()
     );

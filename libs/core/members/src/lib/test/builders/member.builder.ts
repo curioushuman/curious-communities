@@ -167,6 +167,13 @@ export const MemberBuilder = () => {
       return this;
     },
 
+    updatedAlpha() {
+      const source = MemberSourceBuilder().updatedAlpha().build();
+      this.setSource(source);
+      overrides.id = '6fce9d10-aeed-4bb1-8c8c-92094f1986yz';
+      return this;
+    },
+
     doesntExist() {
       const source = MemberSourceBuilder().doesntExist().build();
       this.setSource(source);
@@ -258,14 +265,28 @@ export const MemberBuilder = () => {
       } as FindByEmailMemberRequestDto;
     },
 
-    buildUpdateMemberDto(ms?: MemberSource): UpdateMemberDto {
+    buildUpdateMemberDto(): UpdateMemberDto {
+      const member = this.buildNoCheck();
+      return { member } as UpdateMemberDto;
+    },
+
+    buildUpdateFromSourceMemberDto(
+      ms?: MemberSource
+    ): Required<UpdateMemberDto> {
       // default is successful path
       const memberSource = ms || MemberSourceBuilder().updated().build();
       const member = this.buildNoCheck();
-      return { memberSource, member } as UpdateMemberDto;
+      return { memberSource, member };
     },
 
     buildUpdateMemberRequestDto(): UpdateMemberRequestDto {
+      const member = this.buildMemberResponseDto();
+      return {
+        member,
+      } as UpdateMemberRequestDto;
+    },
+
+    buildUpdateFromSourceMemberRequestDto(): UpdateMemberRequestDto {
       const sourceIds = this.buildNoCheck().sourceIds;
       if (!sourceIds) {
         return {

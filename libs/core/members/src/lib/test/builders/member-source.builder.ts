@@ -111,6 +111,14 @@ export const MemberSourceBuilder = () => {
       return this;
     },
 
+    updatedAlpha() {
+      overrides.id = ExternalId.check('ThisSourceUsedForUpdatingAlpha');
+      overrides.name = 'Mikee Freedom';
+      overrides.email = 'mikeefreedom@whatsthatweb.com.au';
+      overrides.status = 'active';
+      return this;
+    },
+
     doesntExist() {
       overrides.id = ExternalId.check('NothingExistsHere');
       overrides.name = 'Nothing Exists';

@@ -65,6 +65,52 @@ defineFeature(feature, (test) => {
   });
 
   test('Successfully updating a member', ({ given, and, when, then }) => {
+    // disabling no-explicit-any for testing purposes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
+    let updateMemberDto: UpdateMemberRequestDto;
+    let error: Error;
+
+    given('the request is valid', () => {
+      // we know this to exist in our fake repo
+      updateMemberDto = MemberBuilder()
+        .updatedAlpha()
+        .buildUpdateMemberRequestDto();
+    });
+
+    when('I attempt to update a member', async () => {
+      try {
+        result = await controller.update(updateMemberDto);
+      } catch (err) {
+        error = err as Error;
+        expect(error).toBeUndefined();
+      }
+    });
+
+    then('the related record should have been updated', async () => {
+      const members = await executeTask(repository.all());
+      const memberAfter = members.find(
+        (member) => updateMemberDto.member?.id === member.id
+      );
+      expect(memberAfter).toBeDefined();
+      if (memberAfter) {
+        expect(memberAfter.status).toEqual(updateMemberDto.member?.status);
+      }
+    });
+
+    and('saved member is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
+    });
+  });
+
+  test('Successfully updating a member from source', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
     let updatedMemberSource: MemberSource;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,7 +120,9 @@ defineFeature(feature, (test) => {
 
     given('the request is valid', () => {
       // we know this to exist in our fake repo
-      updateMemberDto = MemberBuilder().updated().buildUpdateMemberRequestDto();
+      updateMemberDto = MemberBuilder()
+        .updated()
+        .buildUpdateFromSourceMemberRequestDto();
     });
 
     and('a matching record is found at the source', async () => {
@@ -190,7 +238,7 @@ defineFeature(feature, (test) => {
     given('a matching record is found at the source', () => {
       updateMemberDto = MemberBuilder()
         .doesntExist()
-        .buildUpdateMemberRequestDto();
+        .buildUpdateFromSourceMemberRequestDto();
     });
 
     and('the returned source populates a valid member', () => {
@@ -226,7 +274,7 @@ defineFeature(feature, (test) => {
     given('a matching record is found at the source', () => {
       updateMemberDto = MemberBuilder()
         .invalidSource()
-        .buildUpdateMemberRequestDto();
+        .buildUpdateFromSourceMemberRequestDto();
     });
 
     and('the returned source does not populate a valid Member', () => {
@@ -257,7 +305,9 @@ defineFeature(feature, (test) => {
 
     given('the request is valid', () => {
       // we know this to exist in our fake repo
-      updateMemberDto = MemberBuilder().exists().buildUpdateMemberRequestDto();
+      updateMemberDto = MemberBuilder()
+        .exists()
+        .buildUpdateFromSourceMemberRequestDto();
     });
 
     and('a matching record is found at the source', async () => {
@@ -274,7 +324,7 @@ defineFeature(feature, (test) => {
       expect(memberBefore).toBeDefined();
     });
 
-    when('the source matches the member in our DB', async () => {
+    and('the source matches the member in our DB', async () => {
       if (memberBefore) {
         expect(memberBefore.status).toEqual(updatedMemberSource.status);
         expect(memberBefore.email).toEqual(updatedMemberSource.email);
@@ -290,6 +340,7 @@ defineFeature(feature, (test) => {
         result = await controller.update(updateMemberDto);
       } catch (err) {
         error = err as Error;
+        expect(error).toBeUndefined();
       }
     });
 
@@ -309,7 +360,7 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('no result is returned', () => {
+    and('no-change result is returned', () => {
       expect(result.detail.id).toBeDefined();
       expect(result.event).toEqual('updated');
       expect(result.outcome).toEqual('no-change');

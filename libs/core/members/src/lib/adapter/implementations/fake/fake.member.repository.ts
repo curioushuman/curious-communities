@@ -22,10 +22,18 @@ import { MemberName } from '../../../domain/value-objects/member-name';
 export class FakeMemberRepository implements MemberRepository {
   private members: Member[] = [];
 
+  private renameMember(member: Member): Member {
+    member.name = 'Bland base name' as MemberName;
+    return member;
+  }
+
   constructor() {
     this.members.push(MemberBuilder().exists().build());
     this.members.push(MemberBuilder().existsByEmail().build());
-    this.members.push(MemberBuilder().updated().build());
+    this.members.push(this.renameMember(MemberBuilder().updated().build()));
+    this.members.push(
+      this.renameMember(MemberBuilder().updatedAlpha().build())
+    );
     const invalidSource = MemberBuilder().invalidSource().buildNoCheck();
     invalidSource.name = 'Invalid Source' as MemberName;
     this.members.push(invalidSource);

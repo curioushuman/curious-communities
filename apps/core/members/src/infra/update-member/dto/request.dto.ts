@@ -1,8 +1,14 @@
-import { Record, Static, String } from 'runtypes';
+import { Optional, Record, Static, String } from 'runtypes';
 import {
+  CoAwsRequestPayload,
   EventbridgePutEvent,
-  SqsAsEventSourceEvent,
+  SfnTaskInputAsEventSource,
+  SfnTaskResponsePayload,
 } from '@curioushuman/common';
+import {
+  MemberResponseDto,
+  MemberSourceResponseDto,
+} from '@curioushuman/cc-members-service';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -14,10 +20,40 @@ import {
  */
 
 export const UpdateMemberRequestDto = Record({
-  memberIdSourceValue: String,
-});
+  memberIdSourceValue: Optional(String),
+  member: Optional(MemberResponseDto),
+}).withConstraint((dto) => !!(dto.memberIdSourceValue || dto.member));
 
 export type UpdateMemberRequestDto = Static<typeof UpdateMemberRequestDto>;
+
+/**
+ * During the step functions task, we will be calling the
+ * upsertMemberSource lambda. This is the response we expect.
+ * We get our response from the task wrapped in it's own response payload
+ * which will contain our response payload
+ * which will contain the DTO
+ */
+type UpsertMemberSourceSfnTaskResponsePayload = SfnTaskResponsePayload<
+  CoAwsRequestPayload<MemberSourceResponseDto>
+>;
+
+/**
+ * Once the tasks are complete, this is what the structure will look like
+ */
+interface UpdateMemberAsSfnResult {
+  member: MemberResponseDto;
+  sources: {
+    AUTH: UpsertMemberSourceSfnTaskResponsePayload;
+    COMMUNITY: UpsertMemberSourceSfnTaskResponsePayload;
+    'MICRO-COURSE': UpsertMemberSourceSfnTaskResponsePayload;
+  };
+}
+
+/**
+ * What the input looks like when called from step functions
+ */
+export type UpdateMemberAsSfnTask =
+  SfnTaskInputAsEventSource<UpdateMemberAsSfnResult>;
 
 /**
  * What the input would look like if someone 'put's it to an eventBus
@@ -25,15 +61,9 @@ export type UpdateMemberRequestDto = Static<typeof UpdateMemberRequestDto>;
 export type UpdateMemberPutEvent = EventbridgePutEvent<UpdateMemberRequestDto>;
 
 /**
- * What the input looks like when SQS is event source
- */
-export type UpdateMemberSqsEvent =
-  SqsAsEventSourceEvent<UpdateMemberRequestDto>;
-
-/**
  * The types of event we support
  */
-export type UpdateMemberEvent = UpdateMemberPutEvent | UpdateMemberSqsEvent;
+export type UpdateMemberEvent = UpdateMemberPutEvent | UpdateMemberAsSfnTask;
 
 /**
  * The two types of input we support
@@ -48,11 +78,29 @@ export type UpdateMemberDtoOrEvent = UpdateMemberRequestDto | UpdateMemberEvent;
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: UpdateMemberDtoOrEvent): unknown {
-  if ('memberIdSourceValue' in incomingEvent) {
-    return incomingEvent;
+  if ('input' in incomingEvent) {
+    const idSources = [
+      {
+        id: incomingEvent.input.sources.AUTH.detail.detail.id,
+        source: 'AUTH',
+      },
+      {
+        id: incomingEvent.input.sources.COMMUNITY.detail.detail.id,
+        source: 'COMMUNITY',
+      },
+      {
+        id: incomingEvent.input.sources['MICRO-COURSE'].detail.detail.id,
+        source: 'MICRO-COURSE',
+      },
+    ];
+    const member = {
+      ...incomingEvent.input.member,
+      idSources,
+    };
+    return { member };
   }
-  if ('Records' in incomingEvent) {
-    return incomingEvent.Records[0].body;
+  if ('detail' in incomingEvent) {
+    return incomingEvent.detail;
   }
-  return incomingEvent.detail;
+  return incomingEvent;
 }

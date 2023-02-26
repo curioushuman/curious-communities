@@ -1,4 +1,6 @@
-import { Record, Static, String } from 'runtypes';
+import { RequestSource } from '@curioushuman/common';
+import { Optional, Record, Static, String } from 'runtypes';
+import { MemberResponseDto } from '../../dto/member.response.dto';
 
 /**
  * This is the form of data we expect as input into our application
@@ -9,7 +11,9 @@ import { Record, Static, String } from 'runtypes';
  */
 
 export const UpdateMemberRequestDto = Record({
-  idSourceValue: String,
-});
+  idSourceValue: Optional(String),
+  member: Optional(MemberResponseDto),
+  requestSource: Optional(RequestSource),
+}).withConstraint((dto) => !!(dto.idSourceValue || dto.member));
 
 export type UpdateMemberRequestDto = Static<typeof UpdateMemberRequestDto>;

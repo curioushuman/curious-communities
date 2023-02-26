@@ -62,12 +62,12 @@ export class UpdateGroupMemberHandler
     const task = pipe(
       parsedGroupMember,
 
-      // #4. update the entity, from the source; if required
+      // #3. update the entity, from the source; if required
       O.fromNullable,
       O.fold(
         // if null, return the original group
         () => {
-          const msg = `GroupMember ${groupMember.id} does not need to be updated from source`;
+          const msg = `GroupMember ${groupMember.id} does not need to be updated`;
           // as we catch this error above, it is no longer logged
           // so let's log it manually for a complete audit trail
           this.logger.error(msg);

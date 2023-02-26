@@ -44,29 +44,20 @@ export class UpdateMemberHandler
       parseData(UpdateMemberDto.check, this.logger, 'SourceInvalidError')
     );
 
-    const { member, memberSource } = validDto;
+    const { member } = validDto;
+
+    // #2 validate/parse the groupMember from the DTO
+    const parsedMember = this.parseDto(validDto);
 
     const task = pipe(
-      // #2. prepare entity for update
-      parseData(
-        UpdateMemberMapper.fromSourceToMember(member),
-        this.logger,
-        'SourceInvalidError'
-      )(memberSource),
+      parsedMember,
 
-      // #3. make sure an update is required
-      parseData(
-        UpdateMemberMapper.requiresUpdate<Member>(member),
-        this.logger,
-        'SourceInvalidError'
-      ),
-
-      // #4. update the entity, from the source; if required
+      // #3. update the entity, from the source; if required
       O.fromNullable,
       O.fold(
         // if null, throw an error
         () => {
-          const msg = `Member ${member.id} does not need to be updated from source`;
+          const msg = `Member ${member.id} does not need to be updated`;
           // as we catch this error above, it is no longer logged
           // so let's log it manually for a complete audit trail
           this.logger.error(msg);
@@ -85,5 +76,29 @@ export class UpdateMemberHandler
     );
 
     return executeTask(task);
+  }
+
+  parseDto(validDto: UpdateMemberDto): Member | undefined {
+    const { member, memberSource } = validDto;
+    // if no memberSource it means we're doing a straight update
+    // so we skip the requiresUpdate check
+    if (!memberSource) {
+      return member;
+    }
+    return pipe(
+      memberSource,
+      // #4. update the entity, from the course/source
+      parseData(
+        UpdateMemberMapper.fromSourceToMember(member),
+        this.logger,
+        'InternalRequestInvalidError'
+      ),
+      // #3. make sure an update is required
+      parseData(
+        UpdateMemberMapper.requiresUpdate<Member>(member),
+        this.logger,
+        'InternalRequestInvalidError'
+      )
+    );
   }
 }

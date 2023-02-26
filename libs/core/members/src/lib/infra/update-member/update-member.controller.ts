@@ -10,6 +10,7 @@ import {
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryItemUpdateError } from '@curioushuman/error-factory';
+import { REQUEST_SOURCE_INTERNAL } from '@curioushuman/common';
 
 import { UpdateMemberRequestDto } from './dto/update-member.request.dto';
 import { UpdateMemberCommand } from '../../application/commands/update-member/update-member.command';
@@ -25,6 +26,7 @@ import {
   prepareUpsertResponsePayload,
   ResponsePayload,
 } from '../dto/response-payload';
+import { MemberId } from '../../domain/value-objects/member-id';
 
 /**
  * Controller for update member operations
@@ -59,13 +61,27 @@ export class UpdateMemberController {
       parseData(UpdateMemberRequestDto.check, this.logger)
     );
 
-    // #2. find source and member
-    // NOTE: These will error if they need to
-    // including NotFound for either
-    const [member, memberSource] = await Promise.all([
-      this.findMember(validDto),
-      this.findMemberSource(validDto),
-    ]);
+    // here we determine which route to take
+    // update via source or update via member
+    const memberDto = validDto.member;
+    let member: Member;
+    let memberSource: MemberSource | undefined = undefined;
+    if (memberDto) {
+      member = pipe(
+        memberDto,
+        parseData(MemberMapper.fromResponseDto, this.logger)
+      );
+      if (validDto.requestSource !== REQUEST_SOURCE_INTERNAL) {
+        // this is purely a check, we're not going to use the value
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const memberExists = await this.findMemberById(member.id);
+      }
+    } else {
+      [member, memberSource] = await Promise.all([
+        this.findMember(validDto),
+        this.findMemberSource(validDto),
+      ]);
+    }
 
     // ? should the comparison of source to member be done here?
 
@@ -129,9 +145,7 @@ export class UpdateMemberController {
     return executeTask(task);
   }
 
-  private findMember(
-    requestDto: UpdateMemberRequestDto
-  ): Promise<Member | undefined> {
+  private findMember(requestDto: UpdateMemberRequestDto): Promise<Member> {
     const task = pipe(
       requestDto,
 
@@ -153,9 +167,31 @@ export class UpdateMemberController {
     return executeTask(task);
   }
 
+  private findMemberById(memberId: MemberId): Promise<Member> {
+    const task = pipe(
+      { id: memberId },
+
+      // #1. transform dto
+      parseActionData(FindMemberMapper.fromFindByIdRequestDto, this.logger),
+
+      // #2. call the query
+      TE.chain((findDto) =>
+        TE.tryCatch(
+          async () => {
+            const query = new FindMemberQuery(findDto);
+            return await this.queryBus.execute<FindMemberQuery>(query);
+          },
+          (error: unknown) => error as Error
+        )
+      )
+    );
+
+    return executeTask(task);
+  }
+
   private findMemberSource(
     requestDto: UpdateMemberRequestDto
-  ): Promise<MemberSource | undefined> {
+  ): Promise<MemberSource> {
     const task = pipe(
       requestDto,
 

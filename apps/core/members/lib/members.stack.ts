@@ -1,8 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
+import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
-import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { resolve as pathResolve } from 'path';
 
@@ -15,6 +15,7 @@ import {
   LambdaConstruct,
   generateCompositeResourceId,
   resourceNameTitle,
+  UpsertSourceMultiConstruct,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -192,71 +193,12 @@ export class MembersStack extends cdk.Stack {
     );
 
     /**
-     * Function: Upsert Member Sources (multiple)
-     *
-     * This fires off multiple calls to the upsert member source lambda
-     * via the queue
-     *
-     * Subscribed to internal event bus
-     *
-     * NOTES
-     * - the anything but rule won't work with null :(
-     *
-     * References:
-     * - https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns-content-based-filtering.html#eb-filtering-anything-but
-     * - https://github.com/aws/aws-cdk/issues/8660
-     */
-    const upsertMemberSourceMultiLambdaConstruct = new LambdaEventSubscription(
-      this,
-      generateCompositeResourceId(stackId, 'member-source-upsert-multi'),
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/upsert-member-source-multi/main.ts'
-        ),
-        lambdaProps: this.lambdaProps,
-        eventBus: internalEventBusConstruct.eventBus,
-        // NOTE: no rule type required
-        lambdaArns: [
-          createMemberLambdaConstruct.lambdaFunction.functionArn,
-          updateMemberLambdaConstruct.lambdaFunction.functionArn,
-        ],
-        ruleDetails: {
-          outcome: ['success'],
-        },
-      }
-    );
-
-    /**
-     * Function AND related resources: Upsert Member Source
-     *
-     * Subscribed to it's own SQS queue (for throttle control)
+     * Function: Upsert member source
      */
     const upsertMemberSourceResourceId = generateCompositeResourceId(
       stackId,
       'member-source-upsert'
     );
-    /**
-     * SQS queue to throttle requests to upsertMember
-     */
-    const [upsertMemberSourceQueueName, upsertMemberSourceQueueTitle] =
-      resourceNameTitle(upsertMemberSourceResourceId, 'Queue');
-    const upsertMemberSourceQueue = new sqs.Queue(
-      this,
-      upsertMemberSourceQueueTitle,
-      {
-        queueName: upsertMemberSourceQueueName,
-        visibilityTimeout: cdk.Duration.seconds(60),
-      }
-    );
-    // allow the (above) multi lambda to send messages to the queue
-    upsertMemberSourceQueue.grantSendMessages(
-      upsertMemberSourceMultiLambdaConstruct.lambdaFunction
-    );
-
-    /**
-     * Function for doing the work
-     */
     const upsertMemberSourceLambdaConstruct = new LambdaConstruct(
       this,
       upsertMemberSourceResourceId,
@@ -277,14 +219,54 @@ export class MembersStack extends cdk.Stack {
     upsertMemberSourceLambdaConstruct.addEnvironmentTribe();
 
     /**
-     * Subscribe the function, to the queue
+     * State machine: Upsert member source multi
      */
-    upsertMemberSourceLambdaConstruct.lambdaFunction.addEventSource(
-      new SqsEventSource(upsertMemberSourceQueue, {
-        batchSize: 3, // default
-        maxBatchingWindow: cdk.Duration.minutes(2),
-        reportBatchItemFailures: true, // default to false
-      })
+    const upsertMemberSourceMultiId = generateCompositeResourceId(
+      stackId,
+      'member-source-upsert-multi'
+    );
+    const upsertMemberSourceMultiConstruct = new UpsertSourceMultiConstruct(
+      this,
+      upsertMemberSourceMultiId,
+      {
+        lambdas: {
+          updateDomain: updateMemberLambdaConstruct,
+          upsertSource: upsertMemberSourceLambdaConstruct,
+        },
+        entityId: 'member',
+        sources: ['AUTH', 'COMMUNITY', 'MICRO-COURSE'],
+      }
+    );
+
+    /**
+     * Subscribing the state machine to the Upsert Member Lambda (destination) events
+     */
+    const [upsertMemberSourceMultiRuleName, upsertMemberSourceMultiRuleTitle] =
+      resourceNameTitle(upsertMemberSourceMultiId, 'Rule');
+    const rule = new events.Rule(this, upsertMemberSourceMultiRuleTitle, {
+      ruleName: upsertMemberSourceMultiRuleName,
+      eventBus: internalEventBusConstruct.eventBus,
+      description: 'Upsert multiple group sources, based on internal event',
+      eventPattern: {
+        detailType: ['Lambda Function Invocation Result - Success'],
+        source: ['lambda'],
+        detail: {
+          responsePayload: {
+            entity: ['member-base', 'member'],
+            outcome: ['success'],
+          },
+        },
+      },
+    });
+    rule.addTarget(
+      new targets.SfnStateMachine(upsertMemberSourceMultiConstruct.stateMachine)
+    );
+
+    /**
+     * Allow the internal event bus to invoke the state machine
+     */
+    upsertMemberSourceMultiConstruct.stateMachine.grantStartExecution(
+      internalEventBusConstruct.role
     );
 
     /**

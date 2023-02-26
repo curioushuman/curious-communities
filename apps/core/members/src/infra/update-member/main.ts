@@ -5,10 +5,8 @@ import { NestFactory } from '@nestjs/core';
 import {
   MutateMemberModule,
   UpdateMemberController,
-  MemberResponseDto,
   ResponsePayload,
 } from '@curioushuman/cc-members-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import {

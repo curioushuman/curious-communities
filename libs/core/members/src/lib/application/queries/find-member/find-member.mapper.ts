@@ -1,4 +1,5 @@
 import { parseExternalIdSourceValue } from '@curioushuman/common';
+import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 
 import { FindMemberDto } from './find-member.dto';
 import {
@@ -82,6 +83,9 @@ export class FindMemberMapper {
   public static fromUpdateMemberRequestDto(
     dto: UpdateMemberRequestDto
   ): FindMemberDto {
+    if (!dto.idSourceValue) {
+      throw new InternalRequestInvalidError('idSourceValue is required');
+    }
     // this will throw an error if the value is not valid
     const value = parseExternalIdSourceValue(
       dto.idSourceValue,

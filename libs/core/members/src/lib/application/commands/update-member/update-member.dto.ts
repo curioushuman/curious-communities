@@ -1,4 +1,4 @@
-import { Record, Static } from 'runtypes';
+import { Optional, Record, Static } from 'runtypes';
 import { Member } from '../../../domain/entities/member';
 import { MemberSource } from '../../../domain/entities/member-source';
 
@@ -8,7 +8,7 @@ import { MemberSource } from '../../../domain/entities/member-source';
 
 export const UpdateMemberDto = Record({
   member: Member,
-  memberSource: MemberSource,
+  memberSource: Optional(MemberSource),
 });
 
 export type UpdateMemberDto = Static<typeof UpdateMemberDto>;

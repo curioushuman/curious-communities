@@ -214,13 +214,22 @@ export class GroupsStack extends cdk.Stack {
         detailType: ['Lambda Function Invocation Result - Success'],
         source: ['lambda'],
         detail: {
-          entity: ['course-group-base', 'group-base', 'standard-group-base'],
-          outcome: ['success'],
+          responsePayload: {
+            entity: ['course-group-base', 'group-base', 'standard-group-base'],
+            outcome: ['success'],
+          },
         },
       },
     });
     rule.addTarget(
       new targets.SfnStateMachine(upsertGroupSourceMultiConstruct.stateMachine)
+    );
+
+    /**
+     * Allow the internal event bus to invoke the state machine
+     */
+    upsertGroupSourceMultiConstruct.stateMachine.grantStartExecution(
+      internalEventBusConstruct.role
     );
 
     /**

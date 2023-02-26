@@ -4,8 +4,9 @@ import {
   GroupSourceResponseDto,
 } from '@curioushuman/cc-groups-service';
 import {
-  EventbridgePutEvent,
-  SqsAsEventSourceEvent,
+  CoAwsRequestPayload,
+  SfnTaskInputAsEventSource,
+  SfnTaskResponsePayload,
 } from '@curioushuman/common';
 
 /**
@@ -26,33 +27,43 @@ import {
  * Adding event handling just for consistency
  */
 export const UpdateGroupRequestDto = Record({
-  detail: Record({
-    responsePayload: Record({
-      group: GroupBaseResponseDto,
-    }),
-  }),
-  groupSources: Record({
-    COMMUNITY: GroupSourceResponseDto,
-    MICROCOURSE: GroupSourceResponseDto,
-  }),
+  group: GroupBaseResponseDto,
 });
 
 export type UpdateGroupRequestDto = Static<typeof UpdateGroupRequestDto>;
 
 /**
- * What the input would look like if someone 'put's it to an eventBus
+ * During the step functions task, we will be calling the
+ * upsertGroupSource lambda. This is the response we expect.
+ * We get our response from the task wrapped in it's own response payload
+ * which will contain our response payload
+ * which will contain the DTO
  */
-export type UpdateGroupPutEvent = EventbridgePutEvent<UpdateGroupRequestDto>;
+type UpsertGroupSourceSfnTaskResponsePayload = SfnTaskResponsePayload<
+  CoAwsRequestPayload<GroupSourceResponseDto>
+>;
 
 /**
- * What the input looks like when SQS is event source
+ * Once the tasks are complete, this is what the structure will look like
  */
-export type UpdateGroupSqsEvent = SqsAsEventSourceEvent<UpdateGroupRequestDto>;
+interface UpdateGroupAsSfnResult {
+  group: GroupBaseResponseDto;
+  sources: {
+    COMMUNITY: UpsertGroupSourceSfnTaskResponsePayload;
+    'MICRO-COURSE': UpsertGroupSourceSfnTaskResponsePayload;
+  };
+}
+
+/**
+ * What the input looks like when called from step functions
+ */
+export type UpdateGroupAsSfnTask =
+  SfnTaskInputAsEventSource<UpdateGroupAsSfnResult>;
 
 /**
  * The types of event we support
  */
-export type UpdateGroupEvent = UpdateGroupPutEvent | UpdateGroupSqsEvent;
+export type UpdateGroupEvent = UpdateGroupAsSfnTask;
 
 /**
  * The two types of input we support
@@ -67,11 +78,22 @@ export type UpdateGroupDtoOrEvent = UpdateGroupRequestDto | UpdateGroupEvent;
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: UpdateGroupDtoOrEvent): unknown {
-  if ('groupSources' in incomingEvent) {
-    return incomingEvent;
+  if ('input' in incomingEvent) {
+    const idSources = [
+      {
+        id: incomingEvent.input.sources.COMMUNITY.detail.detail.id,
+        source: 'COMMUNITY',
+      },
+      {
+        id: incomingEvent.input.sources['MICRO-COURSE'].detail.detail.id,
+        source: 'MICRO-COURSE',
+      },
+    ];
+    const group = {
+      ...incomingEvent.input.group,
+      idSources,
+    };
+    return { group };
   }
-  if ('Records' in incomingEvent) {
-    return incomingEvent.Records[0].body;
-  }
-  return incomingEvent.detail;
+  return incomingEvent;
 }

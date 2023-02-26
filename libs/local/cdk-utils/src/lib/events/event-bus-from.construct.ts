@@ -1,8 +1,10 @@
 import * as cdk from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 import {
+  resourceNameTitle,
   transformIdToResourceName,
   transformIdToResourceTitle,
 } from '../utils/name';
@@ -17,6 +19,7 @@ import { ResourceId } from '../utils/name.types';
 export class ChEventBusFrom extends Construct {
   public id: ResourceId;
   public eventBus: events.IEventBus;
+  public role: iam.IRole;
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
@@ -33,6 +36,28 @@ export class ChEventBusFrom extends Construct {
       this,
       eventBusTitle,
       eventBusArn
+    );
+
+    /**
+     * Obtain the role that goes along with this event bus
+     *
+     * NOTE: for now we're using the allEventBus role
+     *      but later we can create more specific roles
+     *      and sub them in here
+     *
+     * TODO:
+     * - [ ] create more specific roles
+     * - [ ] build the role id from the id provided; OR change inputs
+     */
+    const allEventbusRoleId = 'cc-events-all';
+    const [allEventbusRoleName, allEventbusRoleTitle] = resourceNameTitle(
+      allEventbusRoleId,
+      'Role'
+    );
+    this.role = iam.Role.fromRoleName(
+      this,
+      allEventbusRoleTitle,
+      allEventbusRoleName
     );
 
     /**

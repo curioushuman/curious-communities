@@ -44,8 +44,8 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
 
     // set up the repository
     const props: DynamoDbRepositoryProps = {
-      entityId: 'groupMember',
-      tableId: 'groupMembers',
+      entityId: 'group-member',
+      tableId: 'groups',
       globalIndexIds: ['member-id', 'participant-id', 'source-id-COURSE'],
       localIndexIds: ['last-name'],
       prefix: 'cc',
@@ -99,7 +99,7 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
   }): TE.TaskEither<Error, GroupMember> => {
     // Set the parameters.
     const params = this.dynamoDbRepository.prepareParamsQueryOne({
-      indexId: `member-id`,
+      indexId: 'member-id',
       value: props.value,
     });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);
@@ -111,7 +111,7 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
   }): TE.TaskEither<Error, GroupMember> => {
     // Set the parameters.
     const params = this.dynamoDbRepository.prepareParamsQueryOne({
-      indexId: `participant-id`,
+      indexId: 'participant-id',
       value: props.value,
     });
     return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);

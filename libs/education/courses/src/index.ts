@@ -12,6 +12,8 @@ export * from './lib/infra/create-participant/create-participant.controller';
 export * from './lib/create-participant.module';
 export * from './lib/infra/find-participant/find-participant.controller';
 export * from './lib/find-participant.module';
+export * from './lib/infra/find-participant-source/find-participant-source.controller';
+export * from './lib/find-participant-source.module';
 export * from './lib/infra/update-participant/update-participant.controller';
 export * from './lib/update-participant.module';
 

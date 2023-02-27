@@ -40,7 +40,7 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
     // set up the repository
     const props: DynamoDbRepositoryProps = {
       entityId: 'participant',
-      tableId: 'participants',
+      tableId: 'courses',
       globalIndexIds: ['source-id-COURSE'],
       localIndexIds: ['last-name'],
       prefix: 'cc',

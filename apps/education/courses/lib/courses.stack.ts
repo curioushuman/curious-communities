@@ -1,6 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
+import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { resolve as pathResolve } from 'path';
 
@@ -12,12 +14,13 @@ import {
   ChEventBusFrom,
   LambdaConstruct,
   generateCompositeResourceId,
+  resourceNameTitle,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 import { CoursesDynamoDbConstruct } from '../src/adapter/implementations/dynamodb/courses-dynamodb.construct';
-import { CreateParticipantConstruct } from '../src/infra/upsert-participant/upsert.construct';
+import { UpsertParticipantConstruct } from '../src/infra/upsert-participant/construct';
 
 /**
  * These are the components required for the courses stack
@@ -149,93 +152,147 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
-     * Function: Open Course
-     *
-     * ruleDetails: {
-      object: ['course'],
-      type: ['status-updated'],
-      status: ['open'],
-    },
+     * Function: Create Participant
      */
+    const createParticipantFunction = new LambdaEventSubscription(
+      this,
+      generateCompositeResourceId(stackId, 'participant-create'),
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/create-participant/main.ts'
+        ),
+        lambdaProps: lambdaPropsWithDestination,
+        eventBus: externalEventBusConstruct.eventBus,
+        ruleDetailType: 'putEvent',
+        ruleDetails: {
+          object: ['participant'],
+          type: ['created'],
+        },
+        ruleDescription: 'Update internal, to match the external',
+      }
+    );
+    // add salesforce env vars
+    createParticipantFunction.addEnvironmentSalesforce();
 
-    /**
-     * Create Participant
-     */
-    // const createParticipantConstruct = new CreateParticipantConstruct(
-    //   this,
-    //   generateCompositeResourceId(stackId, 'participant-create'),
-    //   {
-    //     lambdaProps: lambdaPropsWithDestination,
-    //     externalEventBus: externalEventBusConstruct.eventBus,
-    //     ruleDetailType: 'putEvent',
-    //     table: coursesTableConstruct.table,
-    //   }
-    // );
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      createParticipantFunction.lambdaFunction
+    );
+    coursesTableConstruct.table.grantWriteData(
+      createParticipantFunction.lambdaFunction
+    );
 
     /**
      * Function: Update Participant
      */
-    // const updateParticipantFunction = new LambdaEventSubscription(
-    //   this,
-    //   generateCompositeResourceId(stackId, 'participant-update'),
-    //   {
-    //     lambdaEntry: pathResolve(
-    //       __dirname,
-    //       '../src/infra/update-participant/main.ts'
-    //     ),
-    //     lambdaProps: lambdaPropsWithDestination,
-    //     eventBus: externalEventBusConstruct.eventBus,
-    //     ruleDetailType: 'putEvent',
-    //     ruleDetails: {
-    //       object: ['participant'],
-    //       type: ['updated'],
-    //     },
-    //     ruleDescription: 'Update internal, to match the external',
-    //   }
-    // );
+    const updateParticipantFunction = new LambdaEventSubscription(
+      this,
+      generateCompositeResourceId(stackId, 'participant-update'),
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/update-participant/main.ts'
+        ),
+        lambdaProps: lambdaPropsWithDestination,
+        eventBus: externalEventBusConstruct.eventBus,
+        ruleDetailType: 'putEvent',
+        ruleDetails: {
+          object: ['participant'],
+          type: ['updated'],
+        },
+        ruleDescription: 'Update internal, to match the external',
+      }
+    );
+    // add salesforce env vars
+    updateParticipantFunction.addEnvironmentSalesforce();
 
     // allow the lambda access to the table
-    // coursesTableConstruct.table.grantReadData(
-    //   updateParticipantFunction.lambdaFunction
-    // );
-    // coursesTableConstruct.table.grantWriteData(
-    //   updateParticipantFunction.lambdaFunction
-    // );
+    coursesTableConstruct.table.grantReadData(
+      updateParticipantFunction.lambdaFunction
+    );
+    coursesTableConstruct.table.grantWriteData(
+      updateParticipantFunction.lambdaFunction
+    );
 
     /**
-     * Find Participant
+     * Function: Find Participant
      */
-    // const findPaxLambdaConstruct = new LambdaConstruct(
-    //   this,
-    //   generateCompositeResourceId(stackId, 'participant-find'),
-    //   {
-    //     lambdaEntry: pathResolve(
-    //       __dirname,
-    //       '../src/infra/find-participant/main.ts'
-    //     ),
-    //     lambdaProps: this.lambdaProps,
-    //   }
-    // );
+    const findPaxLambdaConstruct = new LambdaConstruct(
+      this,
+      generateCompositeResourceId(stackId, 'participant-find'),
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/find-participant/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
+    );
 
     // allow the lambda access to the table
-    // coursesTableConstruct.table.grantReadData(
-    //   findPaxLambdaConstruct.lambdaFunction
-    // );
+    coursesTableConstruct.table.grantReadData(
+      findPaxLambdaConstruct.lambdaFunction
+    );
 
     /**
      * Find Participant source
      */
-    // const findPaxSourceLambdaConstruct = new LambdaConstruct(
-    //   this,
-    //   generateCompositeResourceId(stackId, 'participant-source-find'),
-    //   {
-    //     lambdaEntry: pathResolve(
-    //       __dirname,
-    //       '../src/infra/find-participant-source/main.ts'
-    //     ),
-    //     lambdaProps: this.lambdaProps,
-    //   }
-    // );
+    const findPaxSourceLambdaConstruct = new LambdaConstruct(
+      this,
+      generateCompositeResourceId(stackId, 'participant-source-find'),
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/find-participant-source/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
+    );
+    // add salesforce env vars
+    findPaxSourceLambdaConstruct.addEnvironmentSalesforce();
+
+    /**
+     * State machine: Upsert participant
+     */
+    const upsertParticipantId = generateCompositeResourceId(
+      stackId,
+      'participant-upsert'
+    );
+    const upsertParticipantConstruct = new UpsertParticipantConstruct(
+      this,
+      upsertParticipantId,
+      {
+        lambdas: {
+          findCourse: findCourseLambdaConstruct,
+          findParticipant: findPaxLambdaConstruct,
+          findParticipantSource: findPaxSourceLambdaConstruct,
+          createParticipant: createParticipantFunction,
+          updateParticipant: updateParticipantFunction,
+        },
+      }
+    );
+
+    /**
+     * Subscribing the state machine to the external event bus
+     */
+    const [upsertParticipantRuleName, upsertParticipantRuleTitle] =
+      resourceNameTitle(upsertParticipantId, 'Rule');
+    const rule = new events.Rule(this, upsertParticipantRuleTitle, {
+      ruleName: upsertParticipantRuleName,
+      eventBus: externalEventBusConstruct.eventBus,
+      description: 'Upsert participant, based on external event',
+      eventPattern: {
+        detailType: ['putEvent'],
+        detail: {
+          object: ['participant'],
+          type: ['created', 'updated'],
+        },
+      },
+    });
+    rule.addTarget(
+      new targets.SfnStateMachine(upsertParticipantConstruct.stateMachine)
+    );
 
     /**
      * Outputs

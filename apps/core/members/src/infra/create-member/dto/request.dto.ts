@@ -3,6 +3,7 @@ import {
   EventbridgePutEvent,
   SqsAsEventSourceEvent,
 } from '@curioushuman/common';
+import { ParticipantSourceResponseDto } from '@curioushuman/cc-courses-service';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -27,6 +28,13 @@ export const CreateMemberRequestDto = Record({
 export type CreateMemberRequestDto = Static<typeof CreateMemberRequestDto>;
 
 /**
+ * Once the step function task is complete, this is what the structure will look like
+ */
+interface CreateMemberAsSfnResult {
+  participantSource: ParticipantSourceResponseDto;
+}
+
+/**
  * What the input would look like if someone 'put's it to an eventBus
  */
 export type CreateMemberPutEvent = EventbridgePutEvent<CreateMemberRequestDto>;
@@ -40,7 +48,10 @@ export type CreateMemberSqsEvent =
 /**
  * The types of event we support
  */
-export type CreateMemberEvent = CreateMemberPutEvent | CreateMemberSqsEvent;
+export type CreateMemberEvent =
+  | CreateMemberAsSfnResult
+  | CreateMemberPutEvent
+  | CreateMemberSqsEvent;
 
 /**
  * The two types of input we support
@@ -55,6 +66,9 @@ export type CreateMemberDtoOrEvent = CreateMemberRequestDto | CreateMemberEvent;
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: CreateMemberDtoOrEvent): unknown {
+  if ('participantSource' in incomingEvent) {
+    return { memberEmail: incomingEvent.participantSource.memberEmail };
+  }
   if (
     'memberEmail' in incomingEvent ||
     'memberIdSourceValue' in incomingEvent

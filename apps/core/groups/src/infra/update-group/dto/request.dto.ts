@@ -5,7 +5,6 @@ import {
 } from '@curioushuman/cc-groups-service';
 import {
   CoAwsRequestPayload,
-  SfnTaskInputAsEventSource,
   SfnTaskResponsePayload,
 } from '@curioushuman/common';
 
@@ -55,21 +54,12 @@ interface UpdateGroupAsSfnResult {
 }
 
 /**
- * What the input looks like when called from step functions
- */
-export type UpdateGroupAsSfnTask =
-  SfnTaskInputAsEventSource<UpdateGroupAsSfnResult>;
-
-/**
- * The types of event we support
- */
-export type UpdateGroupEvent = UpdateGroupAsSfnTask;
-
-/**
  * The two types of input we support
  * Straight up DTO or an event
  */
-export type UpdateGroupDtoOrEvent = UpdateGroupRequestDto | UpdateGroupEvent;
+export type UpdateGroupDtoOrEvent =
+  | UpdateGroupRequestDto
+  | UpdateGroupAsSfnResult;
 
 /**
  * This will determine what kind of input we have received
@@ -78,19 +68,19 @@ export type UpdateGroupDtoOrEvent = UpdateGroupRequestDto | UpdateGroupEvent;
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: UpdateGroupDtoOrEvent): unknown {
-  if ('input' in incomingEvent) {
+  if ('sources' in incomingEvent) {
     const idSources = [
       {
-        id: incomingEvent.input.sources.COMMUNITY.detail.detail.id,
+        id: incomingEvent.sources.COMMUNITY.detail.detail.id,
         source: 'COMMUNITY',
       },
       {
-        id: incomingEvent.input.sources['MICRO-COURSE'].detail.detail.id,
+        id: incomingEvent.sources['MICRO-COURSE'].detail.detail.id,
         source: 'MICRO-COURSE',
       },
     ];
     const group = {
-      ...incomingEvent.input.group,
+      ...incomingEvent.group,
       idSources,
     };
     return { group };

@@ -119,18 +119,16 @@ export class UpsertSourceMultiConstruct extends Construct {
       'SfnTask'
     );
     // first we'll set up the input structure
-    const input: Record<string, unknown> = {
+    const payloadObject: Record<string, unknown> = {
       sources: sfn.JsonPath.objectAt(`$.sources`),
     };
-    input[this.entityId] = sfn.JsonPath.objectAt(
+    payloadObject[this.entityId] = sfn.JsonPath.objectAt(
       '$.detail.responsePayload.detail'
     );
     const updateTask = new tasks.LambdaInvoke(this, updateTaskTitle, {
       lambdaFunction: this.lambdas.updateDomain.lambdaFunction,
       integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
-      payload: sfn.TaskInput.fromObject({
-        input,
-      }),
+      payload: sfn.TaskInput.fromObject(payloadObject),
     })
       .addCatch(this.endStates.fail)
       .next(this.endStates.success);
@@ -201,10 +199,10 @@ export class UpsertSourceMultiConstruct extends Construct {
     const taskTitle = transformIdToResourceTitle(resourceId, 'SfnTask');
 
     // input allows us to shape the data that is passed into our task/lambda
-    const input: Record<string, unknown> = {
+    const payloadObject: Record<string, unknown> = {
       source: sfn.TaskInput.fromText(source),
     };
-    input[this.entityId] = sfn.JsonPath.objectAt('$.detail');
+    payloadObject[this.entityId] = sfn.JsonPath.objectAt('$.detail');
 
     // resultSelector allows us to shape the data that is returned from our task/lambda
     const resultSelector: Record<string, unknown> = {
@@ -215,10 +213,7 @@ export class UpsertSourceMultiConstruct extends Construct {
       lambdaFunction: this.lambdas.upsertSource.lambdaFunction,
       integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
       inputPath: '$.detail.responsePayload',
-      payload: sfn.TaskInput.fromObject({
-        // token: sfn.JsonPath.taskToken,
-        input,
-      }),
+      payload: sfn.TaskInput.fromObject(payloadObject),
       // append the result to the sources object
       resultPath: `$.sources.${source}`,
       resultSelector,

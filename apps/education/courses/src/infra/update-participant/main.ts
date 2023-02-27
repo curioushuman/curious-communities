@@ -1,4 +1,3 @@
-import { EventBridgeEvent } from 'aws-lambda';
 import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
@@ -7,15 +6,14 @@ import {
   UpdateParticipantController,
   ResponsePayload,
 } from '@curioushuman/cc-courses-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 import {
   locateDto,
   UpdateParticipantDtoOrEvent,
   UpdateParticipantRequestDto,
 } from './dto/request.dto';
-import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO

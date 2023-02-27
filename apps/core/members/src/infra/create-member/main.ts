@@ -1,14 +1,11 @@
-import { EventBridgeEvent } from 'aws-lambda';
 import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
   MutateMemberModule,
   CreateMemberController,
-  MemberResponseDto,
   ResponsePayload,
 } from '@curioushuman/cc-members-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import {

@@ -1,4 +1,6 @@
 import { Optional, Record, Static, String } from 'runtypes';
+import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import { ParticipantSourceResponseDto } from '@curioushuman/cc-courses-service';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -21,3 +23,36 @@ export const FindCourseRequestDto = Record({
  * DTO that accepts any of the identifiers
  */
 export type FindCourseRequestDto = Static<typeof FindCourseRequestDto>;
+
+/**
+ * Once the step function task is complete, this is what the structure will look like
+ */
+interface FindCourseAsSfnResult {
+  participantSource: ParticipantSourceResponseDto;
+}
+
+/**
+ * The two types of input we support
+ * Straight up DTO or an event
+ */
+export type FindCourseDtoOrEvent = FindCourseRequestDto | FindCourseAsSfnResult;
+
+/**
+ * This will determine what kind of input we have received
+ * and extract the data we need from it
+ *
+ * NOTE: validation of data is a separate step
+ */
+export function locateDto(incomingEvent: FindCourseDtoOrEvent): unknown {
+  if ('participantSource' in incomingEvent) {
+    const courseIdSourceValue = prepareExternalIdSourceValue(
+      incomingEvent.participantSource.courseId,
+      incomingEvent.participantSource.source
+    );
+    return { courseIdSourceValue };
+  }
+  if ('detail' in incomingEvent) {
+    return incomingEvent.detail;
+  }
+  return incomingEvent;
+}

@@ -2,7 +2,6 @@ import { Optional, Record, Static, String } from 'runtypes';
 import {
   CoAwsRequestPayload,
   EventbridgePutEvent,
-  SfnTaskInputAsEventSource,
   SfnTaskResponsePayload,
 } from '@curioushuman/common';
 import {
@@ -38,7 +37,7 @@ type UpsertMemberSourceSfnTaskResponsePayload = SfnTaskResponsePayload<
 >;
 
 /**
- * Once the tasks are complete, this is what the structure will look like
+ * Once the step function task is complete, this is what the structure will look like
  */
 interface UpdateMemberAsSfnResult {
   member: MemberResponseDto;
@@ -50,12 +49,6 @@ interface UpdateMemberAsSfnResult {
 }
 
 /**
- * What the input looks like when called from step functions
- */
-export type UpdateMemberAsSfnTask =
-  SfnTaskInputAsEventSource<UpdateMemberAsSfnResult>;
-
-/**
  * What the input would look like if someone 'put's it to an eventBus
  */
 export type UpdateMemberPutEvent = EventbridgePutEvent<UpdateMemberRequestDto>;
@@ -63,7 +56,7 @@ export type UpdateMemberPutEvent = EventbridgePutEvent<UpdateMemberRequestDto>;
 /**
  * The types of event we support
  */
-export type UpdateMemberEvent = UpdateMemberPutEvent | UpdateMemberAsSfnTask;
+export type UpdateMemberEvent = UpdateMemberPutEvent | UpdateMemberAsSfnResult;
 
 /**
  * The two types of input we support
@@ -78,23 +71,23 @@ export type UpdateMemberDtoOrEvent = UpdateMemberRequestDto | UpdateMemberEvent;
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: UpdateMemberDtoOrEvent): unknown {
-  if ('input' in incomingEvent) {
+  if ('sources' in incomingEvent) {
     const idSources = [
       {
-        id: incomingEvent.input.sources.AUTH.detail.detail.id,
+        id: incomingEvent.sources.AUTH.detail.detail.id,
         source: 'AUTH',
       },
       {
-        id: incomingEvent.input.sources.COMMUNITY.detail.detail.id,
+        id: incomingEvent.sources.COMMUNITY.detail.detail.id,
         source: 'COMMUNITY',
       },
       {
-        id: incomingEvent.input.sources['MICRO-COURSE'].detail.detail.id,
+        id: incomingEvent.sources['MICRO-COURSE'].detail.detail.id,
         source: 'MICRO-COURSE',
       },
     ];
     const member = {
-      ...incomingEvent.input.member,
+      ...incomingEvent.member,
       idSources,
     };
     return { member };

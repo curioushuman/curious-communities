@@ -1,4 +1,3 @@
-import { EventBridgeEvent } from 'aws-lambda';
 import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
@@ -7,10 +6,14 @@ import {
   FindCourseController,
 } from '@curioushuman/cc-courses-service';
 import type { CourseBaseResponseDto } from '@curioushuman/cc-courses-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { FindCourseRequestDto } from './dto/request.dto';
+import {
+  FindCourseDtoOrEvent,
+  FindCourseRequestDto,
+  locateDto,
+} from './dto/request.dto';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO
@@ -60,30 +63,24 @@ async function waitForApp() {
  * * We return CourseBaseResponseDto
  */
 export const handler = async (
-  requestDtoOrEvent:
-    | FindCourseRequestDto
-    | EventBridgeEvent<'putEvent', FindCourseRequestDto>
+  requestDtoOrEvent: FindCourseDtoOrEvent
 ): Promise<CourseBaseResponseDto> => {
   // grab the dto
-  const requestDto =
-    'detail' in requestDtoOrEvent
-      ? requestDtoOrEvent.detail
-      : requestDtoOrEvent;
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  const logger = new LoggableLogger('FindCourseFunction.handler');
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  const context = 'FindCourseFunction.Lambda';
+  const logger = new LoggableLogger(context);
 
-  // lambda level validation
-  if (!FindCourseRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to FindCourseFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  // log the request
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
+
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: FindCourseRequestDto.guard,
+    logger,
+  });
 
   // init the app
   const app = await waitForApp();
@@ -98,7 +95,7 @@ export const handler = async (
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
   return findCourseController.find({
-    id: requestDto.courseId,
-    idSourceValue: requestDto.courseIdSourceValue,
+    id: validRequestDto.courseId,
+    idSourceValue: validRequestDto.courseIdSourceValue,
   });
 };

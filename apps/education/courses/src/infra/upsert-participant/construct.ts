@@ -140,6 +140,14 @@ export class UpsertParticipantConstruct extends Construct {
     return taskTitle;
   }
 
+  private preparePassTitle(taskId: ResourceId): string {
+    // this will throw an error if the taskId is not valid
+    ResourceId.check(taskId);
+    const resourceId = generateCompositeResourceId(this.constructId, taskId);
+    const taskTitle = transformIdToResourceTitle(resourceId, 'SfnPass');
+    return taskTitle;
+  }
+
   private prepareTasks(): void {
     /**
      * Task: update participant
@@ -205,7 +213,6 @@ export class UpsertParticipantConstruct extends Construct {
       {
         lambdaFunction: this.externalFunctions.createMember,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
-        // inputPath: '$.',
         payload: sfn.TaskInput.fromObject({
           participantSource: sfn.JsonPath.objectAt('$.participantSource'),
         }),
@@ -230,7 +237,6 @@ export class UpsertParticipantConstruct extends Construct {
       {
         lambdaFunction: this.externalFunctions.findMember,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
-        // inputPath: '$.',
         payload: sfn.TaskInput.fromObject({
           participantSource: sfn.JsonPath.objectAt('$.participantSource'),
         }),
@@ -240,7 +246,19 @@ export class UpsertParticipantConstruct extends Construct {
         },
       }
     )
-      .addCatch(this.tasks.createMember)
+      // this catches the specific NotFound error, and passes through to create
+      .addCatch(
+        new sfn.Pass(this, this.preparePassTitle('member-find')).next(
+          this.tasks.createMember
+        ),
+        {
+          errors: ['RepositoryItemNotFoundError'],
+          // must include this, otherwise error result overrides full result
+          resultPath: '$.errors.memberFind',
+        }
+      )
+      // will hand off any other error to the fail state
+      .addCatch(this.endStates.fail)
       .next(this.tasks.createParticipant);
 
     /**
@@ -255,7 +273,6 @@ export class UpsertParticipantConstruct extends Construct {
       {
         lambdaFunction: this.lambdas.findCourse.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
-        // inputPath: '$',
         payload: sfn.TaskInput.fromObject({
           participantSource: sfn.JsonPath.objectAt('$.participantSource'),
         }),
@@ -319,7 +336,19 @@ export class UpsertParticipantConstruct extends Construct {
         },
       }
     )
-      .addCatch(this.tasks.findParticipantSource)
+      // this catches the specific NotFound error, and passes through to create
+      .addCatch(
+        new sfn.Pass(this, this.preparePassTitle('participant-find')).next(
+          this.tasks.findParticipantSource
+        ),
+        {
+          errors: ['RepositoryItemNotFoundError'],
+          // must include this, otherwise error result overrides full result
+          resultPath: '$.errors.participantFind',
+        }
+      )
+      // will hand off any other error to the fail state
+      .addCatch(this.endStates.fail)
       .next(this.tasks.updateParticipant);
   }
 }

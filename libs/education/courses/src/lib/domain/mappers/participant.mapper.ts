@@ -22,6 +22,8 @@ export class ParticipantMapper {
       ParticipantStatusEnum.PENDING;
     statusMap[ParticipantSourceStatusEnum.CANCELLED] =
       ParticipantStatusEnum.DISABLED;
+    statusMap[ParticipantSourceStatusEnum.ATTENDED] =
+      ParticipantStatusEnum.ACTIVE;
     // see if there is a mapping for this status
     if (Object.keys(statusMap).includes(status)) {
       return statusMap[status];

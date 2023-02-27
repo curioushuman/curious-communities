@@ -66,6 +66,8 @@ export class SalesforceApiParticipantSourceRepository
         );
       }
 
+      this.logger.debug(item, 'processFindOne');
+
       // is it what we expected?
       // will throw error if not
       const participantItem = SalesforceApiParticipantSource.check(item);

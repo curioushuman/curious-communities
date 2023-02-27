@@ -17,7 +17,7 @@ export class SalesforceApiParticipantSourceMapper {
     sourceResponse: SalesforceApiParticipantSource,
     source: Source
   ): ParticipantSource {
-    return ParticipantSource.check({
+    const participantSource = {
       id: sourceResponse.Id,
       source,
       courseId: sourceResponse.Case__c,
@@ -25,16 +25,18 @@ export class SalesforceApiParticipantSourceMapper {
         sourceResponse.Status__c
       ),
       name: sourceResponse.Contact_full_name__c,
-      email: sourceResponse.Contact_email__c,
+      memberEmail: sourceResponse.Contact_email__c,
       organisationName: sourceResponse.SYS_Organisation_name__c,
-    });
+    };
+    console.log('participantSource', participantSource);
+    return ParticipantSource.check(participantSource);
   }
 
   public static toDomainStatus(sourceStatus: string): ParticipantSourceStatus {
     if (!SalesforceApiParticipantSourceStatus.guard(sourceStatus)) {
       return 'unknown';
     }
-    if (sourceStatus.indexOf('Attended')) {
+    if (sourceStatus.indexOf('Attended') > -1) {
       return 'attended';
     }
     const status = SalesforceApiParticipantSourceStatus.check(sourceStatus);

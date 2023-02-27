@@ -1,4 +1,3 @@
-import { EventBridgeEvent } from 'aws-lambda';
 import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
@@ -7,10 +6,14 @@ import {
   FindMemberController,
 } from '@curioushuman/cc-members-service';
 import type { MemberResponseDto } from '@curioushuman/cc-members-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { FindMemberRequestDto } from './dto/request.dto';
+import {
+  FindMemberDtoOrEvent,
+  FindMemberRequestDto,
+  locateDto,
+} from './dto/request.dto';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO
@@ -60,30 +63,24 @@ async function waitForApp() {
  * * We return MemberResponseDto
  */
 export const handler = async (
-  requestDtoOrEvent:
-    | FindMemberRequestDto
-    | EventBridgeEvent<'putEvent', FindMemberRequestDto>
+  requestDtoOrEvent: FindMemberDtoOrEvent
 ): Promise<MemberResponseDto> => {
   // grab the dto
-  const requestDto =
-    'detail' in requestDtoOrEvent
-      ? requestDtoOrEvent.detail
-      : requestDtoOrEvent;
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  const logger = new LoggableLogger('FindMemberFunction.handler');
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  const context = 'FindMemberFunction.Lambda';
+  const logger = new LoggableLogger(context);
 
-  // lambda level validation
-  if (!FindMemberRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to FindMemberFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  // log the request
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
+
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: FindMemberRequestDto.guard,
+    logger,
+  });
 
   // init the app
   const app = await waitForApp();
@@ -98,8 +95,8 @@ export const handler = async (
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
   return findMemberController.find({
-    id: requestDto.memberId,
-    email: requestDto.memberEmail,
-    idSourceValue: requestDto.memberIdSourceValue,
+    id: validRequestDto.memberId,
+    email: validRequestDto.memberEmail,
+    idSourceValue: validRequestDto.memberIdSourceValue,
   });
 };

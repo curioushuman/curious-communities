@@ -62,10 +62,3 @@ export interface SfnTaskInputTextReplica {
   type: number;
   value: string;
 }
-
-/**
- * What the data looks like when step functions is the event source
- */
-export interface SfnTaskInputAsEventSource<T> {
-  input: T;
-}

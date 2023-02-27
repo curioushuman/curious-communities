@@ -5,6 +5,7 @@ import {
 } from '@curioushuman/cc-groups-service';
 import {
   CoAwsRequestPayload,
+  prepareExternalIdSourceValue,
   SfnTaskResponsePayload,
 } from '@curioushuman/common';
 
@@ -70,14 +71,14 @@ export type UpdateGroupDtoOrEvent =
 export function locateDto(incomingEvent: UpdateGroupDtoOrEvent): unknown {
   if ('sources' in incomingEvent) {
     const idSources = [
-      {
-        id: incomingEvent.sources.COMMUNITY.detail.detail.id,
-        source: 'COMMUNITY',
-      },
-      {
-        id: incomingEvent.sources['MICRO-COURSE'].detail.detail.id,
-        source: 'MICRO-COURSE',
-      },
+      prepareExternalIdSourceValue(
+        incomingEvent.sources.COMMUNITY.detail.detail.id,
+        'COMMUNITY'
+      ),
+      prepareExternalIdSourceValue(
+        incomingEvent.sources['MICRO-COURSE'].detail.detail.id,
+        'MICRO-COURSE'
+      ),
     ];
     const group = {
       ...incomingEvent.group,

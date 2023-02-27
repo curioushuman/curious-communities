@@ -2,6 +2,7 @@ import { Optional, Record, Static, String } from 'runtypes';
 import {
   CoAwsRequestPayload,
   EventbridgePutEvent,
+  prepareExternalIdSourceValue,
   SfnTaskResponsePayload,
 } from '@curioushuman/common';
 import {
@@ -73,18 +74,18 @@ export type UpdateMemberDtoOrEvent = UpdateMemberRequestDto | UpdateMemberEvent;
 export function locateDto(incomingEvent: UpdateMemberDtoOrEvent): unknown {
   if ('sources' in incomingEvent) {
     const idSources = [
-      {
-        id: incomingEvent.sources.AUTH.detail.detail.id,
-        source: 'AUTH',
-      },
-      {
-        id: incomingEvent.sources.COMMUNITY.detail.detail.id,
-        source: 'COMMUNITY',
-      },
-      {
-        id: incomingEvent.sources['MICRO-COURSE'].detail.detail.id,
-        source: 'MICRO-COURSE',
-      },
+      prepareExternalIdSourceValue(
+        incomingEvent.sources.AUTH.detail.detail.id,
+        'AUTH'
+      ),
+      prepareExternalIdSourceValue(
+        incomingEvent.sources.COMMUNITY.detail.detail.id,
+        'COMMUNITY'
+      ),
+      prepareExternalIdSourceValue(
+        incomingEvent.sources['MICRO-COURSE'].detail.detail.id,
+        'MICRO-COURSE'
+      ),
     ];
     const member = {
       ...incomingEvent.member,

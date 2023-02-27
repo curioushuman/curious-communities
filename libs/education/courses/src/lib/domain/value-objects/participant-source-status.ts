@@ -9,6 +9,7 @@ export const ParticipantSourceStatusEnum: Record<string, string> = {
   REGISTERED: 'registered',
   ACTIVE: 'active',
   CANCELLED: 'cancelled',
+  ATTENDED: 'attended',
   UNKNOWN: 'unknown',
 } as const;
 

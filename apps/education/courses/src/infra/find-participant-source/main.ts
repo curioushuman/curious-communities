@@ -1,16 +1,19 @@
-import { EventBridgeEvent } from 'aws-lambda';
 import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
-  FindParticipantModule,
-  FindParticipantController,
+  FindParticipantSourceModule,
+  FindParticipantSourceController,
+  ParticipantSourceResponseDto,
 } from '@curioushuman/cc-courses-service';
-import type { ParticipantResponseDto } from '@curioushuman/cc-courses-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { FindParticipantSourceRequestDto } from './dto/request.dto';
+import {
+  FindParticipantSourceDtoOrEvent,
+  FindParticipantSourceRequestDto,
+  locateDto,
+} from './dto/request.dto';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO
@@ -31,12 +34,12 @@ let lambdaApp: INestApplicationContext;
  */
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(
-    FindParticipantModule,
+    FindParticipantSourceModule,
     {
       bufferLogs: true,
     }
   );
-  FindParticipantModule.applyDefaults(app);
+  FindParticipantSourceModule.applyDefaults(app);
   return app;
 }
 
@@ -63,34 +66,30 @@ async function waitForApp() {
  * * We return ParticipantResponseDto
  */
 export const handler = async (
-  requestDtoOrEvent:
-    | FindParticipantSourceRequestDto
-    | EventBridgeEvent<'putEvent', FindParticipantSourceRequestDto>
-): Promise<ParticipantResponseDto> => {
+  requestDtoOrEvent: FindParticipantSourceDtoOrEvent
+): Promise<ParticipantSourceResponseDto> => {
   // grab the dto
-  const requestDto =
-    'detail' in requestDtoOrEvent
-      ? requestDtoOrEvent.detail
-      : requestDtoOrEvent;
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  const logger = new LoggableLogger('FindParticipantFunction.handler');
-  logger.debug ? logger.debug(requestDto) : logger.log(requestDto);
+  const context = 'FindParticipantSourceFunction.Lambda';
+  const logger = new LoggableLogger(context);
 
-  // lambda level validation
-  if (!FindParticipantSourceRequestDto.guard(requestDto)) {
-    // NOTE: this is a 500 error, not a 400
-    const error = new InternalRequestInvalidError(
-      'Invalid request sent to FindParticipantFunction.Lambda'
-    );
-    // we straight out log this, as it's a problem our systems
-    // aren't communicating properly.
-    logger.error(error);
-    throw error;
-  }
+  // log the request
+  logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
+
+  // validate request
+  // NOTE: throws error
+  const validRequestDto = validateRequestPayload({
+    requestPayload,
+    checkRequest: FindParticipantSourceRequestDto.guard,
+    logger,
+  });
 
   // init the app
   const app = await waitForApp();
-  const findParticipantController = app.get(FindParticipantController);
+  const findParticipantSourceController = app.get(
+    FindParticipantSourceController
+  );
 
   // perform the action
   // NOTE: no try/catch here. According to the docs:
@@ -100,7 +99,7 @@ export const handler = async (
   //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
-  return findParticipantController.find({
-    idSourceValue: requestDto.participantIdSourceValue,
+  return findParticipantSourceController.find({
+    idSourceValue: validRequestDto.participantIdSourceValue,
   });
 };

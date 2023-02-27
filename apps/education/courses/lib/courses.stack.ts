@@ -274,6 +274,13 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
+     * Allow the internal event bus to invoke the state machine
+     */
+    upsertParticipantConstruct.stateMachine.grantStartExecution(
+      externalEventBusConstruct.role
+    );
+
+    /**
      * Subscribing the state machine to the external event bus
      */
     const [upsertParticipantRuleName, upsertParticipantRuleTitle] =

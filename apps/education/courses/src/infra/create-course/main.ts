@@ -71,11 +71,15 @@ async function waitForApp() {
 export const handler = async (
   requestDtoOrEvent: CreateCourseDtoOrEvent
 ): Promise<ResponsePayload<'course-base'>> => {
-  // grab the dto
-  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
-
   const context = 'CreateCourse.Lambda';
   const logger = new LoggableLogger(context);
+
+  logger.debug
+    ? logger.debug(requestDtoOrEvent)
+    : logger.log(requestDtoOrEvent);
+
+  // grab the dto
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
   logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
 

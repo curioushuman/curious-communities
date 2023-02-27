@@ -75,11 +75,15 @@ async function waitForApp() {
 export const handler = async (
   requestDtoOrEvent: UpsertCourseGroupMemberDtoOrEvent
 ): Promise<ResponsePayload<'course-group-member-base'>> => {
-  // grab the dto
-  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
-
   const context = 'UpsertCourseGroupMember.Lambda';
   const logger = new LoggableLogger(context);
+
+  logger.debug
+    ? logger.debug(requestDtoOrEvent)
+    : logger.log(requestDtoOrEvent);
+
+  // grab the dto
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
   // check for an immediate null; this was legacy behaviour
   // NOTE: throws error

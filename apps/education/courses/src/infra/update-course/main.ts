@@ -69,13 +69,16 @@ async function waitForApp() {
 export const handler = async (
   requestDtoOrEvent: UpdateCourseDtoOrEvent
 ): Promise<ResponsePayload<'course-base'>> => {
-  // grab the dto
-  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
-
   const context = 'UpdateCourse.Lambda';
   const logger = new LoggableLogger(context);
 
-  // log the request
+  logger.debug
+    ? logger.debug(requestDtoOrEvent)
+    : logger.log(requestDtoOrEvent);
+
+  // grab the dto
+  const requestPayload = parseDto(requestDtoOrEvent, locateDto);
+
   logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
 
   // validate request

@@ -73,9 +73,12 @@ async function waitForApp() {
 export const handler = async (
   requestDtoOrEvent: UpsertCourseGroupDtoOrEvent
 ): Promise<ResponsePayload<'course-group-base'>> => {
-  // init the logger
   const context = 'UpsertCourseGroup.Lambda';
   const logger = new LoggableLogger(context);
+
+  logger.debug
+    ? logger.debug(requestDtoOrEvent)
+    : logger.log(requestDtoOrEvent);
 
   // grab the dto
   const requestPayload = parseDto(requestDtoOrEvent, locateDto);

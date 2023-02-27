@@ -88,6 +88,13 @@ async function waitForApp(source: string) {
 export const handler = async (
   requestDtoOrEvent: UpsertGroupSourceDtoOrEvent
 ): Promise<ResponsePayload<'group-source'>> => {
+  const context = 'UpsertGroupSource.Lambda';
+  const logger = new LoggableLogger(context);
+
+  logger.debug
+    ? logger.debug(requestDtoOrEvent)
+    : logger.log(requestDtoOrEvent);
+
   // grab the dto
   const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 

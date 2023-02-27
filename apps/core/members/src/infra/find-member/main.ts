@@ -65,13 +65,16 @@ async function waitForApp() {
 export const handler = async (
   requestDtoOrEvent: FindMemberDtoOrEvent
 ): Promise<MemberResponseDto> => {
+  const context = 'FindMember.Lambda';
+  const logger = new LoggableLogger(context);
+
+  logger.debug
+    ? logger.debug(requestDtoOrEvent)
+    : logger.log(requestDtoOrEvent);
+
   // grab the dto
   const requestPayload = parseDto(requestDtoOrEvent, locateDto);
 
-  const context = 'FindMemberFunction.Lambda';
-  const logger = new LoggableLogger(context);
-
-  // log the request
   logger.debug ? logger.debug(requestPayload) : logger.log(requestPayload);
 
   // validate request

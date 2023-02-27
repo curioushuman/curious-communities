@@ -14,13 +14,23 @@ import {
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
 /**
- * Components required for the api-admin stack courses:find-one resource
+ * DDB table and indexes
  *
  * NOTES
  * - no props at this time, just using the construct for abstraction purposes
+ *
+ * TODO:
+ * - [ ] create more fine-grained access control
  */
 export class CoursesDynamoDbConstruct extends Construct {
   public table: dynamodb.Table;
+  public tableName: string;
+
+  /**
+   * We could use these for fine-grained access control
+   */
+  public globalIndexNames: string[] = [];
+  public localIndexNames: string[] = [];
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
@@ -35,6 +45,7 @@ export class CoursesDynamoDbConstruct extends Construct {
      * Courses table
      */
     const [tableName, tableTitle] = resourceNameTitle(id, 'DynamoDbTable');
+    this.tableName = tableName;
     this.table = new dynamodb.Table(this, tableTitle, {
       tableName,
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -73,6 +84,7 @@ export class CoursesDynamoDbConstruct extends Construct {
       byMemberLastNameIndexId,
       'DynamoDbLSI'
     );
+    this.localIndexNames.push(byMemberLastNameLsiName);
     this.table.addLocalSecondaryIndex({
       indexName: byMemberLastNameLsiName,
       sortKey: {
@@ -89,6 +101,7 @@ export class CoursesDynamoDbConstruct extends Construct {
       byCourseSlugIndexId,
       'DynamoDbGSI'
     );
+    this.globalIndexNames.push(byCourseSlugGsiName);
     this.table.addGlobalSecondaryIndex({
       indexName: byCourseSlugGsiName,
       partitionKey: {
@@ -112,6 +125,7 @@ export class CoursesDynamoDbConstruct extends Construct {
       byCourseSourceIdValueIndexId,
       'DynamoDbGSI'
     );
+    this.globalIndexNames.push(byCourseSourceIdValueGsiName);
     this.table.addGlobalSecondaryIndex({
       indexName: byCourseSourceIdValueGsiName,
       partitionKey: {
@@ -135,6 +149,7 @@ export class CoursesDynamoDbConstruct extends Construct {
       byParticipantSourceIdValueIndexId,
       'DynamoDbGSI'
     );
+    this.globalIndexNames.push(byParticipantSourceIdValueGsiName);
     this.table.addGlobalSecondaryIndex({
       indexName: byParticipantSourceIdValueGsiName,
       partitionKey: {
@@ -158,6 +173,7 @@ export class CoursesDynamoDbConstruct extends Construct {
       byParticipantMemberIdIndexId,
       'DynamoDbGSI'
     );
+    this.globalIndexNames.push(byParticipantMemberIdGsiName);
     this.table.addGlobalSecondaryIndex({
       indexName: byParticipantMemberIdGsiName,
       partitionKey: {
@@ -171,4 +187,18 @@ export class CoursesDynamoDbConstruct extends Construct {
       projectionType: dynamodb.ProjectionType.ALL,
     });
   }
+
+  /**
+   * This is a (terrible) template for how you might grant access to a lambda
+   * you could use the global and local index lists to grant access to specific
+   * indexes.
+   */
+  // public grantFullAccess(lambda: lambda.Function) {
+  //   lambda.addToRolePolicy(
+  //     new iam.PolicyStatement({
+  //       resources: ['*'],
+  //       actions: ['dynamodb:*'],
+  //     })
+  //   );
+  // }
 }

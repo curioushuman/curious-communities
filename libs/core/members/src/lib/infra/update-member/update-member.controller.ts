@@ -172,7 +172,7 @@ export class UpdateMemberController {
       { id: memberId },
 
       // #1. transform dto
-      parseActionData(FindMemberMapper.fromFindByIdRequestDto, this.logger),
+      parseActionData(FindMemberMapper.fromFindRequestDto, this.logger),
 
       // #2. call the query
       TE.chain((findDto) =>

@@ -36,10 +36,7 @@ export class FindMemberController {
 
       // #2. transform the dto
       TE.chain(
-        parseActionData(
-          FindMemberMapper.fromFindOrCreateRequestDto,
-          this.logger
-        )
+        parseActionData(FindMemberMapper.fromFindRequestDto, this.logger)
       ),
 
       // #3. call the query

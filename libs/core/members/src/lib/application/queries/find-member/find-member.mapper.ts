@@ -2,18 +2,13 @@ import { parseExternalIdSourceValue } from '@curioushuman/common';
 import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 
 import { FindMemberDto } from './find-member.dto';
-import {
-  FindByIdSourceValueMemberRequestDto,
-  FindByIdMemberRequestDto,
-  FindMemberRequestDto,
-  FindByEmailMemberRequestDto,
-} from '../../../infra/find-member/dto/find-member.request.dto';
+import { FindMemberRequestDto } from '../../../infra/find-member/dto/find-member.request.dto';
 import { MemberId } from '../../../domain/value-objects/member-id';
 import { MemberSourceId } from '../../../domain/value-objects/member-source-id';
 import { Source } from '../../../domain/value-objects/source';
 import { MemberEmail } from '../../../domain/value-objects/member-email';
-import { CreateMemberRequestDto } from '../../../infra/create-member/dto/create-member.request.dto';
 import { UpdateMemberRequestDto } from '../../../infra/update-member/dto/update-member.request.dto';
+import { MemberSourceIdSourceValue } from '../../../domain/value-objects/member-source-id-source';
 
 /**
  * TODO
@@ -24,59 +19,59 @@ export class FindMemberMapper {
    * As we use a similar construct when creating our members,
    * we can share mapper functions.
    */
-  public static fromFindOrCreateRequestDto(
-    dto: FindMemberRequestDto | CreateMemberRequestDto
-  ): FindMemberDto {
-    // NOTE: at least one of the two will be defined
-    // this check occurs in the controller
-    if ('id' in dto) {
-      return FindMemberMapper.fromFindByIdRequestDto({
-        id: dto.id as string,
-      });
+  public static fromFindRequestDto(dto: FindMemberRequestDto): FindMemberDto {
+    let findDto: FindMemberDto | undefined;
+    const mappers = [
+      FindMemberMapper.fromFindById,
+      FindMemberMapper.fromFindByIdSourceValue,
+      FindMemberMapper.fromFindByEmail,
+    ];
+    for (const mapper of mappers) {
+      if (!findDto) {
+        findDto = mapper(dto);
+      }
     }
-    return dto.idSourceValue
-      ? FindMemberMapper.fromFindByIdSourceValueRequestDto({
-          idSourceValue: dto.idSourceValue,
-        })
-      : FindMemberMapper.fromFindByEmailRequestDto({
-          email: dto.email as string,
-        });
+    if (!findDto) {
+      throw new InternalRequestInvalidError(
+        'Invalid request. Please provide a valid identifier.'
+      );
+    }
+    return findDto;
   }
 
-  public static fromFindByIdRequestDto(
-    dto: FindByIdMemberRequestDto
-  ): FindMemberDto {
-    // this will throw an error if the id is not valid
-    const value = MemberId.check(dto.id);
+  public static fromFindById(
+    dto: FindMemberRequestDto
+  ): FindMemberDto | undefined {
+    if (!MemberId.guard(dto.id)) {
+      return;
+    }
     return {
       identifier: 'id',
-      value,
+      value: dto.id,
     } as FindMemberDto;
   }
 
-  public static fromFindByIdSourceValueRequestDto(
-    dto: FindByIdSourceValueMemberRequestDto
-  ): FindMemberDto {
-    // this will throw an error if the value is not valid
-    const value = parseExternalIdSourceValue(
-      dto.idSourceValue,
-      MemberSourceId,
-      Source
-    );
+  public static fromFindByIdSourceValue(
+    dto: FindMemberRequestDto
+  ): FindMemberDto | undefined {
+    if (!MemberSourceIdSourceValue.guard(dto.idSourceValue)) {
+      return;
+    }
     return {
       identifier: 'idSourceValue',
-      value,
+      value: dto.idSourceValue,
     } as FindMemberDto;
   }
 
-  public static fromFindByEmailRequestDto(
-    dto: FindByEmailMemberRequestDto
-  ): FindMemberDto {
-    // this will throw an error if the id is not valid
-    const value = MemberEmail.check(dto.email);
+  public static fromFindByEmail(
+    dto: FindMemberRequestDto
+  ): FindMemberDto | undefined {
+    if (!MemberEmail.guard(dto.email)) {
+      return;
+    }
     return {
       identifier: 'email',
-      value,
+      value: dto.email,
     } as FindMemberDto;
   }
 

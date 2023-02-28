@@ -133,7 +133,7 @@ export class CreateMemberController {
 
       // #1. transform dto
       parseActionData(
-        FindMemberMapper.fromFindOrCreateRequestDto,
+        FindMemberMapper.fromFindRequestDto,
         this.logger,
         'RequestInvalidError'
       ),

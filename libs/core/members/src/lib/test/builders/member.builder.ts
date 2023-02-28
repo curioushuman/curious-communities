@@ -12,11 +12,7 @@ import { MemberStatusEnum } from '../../domain/value-objects/member-status';
 import { UpdateMemberRequestDto } from '../../infra/update-member/dto/update-member.request.dto';
 import { UpdateMemberDto } from '../../application/commands/update-member/update-member.dto';
 import { FindMemberDto } from '../../application/queries/find-member/find-member.dto';
-import {
-  FindByEmailMemberRequestDto,
-  FindByIdMemberRequestDto,
-  FindByIdSourceValueMemberRequestDto,
-} from '../../infra/find-member/dto/find-member.request.dto';
+import { FindMemberRequestDto } from '../../infra/find-member/dto/find-member.request.dto';
 import { prepareExternalIdSourceValue } from '@curioushuman/common';
 import { MemberSourceIdSource } from '../../domain/value-objects/member-source-id-source';
 
@@ -228,10 +224,10 @@ export const MemberBuilder = () => {
       } as FindMemberDto;
     },
 
-    buildFindByIdMemberRequestDto(): FindByIdMemberRequestDto {
+    buildFindByIdMemberRequestDto(): FindMemberRequestDto {
       return {
         id: this.buildNoCheck().id,
-      } as FindByIdMemberRequestDto;
+      } as FindMemberRequestDto;
     },
 
     buildFindByIdSourceValueMemberDto(): FindMemberDto {
@@ -242,14 +238,14 @@ export const MemberBuilder = () => {
       } as FindMemberDto;
     },
 
-    buildFindByIdSourceValueMemberRequestDto(): FindByIdSourceValueMemberRequestDto {
+    buildFindByIdSourceValueMemberRequestDto(): FindMemberRequestDto {
       const sourceId = this.buildNoCheck().sourceIds[0];
       return {
         idSourceValue: prepareExternalIdSourceValue(
           sourceId.id,
           sourceId.source
         ),
-      } as FindByIdSourceValueMemberRequestDto;
+      } as FindMemberRequestDto;
     },
 
     buildFindByEmailMemberDto(): FindMemberDto {
@@ -259,10 +255,10 @@ export const MemberBuilder = () => {
       } as FindMemberDto;
     },
 
-    buildFindByEmailMemberRequestDto(): FindByEmailMemberRequestDto {
+    buildFindByEmailMemberRequestDto(): FindMemberRequestDto {
       return {
         email: this.buildNoCheck().email,
-      } as FindByEmailMemberRequestDto;
+      } as FindMemberRequestDto;
     },
 
     buildUpdateMemberDto(): UpdateMemberDto {

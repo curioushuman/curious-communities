@@ -15,10 +15,10 @@ import { SfnTaskResponsePayload } from '@curioushuman/common';
  * DTO that accepts any of the identifiers
  */
 export const FindMemberRequestDto = Record({
-  memberId: Optional(String),
-  memberEmail: Optional(String),
+  id: Optional(String),
+  email: Optional(String),
   memberIdSourceValue: Optional(String),
-}).withConstraint((dto) => !!(dto.memberId || dto.memberIdSourceValue));
+}).withConstraint((dto) => !!(dto.id || dto.email || dto.memberIdSourceValue));
 
 /**
  * DTO that accepts any of the identifiers
@@ -46,7 +46,7 @@ export type FindMemberDtoOrEvent = FindMemberRequestDto | FindMemberAsSfnResult;
  */
 export function locateDto(incomingEvent: FindMemberDtoOrEvent): unknown {
   if ('participantSource' in incomingEvent) {
-    return { memberEmail: incomingEvent.participantSource.detail.memberEmail };
+    return { email: incomingEvent.participantSource.detail.memberEmail };
   }
   if ('detail' in incomingEvent) {
     return incomingEvent.detail;

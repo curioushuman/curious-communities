@@ -47,7 +47,7 @@ export class EdAppApiGroupMemberSourceRepository
   /**
    * The key for this source
    */
-  public readonly SOURCE = 'COMMUNITY';
+  public readonly SOURCE = 'MICRO-COURSE';
 
   constructor(public httpService: HttpService, public logger: LoggableLogger) {
     this.logger.setContext(EdAppApiGroupMemberSourceRepository.name);

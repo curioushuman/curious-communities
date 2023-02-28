@@ -1,5 +1,6 @@
 import {
   EventBridgeAsLambdaDestinationEvent,
+  SfnTaskResponsePayload,
   SqsAsEventSourceEvent,
 } from '../__types__';
 
@@ -39,4 +40,10 @@ export function parseDto<T>(
   const dto = locateDto(incomingEvent);
 
   return typeof dto === 'string' ? JSON.parse(dto) : dto;
+}
+
+export function prepareSfnTaskResponsePayload<T>(
+  payload: T
+): SfnTaskResponsePayload<T> {
+  return { detail: payload };
 }

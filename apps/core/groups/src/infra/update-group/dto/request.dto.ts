@@ -70,7 +70,7 @@ export type UpdateGroupDtoOrEvent =
  */
 export function locateDto(incomingEvent: UpdateGroupDtoOrEvent): unknown {
   if ('sources' in incomingEvent) {
-    const idSources = [
+    const sourceIds = [
       prepareExternalIdSourceValue(
         incomingEvent.sources.COMMUNITY.detail.detail.id,
         'COMMUNITY'
@@ -82,7 +82,7 @@ export function locateDto(incomingEvent: UpdateGroupDtoOrEvent): unknown {
     ];
     const group = {
       ...incomingEvent.group,
-      idSources,
+      sourceIds,
     };
     return { group };
   }

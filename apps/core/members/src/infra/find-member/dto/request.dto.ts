@@ -1,5 +1,6 @@
 import { Optional, Record, Static, String } from 'runtypes';
 import { ParticipantSourceResponseDto } from '@curioushuman/cc-courses-service';
+import { SfnTaskResponsePayload } from '@curioushuman/common';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -28,7 +29,7 @@ export type FindMemberRequestDto = Static<typeof FindMemberRequestDto>;
  * Once the step function task is complete, this is what the structure will look like
  */
 interface FindMemberAsSfnResult {
-  participantSource: ParticipantSourceResponseDto;
+  participantSource: SfnTaskResponsePayload<ParticipantSourceResponseDto>;
 }
 
 /**
@@ -45,7 +46,7 @@ export type FindMemberDtoOrEvent = FindMemberRequestDto | FindMemberAsSfnResult;
  */
 export function locateDto(incomingEvent: FindMemberDtoOrEvent): unknown {
   if ('participantSource' in incomingEvent) {
-    return { memberEmail: incomingEvent.participantSource.memberEmail };
+    return { memberEmail: incomingEvent.participantSource.detail.memberEmail };
   }
   if ('detail' in incomingEvent) {
     return incomingEvent.detail;

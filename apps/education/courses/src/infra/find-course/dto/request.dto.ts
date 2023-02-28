@@ -1,5 +1,8 @@
 import { Optional, Record, Static, String } from 'runtypes';
-import { prepareExternalIdSourceValue } from '@curioushuman/common';
+import {
+  prepareExternalIdSourceValue,
+  SfnTaskResponsePayload,
+} from '@curioushuman/common';
 import { ParticipantSourceResponseDto } from '@curioushuman/cc-courses-service';
 
 /**
@@ -28,7 +31,7 @@ export type FindCourseRequestDto = Static<typeof FindCourseRequestDto>;
  * Once the step function task is complete, this is what the structure will look like
  */
 interface FindCourseAsSfnResult {
-  participantSource: ParticipantSourceResponseDto;
+  participantSource: SfnTaskResponsePayload<ParticipantSourceResponseDto>;
 }
 
 /**
@@ -46,8 +49,8 @@ export type FindCourseDtoOrEvent = FindCourseRequestDto | FindCourseAsSfnResult;
 export function locateDto(incomingEvent: FindCourseDtoOrEvent): unknown {
   if ('participantSource' in incomingEvent) {
     const courseIdSourceValue = prepareExternalIdSourceValue(
-      incomingEvent.participantSource.courseId,
-      incomingEvent.participantSource.source
+      incomingEvent.participantSource.detail.courseId,
+      incomingEvent.participantSource.detail.source
     );
     return { courseIdSourceValue };
   }

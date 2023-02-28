@@ -18,6 +18,21 @@ import {
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
+// Above limitation also prevents us from using the following:
+// import { prepareSfnTaskResponsePayload } from '@curioushuman/common';
+
+/**
+ * ! Temporary duplication of type and function (until above is resolved)
+ */
+interface SfnTaskResponsePayload<T> {
+  detail: T;
+}
+function prepareSfnTaskResponsePayload<T>(
+  payload: T
+): SfnTaskResponsePayload<T> {
+  return { detail: payload };
+}
+
 /**
  * Props required
  */
@@ -45,6 +60,10 @@ export class UpsertParticipantConstruct extends Construct {
   private lambdas: UpsertParticipantLambdas;
   private externalFunctions: Record<string, lambda.IFunction> = {};
   private endStates!: Record<string, sfn.State>;
+  private retryProps: sfn.RetryProps = {
+    interval: cdk.Duration.seconds(2),
+    maxAttempts: 3,
+  };
 
   public tasks: Record<string, sfn.Chain> = {};
   public definition: sfn.Chain;
@@ -170,9 +189,9 @@ export class UpsertParticipantConstruct extends Construct {
           ),
         }),
         resultPath: '$.participant',
-        resultSelector: {
-          detail: sfn.JsonPath.objectAt('$.Payload'),
-        },
+        resultSelector: prepareSfnTaskResponsePayload(
+          sfn.JsonPath.objectAt('$.Payload')
+        ),
       }
     )
       .addCatch(this.endStates.fail)
@@ -191,9 +210,9 @@ export class UpsertParticipantConstruct extends Construct {
         lambdaFunction: this.lambdas.createParticipant.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
         resultPath: '$.participant',
-        resultSelector: {
-          detail: sfn.JsonPath.objectAt('$.Payload'),
-        },
+        resultSelector: prepareSfnTaskResponsePayload(
+          sfn.JsonPath.objectAt('$.Payload')
+        ),
       }
     )
       .addCatch(this.endStates.fail)
@@ -217,9 +236,9 @@ export class UpsertParticipantConstruct extends Construct {
           participantSource: sfn.JsonPath.objectAt('$.participantSource'),
         }),
         resultPath: '$.member',
-        resultSelector: {
-          detail: sfn.JsonPath.objectAt('$.Payload'),
-        },
+        resultSelector: prepareSfnTaskResponsePayload(
+          sfn.JsonPath.objectAt('$.Payload')
+        ),
       }
     )
       .addCatch(this.endStates.fail)
@@ -241,9 +260,9 @@ export class UpsertParticipantConstruct extends Construct {
           participantSource: sfn.JsonPath.objectAt('$.participantSource'),
         }),
         resultPath: '$.member',
-        resultSelector: {
-          detail: sfn.JsonPath.objectAt('$.Payload'),
-        },
+        resultSelector: prepareSfnTaskResponsePayload(
+          sfn.JsonPath.objectAt('$.Payload')
+        ),
       }
     )
       // this catches the specific NotFound error, and passes through to create
@@ -277,9 +296,9 @@ export class UpsertParticipantConstruct extends Construct {
           participantSource: sfn.JsonPath.objectAt('$.participantSource'),
         }),
         resultPath: '$.course',
-        resultSelector: {
-          detail: sfn.JsonPath.objectAt('$.Payload'),
-        },
+        resultSelector: prepareSfnTaskResponsePayload(
+          sfn.JsonPath.objectAt('$.Payload')
+        ),
       }
     )
       .addCatch(this.endStates.fail)
@@ -304,11 +323,12 @@ export class UpsertParticipantConstruct extends Construct {
           ),
         }),
         resultPath: '$.participantSource',
-        resultSelector: {
-          detail: sfn.JsonPath.objectAt('$.Payload'),
-        },
+        resultSelector: prepareSfnTaskResponsePayload(
+          sfn.JsonPath.objectAt('$.Payload')
+        ),
       }
     )
+      .addRetry(this.retryProps)
       .addCatch(this.endStates.fail)
       .next(this.tasks.findCourse);
 
@@ -331,9 +351,9 @@ export class UpsertParticipantConstruct extends Construct {
           ),
         }),
         resultPath: '$.participant',
-        resultSelector: {
-          detail: sfn.JsonPath.objectAt('$.Payload'),
-        },
+        resultSelector: prepareSfnTaskResponsePayload(
+          sfn.JsonPath.objectAt('$.Payload')
+        ),
       }
     )
       // this catches the specific NotFound error, and passes through to create

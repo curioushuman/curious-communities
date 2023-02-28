@@ -32,9 +32,7 @@ export class MemberMapper {
       id: dto.id,
       status: dto.status,
 
-      sourceIds: dto.sourceIds.map((idSourceValue) =>
-        prepareMemberExternalIdSource(idSourceValue)
-      ),
+      sourceIds: dto.sourceIds.map(prepareMemberExternalIdSource),
 
       name: dto.name,
       email: dto.email,

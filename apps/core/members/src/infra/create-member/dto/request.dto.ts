@@ -1,6 +1,7 @@
 import { Optional, Record, Static, String } from 'runtypes';
 import {
   EventbridgePutEvent,
+  SfnTaskResponsePayload,
   SqsAsEventSourceEvent,
 } from '@curioushuman/common';
 import { ParticipantSourceResponseDto } from '@curioushuman/cc-courses-service';
@@ -31,7 +32,7 @@ export type CreateMemberRequestDto = Static<typeof CreateMemberRequestDto>;
  * Once the step function task is complete, this is what the structure will look like
  */
 interface CreateMemberAsSfnResult {
-  participantSource: ParticipantSourceResponseDto;
+  participantSource: SfnTaskResponsePayload<ParticipantSourceResponseDto>;
 }
 
 /**
@@ -67,7 +68,7 @@ export type CreateMemberDtoOrEvent = CreateMemberRequestDto | CreateMemberEvent;
  */
 export function locateDto(incomingEvent: CreateMemberDtoOrEvent): unknown {
   if ('participantSource' in incomingEvent) {
-    return { memberEmail: incomingEvent.participantSource.memberEmail };
+    return { memberEmail: incomingEvent.participantSource.detail.memberEmail };
   }
   if (
     'memberEmail' in incomingEvent ||

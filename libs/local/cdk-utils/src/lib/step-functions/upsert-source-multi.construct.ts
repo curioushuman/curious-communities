@@ -217,6 +217,11 @@ export class UpsertSourceMultiConstruct extends Construct {
       // append the result to the sources object
       resultPath: `$.sources.${source}`,
       resultSelector,
-    }).addCatch(this.endStates.fail);
+    })
+      .addCatch(this.endStates.fail)
+      .addRetry({
+        interval: cdk.Duration.seconds(2),
+        maxAttempts: 3,
+      });
   }
 }

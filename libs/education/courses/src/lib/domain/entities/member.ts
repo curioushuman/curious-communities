@@ -12,7 +12,7 @@ import {
 } from '../value-objects/member-source-id-source';
 import { prepareExternalIdSource, ValueOf } from '@curioushuman/common';
 import { MemberSourceId } from '../value-objects/member-source-id';
-import { Source } from '../value-objects/source';
+import { MemberSource } from '../value-objects/member-source';
 
 /**
  * Type for internal member entity
@@ -54,5 +54,5 @@ export type MemberIdentifierValue = ValueOf<MemberIdentifiers>;
 export function prepareMemberExternalIdSource(
   idSourceValue: string
 ): MemberSourceIdSource {
-  return prepareExternalIdSource(idSourceValue, MemberSourceId, Source);
+  return prepareExternalIdSource(idSourceValue, MemberSourceId, MemberSource);
 }

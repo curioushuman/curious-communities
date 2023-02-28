@@ -4,7 +4,7 @@ import {
   ParticipantSourceResponseDto,
 } from '@curioushuman/cc-courses-service';
 import { MemberResponseDto } from '@curioushuman/cc-members-service';
-import { EventbridgePutEvent } from '@curioushuman/common';
+import { SfnTaskResponsePayload } from '@curioushuman/common';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -24,17 +24,28 @@ export type CreateParticipantRequestDto = Static<
 >;
 
 /**
- * What the input would look like if someone 'put's it to an eventBus
+ * Once the step function task is complete, this is what the structure will look like
  */
-export type CreateParticipantPutEvent =
-  EventbridgePutEvent<CreateParticipantRequestDto>;
+interface CreateParticipantAsSfnResult {
+  participantSource: SfnTaskResponsePayload<ParticipantSourceResponseDto>;
+  course: SfnTaskResponsePayload<CourseBaseResponseDto>;
+  member: SfnTaskResponsePayload<MemberResponseDto>;
+}
 
 /**
- * The types of event we support
- *
- * This allows us space to add additional event types
+ * CreateParticipantAsSfnResult predicate
+ * https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
  */
-export type CreateParticipantEvent = CreateParticipantPutEvent;
+export function isCreateParticipantAsSfnResult(
+  event: unknown
+): event is CreateParticipantAsSfnResult {
+  return (
+    (event as CreateParticipantAsSfnResult).participantSource.detail !==
+      undefined &&
+    (event as CreateParticipantAsSfnResult).course.detail !== undefined &&
+    (event as CreateParticipantAsSfnResult).member.detail !== undefined
+  );
+}
 
 /**
  * The two types of input we support
@@ -42,7 +53,7 @@ export type CreateParticipantEvent = CreateParticipantPutEvent;
  */
 export type CreateParticipantDtoOrEvent =
   | CreateParticipantRequestDto
-  | CreateParticipantEvent;
+  | CreateParticipantAsSfnResult;
 
 /**
  * This will determine what kind of input we have received
@@ -51,8 +62,12 @@ export type CreateParticipantDtoOrEvent =
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: CreateParticipantDtoOrEvent): unknown {
-  if ('participantSource' in incomingEvent) {
-    return incomingEvent;
+  if (isCreateParticipantAsSfnResult(incomingEvent)) {
+    return {
+      participantSource: incomingEvent.participantSource.detail,
+      course: incomingEvent.course.detail,
+      member: incomingEvent.member.detail,
+    };
   }
-  return incomingEvent.detail;
+  return incomingEvent;
 }

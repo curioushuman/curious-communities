@@ -1,5 +1,8 @@
 import { DynamoDbMapper } from '@curioushuman/common';
-import { Participant } from '../../../domain/entities/participant';
+import {
+  Participant,
+  ParticipantBase,
+} from '../../../domain/entities/participant';
 import { CourseSourceIdSource } from '../../../domain/value-objects/course-source-id-source';
 import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
 import config from '../../../static/config';
@@ -15,7 +18,7 @@ export class DynamoDbParticipantMapper {
   public static toDomain(item: CoursesDynamoDbItem): Participant {
     const course = DynamoDbCourseMapper.toDomain(item);
     const member = DynamoDbMemberMapper.toDomain(item);
-    return Participant.check({
+    const participantBase = ParticipantBase.check({
       id: item.Participant_Id,
       courseId: item.Course_Id,
 
@@ -29,11 +32,13 @@ export class DynamoDbParticipantMapper {
       // attributes
       status: item.Participant_Status,
       accountOwner: item.AccountOwner,
+    });
 
-      // relationships
+    return {
+      ...participantBase,
       course,
       member,
-    });
+    };
   }
 
   /**

@@ -55,7 +55,7 @@ export class FakeParticipantRepository implements ParticipantRepository {
   //           // this mimics the fact that all non-fake adapters
   //           // will come with a mapper, which will perform a check
   //           // prior to return
-  //           (participant) => Participant.check(participant)
+  //           (participant) => participant
   //         )
   //       );
   //     },
@@ -98,7 +98,7 @@ export class FakeParticipantRepository implements ParticipantRepository {
             // this mimics the fact that all non-fake adapters
             // will come with a mapper, which will perform a check
             // prior to return
-            (participant) => Participant.check(participant)
+            (participant) => participant
           )
         );
       },

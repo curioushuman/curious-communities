@@ -28,7 +28,6 @@ export class SalesforceApiParticipantSourceMapper {
       memberEmail: sourceResponse.Contact_email__c,
       organisationName: sourceResponse.SYS_Organisation_name__c,
     };
-    console.log('participantSource', participantSource);
     return ParticipantSource.check(participantSource);
   }
 

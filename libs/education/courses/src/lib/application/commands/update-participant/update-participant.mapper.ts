@@ -32,15 +32,10 @@ export class UpdateParticipantMapper extends UpdateMapper {
     participant: Participant
   ): (source: ParticipantSource) => Participant {
     return (source: ParticipantSource) => {
-      console.log('status', source.status);
-      console.log(
-        'status',
-        DomainParticipantMapper.fromSourceStatus(source.status)
-      );
-      return Participant.check({
+      return {
         ...participant,
         status: DomainParticipantMapper.fromSourceStatus(source.status),
-      });
+      };
     };
   }
 }

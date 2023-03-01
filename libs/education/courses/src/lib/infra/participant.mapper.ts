@@ -51,12 +51,11 @@ export class ParticipantMapper {
 
   public static fromResponseDto(dto: ParticipantResponseDto): Participant {
     const base: ParticipantBase = ParticipantMapper.fromResponseDtoToBase(dto);
-    const participant = {
+    return {
       ...base,
       course: CourseMapper.fromResponseDtoToBase(dto.course),
       member: MemberMapper.fromResponseDto(dto.member),
     };
-    return Participant.check(participant);
   }
 
   public static fromResponseDtoToBase(

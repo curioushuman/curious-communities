@@ -55,6 +55,21 @@ export const Participant = ParticipantBase.extend({
 export type Participant = Static<typeof Participant>;
 
 /**
+ * An alternative parser, instead of Participant.check()
+ *
+ * Participant being a Union and a Composite I think has proven too much
+ */
+export const parseParticipant = (participant: Participant): Participant => {
+  const { course, member, ...participantBase } = participant;
+  const parsedParticipantBase = ParticipantBase.check(participantBase);
+  return {
+    ...parsedParticipantBase,
+    course: CourseBase.check(course),
+    member: Member.check(member),
+  };
+};
+
+/**
  * ----
  * Additional helper types used during identification
  * ----

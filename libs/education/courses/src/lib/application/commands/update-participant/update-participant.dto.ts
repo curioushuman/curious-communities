@@ -1,5 +1,8 @@
 import { Optional, Record, Static } from 'runtypes';
-import { Participant } from '../../../domain/entities/participant';
+import {
+  parseParticipant,
+  Participant,
+} from '../../../domain/entities/participant';
 import { ParticipantSource } from '../../../domain/entities/participant-source';
 
 /**
@@ -12,3 +15,21 @@ export const UpdateParticipantDto = Record({
 });
 
 export type UpdateParticipantDto = Static<typeof UpdateParticipantDto>;
+
+/**
+ * An alternative parser, instead of UpdateParticipantDto.check()
+ *
+ * Participant having Course and Member as children proves too much for Runtype.check()
+ */
+export const parseUpdateParticipantDto = (
+  dto: UpdateParticipantDto
+): UpdateParticipantDto => {
+  const { participant, participantSource } = dto;
+
+  return {
+    participant: parseParticipant(participant),
+    participantSource: participantSource
+      ? ParticipantSource.check(participantSource)
+      : undefined,
+  };
+};

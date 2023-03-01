@@ -12,12 +12,18 @@ import {
 } from './entities/group-member';
 import { GroupSourceIdSource } from '../../../domain/value-objects/group-source-id-source';
 import { DynamoDbMemberMapper } from './member.mapper';
+import { CourseGroupMemberBase } from '../../../domain/entities/course-group-member';
+import { StandardGroupMemberBase } from '../../../domain/entities/standard-group-member';
 
 export class DynamoDbGroupMemberMapper {
   public static toDomain(item: GroupsDynamoDbItem): GroupMember {
     const group = DynamoDbGroupMapper.toDomain(item);
     const member = DynamoDbMemberMapper.toDomain(item);
-    return GroupMember.check({
+    const checkGroupMemberBase =
+      item.GroupMember_Type === 'course'
+        ? CourseGroupMemberBase.check
+        : StandardGroupMemberBase.check;
+    const groupMemberBase = checkGroupMemberBase({
       _type: item.GroupMember_Type,
       id: item.GroupMember_Id,
       groupId: item.Group_Id,
@@ -33,11 +39,12 @@ export class DynamoDbGroupMemberMapper {
       // other fields
       status: item.GroupMember_Status,
       accountOwner: item.AccountOwner,
-
-      // relationships
+    });
+    return {
+      ...groupMemberBase,
       group,
       member,
-    });
+    };
   }
 
   /**

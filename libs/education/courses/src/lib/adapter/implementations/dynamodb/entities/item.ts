@@ -1,20 +1,28 @@
 import { DynamoDbItem } from '@curioushuman/common';
 
-import { DynamoDbCourseAttributes } from './course';
+import { DynamoDbCourseAttributes, DynamoDbCourseSpecificKeys } from './course';
 import { DynamoDbMemberAttributes } from './member';
-import { DynamoDbParticipantAttributes } from './participant';
+import {
+  DynamoDbParticipantAttributes,
+  DynamoDbParticipantSpecificKeys,
+} from './participant';
 
 /**
  * Complete item that is returned from the DynamoDb query
  *
  * Each record will have participant, and course information.
- * Throw allllll the attributes in.
- * Omitting any that may double up.
+ * Throw allllll the attributes and keys in.
  *
  * TODO: there is probably a more elegant way of doing this.
  */
-export type CoursesItem = Partial<DynamoDbParticipantAttributes> &
-  Omit<Partial<DynamoDbCourseAttributes>, 'AccountOwner'> &
-  Omit<Partial<DynamoDbMemberAttributes>, 'AccountOwner'>;
+
+export type CoursesItemKeys = Partial<DynamoDbParticipantSpecificKeys> &
+  Partial<DynamoDbCourseSpecificKeys>;
+
+export type CoursesItemAttributes = Partial<DynamoDbParticipantAttributes> &
+  Partial<DynamoDbCourseAttributes> &
+  Partial<DynamoDbMemberAttributes>;
+
+export type CoursesItem = CoursesItemKeys & CoursesItemAttributes;
 
 export type CoursesDynamoDbItem = DynamoDbItem<CoursesItem>;

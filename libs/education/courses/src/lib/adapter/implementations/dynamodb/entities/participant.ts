@@ -2,14 +2,14 @@ import { DynamoDbItemKeys } from '@curioushuman/common';
 import { Null, Optional, Record, Static, String } from 'runtypes';
 
 /**
- * Keys for the participant
+ * Specific Keys for the participant
  *
  * UPDATE: removing the generic sort keys (sk2, etc) for now, we'll reconsider them
  * when we come to including some GSIs.
  *
  * NOTE: when you do include them, extend() DynamoDbItemKeys rather than brand it.
  */
-export const DynamoDbParticipantKeys = DynamoDbItemKeys.extend({
+export const DynamoDbParticipantSpecificKeys = Record({
   // these are sortKeys for the other DDB indexes
   // the pattern is SK_{Index_Name}
 
@@ -24,7 +24,19 @@ export const DynamoDbParticipantKeys = DynamoDbItemKeys.extend({
   Sk_Member_Id: String,
 });
 /**
- * Keys for the participant
+ * Specific Keys for the participant
+ */
+export type DynamoDbParticipantSpecificKeys = Static<
+  typeof DynamoDbParticipantSpecificKeys
+>;
+
+/**
+ * ALL Keys for the course
+ */
+export const DynamoDbParticipantKeys =
+  DynamoDbParticipantSpecificKeys.And(DynamoDbItemKeys);
+/**
+ * ALL Keys for the course
  */
 export type DynamoDbParticipantKeys = Static<typeof DynamoDbParticipantKeys>;
 

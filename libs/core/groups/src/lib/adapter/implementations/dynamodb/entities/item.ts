@@ -1,7 +1,10 @@
 import { DynamoDbItem } from '@curioushuman/common';
 
-import { DynamoDbGroupAttributes } from './group';
-import { DynamoDbGroupMemberAttributes } from './group-member';
+import { DynamoDbGroupAttributes, DynamoDbGroupSpecificKeys } from './group';
+import {
+  DynamoDbGroupMemberAttributes,
+  DynamoDbGroupMemberSpecificKeys,
+} from './group-member';
 import { DynamoDbMemberAttributes } from './member';
 
 /**
@@ -9,12 +12,16 @@ import { DynamoDbMemberAttributes } from './member';
  *
  * Each record will have groupMember, and group information.
  * Throw allllll the attributes in.
- * Omitting any that may double up.
  *
  * TODO: there is probably a more elegant way of doing this.
  */
-export type GroupsItem = Partial<DynamoDbGroupMemberAttributes> &
-  Omit<Partial<DynamoDbGroupAttributes>, 'AccountOwner'> &
-  Omit<Partial<DynamoDbMemberAttributes>, 'AccountOwner'>;
+export type GroupsItemKeys = Partial<DynamoDbGroupMemberSpecificKeys> &
+  Partial<DynamoDbGroupSpecificKeys>;
+
+export type GroupsItemAttributes = Partial<DynamoDbGroupMemberAttributes> &
+  Partial<DynamoDbGroupAttributes> &
+  Partial<DynamoDbMemberAttributes>;
+
+export type GroupsItem = GroupsItemKeys & GroupsItemAttributes;
 
 export type GroupsDynamoDbItem = DynamoDbItem<GroupsItem>;

@@ -1,22 +1,32 @@
 import { Static } from 'runtypes';
 
 import {
+  DynamoDbItemKeys,
   DynamoDbMemberCommonAttributes,
   DynamoDbMemberCommonKeys,
 } from '@curioushuman/common';
 
 /**
- * Keys for the member
+ * Specific Keys for the member
  */
-export const DynamoDbMemberKeys = DynamoDbMemberCommonKeys.pick(
-  'primaryKey',
-  'sortKey',
+export const DynamoDbMemberSpecificKeys = DynamoDbMemberCommonKeys.pick(
   'Sk_Member_Email',
   'Sk_Member_SourceIdCRM',
   'Sk_Member_SourceIdAUTH',
   'Sk_Member_SourceIdCOMMUNITY',
   'Sk_Member_SourceIdMICRO-COURSE'
 );
+/**
+ * Specific Keys for the member
+ */
+export type DynamoDbMemberSpecificKeys = Static<
+  typeof DynamoDbMemberSpecificKeys
+>;
+/**
+ * Keys for the member
+ */
+export const DynamoDbMemberKeys =
+  DynamoDbMemberSpecificKeys.And(DynamoDbItemKeys);
 /**
  * Keys for the member
  */

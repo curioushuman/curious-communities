@@ -4,7 +4,10 @@ import {
   ParticipantSourceResponseDto,
 } from '@curioushuman/cc-courses-service';
 import { MemberResponseDto } from '@curioushuman/cc-members-service';
-import { SfnTaskResponsePayload } from '@curioushuman/common';
+import {
+  CoAwsRequestPayload,
+  SfnTaskResponsePayload,
+} from '@curioushuman/common';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -25,11 +28,15 @@ export type CreateParticipantRequestDto = Static<
 
 /**
  * Once the step function task is complete, this is what the structure will look like
+ * NOTE: member might be a MemberResponseDto or a CoAwsRequestPayload<MemberResponseDto>
+ *       as it could be either found, or created (within step function)
  */
 interface CreateParticipantAsSfnResult {
   participantSource: SfnTaskResponsePayload<ParticipantSourceResponseDto>;
   course: SfnTaskResponsePayload<CourseBaseResponseDto>;
-  member: SfnTaskResponsePayload<MemberResponseDto>;
+  member: SfnTaskResponsePayload<
+    MemberResponseDto | CoAwsRequestPayload<MemberResponseDto>
+  >;
 }
 
 /**
@@ -63,10 +70,16 @@ export type CreateParticipantDtoOrEvent =
  */
 export function locateDto(incomingEvent: CreateParticipantDtoOrEvent): unknown {
   if (isCreateParticipantAsSfnResult(incomingEvent)) {
+    // member might be a MemberResponseDto or a CoAwsRequestPayload<MemberResponseDto>
+    // as it could be either found, or created
+    const member =
+      'detail' in incomingEvent.member.detail
+        ? incomingEvent.member.detail.detail
+        : incomingEvent.member.detail;
     return {
       participantSource: incomingEvent.participantSource.detail,
       course: incomingEvent.course.detail,
-      member: incomingEvent.member.detail,
+      member: member,
     };
   }
   return incomingEvent;

@@ -13,6 +13,8 @@
     "**/*.spec.ts",
     "**/*.d.ts",
     "**/*.fake.ts",
+    "**/__mocks__/**/*.ts",
+    "**/__fixtures__/**/*.ts",
     "**/fake/**/*.ts",
     "**/*.builder.ts"
   ]

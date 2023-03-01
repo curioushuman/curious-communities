@@ -1,6 +1,6 @@
 import { DynamoDbItem } from '@curioushuman/common';
 
-import { CoursesItem } from '../entities/item';
+import { CoursesItem } from '../src/lib/adapter/implementations/dynamodb/entities/item';
 
 export const participantDynamoDbItem: DynamoDbItem<CoursesItem> = {
   Member_Id: 'f79d794c-f167-4f38-bd9c-a903adb990b1',
@@ -11,6 +11,7 @@ export const participantDynamoDbItem: DynamoDbItem<CoursesItem> = {
   Member_OrganisationName: 'Curious Human',
   Sk_Course_Slug: 'b9ba3547-6953-4902-a4f3-903a66d4af2a',
   Member_Status: 'active',
+  Member_SourceIdCRM: 'CRM#5009s000002APLoAAP',
   Course_Status: 'active',
   Course_DateClosed: 1678492800000,
   Course_Name: '2023 sync test case',
@@ -18,7 +19,6 @@ export const participantDynamoDbItem: DynamoDbItem<CoursesItem> = {
   AccountOwner: 'apf',
   Member_Email: 'mike@curioushuman.com.au',
   Member_Name: 'Mike Kelly',
-  Member_SourceIdCRM: 'CRM#5009s000002APLoAAP',
   Participant_Id: 'b9ba3547-6953-4902-a4f3-903a66d4af2a',
   Course_DateOpen: 1676851200000,
   Sk_Course_SourceIdCOURSE: 'b9ba3547-6953-4902-a4f3-903a66d4af2a',

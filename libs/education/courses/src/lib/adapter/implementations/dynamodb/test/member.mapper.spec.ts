@@ -1,4 +1,7 @@
-import { participantDynamoDbItem, memberDomainItem } from '../__fixtures__';
+import {
+  participantDynamoDbItem,
+  memberDomainItem,
+} from '../../../../../../__fixtures__';
 import { DynamoDbMemberMapper } from '../member.mapper';
 
 /**

@@ -1,4 +1,7 @@
-import { courseDynamoDbItem, courseDomainItem } from '../__fixtures__';
+import {
+  courseDynamoDbItem,
+  courseDomainItem,
+} from '../../../../../../__fixtures__';
 import { DynamoDbCourseMapper } from '../course.mapper';
 import { CourseBase } from '../../../../domain/entities/course';
 

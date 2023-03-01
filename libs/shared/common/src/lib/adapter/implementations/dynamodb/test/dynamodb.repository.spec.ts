@@ -13,6 +13,11 @@ type TestEntityPersisted = {
   name: string;
 };
 
+// type TestItem = {
+//   Test_Id: string;
+//   Test_Name: string;
+// };
+
 /**
  * UNIT TEST
  * SUT = initiating a DynamoDbRepository
@@ -28,26 +33,30 @@ const feature = loadFeature('./dynamodb.repository.feature', {
 defineFeature(feature, (test) => {
   let dynamoDbRepository: DynamoDbRepository<TestEntity, TestEntityPersisted>;
 
+  beforeAll(() => {
+    dynamoDbRepository = new DynamoDbRepository(
+      {
+        entityId: 'course',
+        tableId: 'courses',
+        localIndexIds: ['name'],
+        globalIndexIds: ['slug', 'source-id-value'],
+        prefix: 'cc',
+      },
+      new LoggableLogger('TEST')
+    );
+  });
+
   test('Successful instantiation of DynamoDb Repository', ({
     given,
     when,
     then,
   }) => {
     given('I have provide valid DynamoDb repository configuration', () => {
-      // see next
+      // see beforeAll
     });
 
     when('I instantiate the repository', async () => {
-      dynamoDbRepository = new DynamoDbRepository(
-        {
-          entityId: 'course',
-          tableId: 'courses',
-          localIndexIds: ['name'],
-          globalIndexIds: ['slug', 'source-id-value'],
-          prefix: 'cc',
-        },
-        new LoggableLogger('TEST')
-      );
+      // see beforeAll
     });
 
     then('I should receive a valid repository instance', () => {

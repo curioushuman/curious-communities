@@ -1,7 +1,7 @@
 import {
   participantDynamoDbItem,
   participantDomainItem,
-} from '../__fixtures__';
+} from '../../../../../../__fixtures__';
 import { DynamoDbParticipantMapper } from '../participant.mapper';
 import { Participant } from '../../../../domain/entities/participant';
 

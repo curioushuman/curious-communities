@@ -1,21 +1,15 @@
-import { EventBridgeEvent } from 'aws-lambda';
 import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
   CreateParticipantModule,
   CreateParticipantController,
-  ParticipantResponseDto,
   ResponsePayload,
 } from '@curioushuman/cc-courses-service';
-import {
-  InternalRequestInvalidError,
-  RepositoryItemConflictError,
-} from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import {
-  CreateParticipantPutEvent,
+  CreateParticipantDtoOrEvent,
   CreateParticipantRequestDto,
   locateDto,
 } from './dto/request.dto';
@@ -73,7 +67,7 @@ async function waitForApp() {
  *   Which basically indicates success.
  */
 export const handler = async (
-  requestDtoOrEvent: CreateParticipantPutEvent
+  requestDtoOrEvent: CreateParticipantDtoOrEvent
 ): Promise<ResponsePayload<'participant'>> => {
   const context = 'CreateParticipant.Lambda';
   const logger = new LoggableLogger(context);

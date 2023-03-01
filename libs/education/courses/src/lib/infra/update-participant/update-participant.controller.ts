@@ -17,7 +17,7 @@ import { ParticipantSource } from '../../domain/entities/participant-source';
 import { FindParticipantMapper } from '../../application/queries/find-participant/find-participant.mapper';
 import { FindParticipantQuery } from '../../application/queries/find-participant/find-participant.query';
 import { Participant } from '../../domain/entities/participant';
-import { UpdateParticipantDto } from '../../application/commands/update-participant/update-participant.dto';
+import { parseUpdateParticipantDto } from '../../application/commands/update-participant/update-participant.dto';
 import { FindParticipantSourceMapper } from '../../application/queries/find-participant-source/find-participant-source.mapper';
 import { FindParticipantSourceQuery } from '../../application/queries/find-participant-source/find-participant-source.query';
 import {
@@ -86,7 +86,7 @@ export class UpdateParticipantController {
       // but the Runtype.check function is such a useful way to
       // also make sure the types are correct. Better than typecasting
       parseActionData(
-        UpdateParticipantDto.check,
+        parseUpdateParticipantDto,
         this.logger,
         'RequestInvalidError'
       ),

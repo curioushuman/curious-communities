@@ -11,7 +11,10 @@ import {
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import { ParticipantRepository } from '../../../adapter/ports/participant.repository';
-import { UpdateParticipantDto } from './update-participant.dto';
+import {
+  parseUpdateParticipantDto,
+  UpdateParticipantDto,
+} from './update-participant.dto';
 import { UpdateParticipantMapper } from './update-participant.mapper';
 import { Participant } from '../../../domain/entities/participant';
 import { ParticipantRepositoryErrorFactory } from '../../../adapter/ports/participant.repository.error-factory';
@@ -45,7 +48,7 @@ export class UpdateParticipantHandler
     const validDto = pipe(
       updateParticipantDto,
       parseData(
-        UpdateParticipantDto.check,
+        parseUpdateParticipantDto,
         this.logger,
         'InternalRequestInvalidError'
       )

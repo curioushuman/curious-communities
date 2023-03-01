@@ -375,19 +375,17 @@ export class DynamoDbRepository<DomainT, PersistenceT>
 
   /**
    * Removing the discriminator from the item
-   *
-   * TODO: non-typecast version
    */
   private prepareNonDiscriminatedType(
     item: Record<string, unknown>
   ): Record<string, unknown> {
-    if (!('entityType' in item)) {
-      return item;
+    if ('entityType' in item) {
+      // we don't need to use the entityType
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { entityType, ...rest } = item;
+      return rest;
     }
-    // we don't need to use the entityType
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { entityType, ...rest } = item;
-    return rest;
+    return item;
   }
 
   /**

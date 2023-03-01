@@ -58,14 +58,15 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
         DynamoDbRepository.prepareErrorMessage('Participant not found', params)
       );
     }
-
     // is it what we expected?
     // will throw error if not
     const participantItem = DynamoDbParticipant.check(item);
 
+    const domainItem = DynamoDbParticipantMapper.toDomain(participantItem);
+
     // NOTE: if the response was invalid, an error would have been thrown
     // could this similarly be in a serialisation decorator?
-    return DynamoDbParticipantMapper.toDomain(participantItem);
+    return domainItem;
   }
 
   /**

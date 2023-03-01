@@ -1,7 +1,6 @@
 import { DynamoDbMapper, memberSources } from '@curioushuman/common';
 import { Member } from '../../../domain/entities/member';
 import { MemberSourceIdSource } from '../../../domain/value-objects/member-source-id-source';
-import config from '../../../static/config';
 import { CoursesDynamoDbItem } from './entities/item';
 import { DynamoDbMemberAttributes } from './entities/member';
 
@@ -39,7 +38,7 @@ export class DynamoDbMemberMapper {
       DynamoDbMapper.preparePersistenceSourceIdFields<MemberSourceIdSource>(
         member.sourceIds,
         'Member',
-        config.defaults.accountSources
+        memberSources
       );
     return {
       ...sourceIdFields,

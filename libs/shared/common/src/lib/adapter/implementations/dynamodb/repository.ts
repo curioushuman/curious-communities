@@ -236,7 +236,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
       TableName: this.tableName,
       IndexName: this.globalIndexes[indexId],
     };
-    this.logger.debug('prepareParamsQueryOne', params);
+    this.logger.debug(params, 'prepareParamsQueryOne');
     return params;
   }
 
@@ -287,9 +287,13 @@ export class DynamoDbRepository<DomainT, PersistenceT>
 
         // ? logging?
         // If anything do logging specific to GetCommand or AWS stats
-        this.logger.debug(response);
+        this.logger.debug(response, 'tryGetOne');
 
-        return processResult(response.Item, params);
+        const item = response.Item
+          ? this.prepareNonDiscriminatedType(response.Item)
+          : undefined;
+
+        return processResult(item, params);
       },
       // NOTE: we don't use an error factory here, it is one level up
       (reason: unknown) => reason as Error
@@ -307,9 +311,13 @@ export class DynamoDbRepository<DomainT, PersistenceT>
 
         // ? logging?
         // If anything do logging specific to QueryCommand or AWS stats
-        this.logger.debug(response);
+        this.logger.debug(response, 'tryQueryOne');
 
-        return processResult(response.Items?.[0], params);
+        const item = response.Items?.[0]
+          ? this.prepareNonDiscriminatedType(response.Items?.[0])
+          : undefined;
+
+        return processResult(item, params);
       },
       // NOTE: we don't use an error factory here, it is one level up
       (reason: unknown) => reason as Error
@@ -340,9 +348,12 @@ export class DynamoDbRepository<DomainT, PersistenceT>
 
         // ? logging?
         // If anything do logging specific to QueryCommand or AWS stats
-        this.logger.debug(response);
+        this.logger.debug(response, 'tryQueryAll');
 
-        return this.prepareFindAllResponse(response.Items, processResult);
+        return this.prepareFindAllResponse(
+          response.Items?.map(this.prepareNonDiscriminatedType),
+          processResult
+        );
       },
       // NOTE: we don't use an error factory here, it is one level up
       (reason: unknown) => reason as Error
@@ -353,13 +364,30 @@ export class DynamoDbRepository<DomainT, PersistenceT>
    * Adding a discriminator to the item
    * Will help with queries
    */
-  public prepareDiscriminatedType(
+  private prepareDiscriminatedType(
     item: DynamoDbItem<PersistenceT>
   ): DynamoDbDiscriminatedItem<PersistenceT> {
     return {
       ...item,
       entityType: this.entityName,
     };
+  }
+
+  /**
+   * Removing the discriminator from the item
+   *
+   * TODO: non-typecast version
+   */
+  private prepareNonDiscriminatedType(
+    item: Record<string, unknown>
+  ): Record<string, unknown> {
+    if (!('entityType' in item)) {
+      return item;
+    }
+    // we don't need to use the entityType
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { entityType, ...rest } = item;
+    return rest;
   }
 
   /**
@@ -389,7 +417,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
 
         // process the response
         // ? should we get the response.Attributes and map back to a domain object?
-        this.logger.debug(response);
+        this.logger.debug(response, 'trySave');
 
         return processResult(response.Attributes);
       },

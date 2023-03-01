@@ -1,5 +1,4 @@
 import { Null, Optional, Record, Static, String } from 'runtypes';
-import { DynamoDbItemKeys } from './item';
 
 /**
  * A global constant of where our members are synced to
@@ -7,9 +6,9 @@ import { DynamoDbItemKeys } from './item';
 export const memberSources = ['CRM', 'AUTH', 'COMMUNITY', 'MICRO-COURSE'];
 
 /**
- * Common Keys for the member
+ * Common specific Keys for the member
  */
-export const DynamoDbMemberCommonKeys = DynamoDbItemKeys.extend({
+export const DynamoDbMemberCommonKeys = Record({
   Sk_Member_Email: String,
   // these are optional as at times there will yet to be values
   Sk_Member_SourceIdCRM: Optional(String.Or(Null)),
@@ -18,7 +17,7 @@ export const DynamoDbMemberCommonKeys = DynamoDbItemKeys.extend({
   'Sk_Member_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
 });
 /**
- * Common Keys for the member
+ * Common specific Keys for the member
  */
 export type DynamoDbMemberCommonKeys = Static<typeof DynamoDbMemberCommonKeys>;
 

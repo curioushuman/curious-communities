@@ -31,12 +31,12 @@ export type DynamoDbParticipantSpecificKeys = Static<
 >;
 
 /**
- * ALL Keys for the course
+ * ALL Keys for the participant
  */
 export const DynamoDbParticipantKeys =
   DynamoDbParticipantSpecificKeys.And(DynamoDbItemKeys);
 /**
- * ALL Keys for the course
+ * ALL Keys for the participant
  */
 export type DynamoDbParticipantKeys = Static<typeof DynamoDbParticipantKeys>;
 

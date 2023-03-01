@@ -4,7 +4,7 @@ import { Null, Optional, Record, Static, String } from 'runtypes';
 /**
  * Keys for the groupMember
  */
-export const DynamoDbGroupMemberKeys = DynamoDbItemKeys.extend({
+export const DynamoDbGroupMemberSpecificKeys = Record({
   // these are sortKeys for the other DDB indexes
   // the pattern is SK_{Index_Name}
 
@@ -29,6 +29,18 @@ export const DynamoDbGroupMemberKeys = DynamoDbItemKeys.extend({
 });
 /**
  * Keys for the groupMember
+ */
+export type DynamoDbGroupMemberSpecificKeys = Static<
+  typeof DynamoDbGroupMemberSpecificKeys
+>;
+
+/**
+ * ALL Keys for the group
+ */
+export const DynamoDbGroupMemberKeys =
+  DynamoDbGroupMemberSpecificKeys.And(DynamoDbItemKeys);
+/**
+ * All Keys for the group
  */
 export type DynamoDbGroupMemberKeys = Static<typeof DynamoDbGroupMemberKeys>;
 

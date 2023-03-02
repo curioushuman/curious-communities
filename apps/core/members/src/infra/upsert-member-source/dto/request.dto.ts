@@ -1,7 +1,10 @@
 import { Record, Static, String } from 'runtypes';
 
 import { MemberResponseDto } from '@curioushuman/cc-members-service';
-import { SqsAsEventSourceEvent } from '@curioushuman/common';
+import {
+  SfnTaskInputTextReplica,
+  SqsAsEventSourceEvent,
+} from '@curioushuman/common';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -20,10 +23,12 @@ export type UpsertMemberSourceRequestDto = Static<
 >;
 
 /**
- * What the input looks like when SQS is event source
+ * A representation of the input structure we create during Sfn task definition
  */
-export type UpsertMemberSourceSqsEvent =
-  SqsAsEventSourceEvent<UpsertMemberSourceRequestDto>;
+interface UpsertGroupSourceAsSfnResult {
+  source: SfnTaskInputTextReplica;
+  member: MemberResponseDto;
+}
 
 /**
  * The two types of input we support
@@ -31,7 +36,7 @@ export type UpsertMemberSourceSqsEvent =
  */
 export type UpsertMemberSourceDtoOrEvent =
   | UpsertMemberSourceRequestDto
-  | UpsertMemberSourceSqsEvent;
+  | UpsertGroupSourceAsSfnResult;
 
 /**
  * This will determine what kind of input we have received
@@ -42,8 +47,11 @@ export type UpsertMemberSourceDtoOrEvent =
 export function locateDto(
   incomingEvent: UpsertMemberSourceDtoOrEvent
 ): unknown {
-  if ('member' in incomingEvent) {
+  if (typeof incomingEvent.source === 'string') {
     return incomingEvent;
   }
-  return incomingEvent.Records[0].body;
+  return {
+    source: incomingEvent.source.value,
+    member: incomingEvent.member,
+  };
 }

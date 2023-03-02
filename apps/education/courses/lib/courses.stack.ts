@@ -270,6 +270,7 @@ export class CoursesStack extends cdk.Stack {
           createParticipant: createParticipantFunction,
           updateParticipant: updateParticipantFunction,
         },
+        eventBus: internalEventBusConstruct.eventBus,
       }
     );
 

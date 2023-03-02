@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
@@ -45,6 +46,7 @@ interface UpsertParticipantLambdas {
 }
 export interface UpsertParticipantProps {
   lambdas: UpsertParticipantLambdas;
+  eventBus: events.IEventBus;
 }
 
 /**
@@ -58,6 +60,7 @@ export interface UpsertParticipantProps {
 export class UpsertParticipantConstruct extends Construct {
   private constructId: string;
   private lambdas: UpsertParticipantLambdas;
+  private eventBus: events.IEventBus;
   private externalFunctions: Record<string, lambda.IFunction> = {};
   private endStates!: Record<string, sfn.State>;
   private retryProps: sfn.RetryProps = {
@@ -80,6 +83,7 @@ export class UpsertParticipantConstruct extends Construct {
     // save some props
     this.constructId = constructId;
     this.lambdas = props.lambdas;
+    this.eventBus = props.eventBus;
 
     // prepare our end states
     this.prepareEndStates();
@@ -159,6 +163,10 @@ export class UpsertParticipantConstruct extends Construct {
     return taskTitle;
   }
 
+  /**
+   * NOTE: similar function exists in:
+   * /libs/local/cdk-utils/src/lib/step-functions/upsert-source-multi.construct.ts
+   */
   private preparePassTitle(taskId: ResourceId): string {
     // this will throw an error if the taskId is not valid
     ResourceId.check(taskId);
@@ -169,11 +177,44 @@ export class UpsertParticipantConstruct extends Construct {
 
   private prepareTasks(): void {
     /**
+     * Task: Announce participant update
+     *
+     * NEXT: success
+     * CATCH: fail
+     */
+    this.tasks.putEventParticipantUpserted = new tasks.EventBridgePutEvents(
+      this,
+      this.prepareTaskTitle('participant-upsert-put-event'),
+      {
+        inputPath: '$.participant.detail',
+        // NOTE: we need to add this in so our other data isn't overridden?
+        resultPath: '$.participant.putEvent',
+        entries: [
+          {
+            // NOTE: we know the output of updateParticipant will be CoAwsRequestPayload
+            // Ref: /libs/shared/common/src/lib/infra/__types__/aws-response-payload.ts
+            detail: sfn.TaskInput.fromObject({
+              event: sfn.JsonPath.stringAt('$.event'),
+              entity: sfn.JsonPath.stringAt('$.entity'),
+              outcome: sfn.JsonPath.stringAt('$.outcome'),
+              detail: sfn.JsonPath.objectAt('$.detail'),
+            }),
+            eventBus: this.eventBus,
+            detailType: 'putEvent',
+            source: 'step.functions',
+          },
+        ],
+      }
+    )
+      .addCatch(this.endStates.fail)
+      .next(this.endStates.success);
+
+    /**
      * Task: update participant
      *
      * If the participant already exists, then we take the short route
      *
-     * NEXT: success
+     * NEXT: putEventParticipantUpserted
      * CATCH: fail
      */
     this.tasks.updateParticipant = new tasks.LambdaInvoke(
@@ -195,12 +236,12 @@ export class UpsertParticipantConstruct extends Construct {
       }
     )
       .addCatch(this.endStates.fail)
-      .next(this.endStates.success);
+      .next(this.tasks.putEventParticipantUpserted);
 
     /**
      * Task: create participant
      *
-     * NEXT: success
+     * NEXT: putEventParticipantUpserted
      * CATCH: fail
      */
     this.tasks.createParticipant = new tasks.LambdaInvoke(
@@ -216,14 +257,47 @@ export class UpsertParticipantConstruct extends Construct {
       }
     )
       .addCatch(this.endStates.fail)
-      .next(this.endStates.success);
+      .next(this.tasks.putEventParticipantUpserted);
+
+    /**
+     * Task: Announce member creation
+     *
+     * NEXT: createParticipant
+     * CATCH: fail
+     */
+    this.tasks.putEventMemberCreated = new tasks.EventBridgePutEvents(
+      this,
+      this.prepareTaskTitle('member-create-put-event'),
+      {
+        inputPath: '$.member.detail',
+        // NOTE: we need to add this in so our other data isn't overridden?
+        resultPath: '$.member.putEvent',
+        entries: [
+          {
+            // NOTE: we know the output of createMember will be CoAwsRequestPayload
+            // Ref: /libs/shared/common/src/lib/infra/__types__/aws-response-payload.ts
+            detail: sfn.TaskInput.fromObject({
+              event: sfn.JsonPath.stringAt('$.event'),
+              entity: sfn.JsonPath.stringAt('$.entity'),
+              outcome: sfn.JsonPath.stringAt('$.outcome'),
+              detail: sfn.JsonPath.objectAt('$.detail'),
+            }),
+            eventBus: this.eventBus,
+            detailType: 'putEvent',
+            source: 'step.functions',
+          },
+        ],
+      }
+    )
+      .addCatch(this.endStates.fail)
+      .next(this.tasks.createParticipant);
 
     /**
      * Task: create member
      *
      * If the member does not exist, create it
      *
-     * NEXT: createParticipant
+     * NEXT: putEventMemberCreated
      * CATCH: fail
      */
     this.tasks.createMember = new tasks.LambdaInvoke(
@@ -242,7 +316,7 @@ export class UpsertParticipantConstruct extends Construct {
       }
     )
       .addCatch(this.endStates.fail)
-      .next(this.tasks.createParticipant);
+      .next(this.tasks.putEventMemberCreated);
 
     /**
      * Task: find member

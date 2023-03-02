@@ -239,26 +239,65 @@ export class MembersStack extends cdk.Stack {
     );
 
     /**
-     * Subscribing the state machine to the Upsert Member Lambda (destination) events
+     * Subscribing the state machine to the Create or Update Member Lambda (destination) events
      */
+    const upsertMemberSourceMultiFromLambdaId = generateCompositeResourceId(
+      upsertMemberSourceMultiId,
+      'lambda'
+    );
     const [upsertMemberSourceMultiRuleName, upsertMemberSourceMultiRuleTitle] =
-      resourceNameTitle(upsertMemberSourceMultiId, 'Rule');
-    const rule = new events.Rule(this, upsertMemberSourceMultiRuleTitle, {
-      ruleName: upsertMemberSourceMultiRuleName,
-      eventBus: internalEventBusConstruct.eventBus,
-      description: 'Upsert multiple group sources, based on internal event',
-      eventPattern: {
-        detailType: ['Lambda Function Invocation Result - Success'],
-        source: ['lambda'],
-        detail: {
-          responsePayload: {
+      resourceNameTitle(upsertMemberSourceMultiFromLambdaId, 'Rule');
+    const upsertMemberSourceFromLambdaRule = new events.Rule(
+      this,
+      upsertMemberSourceMultiRuleTitle,
+      {
+        ruleName: upsertMemberSourceMultiRuleName,
+        eventBus: internalEventBusConstruct.eventBus,
+        description: 'Upsert multiple group sources, based on internal event',
+        eventPattern: {
+          detailType: ['Lambda Function Invocation Result - Success'],
+          source: ['lambda'],
+          detail: {
+            responsePayload: {
+              entity: ['member-base', 'member'],
+              outcome: ['success'],
+            },
+          },
+        },
+      }
+    );
+    upsertMemberSourceFromLambdaRule.addTarget(
+      new targets.SfnStateMachine(upsertMemberSourceMultiConstruct.stateMachine)
+    );
+
+    /**
+     * Subscribing the state machine to putEvents that may happen during step functions
+     */
+    const upsertMemberSourceMultiFromPutId = generateCompositeResourceId(
+      upsertMemberSourceMultiId,
+      'put'
+    );
+    const [
+      upsertMemberSourceFromPutMultiRuleName,
+      upsertMemberSourceFromPutMultiRuleTitle,
+    ] = resourceNameTitle(upsertMemberSourceMultiFromPutId, 'Rule');
+    const upsertMemberSourceFromPutRule = new events.Rule(
+      this,
+      upsertMemberSourceFromPutMultiRuleTitle,
+      {
+        ruleName: upsertMemberSourceFromPutMultiRuleName,
+        eventBus: internalEventBusConstruct.eventBus,
+        description: 'Upsert multiple group sources, based on internal event',
+        eventPattern: {
+          detailType: ['putEvent'],
+          detail: {
             entity: ['member-base', 'member'],
             outcome: ['success'],
           },
         },
-      },
-    });
-    rule.addTarget(
+      }
+    );
+    upsertMemberSourceFromPutRule.addTarget(
       new targets.SfnStateMachine(upsertMemberSourceMultiConstruct.stateMachine)
     );
 

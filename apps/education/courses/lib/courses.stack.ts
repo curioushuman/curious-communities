@@ -153,8 +153,10 @@ export class CoursesStack extends cdk.Stack {
 
     /**
      * Function: Create Participant
+     *
+     * NOTE: destination is not invoked when called within step functions
      */
-    const createParticipantFunction = new LambdaEventSubscription(
+    const createParticipantFunction = new LambdaConstruct(
       this,
       generateCompositeResourceId(stackId, 'participant-create'),
       {
@@ -163,13 +165,6 @@ export class CoursesStack extends cdk.Stack {
           '../src/infra/create-participant/main.ts'
         ),
         lambdaProps: lambdaPropsWithDestination,
-        eventBus: externalEventBusConstruct.eventBus,
-        ruleDetailType: 'putEvent',
-        ruleDetails: {
-          object: ['participant'],
-          type: ['created'],
-        },
-        ruleDescription: 'Update internal, to match the external',
       }
     );
     // add salesforce env vars
@@ -185,8 +180,10 @@ export class CoursesStack extends cdk.Stack {
 
     /**
      * Function: Update Participant
+     *
+     * NOTE: destination is not invoked when called within step functions
      */
-    const updateParticipantFunction = new LambdaEventSubscription(
+    const updateParticipantFunction = new LambdaConstruct(
       this,
       generateCompositeResourceId(stackId, 'participant-update'),
       {
@@ -195,13 +192,6 @@ export class CoursesStack extends cdk.Stack {
           '../src/infra/update-participant/main.ts'
         ),
         lambdaProps: lambdaPropsWithDestination,
-        eventBus: externalEventBusConstruct.eventBus,
-        ruleDetailType: 'putEvent',
-        ruleDetails: {
-          object: ['participant'],
-          type: ['updated'],
-        },
-        ruleDescription: 'Update internal, to match the external',
       }
     );
     // add salesforce env vars
@@ -275,7 +265,7 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
-     * Allow the internal event bus to invoke the state machine
+     * Allow the external event bus to invoke the state machine
      */
     upsertParticipantConstruct.stateMachine.grantStartExecution(
       externalEventBusConstruct.role

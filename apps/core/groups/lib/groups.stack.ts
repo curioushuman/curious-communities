@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
-import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
@@ -12,12 +11,12 @@ import { resolve as pathResolve } from 'path';
 // Initially we're going to import from local sources
 import {
   ChLayerFrom,
-  LambdaEventSubscription,
   ChEventBusFrom,
   LambdaConstruct,
   generateCompositeResourceId,
   resourceNameTitle,
   UpsertSourceMultiConstruct,
+  RuleEntityEvent,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -101,7 +100,7 @@ export class GroupsStack extends cdk.Stack {
       stackId,
       'course-group-upsert'
     );
-    const upsertCourseGroupLambdaConstruct = new LambdaEventSubscription(
+    const upsertCourseGroupLambdaConstruct = new LambdaConstruct(
       this,
       upsertCourseGroupLambdaId,
       {
@@ -110,13 +109,6 @@ export class GroupsStack extends cdk.Stack {
           '../src/infra/upsert-course-group/main.ts'
         ),
         lambdaProps: lambdaPropsWithDestination,
-        eventBus: internalEventBusConstruct.eventBus,
-        // NOTE: we're not including the lambda ARNs in here
-        // which means this will respond to any lambda success that returns a payload of entity: course
-        ruleDetails: {
-          entity: ['course-base', 'course'],
-          outcome: ['success'],
-        },
       }
     );
 
@@ -126,6 +118,25 @@ export class GroupsStack extends cdk.Stack {
     );
     groupsTableConstruct.table.grantWriteData(
       upsertCourseGroupLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Subscribing the lambda to the internal event bus
+     */
+    const upsertCourseGroupRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(upsertCourseGroupLambdaId, 'rule'),
+      {
+        eventBus: internalEventBusConstruct.eventBus,
+        entity: ['course-base', 'course'],
+        event: ['created', 'updated'],
+        outcome: ['success'],
+      }
+    );
+    upsertCourseGroupRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(
+        upsertCourseGroupLambdaConstruct.lambdaFunction
+      )
     );
 
     /**
@@ -202,26 +213,19 @@ export class GroupsStack extends cdk.Stack {
     );
 
     /**
-     * Subscribing the state machine to the Upsert Course Group Lambda (destination) events
+     * Subscribing the state machine to the internal event bus
      */
-    const [upsertGroupSourceMultiRuleName, upsertGroupSourceMultiRuleTitle] =
-      resourceNameTitle(upsertGroupSourceMultiId, 'Rule');
-    const rule = new events.Rule(this, upsertGroupSourceMultiRuleTitle, {
-      ruleName: upsertGroupSourceMultiRuleName,
-      eventBus: internalEventBusConstruct.eventBus,
-      description: 'Upsert multiple group sources, based on internal event',
-      eventPattern: {
-        detailType: ['Lambda Function Invocation Result - Success'],
-        source: ['lambda'],
-        detail: {
-          responsePayload: {
-            entity: ['course-group-base', 'group-base', 'standard-group-base'],
-            outcome: ['success'],
-          },
-        },
-      },
-    });
-    rule.addTarget(
+    const upsertGroupSourceMultiRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(upsertGroupSourceMultiId, 'rule'),
+      {
+        eventBus: internalEventBusConstruct.eventBus,
+        entity: ['course-group-base', 'group-base', 'standard-group-base'],
+        event: ['created', 'updated'],
+        outcome: ['success'],
+      }
+    );
+    upsertGroupSourceMultiRuleConstruct.rule.addTarget(
       new targets.SfnStateMachine(upsertGroupSourceMultiConstruct.stateMachine)
     );
 
@@ -238,26 +242,19 @@ export class GroupsStack extends cdk.Stack {
      * Triggers
      * - internal event bus i.e. when participant created/updated
      */
-    const upsertCourseGroupMemberResourceId = generateCompositeResourceId(
+    const upsertCourseGroupMemberLambdaId = generateCompositeResourceId(
       stackId,
       'course-group-member-upsert'
     );
-    const upsertCourseGroupMemberLambdaConstruct = new LambdaEventSubscription(
+    const upsertCourseGroupMemberLambdaConstruct = new LambdaConstruct(
       this,
-      upsertCourseGroupMemberResourceId,
+      upsertCourseGroupMemberLambdaId,
       {
         lambdaEntry: pathResolve(
           __dirname,
           '../src/infra/upsert-course-group-member/main.ts'
         ),
         lambdaProps: lambdaPropsWithDestination,
-        eventBus: internalEventBusConstruct.eventBus,
-        // NOTE: we're not including the lambda ARNs in here
-        // which means this will respond to any lambda success that returns a payload of entity: participant
-        ruleDetails: {
-          entity: ['participant', 'participant-base'],
-          outcome: ['success'],
-        },
       }
     );
 
@@ -270,32 +267,74 @@ export class GroupsStack extends cdk.Stack {
     );
 
     /**
+     * Subscribing the lambda to the internal event bus
+     */
+    const upsertCourseGroupMemberRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(upsertCourseGroupMemberLambdaId, 'rule'),
+      {
+        eventBus: internalEventBusConstruct.eventBus,
+        entity: ['participant', 'participant-base'],
+        event: ['created', 'updated'],
+        outcome: ['success'],
+      }
+    );
+    upsertCourseGroupMemberRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(
+        upsertCourseGroupMemberLambdaConstruct.lambdaFunction
+      )
+    );
+
+    /**
      * Function: Update group member multi
      *
      * Triggers
      * - course group update i.e. course opens/closes
      */
-    const updateGroupMemberMultiResourceId = generateCompositeResourceId(
+    const updateGroupMemberMultiLambdaId = generateCompositeResourceId(
       stackId,
       'group-member-update-multi'
     );
-    const updateGroupMemberMultiLambdaConstruct = new LambdaEventSubscription(
+    const updateGroupMemberMultiLambdaConstruct = new LambdaConstruct(
       this,
-      updateGroupMemberMultiResourceId,
+      updateGroupMemberMultiLambdaId,
       {
         lambdaEntry: pathResolve(
           __dirname,
           '../src/infra/update-group-member-multi/main.ts'
         ),
         lambdaProps: this.lambdaProps,
-        eventBus: internalEventBusConstruct.eventBus,
-        lambdaArns: [
-          upsertCourseGroupLambdaConstruct.lambdaFunction.functionArn,
-        ],
-        ruleDetails: {
-          outcome: ['success'],
-        },
       }
+    );
+
+    /**
+     * Subscribing the lambda to the internal event bus
+     */
+    const updateGroupMemberMultiRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(updateGroupMemberMultiLambdaId, 'rule'),
+      {
+        eventBus: internalEventBusConstruct.eventBus,
+        entity: [
+          'group-base',
+          'group',
+          { suffix: '-group-base' },
+          { suffix: '-group' },
+        ],
+        event: ['created', 'updated'],
+        outcome: ['success'],
+        // we could limit it to just the above lambda if we wanted to
+        // source:{
+        //   lambdas: [
+        //     upsertCourseGroupLambdaConstruct.lambdaFunction
+        //   ]
+        // }
+      }
+    );
+    updateGroupMemberMultiRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(
+        updateGroupMemberMultiLambdaConstruct.lambdaFunction
+      )
     );
 
     /**
@@ -366,31 +405,54 @@ export class GroupsStack extends cdk.Stack {
      *   acts as lambda destination for update group member;
      *   triggered by course group update i.e. course opens/closes
      */
-    const upsertGroupMemberSourceResourceId = generateCompositeResourceId(
+    const upsertGroupMemberSourceLambdaId = generateCompositeResourceId(
       stackId,
       'group-member-source-upsert'
     );
-    const upsertGroupMemberSourceLambdaConstruct = new LambdaEventSubscription(
+    const upsertGroupMemberSourceLambdaConstruct = new LambdaConstruct(
       this,
-      upsertGroupMemberSourceResourceId,
+      upsertGroupMemberSourceLambdaId,
       {
         lambdaEntry: pathResolve(
           __dirname,
           '../src/infra/upsert-group-member-source/main.ts'
         ),
         lambdaProps: this.lambdaProps,
-        eventBus: internalEventBusConstruct.eventBus,
-        lambdaArns: [
-          upsertCourseGroupMemberLambdaConstruct.lambdaFunction.functionArn,
-          updateGroupMemberLambdaConstruct.lambdaFunction.functionArn,
-        ],
-        ruleDetails: {
-          outcome: ['success'],
-        },
       }
     );
     upsertGroupMemberSourceLambdaConstruct.addEnvironmentEdApp();
     upsertGroupMemberSourceLambdaConstruct.addEnvironmentTribe();
+
+    /**
+     * Subscribing the lambda to the internal event bus
+     */
+    const upsertGroupMemberSourceRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(upsertGroupMemberSourceLambdaId, 'rule'),
+      {
+        eventBus: internalEventBusConstruct.eventBus,
+        entity: [
+          'group-member-base',
+          'group-member',
+          { suffix: '-group-member-base' },
+          { suffix: '-group-member' },
+        ],
+        event: ['created', 'updated'],
+        outcome: ['success'],
+        // we could limit it to just the above lambdas if we wanted to
+        // source:{
+        //   lambdas: [
+        //     upsertCourseGroupMemberLambdaConstruct.lambdaFunction,
+        //     updateGroupMemberLambdaConstruct.lambdaFunction,
+        //   ]
+        // }
+      }
+    );
+    upsertGroupMemberSourceRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(
+        upsertGroupMemberSourceLambdaConstruct.lambdaFunction
+      )
+    );
 
     /**
      * Outputs

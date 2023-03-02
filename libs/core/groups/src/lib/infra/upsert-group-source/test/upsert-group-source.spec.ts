@@ -177,7 +177,7 @@ defineFeature(feature, (test) => {
     let error: Error;
 
     given('the request is valid', () => {
-      // this creates a group with no idSources, so we defer to name
+      // this creates a group with no sourceIds, so we defer to name
       const group = GroupBuilder().noSourceExists().buildGroupBaseResponseDto();
       // this is what updatedAlpha would look like
       const groupSource = GroupSourceBuilder().updatedAlpha().build();

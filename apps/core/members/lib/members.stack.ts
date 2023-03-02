@@ -108,7 +108,11 @@ export class MembersStack extends cdk.Stack {
     /**
      * Function: Create Member
      *
-     * Subscribed to external event bus
+     * Triggers
+     * - Subscribed to external event bus
+     * - create participant step functions
+     *
+     * NOTE: destination is not invoked when called within step functions
      */
     const createMemberLambdaConstruct = new LambdaEventSubscription(
       this,

@@ -103,5 +103,6 @@ export const handler = async (
   // TODO: replace this with a try/catch, and throw the error in the controller
   return updateMemberController.update({
     idSourceValue: validRequestDto.memberIdSourceValue,
+    member: validRequestDto.member,
   });
 };

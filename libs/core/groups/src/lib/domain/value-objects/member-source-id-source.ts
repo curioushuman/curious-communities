@@ -6,7 +6,7 @@ import {
 } from '@curioushuman/common';
 
 import { MemberSourceId } from './member-source-id';
-import { Source } from './source';
+import { MemberSource } from './member-source';
 
 /**
  * This overrides the base structure for external ID + source
@@ -15,7 +15,7 @@ import { Source } from './source';
  */
 export const MemberSourceIdSource = prepareExternalIdSourceRuntype(
   MemberSourceId,
-  Source
+  MemberSource
 );
 
 export type MemberSourceIdSource = Static<typeof MemberSourceIdSource>;
@@ -25,7 +25,7 @@ export type MemberSourceIdSource = Static<typeof MemberSourceIdSource>;
  */
 export const MemberSourceIdSourceValue = prepareExternalIdSourceValueRuntype(
   MemberSourceId,
-  Source
+  MemberSource
 );
 
 export type MemberSourceIdSourceValue = Static<

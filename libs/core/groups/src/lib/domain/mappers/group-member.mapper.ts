@@ -12,12 +12,12 @@ export class GroupMemberMapper {
    */
   public static fromParticipantStatus(status: string): GroupMemberStatus {
     // see if we have a status that aligns
-    const commonStatus = Object.values(GroupMemberStatusEnum).find(
+    let commonStatus = Object.values(GroupMemberStatusEnum).find(
       (gmStatus) => gmStatus === status
     );
-    if (commonStatus) {
-      return commonStatus as GroupMemberStatus;
+    if (!commonStatus) {
+      commonStatus = GroupMemberStatusEnum.UNKNOWN;
     }
-    return GroupMemberStatusEnum.UNKNOWN;
+    return GroupMemberStatus.check(commonStatus);
   }
 }

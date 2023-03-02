@@ -73,7 +73,7 @@ export type UpdateMemberDtoOrEvent = UpdateMemberRequestDto | UpdateMemberEvent;
  */
 export function locateDto(incomingEvent: UpdateMemberDtoOrEvent): unknown {
   if ('sources' in incomingEvent) {
-    const idSources = [
+    const sourceIds = [
       prepareExternalIdSourceValue(
         incomingEvent.sources.AUTH.detail.detail.id,
         'AUTH'
@@ -89,7 +89,7 @@ export function locateDto(incomingEvent: UpdateMemberDtoOrEvent): unknown {
     ];
     const member = {
       ...incomingEvent.member,
-      idSources,
+      sourceIds,
     };
     return { member };
   }

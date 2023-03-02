@@ -55,6 +55,9 @@ export class UpdateMemberController {
   public async update(
     requestDto: UpdateMemberRequestDto
   ): Promise<ResponsePayload<'member'>> {
+    // log the dto
+    this.logger.debug(requestDto, 'update');
+
     // #1. validate the dto
     const validDto = pipe(
       requestDto,

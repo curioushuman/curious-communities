@@ -1,10 +1,7 @@
 import { Record, Static, String } from 'runtypes';
 
 import { MemberResponseDto } from '@curioushuman/cc-members-service';
-import {
-  SfnTaskInputTextReplica,
-  SqsAsEventSourceEvent,
-} from '@curioushuman/common';
+import { SfnTaskInputTextReplica } from '@curioushuman/common';
 
 /**
  * This is the form of data we expect as input into our Lambda

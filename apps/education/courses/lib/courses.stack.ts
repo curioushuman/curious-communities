@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
-import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -10,11 +9,10 @@ import { resolve as pathResolve } from 'path';
 // Initially we're going to import from local sources
 import {
   ChLayerFrom,
-  LambdaEventSubscription,
   ChEventBusFrom,
   LambdaConstruct,
   generateCompositeResourceId,
-  resourceNameTitle,
+  RuleEntityEvent,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -105,22 +103,19 @@ export class CoursesStack extends cdk.Stack {
      *
      * NOTE: create and update have both been removed for now
      */
-    const upsertCourseLambdaConstruct = new LambdaEventSubscription(
+    const upsertCourseId = generateCompositeResourceId(
+      stackId,
+      'course-upsert'
+    );
+    const upsertCourseLambdaConstruct = new LambdaConstruct(
       this,
-      generateCompositeResourceId(stackId, 'course-upsert'),
+      upsertCourseId,
       {
         lambdaEntry: pathResolve(
           __dirname,
           '../src/infra/upsert-course/main.ts'
         ),
         lambdaProps: lambdaPropsWithDestination,
-        eventBus: externalEventBusConstruct.eventBus,
-        ruleDetailType: 'putEvent',
-        ruleDetails: {
-          entity: ['course'],
-          event: ['created', 'updated'],
-        },
-        ruleDescription: 'Create internal, to match the external',
       }
     );
     // add salesforce env vars
@@ -132,6 +127,22 @@ export class CoursesStack extends cdk.Stack {
     );
     coursesTableConstruct.table.grantWriteData(
       upsertCourseLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Subscribing the lambda to the external event bus
+     */
+    const upsertCourseRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(upsertCourseId, 'rule'),
+      {
+        eventBus: externalEventBusConstruct.eventBus,
+        entity: ['course'],
+        event: ['created', 'updated'],
+      }
+    );
+    upsertCourseRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(upsertCourseLambdaConstruct.lambdaFunction)
     );
 
     /**
@@ -274,21 +285,16 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Subscribing the state machine to the external event bus
      */
-    const [upsertParticipantRuleName, upsertParticipantRuleTitle] =
-      resourceNameTitle(upsertParticipantId, 'Rule');
-    const rule = new events.Rule(this, upsertParticipantRuleTitle, {
-      ruleName: upsertParticipantRuleName,
-      eventBus: externalEventBusConstruct.eventBus,
-      description: 'Upsert participant, based on external event',
-      eventPattern: {
-        detailType: ['putEvent'],
-        detail: {
-          entity: ['participant'],
-          event: ['created', 'updated'],
-        },
-      },
-    });
-    rule.addTarget(
+    const upsertParticipantRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(upsertParticipantId, 'rule'),
+      {
+        eventBus: externalEventBusConstruct.eventBus,
+        entity: ['participant'],
+        event: ['created', 'updated'],
+      }
+    );
+    upsertParticipantRuleConstruct.rule.addTarget(
       new targets.SfnStateMachine(upsertParticipantConstruct.stateMachine)
     );
 

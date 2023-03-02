@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
-import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -10,12 +9,11 @@ import { resolve as pathResolve } from 'path';
 // Initially we're going to import from local sources
 import {
   ChLayerFrom,
-  LambdaEventSubscription,
   ChEventBusFrom,
   LambdaConstruct,
   generateCompositeResourceId,
-  resourceNameTitle,
   UpsertSourceMultiConstruct,
+  RuleEntityEvent,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -114,22 +112,19 @@ export class MembersStack extends cdk.Stack {
      *
      * NOTE: destination is not invoked when called within step functions
      */
-    const createMemberLambdaConstruct = new LambdaEventSubscription(
+    const createMemberId = generateCompositeResourceId(
+      stackId,
+      'member-create'
+    );
+    const createMemberLambdaConstruct = new LambdaConstruct(
       this,
-      generateCompositeResourceId(stackId, 'member-create'),
+      createMemberId,
       {
         lambdaEntry: pathResolve(
           __dirname,
           '../src/infra/create-member/main.ts'
         ),
         lambdaProps: lambdaPropsWithDestination,
-        eventBus: externalEventBusConstruct.eventBus,
-        ruleDetailType: 'putEvent',
-        ruleDetails: {
-          entity: ['member'],
-          event: ['created'],
-        },
-        ruleDescription: 'Create internal, to match the external',
       }
     );
     // add env vars
@@ -144,26 +139,39 @@ export class MembersStack extends cdk.Stack {
     );
 
     /**
+     * Subscribing the lambda to the external event bus
+     */
+    const createMemberRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(createMemberId, 'rule'),
+      {
+        eventBus: externalEventBusConstruct.eventBus,
+        entity: ['member'],
+        event: ['created'],
+      }
+    );
+    createMemberRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(createMemberLambdaConstruct.lambdaFunction)
+    );
+
+    /**
      * Function: Update Member
      *
      * Subscribed to external event bus
      */
-    const updateMemberLambdaConstruct = new LambdaEventSubscription(
+    const updateMemberId = generateCompositeResourceId(
+      stackId,
+      'member-update'
+    );
+    const updateMemberLambdaConstruct = new LambdaConstruct(
       this,
-      generateCompositeResourceId(stackId, 'member-update'),
+      updateMemberId,
       {
         lambdaEntry: pathResolve(
           __dirname,
           '../src/infra/update-member/main.ts'
         ),
         lambdaProps: lambdaPropsWithDestination,
-        eventBus: externalEventBusConstruct.eventBus,
-        ruleDetailType: 'putEvent',
-        ruleDetails: {
-          entity: ['member'],
-          event: ['updated'],
-        },
-        ruleDescription: 'Update internal, to match the external',
       }
     );
     // add env vars
@@ -175,6 +183,22 @@ export class MembersStack extends cdk.Stack {
     );
     membersTableConstruct.table.grantWriteData(
       updateMemberLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Subscribing the lambda to the external event bus
+     */
+    const updateMemberRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(updateMemberId, 'rule'),
+      {
+        eventBus: externalEventBusConstruct.eventBus,
+        entity: ['member'],
+        event: ['updated'],
+      }
+    );
+    updateMemberRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(updateMemberLambdaConstruct.lambdaFunction)
     );
 
     /**
@@ -243,65 +267,19 @@ export class MembersStack extends cdk.Stack {
     );
 
     /**
-     * Subscribing the state machine to the Create or Update Member Lambda (destination) events
+     * Subscribing the state machine to the internal event bus
      */
-    const upsertMemberSourceMultiFromLambdaId = generateCompositeResourceId(
-      upsertMemberSourceMultiId,
-      'lambda'
-    );
-    const [upsertMemberSourceMultiRuleName, upsertMemberSourceMultiRuleTitle] =
-      resourceNameTitle(upsertMemberSourceMultiFromLambdaId, 'Rule');
-    const upsertMemberSourceFromLambdaRule = new events.Rule(
+    const updateMemberSourceMultiRuleConstruct = new RuleEntityEvent(
       this,
-      upsertMemberSourceMultiRuleTitle,
+      generateCompositeResourceId(upsertMemberSourceMultiId, 'rule'),
       {
-        ruleName: upsertMemberSourceMultiRuleName,
         eventBus: internalEventBusConstruct.eventBus,
-        description: 'Upsert multiple group sources, based on internal event',
-        eventPattern: {
-          detailType: ['Lambda Function Invocation Result - Success'],
-          source: ['lambda'],
-          detail: {
-            responsePayload: {
-              entity: ['member-base', 'member'],
-              outcome: ['success'],
-            },
-          },
-        },
+        entity: ['member-base', 'member'],
+        event: ['created', 'updated'],
+        outcome: ['success'],
       }
     );
-    upsertMemberSourceFromLambdaRule.addTarget(
-      new targets.SfnStateMachine(upsertMemberSourceMultiConstruct.stateMachine)
-    );
-
-    /**
-     * Subscribing the state machine to putEvents that may happen during step functions
-     */
-    const upsertMemberSourceMultiFromPutId = generateCompositeResourceId(
-      upsertMemberSourceMultiId,
-      'put'
-    );
-    const [
-      upsertMemberSourceFromPutMultiRuleName,
-      upsertMemberSourceFromPutMultiRuleTitle,
-    ] = resourceNameTitle(upsertMemberSourceMultiFromPutId, 'Rule');
-    const upsertMemberSourceFromPutRule = new events.Rule(
-      this,
-      upsertMemberSourceFromPutMultiRuleTitle,
-      {
-        ruleName: upsertMemberSourceFromPutMultiRuleName,
-        eventBus: internalEventBusConstruct.eventBus,
-        description: 'Upsert multiple group sources, based on internal event',
-        eventPattern: {
-          detailType: ['putEvent'],
-          detail: {
-            entity: ['member-base', 'member'],
-            outcome: ['success'],
-          },
-        },
-      }
-    );
-    upsertMemberSourceFromPutRule.addTarget(
+    updateMemberSourceMultiRuleConstruct.rule.addTarget(
       new targets.SfnStateMachine(upsertMemberSourceMultiConstruct.stateMachine)
     );
 

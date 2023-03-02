@@ -67,6 +67,7 @@ export type SupportedResourceType =
   | 'ResponseModel'
   | 'Role'
   | 'Rule'
+  | 'SfnChoice'
   | 'SfnParallel'
   | 'SfnPass'
   | 'SfnStateMachine'

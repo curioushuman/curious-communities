@@ -117,8 +117,8 @@ export class CoursesStack extends cdk.Stack {
         eventBus: externalEventBusConstruct.eventBus,
         ruleDetailType: 'putEvent',
         ruleDetails: {
-          object: ['course'],
-          type: ['created', 'updated'],
+          entity: ['course'],
+          event: ['created', 'updated'],
         },
         ruleDescription: 'Create internal, to match the external',
       }
@@ -283,8 +283,8 @@ export class CoursesStack extends cdk.Stack {
       eventPattern: {
         detailType: ['putEvent'],
         detail: {
-          object: ['participant'],
-          type: ['created', 'updated'],
+          entity: ['participant'],
+          event: ['created', 'updated'],
         },
       },
     });

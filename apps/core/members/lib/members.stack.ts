@@ -126,8 +126,8 @@ export class MembersStack extends cdk.Stack {
         eventBus: externalEventBusConstruct.eventBus,
         ruleDetailType: 'putEvent',
         ruleDetails: {
-          object: ['member'],
-          type: ['created'],
+          entity: ['member'],
+          event: ['created'],
         },
         ruleDescription: 'Create internal, to match the external',
       }
@@ -160,8 +160,8 @@ export class MembersStack extends cdk.Stack {
         eventBus: externalEventBusConstruct.eventBus,
         ruleDetailType: 'putEvent',
         ruleDetails: {
-          object: ['member'],
-          type: ['updated'],
+          entity: ['member'],
+          event: ['updated'],
         },
         ruleDescription: 'Update internal, to match the external',
       }

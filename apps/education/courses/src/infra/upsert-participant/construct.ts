@@ -260,6 +260,22 @@ export class UpsertParticipantConstruct extends Construct {
       .next(this.tasks.putEventParticipantUpserted);
 
     /**
+     * Task: PAUSE after member creation
+     *
+     * NOTE: This is to allow for upsertMemberSource to occur. See related issue.
+     * Ref: https://github.com/curioushuman/curious-communities/issues/9
+     *
+     * NEXT: createParticipant
+     */
+    this.tasks.postMemberCreatePause = new sfn.Wait(
+      this,
+      this.prepareTaskTitle('member-create-pause'),
+      {
+        time: sfn.WaitTime.duration(cdk.Duration.seconds(10)),
+      }
+    ).next(this.tasks.createParticipant);
+
+    /**
      * Task: Announce member creation
      *
      * NEXT: createParticipant
@@ -290,7 +306,7 @@ export class UpsertParticipantConstruct extends Construct {
       }
     )
       .addCatch(this.endStates.fail)
-      .next(this.tasks.createParticipant);
+      .next(this.tasks.postMemberCreatePause);
 
     /**
      * Task: create member

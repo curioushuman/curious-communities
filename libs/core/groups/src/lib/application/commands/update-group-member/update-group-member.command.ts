@@ -89,10 +89,11 @@ export class UpdateGroupMemberHandler
   }
 
   parseDto(validDto: UpdateGroupMemberDto): GroupMember | undefined {
-    const { groupMember, participant, groupMemberSource } = validDto;
+    const { groupMember, participant } = validDto;
     // if no participant or groupMemberSource it means we're doing a straight update
+    // NOTE: groupMemberSource removed for now
     // so we skip the requiresUpdate check
-    if (!participant && !groupMemberSource) {
+    if (!participant) {
       return groupMember;
     }
     return pipe(

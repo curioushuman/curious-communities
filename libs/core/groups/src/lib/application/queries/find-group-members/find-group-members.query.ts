@@ -15,7 +15,7 @@ import { GroupMember } from '../../../domain/entities/group-member';
 import { GroupMemberRepositoryErrorFactory } from '../../../adapter/ports/group-member.repository.error-factory';
 
 export class FindGroupMembersQuery implements IQuery {
-  constructor(public readonly findGroupMemberDto: FindGroupMembersDto) {}
+  constructor(public readonly findGroupMembersDto: FindGroupMembersDto) {}
 }
 
 /**
@@ -34,10 +34,10 @@ export class FindGroupMembersHandler
   }
 
   async execute(query: FindGroupMembersQuery): Promise<GroupMember[]> {
-    const { findGroupMemberDto } = query;
+    const { findGroupMembersDto } = query;
 
     const task = pipe(
-      findGroupMemberDto,
+      findGroupMembersDto,
       // #1. parse the dto
       // NOTE: this uses a dynamic parser that will parse the dto based on the
       //       identifier within the dto

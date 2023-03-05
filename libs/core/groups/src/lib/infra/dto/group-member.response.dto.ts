@@ -13,6 +13,15 @@ import {
 import { StandardGroupBaseResponseDto } from './standard-group.response.dto';
 
 /**
+ * Type for group member base entity
+ *
+ * Note: Just a type, we don't use this for validation
+ */
+export type GroupMemberBaseResponseDto =
+  | CourseGroupMemberBaseResponseDto
+  | StandardGroupMemberBaseResponseDto;
+
+/**
  * Type for group member entity
  *
  * Note: Is Runtype, as used for validation in command

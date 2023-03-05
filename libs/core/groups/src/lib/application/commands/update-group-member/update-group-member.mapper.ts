@@ -6,15 +6,17 @@ import {
 } from '../../../domain/entities/course-group-member';
 import { isCourseGroupBase } from '../../../domain/entities/group';
 import { GroupMember } from '../../../domain/entities/group-member';
-import { GroupMemberSource } from '../../../domain/entities/group-member-source';
-import { StandardGroupMember } from '../../../domain/entities/standard-group-member';
 import { ParticipantDto } from '../../../infra/dto/participant.dto';
 import { GroupMemberMapper as InfraGroupMemberMapper } from '../../../infra/group-member.mapper';
 import { GroupMemberMapper as DomainGroupMemberMapper } from '../../../domain/mappers/group-member.mapper';
 import { MemberMapper } from '../../../infra/member.mapper';
 import { UpdateGroupMemberRequestDto } from '../../../infra/update-group-member/dto/update-group-member.request.dto';
 import { UpsertCourseGroupMemberRequestDto } from '../../../infra/upsert-course-group-member/dto/upsert-course-group-member.request.dto';
-import { UpdateGroupMemberDto } from './update-group-member.dto';
+import {
+  UpdateGroupMemberDto,
+  UpdateGroupMemberDtoSource,
+  UpdateGroupMemberDtoSourceFunction,
+} from './update-group-member.dto';
 
 export class UpdateGroupMemberMapper extends UpdateMapper {
   public static fromUpsertCourseGroupMemberRequestDto(
@@ -33,21 +35,45 @@ export class UpdateGroupMemberMapper extends UpdateMapper {
   }
 
   public static fromDto(dto: UpdateGroupMemberDto): GroupMember {
-    // this supports the vanilla update from just the record itself
-    if (!dto.participant && !dto.groupMemberSource) {
+    // if only groupMember is present, return it
+    if (Object.keys(dto).length === 1) {
       return dto.groupMember;
     }
-    // Type casting here as we know if participant is null then groupMemberSource is not null
-    return dto.participant
-      ? UpdateGroupMemberMapper.fromParticipantToGroupMember(
-          dto.participant,
-          dto.groupMember
-        )
-      : UpdateGroupMemberMapper.fromSourceToGroupMember(
-          dto.groupMemberSource as GroupMemberSource,
-          dto.groupMember
-        );
+    return UpdateGroupMemberMapper.fromDtoSource(dto);
   }
+
+  public static fromDtoSource(dto: UpdateGroupMemberDto): GroupMember {
+    const orderOfUpdate: Record<
+      UpdateGroupMemberDtoSource,
+      UpdateGroupMemberDtoSourceFunction
+    > = {
+      participant: UpdateGroupMemberMapper.fromSourceParticipant,
+    };
+    let groupMember: GroupMember | undefined = undefined;
+    Object.keys(orderOfUpdate).forEach((key) => {
+      if (key in dto && !groupMember) {
+        groupMember = orderOfUpdate[key as UpdateGroupMemberDtoSource](dto)();
+      }
+    });
+    return groupMember || dto.groupMember;
+  }
+
+  public static fromSourceParticipant = (
+    dto: UpdateGroupMemberDto
+  ): (() => GroupMember) => {
+    const { groupMember, participant } = dto;
+    if (!participant) {
+      throw new InternalRequestInvalidError(
+        'Attempting to update group member from participant, without the participant'
+      );
+    }
+    return () => {
+      return UpdateGroupMemberMapper.fromParticipantToGroupMember(
+        participant,
+        groupMember
+      );
+    };
+  };
 
   public static fromParticipantToGroupMember(
     participant: ParticipantDto,
@@ -71,21 +97,5 @@ export class UpdateGroupMemberMapper extends UpdateMapper {
       group,
       member,
     };
-  }
-
-  /**
-   * ! THIS IS UNFINISHED
-   * We haven't had to employ it yet
-   * I just wanted to make sure we could support it
-   */
-  public static fromSourceToGroupMember(
-    source: GroupMemberSource,
-    groupMember: GroupMember
-  ): StandardGroupMember {
-    return StandardGroupMember.check({
-      ...groupMember,
-      id: groupMember.id,
-      status: source.status,
-    });
   }
 }

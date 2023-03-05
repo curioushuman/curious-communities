@@ -28,6 +28,22 @@ export const GroupMember = Union(StandardGroupMember, CourseGroupMember);
 export type GroupMember = Static<typeof GroupMember>;
 
 /**
+ * ----
+ * Additional helper types used during various operations
+ * ----
+ */
+
+/**
+ * The currently supported fields in a findAll query
+ */
+export const GroupMemberFilters = StandardGroupMemberBase.pick('memberId');
+
+/**
+ * The currently supported fields in a findAll query
+ */
+export type GroupMemberFilters = Static<typeof GroupMemberFilters>;
+
+/**
  * Type for what can be updated on a group member, en masse
  */
 export const GroupMemberForMultiUpdate = StandardGroupMemberBase.pick('status');

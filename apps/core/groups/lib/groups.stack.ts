@@ -290,6 +290,7 @@ export class GroupsStack extends cdk.Stack {
      *
      * Triggers
      * - course group update i.e. course opens/closes
+     * - member update
      */
     const updateGroupMemberMultiLambdaId = generateCompositeResourceId(
       stackId,
@@ -310,9 +311,13 @@ export class GroupsStack extends cdk.Stack {
     /**
      * Subscribing the lambda to the internal event bus
      */
-    const updateGroupMemberMultiRuleConstruct = new RuleEntityEvent(
+    const groupUpdateGroupMemberMultiId = generateCompositeResourceId(
+      updateGroupMemberMultiLambdaId,
+      'group'
+    );
+    const groupUpdateGroupMemberMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(updateGroupMemberMultiLambdaId, 'rule'),
+      generateCompositeResourceId(groupUpdateGroupMemberMultiId, 'rule'),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [
@@ -323,15 +328,37 @@ export class GroupsStack extends cdk.Stack {
         ],
         event: ['created', 'updated'],
         outcome: ['success'],
-        // we could limit it to just the above lambda if we wanted to
-        // source:{
-        //   lambdas: [
-        //     upsertCourseGroupLambdaConstruct.lambdaFunction
-        //   ]
-        // }
       }
     );
-    updateGroupMemberMultiRuleConstruct.rule.addTarget(
+    groupUpdateGroupMemberMultiRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(
+        updateGroupMemberMultiLambdaConstruct.lambdaFunction
+      )
+    );
+
+    /**
+     * Second rule, just for member update
+     */
+    const memberUpdateGroupMemberMultiId = generateCompositeResourceId(
+      updateGroupMemberMultiLambdaId,
+      'member'
+    );
+    const memberUpdateGroupMemberMultiRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(memberUpdateGroupMemberMultiId, 'rule'),
+      {
+        eventBus: internalEventBusConstruct.eventBus,
+        entity: [
+          'member-base',
+          'member',
+          { suffix: '-member-base' },
+          { suffix: '-member' },
+        ],
+        event: ['updated'],
+        outcome: ['success'],
+      }
+    );
+    memberUpdateGroupMemberMultiRuleConstruct.rule.addTarget(
       new targets.LambdaFunction(
         updateGroupMemberMultiLambdaConstruct.lambdaFunction
       )

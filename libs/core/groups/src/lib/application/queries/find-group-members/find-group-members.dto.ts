@@ -1,4 +1,5 @@
-import { Record, Static } from 'runtypes';
+import { Optional, Record, Static } from 'runtypes';
+import { GroupMemberFilters } from '../../../domain/entities/group-member';
 import { GroupId } from '../../../domain/value-objects/group-id';
 
 /**
@@ -8,7 +9,8 @@ import { GroupId } from '../../../domain/value-objects/group-id';
  * - [ ] accept filters and such
  */
 export const FindGroupMembersDto = Record({
-  parentId: GroupId,
-});
+  parentId: Optional(GroupId),
+  filters: Optional(GroupMemberFilters),
+}).withConstraint((dto) => !!(dto.parentId || dto.filters));
 
 export type FindGroupMembersDto = Static<typeof FindGroupMembersDto>;

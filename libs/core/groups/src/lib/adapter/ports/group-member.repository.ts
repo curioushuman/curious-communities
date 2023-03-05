@@ -6,6 +6,7 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
   GroupMember,
+  GroupMemberFilters,
   GroupMemberIdentifier,
   GroupMemberIdentifiers,
 } from '../../domain/entities/group-member';
@@ -36,16 +37,6 @@ export abstract class GroupMemberRepository
   abstract findOne(identifier: GroupMemberIdentifier): GroupMemberFindMethod;
 
   /**
-   * Find a groupMember by the given ID
-   *
-   * NOTE: will throw NotFoundException if not found
-   *
-   * ! UPDATE: removing until we've decided what to do about the fact
-   * we need the groupId as well as the groupMemberId for DynamoDb
-   */
-  // abstract findOneById(id: GroupMemberId): TaskEither<Error, GroupMember>;
-
-  /**
    * Find a groupMember by the given ID and source value
    *
    * NOTE: will throw NotFoundException if not found
@@ -67,12 +58,10 @@ export abstract class GroupMemberRepository
 
   /**
    * Find all group members
-   *
-   * ! NOTE: currently only supports parentId
-   * * Someday will support filters etc
    */
   abstract findAll(props: {
-    parentId: GroupId;
+    parentId?: GroupId;
+    filters?: GroupMemberFilters;
   }): TaskEither<Error, GroupMember[]>;
 
   /**

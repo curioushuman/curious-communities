@@ -15,6 +15,7 @@ import {
 } from '../../ports/group-member.repository';
 import {
   GroupMember,
+  GroupMemberFilters,
   GroupMemberIdentifier,
 } from '../../../domain/entities/group-member';
 import { DynamoDbGroupMemberMapper } from './group-member.mapper';
@@ -83,16 +84,6 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
     return DynamoDbGroupMemberMapper.toDomain(groupMemberItem);
   }
 
-  /**
-   * ! UPDATE: removed until we figure out the best way to do this
-   */
-  // findOneById = (value: GroupMemberId): TE.TaskEither<Error, GroupMember> => {
-  //   const params = this.dynamoDbRepository.prepareParamsGetOne({
-  //     primaryKey: value,
-  //   });
-  //   return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
-  // };
-
   findOneByMemberId = (props: {
     value: MemberId;
     parentId: GroupId;
@@ -130,14 +121,14 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
   };
 
   findAll = (props: {
-    parentId: GroupId;
+    parentId?: GroupId;
+    filters?: GroupMemberFilters;
   }): TE.TaskEither<Error, GroupMember[]> => {
-    // Set the parameters.
-    // this will obtain all groupMembers for a given group
-    const params = this.dynamoDbRepository.prepareParamsQueryAll({
-      value: props.parentId,
+    const params = this.dynamoDbRepository.prepareParamsFindAll({
+      keyValue: props.parentId,
+      filters: props.filters,
     });
-    return this.dynamoDbRepository.tryQueryAll(params, this.processFindOne);
+    return this.dynamoDbRepository.tryFindAll(params, this.processFindOne);
   };
 
   processSave(

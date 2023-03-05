@@ -1,17 +1,11 @@
-import { Literal, Static, Union } from 'runtypes';
+import { Static } from 'runtypes';
+import { prepareEnumRuntype } from '../../domain/value-objects';
 
-export const REQUEST_SOURCE_INTERNAL = 'internal';
-export const REQUEST_SOURCE_EXTERNAL = 'internal';
+export const RequestSourceEnum = {
+  INTERNAL: 'internal',
+  EXTERNAL: 'external',
+} as const;
 
-/**
- * DTO that accepts any of the identifiers
- */
-export const RequestSource = Union(
-  Literal(REQUEST_SOURCE_INTERNAL),
-  Literal(REQUEST_SOURCE_EXTERNAL)
-);
+export const RequestSource = prepareEnumRuntype(RequestSourceEnum);
 
-/**
- * DTO that accepts any of the identifiers
- */
 export type RequestSource = Static<typeof RequestSource>;

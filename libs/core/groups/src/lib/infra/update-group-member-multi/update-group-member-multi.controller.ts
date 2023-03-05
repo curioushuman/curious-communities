@@ -9,6 +9,7 @@ import {
   parseData,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { RequestSourceEnum } from '@curioushuman/common';
 
 import { GroupMemberMessagingService } from '../../adapter/ports/group-member.messaging-service';
 import { UpdateGroupMemberMultiRequestDto } from './dto/update-group-member-multi.request.dto';
@@ -120,6 +121,7 @@ export class UpdateGroupMemberMultiController {
         member,
         group,
       },
+      requestSource: RequestSourceEnum.INTERNAL,
     };
   }
 

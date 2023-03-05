@@ -10,7 +10,7 @@ import {
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryItemUpdateError } from '@curioushuman/error-factory';
-import { REQUEST_SOURCE_INTERNAL } from '@curioushuman/common';
+import { RequestSourceEnum } from '@curioushuman/common';
 
 import { UpdateMemberRequestDto } from './dto/update-member.request.dto';
 import { UpdateMemberCommand } from '../../application/commands/update-member/update-member.command';
@@ -74,7 +74,7 @@ export class UpdateMemberController {
         memberDto,
         parseData(MemberMapper.fromResponseDto, this.logger)
       );
-      if (validDto.requestSource !== REQUEST_SOURCE_INTERNAL) {
+      if (validDto.requestSource !== RequestSourceEnum.INTERNAL) {
         // this is purely a check, we're not going to use the value
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const memberExists = await this.findMemberById(member.id);

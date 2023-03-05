@@ -1,5 +1,5 @@
-import { RequestSource } from '@curioushuman/common';
 import { Optional, Record, Static, String } from 'runtypes';
+import { RequestSource } from '@curioushuman/common';
 import { MemberResponseDto } from '../../dto/member.response.dto';
 
 /**

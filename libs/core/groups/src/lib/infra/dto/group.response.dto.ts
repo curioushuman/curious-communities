@@ -1,6 +1,12 @@
 import { Static, Union } from 'runtypes';
-import { CourseGroupBaseResponseDto } from './course-group.response.dto';
-import { StandardGroupBaseResponseDto } from './standard-group.response.dto';
+import {
+  CourseGroupBaseResponseDto,
+  CourseGroupResponseDto,
+} from './course-group.response.dto';
+import {
+  StandardGroupBaseResponseDto,
+  StandardGroupResponseDto,
+} from './standard-group.response.dto';
 
 /**
  * Type for group base entity
@@ -12,3 +18,12 @@ export const GroupBaseResponseDto = Union(
   CourseGroupBaseResponseDto
 );
 export type GroupBaseResponseDto = Static<typeof GroupBaseResponseDto>;
+
+/**
+ * Type for group entity
+ *
+ * NOTE: just a type, we don't use this for validation
+ */
+export type GroupResponseDto =
+  | CourseGroupResponseDto
+  | StandardGroupResponseDto;

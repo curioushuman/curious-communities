@@ -4,9 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import {
   UpdateGroupMemberMultiModule,
   UpdateGroupMemberMultiController,
-  GroupMemberResponseDto,
 } from '@curioushuman/cc-groups-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 import {
   checkForNullRequestPayload,
@@ -109,5 +107,6 @@ export const handler = async (
   // try/catch doesn't work at this level
   return controller.update({
     group: validRequestDto.group,
+    member: validRequestDto.member,
   });
 };

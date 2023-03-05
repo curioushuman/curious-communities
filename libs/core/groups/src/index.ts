@@ -17,6 +17,7 @@ export * from './lib/infra/upsert-group-member-source/upsert-group-member-source
 
 // types
 export * from './lib/infra/dto/course.dto';
+export * from './lib/infra/dto/member.dto';
 export * from './lib/infra/dto/participant.dto';
 export * from './lib/infra/dto/group.response.dto';
 export * from './lib/infra/dto/course-group.response.dto';

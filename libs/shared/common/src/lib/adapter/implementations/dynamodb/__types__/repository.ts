@@ -32,8 +32,15 @@ export interface DynamoDbRepositoryGetOneProps {
 export interface DynamoDbRepositoryQueryAllProps {
   indexId?: string;
   keyName?: string;
-  value: string | number;
+  keyValue: string | number;
+  filters?: Record<string, unknown>;
 }
+
+/**
+ * Props for DynamoDbRepository.findAll
+ */
+export type DynamoDbRepositoryFindAllProps =
+  Partial<DynamoDbRepositoryQueryAllProps>;
 
 /**
  * Props for DynamoDbRepository.queryOne

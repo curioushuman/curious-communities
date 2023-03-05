@@ -1,5 +1,8 @@
 import { StandardGroupMemberMapper } from './standard-group-member.mapper';
-import { GroupMemberResponseDto } from './dto/group-member.response.dto';
+import {
+  GroupMemberBaseResponseDto,
+  GroupMemberResponseDto,
+} from './dto/group-member.response.dto';
 import {
   GroupMember,
   isCourseGroupMember,
@@ -20,5 +23,13 @@ export class GroupMemberMapper {
     return isCourseGroupMember(groupMember)
       ? CourseGroupMemberMapper.toResponseDto(groupMember)
       : StandardGroupMemberMapper.toResponseDto(groupMember);
+  }
+
+  public static toBaseResponseDto(
+    groupMember: GroupMember
+  ): GroupMemberBaseResponseDto {
+    return isCourseGroupMember(groupMember)
+      ? CourseGroupMemberMapper.toBaseResponseDto(groupMember)
+      : StandardGroupMemberMapper.toBaseResponseDto(groupMember);
   }
 }

@@ -4,10 +4,8 @@ import { NestFactory } from '@nestjs/core';
 import {
   UpsertCourseGroupMemberModule,
   UpsertCourseGroupMemberController,
-  CourseGroupMemberBaseResponseDto,
   ResponsePayload,
 } from '@curioushuman/cc-groups-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 import {
   checkForNullRequestPayload,

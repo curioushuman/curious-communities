@@ -13,9 +13,12 @@ import {
   CourseGroupResponseDto,
 } from './course-group.response.dto';
 import { GroupMemberSourceResponseDto } from './group-member-source.response.dto';
-import { GroupMemberResponseDto } from './group-member.response.dto';
+import {
+  GroupMemberBaseResponseDto,
+  GroupMemberResponseDto,
+} from './group-member.response.dto';
 import { GroupSourceResponseDto } from './group-source.response.dto';
-import { GroupBaseResponseDto } from './group.response.dto';
+import { GroupBaseResponseDto, GroupResponseDto } from './group.response.dto';
 import {
   StandardGroupMemberBaseResponseDto,
   StandardGroupMemberResponseDto,
@@ -30,7 +33,7 @@ import {
  */
 interface ResponsePayloadEntityDetailMap {
   /** group */
-  group: GroupBaseResponseDto;
+  group: GroupResponseDto;
   'group-base': GroupBaseResponseDto;
   'course-group': CourseGroupResponseDto;
   'course-group-base': CourseGroupBaseResponseDto;
@@ -41,6 +44,7 @@ interface ResponsePayloadEntityDetailMap {
 
   /** group member */
   'group-member': GroupMemberResponseDto;
+  'group-member-base': GroupMemberBaseResponseDto;
   'course-group-member': CourseGroupMemberResponseDto;
   'course-group-member-base': CourseGroupMemberBaseResponseDto;
   'standard-group-member': StandardGroupMemberResponseDto;

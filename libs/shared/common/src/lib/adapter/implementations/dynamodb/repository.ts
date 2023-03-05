@@ -10,6 +10,8 @@ import {
   PutCommandInput,
   QueryCommand,
   QueryCommandInput,
+  ScanCommand,
+  ScanCommandInput,
 } from '@aws-sdk/lib-dynamodb';
 
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -20,6 +22,7 @@ import {
   DynamoDbFindAllResponse,
   DynamoDbFindOneParams,
   DynamoDBFindOneProcessMethod,
+  DynamoDbRepositoryFindAllProps,
   DynamoDbRepositoryGetOneProps,
   DynamoDbRepositoryProps,
   DynamoDbRepositoryQueryAllProps,
@@ -240,22 +243,38 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     return params;
   }
 
+  private prepareFiltersFindAll(
+    props: DynamoDbRepositoryFindAllProps
+  ): Pick<QueryCommandInput, 'FilterExpression' | 'ExpressionAttributeValues'> {
+    // ALWAYS add the entity name filter
+    const allFilters = props.filters || {};
+    allFilters.entityType = this.entityName;
+
+    // set up some useful variables
+    let letterIndex = 0;
+    const allLetters = 'abcdefghijklmnopqrstuvwxyz';
+
+    // prep filters and attributes
+    const filterExpressions = [];
+    const attributeValues: QueryCommandInput['ExpressionAttributeValues'] = {};
+    for (const [key, value] of Object.entries(allFilters)) {
+      filterExpressions.push(`${key} = :${allLetters[letterIndex]}`);
+      attributeValues[`:${allLetters[letterIndex]}`] = value;
+      letterIndex++;
+    }
+    return {
+      FilterExpression: filterExpressions.join(' AND '),
+      ExpressionAttributeValues: attributeValues,
+    };
+  }
+
   /**
-   * Convenience function to grab all records for a given item in an item collection
-   *
-   * This allows for
-   * - providing an index, or querying the table
-   * - providing a keyName, or using the defaults
-   *
-   * NOTES
-   * - we use filter expression to return only the records of this type
-   * ! IMPORTANT: currently only supports ALL by primaryKey
-   * * Someday will support filters etc
+   * Convenience function to prep for a queryAll command
    */
   public prepareParamsQueryAll(
     props: DynamoDbRepositoryQueryAllProps
   ): QueryCommandInput {
-    const { indexId, keyName, value } = props;
+    const { indexId, keyName, keyValue } = props;
     let primaryKey = 'primaryKey';
     let IndexName: string | undefined = undefined;
     if (indexId) {
@@ -264,15 +283,92 @@ export class DynamoDbRepository<DomainT, PersistenceT>
       IndexName = this.globalIndexes[indexId];
     }
     const KeyConditionExpression = `${primaryKey} = :v`;
+    const preparedFilters = this.prepareFiltersFindAll(props);
+    // add the primary key as well
+    const ExpressionAttributeValues = {
+      ...preparedFilters.ExpressionAttributeValues,
+      ':v': keyValue,
+    };
     return {
       KeyConditionExpression,
-      FilterExpression: 'entityType = :e',
-      ExpressionAttributeValues: {
-        ':v': value,
-        ':e': this.entityName,
-      },
+      FilterExpression: preparedFilters.FilterExpression,
+      ExpressionAttributeValues,
       TableName: this.tableName,
       IndexName,
+    };
+  }
+
+  /**
+   * Convenience function to prep for a queryAll or scanAll command
+   *
+   * IMPORTANT: ALWAYS USE queryAll where possible i.e. include a keyName and keyValue
+   */
+  public prepareParamsFindAll(
+    props: DynamoDbRepositoryFindAllProps
+  ): QueryCommandInput | ScanCommandInput {
+    const { indexId, keyName, keyValue, filters } = props;
+    if (keyValue) {
+      return this.prepareParamsQueryAll({
+        indexId,
+        keyName,
+        keyValue,
+        filters,
+      });
+    }
+    const IndexName = indexId ? this.globalIndexes[indexId] : undefined;
+    const preparedFilters = this.prepareFiltersFindAll(props);
+    return {
+      ...preparedFilters,
+      TableName: this.tableName,
+      IndexName,
+    };
+  }
+
+  private prepareFindAllResponse(
+    response: Record<string, unknown>[] | undefined,
+    processResult: DynamoDBFindAllProcessMethod<DomainT>
+  ): DynamoDbFindAllResponse<DomainT> {
+    if (!response) {
+      return [];
+    }
+    return response.map(processResult);
+  }
+
+  /**
+   * Adding a discriminator to the item
+   * Will help with queries
+   */
+  private prepareDiscriminatedType(
+    item: DynamoDbItem<PersistenceT>
+  ): DynamoDbDiscriminatedItem<PersistenceT> {
+    return {
+      ...item,
+      entityType: this.entityName,
+    };
+  }
+
+  /**
+   * Removing the discriminator from the item
+   */
+  private prepareNonDiscriminatedType(
+    item: Record<string, unknown>
+  ): Record<string, unknown> {
+    if ('entityType' in item) {
+      // we don't need to use the entityType
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { entityType, ...rest } = item;
+      return rest;
+    }
+    return item;
+  }
+
+  /**
+   * Convenience function to build params for the put command
+   */
+  public preparePutParams(item: DynamoDbItem<PersistenceT>): PutCommandInput {
+    return {
+      TableName: this.tableName,
+      Item: this.prepareDiscriminatedType(item),
     };
   }
 
@@ -324,16 +420,6 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     );
   };
 
-  private prepareFindAllResponse(
-    response: Record<string, unknown>[] | undefined,
-    processResult: DynamoDBFindAllProcessMethod<DomainT>
-  ): DynamoDbFindAllResponse<DomainT> {
-    if (!response) {
-      return [];
-    }
-    return response.map(processResult);
-  }
-
   /**
    * Obtain all records for a given item based on params
    */
@@ -361,42 +447,43 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   };
 
   /**
-   * Adding a discriminator to the item
-   * Will help with queries
+   * Obtain all records across DDB item collections
    */
-  private prepareDiscriminatedType(
-    item: DynamoDbItem<PersistenceT>
-  ): DynamoDbDiscriminatedItem<PersistenceT> {
-    return {
-      ...item,
-      entityType: this.entityName,
-    };
-  }
+  public tryScanAll = (
+    params: ScanCommandInput,
+    processResult: DynamoDBFindAllProcessMethod<DomainT>
+  ): TE.TaskEither<Error, DynamoDbFindAllResponse<DomainT>> => {
+    return TE.tryCatch(
+      async () => {
+        // get the item
+        const response = await this.docClient.send(new ScanCommand(params));
+
+        // ? logging?
+        // If anything do logging specific to QueryCommand or AWS stats
+        this.logger.debug(response, 'tryScanAll');
+
+        return this.prepareFindAllResponse(
+          response.Items?.map(this.prepareNonDiscriminatedType),
+          processResult
+        );
+      },
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: unknown) => reason as Error
+    );
+  };
 
   /**
-   * Removing the discriminator from the item
+   * Obtain all records for a given item based on params
    */
-  private prepareNonDiscriminatedType(
-    item: Record<string, unknown>
-  ): Record<string, unknown> {
-    if ('entityType' in item) {
-      // we don't need to use the entityType
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { entityType, ...rest } = item;
-      return rest;
+  public tryFindAll = (
+    params: QueryCommandInput | ScanCommandInput,
+    processResult: DynamoDBFindAllProcessMethod<DomainT>
+  ): TE.TaskEither<Error, DynamoDbFindAllResponse<DomainT>> => {
+    if ('KeyConditionExpression' in params) {
+      return this.tryQueryAll(params, processResult);
     }
-    return item;
-  }
-
-  /**
-   * Convenience function to build params for the put command
-   */
-  public preparePutParams(item: DynamoDbItem<PersistenceT>): PutCommandInput {
-    return {
-      TableName: this.tableName,
-      Item: this.prepareDiscriminatedType(item),
-    };
-  }
+    return this.tryScanAll(params, processResult);
+  };
 
   /**
    * NOTE: we do not first find the course. This responsibility

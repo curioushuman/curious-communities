@@ -311,13 +311,13 @@ export class GroupsStack extends cdk.Stack {
     /**
      * Subscribing the lambda to the internal event bus
      */
-    const groupUpdateGroupMemberMultiId = generateCompositeResourceId(
+    const groupUpdateGroupMemberMultiRuleId = generateCompositeResourceId(
       updateGroupMemberMultiLambdaId,
       'group'
     );
     const groupUpdateGroupMemberMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(groupUpdateGroupMemberMultiId, 'rule'),
+      generateCompositeResourceId(groupUpdateGroupMemberMultiRuleId, 'rule'),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [
@@ -339,13 +339,13 @@ export class GroupsStack extends cdk.Stack {
     /**
      * Second rule, just for member update
      */
-    const memberUpdateGroupMemberMultiId = generateCompositeResourceId(
+    const memberUpdateGroupMemberMultiRuleId = generateCompositeResourceId(
       updateGroupMemberMultiLambdaId,
       'member'
     );
     const memberUpdateGroupMemberMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(memberUpdateGroupMemberMultiId, 'rule'),
+      generateCompositeResourceId(memberUpdateGroupMemberMultiRuleId, 'rule'),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [
@@ -369,7 +369,8 @@ export class GroupsStack extends cdk.Stack {
      *
      * Triggers
      * - personal SQS; triggered by update group member multi;
-     *   triggered by course group update i.e. course opens/closes
+     *   triggered by course group update i.e. course opens/closes;
+     *   triggered by member update
      */
     const updateGroupMemberResourceId = generateCompositeResourceId(
       stackId,

@@ -6,6 +6,7 @@ import { pipe } from 'fp-ts/lib/function';
 import {
   GroupMember,
   GroupMemberBase,
+  GroupMemberFilters,
   GroupMemberIdentifier,
 } from '../../../domain/entities/group-member';
 import {
@@ -163,8 +164,12 @@ export class FakeGroupMemberRepository implements GroupMemberRepository {
     return this.findOneBy[identifier];
   };
 
+  /**
+   * ! Filters not yet implemented
+   */
   findAll = (props: {
-    parentId: GroupId;
+    parentId?: GroupId;
+    filters?: GroupMemberFilters;
   }): TE.TaskEither<Error, GroupMember[]> => {
     return TE.right(
       this.groupMembers.filter(

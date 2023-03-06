@@ -10,7 +10,7 @@ import {
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryItemUpdateError } from '@curioushuman/error-factory';
-import { REQUEST_SOURCE_INTERNAL } from '@curioushuman/common';
+import { RequestSourceEnum } from '@curioushuman/common';
 
 import { UpdateCourseRequestDto } from './dto/update-course.request.dto';
 import { FindCourseMapper } from '../../application/queries/find-course/find-course.mapper';
@@ -60,7 +60,7 @@ export class UpdateCourseController {
     // NOTE: These will error if they need to
     // ? this kind of logic is questionable in a controller!!!
     // NOTE: if request was internal, we can skip these checks
-    if (validDto.requestSource !== REQUEST_SOURCE_INTERNAL) {
+    if (validDto.requestSource !== RequestSourceEnum.INTERNAL) {
       // we are not going to use the course OR course here, but we need to check if it exists
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const course = await this.findCourse(validDto);

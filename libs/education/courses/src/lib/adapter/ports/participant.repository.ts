@@ -3,9 +3,12 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
   Participant,
+  ParticipantFilters,
   ParticipantIdentifier,
   ParticipantIdentifiers,
 } from '../../domain/entities/participant';
+import { CourseId } from '../../domain/value-objects/course-id';
+import { ParticipantId } from '../../domain/value-objects/participant-id';
 import { ParticipantSourceIdSourceValue } from '../../domain/value-objects/participant-source-id-source';
 
 export type ParticipantFindMethod = RepositoryFindMethod<
@@ -18,6 +21,9 @@ export type ParticipantFindMethod = RepositoryFindMethod<
  *
  * NOTES:
  * - repos for child entities, by default, ALWAYS include the parent
+ *
+ * TODO:
+ * - [ ] at some point this repo might need to implement a mixture of findOne and findOneWithParent
  */
 export abstract class ParticipantRepository
   implements RepositoryFindOne<ParticipantIdentifiers, Participant>
@@ -32,11 +38,8 @@ export abstract class ParticipantRepository
    * Find a participant by the given ID
    *
    * NOTE: will throw NotFoundException if not found
-   *
-   * ! UPDATE: removing until we've decided what to do about the fact
-   * we need the courseId as well as the participantId for DynamoDb
    */
-  // abstract findOneById(id: ParticipantId): TaskEither<Error, Participant>;
+  abstract findOneById(value: ParticipantId): TaskEither<Error, Participant>;
 
   /**
    * Find a participant by the given ID and source value
@@ -46,6 +49,14 @@ export abstract class ParticipantRepository
   abstract findOneByIdSourceValue(
     value: ParticipantSourceIdSourceValue
   ): TaskEither<Error, Participant>;
+
+  /**
+   * Find all participants
+   */
+  abstract findAll(props: {
+    parentId?: CourseId;
+    filters?: ParticipantFilters;
+  }): TaskEither<Error, Participant[]>;
 
   /**
    * Create/update a participant

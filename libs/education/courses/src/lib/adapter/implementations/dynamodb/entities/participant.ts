@@ -18,6 +18,7 @@ export const DynamoDbParticipantSpecificKeys = Record({
   Sk_Course_SourceIdCOURSE: String,
 
   // participant
+  Sk_Participant_Id: String,
   Sk_Participant_SourceIdCOURSE: String,
 
   // member

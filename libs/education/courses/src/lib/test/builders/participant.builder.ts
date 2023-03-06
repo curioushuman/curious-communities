@@ -151,6 +151,13 @@ export const ParticipantBuilder = () => {
       return this;
     },
 
+    updatedAlpha() {
+      const source = ParticipantSourceBuilder().updatedAlpha().build();
+      this.setSource(source);
+      overrides.id = '69a012bd-23a7-4a4a-b12f-7d2ff026013f';
+      return this;
+    },
+
     doesntExist() {
       const source = ParticipantSourceBuilder().doesntExist().build();
       this.setSource(source);
@@ -272,6 +279,13 @@ export const ParticipantBuilder = () => {
     },
 
     buildUpdateParticipantRequestDto(): UpdateParticipantRequestDto {
+      const participant = this.buildParticipantResponseDto();
+      return {
+        participant,
+      } as UpdateParticipantRequestDto;
+    },
+
+    buildUpdateFromSourceParticipantRequestDto(): UpdateParticipantRequestDto {
       const sourceIds = this.buildNoCheck().sourceIds;
       if (!sourceIds) {
         return {

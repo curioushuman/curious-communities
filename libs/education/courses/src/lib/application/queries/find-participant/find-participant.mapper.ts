@@ -1,4 +1,5 @@
 import { parseExternalIdSourceValue } from '@curioushuman/common';
+import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 
 import { FindParticipantDto } from './find-participant.dto';
 import {
@@ -51,22 +52,34 @@ export class FindParticipantMapper {
       ParticipantSourceId,
       Source
     );
+    return FindParticipantMapper.fromIdSourceValue(value);
+  }
+
+  public static fromIdSourceValue(value: string): FindParticipantDto {
     return {
       identifier: 'idSourceValue',
       value,
     } as FindParticipantDto;
   }
 
-  public static fromIdSourceValue(value: string): FindParticipantDto {
+  public static fromId(value: string): FindParticipantDto {
     return {
-      identifier: 'idSourceValue',
-      value: value,
+      identifier: 'id',
+      value,
     } as FindParticipantDto;
   }
 
   public static fromUpdateParticipantRequestDto(
     dto: UpdateParticipantRequestDto
   ): FindParticipantDto {
-    return FindParticipantMapper.fromIdSourceValue(dto.idSourceValue);
+    if (dto.idSourceValue) {
+      return FindParticipantMapper.fromIdSourceValue(dto.idSourceValue);
+    }
+    if (dto.participant) {
+      return FindParticipantMapper.fromId(dto.participant.id);
+    }
+    throw new InternalRequestInvalidError(
+      'Either idSourceValue or participant must be specified'
+    );
   }
 }

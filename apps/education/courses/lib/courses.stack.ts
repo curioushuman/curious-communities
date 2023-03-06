@@ -1,7 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
 import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
+import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { resolve as pathResolve } from 'path';
 
@@ -13,6 +15,7 @@ import {
   LambdaConstruct,
   generateCompositeResourceId,
   RuleEntityEvent,
+  resourceNameTitle,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -165,9 +168,12 @@ export class CoursesStack extends cdk.Stack {
     /**
      * Function: Create Participant
      *
+     * Triggers
+     * - participant upsert step function
+     *
      * NOTE: destination is not invoked when called within step functions
      */
-    const createParticipantFunction = new LambdaConstruct(
+    const createParticipantLambdaConstruct = new LambdaConstruct(
       this,
       generateCompositeResourceId(stackId, 'participant-create'),
       {
@@ -179,24 +185,34 @@ export class CoursesStack extends cdk.Stack {
       }
     );
     // add salesforce env vars
-    createParticipantFunction.addEnvironmentSalesforce();
+    createParticipantLambdaConstruct.addEnvironmentSalesforce();
 
     // allow the lambda access to the table
     coursesTableConstruct.table.grantReadData(
-      createParticipantFunction.lambdaFunction
+      createParticipantLambdaConstruct.lambdaFunction
     );
     coursesTableConstruct.table.grantWriteData(
-      createParticipantFunction.lambdaFunction
+      createParticipantLambdaConstruct.lambdaFunction
     );
 
     /**
      * Function: Update Participant
      *
+     * Triggers
+     * - participant upsert step function
+     * - personal SQS; triggered by update participant multi;
+     *   triggered by course update i.e. course opens/closes;
+     *   triggered by member update
+     *
      * NOTE: destination is not invoked when called within step functions
      */
-    const updateParticipantFunction = new LambdaConstruct(
+    const updateParticipantLambdaId = generateCompositeResourceId(
+      stackId,
+      'participant-update'
+    );
+    const updateParticipantLambdaConstruct = new LambdaConstruct(
       this,
-      generateCompositeResourceId(stackId, 'participant-update'),
+      updateParticipantLambdaId,
       {
         lambdaEntry: pathResolve(
           __dirname,
@@ -206,20 +222,20 @@ export class CoursesStack extends cdk.Stack {
       }
     );
     // add salesforce env vars
-    updateParticipantFunction.addEnvironmentSalesforce();
+    updateParticipantLambdaConstruct.addEnvironmentSalesforce();
 
     // allow the lambda access to the table
     coursesTableConstruct.table.grantReadData(
-      updateParticipantFunction.lambdaFunction
+      updateParticipantLambdaConstruct.lambdaFunction
     );
     coursesTableConstruct.table.grantWriteData(
-      updateParticipantFunction.lambdaFunction
+      updateParticipantLambdaConstruct.lambdaFunction
     );
 
     /**
      * Function: Find Participant
      */
-    const findPaxLambdaConstruct = new LambdaConstruct(
+    const findParticipantLambdaConstruct = new LambdaConstruct(
       this,
       generateCompositeResourceId(stackId, 'participant-find'),
       {
@@ -233,13 +249,13 @@ export class CoursesStack extends cdk.Stack {
 
     // allow the lambda access to the table
     coursesTableConstruct.table.grantReadData(
-      findPaxLambdaConstruct.lambdaFunction
+      findParticipantLambdaConstruct.lambdaFunction
     );
 
     /**
      * Find Participant source
      */
-    const findPaxSourceLambdaConstruct = new LambdaConstruct(
+    const findParticipantSourceLambdaConstruct = new LambdaConstruct(
       this,
       generateCompositeResourceId(stackId, 'participant-source-find'),
       {
@@ -251,7 +267,7 @@ export class CoursesStack extends cdk.Stack {
       }
     );
     // add salesforce env vars
-    findPaxSourceLambdaConstruct.addEnvironmentSalesforce();
+    findParticipantSourceLambdaConstruct.addEnvironmentSalesforce();
 
     /**
      * State machine: Upsert participant
@@ -266,10 +282,10 @@ export class CoursesStack extends cdk.Stack {
       {
         lambdas: {
           findCourse: findCourseLambdaConstruct,
-          findParticipant: findPaxLambdaConstruct,
-          findParticipantSource: findPaxSourceLambdaConstruct,
-          createParticipant: createParticipantFunction,
-          updateParticipant: updateParticipantFunction,
+          findParticipant: findParticipantLambdaConstruct,
+          findParticipantSource: findParticipantSourceLambdaConstruct,
+          createParticipant: createParticipantLambdaConstruct,
+          updateParticipant: updateParticipantLambdaConstruct,
         },
         eventBus: internalEventBusConstruct.eventBus,
       }
@@ -296,6 +312,114 @@ export class CoursesStack extends cdk.Stack {
     );
     upsertParticipantRuleConstruct.rule.addTarget(
       new targets.SfnStateMachine(upsertParticipantConstruct.stateMachine)
+    );
+
+    /**
+     * Function: Update participant multi
+     *
+     * Triggers
+     * - course update
+     * - member update
+     */
+    const updateParticipantMultiLambdaId = generateCompositeResourceId(
+      stackId,
+      'participant-update-multi'
+    );
+    const updateParticipantMultiLambdaConstruct = new LambdaConstruct(
+      this,
+      updateParticipantMultiLambdaId,
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/update-participant-multi/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
+    );
+
+    /**
+     * Subscribing the lambda to the internal event bus
+     */
+    const courseUpdateParticipantMultiRuleId = generateCompositeResourceId(
+      updateParticipantMultiLambdaId,
+      'course'
+    );
+    const courseUpdateParticipantMultiRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(courseUpdateParticipantMultiRuleId, 'rule'),
+      {
+        eventBus: internalEventBusConstruct.eventBus,
+        entity: [
+          'course-base',
+          'course',
+          { suffix: '-course-base' },
+          { suffix: '-course' },
+        ],
+        event: ['created', 'updated'],
+        outcome: ['success'],
+      }
+    );
+    courseUpdateParticipantMultiRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(
+        updateParticipantMultiLambdaConstruct.lambdaFunction
+      )
+    );
+
+    /**
+     * Second rule, just for member update
+     */
+    const memberUpdateParticipantMultiRuleId = generateCompositeResourceId(
+      updateParticipantMultiLambdaId,
+      'member'
+    );
+    const memberUpdateParticipantMultiRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(memberUpdateParticipantMultiRuleId, 'rule'),
+      {
+        eventBus: internalEventBusConstruct.eventBus,
+        entity: [
+          'member-base',
+          'member',
+          { suffix: '-member-base' },
+          { suffix: '-member' },
+        ],
+        event: ['updated'],
+        outcome: ['success'],
+      }
+    );
+    memberUpdateParticipantMultiRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(
+        updateParticipantMultiLambdaConstruct.lambdaFunction
+      )
+    );
+
+    /**
+     * SQS queue to throttle requests to updateParticipant
+     */
+    const [updateParticipantQueueName, updateParticipantQueueTitle] =
+      resourceNameTitle(updateParticipantLambdaId, 'Queue');
+    const updateParticipantQueue = new sqs.Queue(
+      this,
+      updateParticipantQueueTitle,
+      {
+        queueName: updateParticipantQueueName,
+        visibilityTimeout: cdk.Duration.seconds(60),
+      }
+    );
+    // allow the (above) multi lambda to send messages to the queue
+    updateParticipantQueue.grantSendMessages(
+      updateParticipantMultiLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Subscribe the function, to the queue
+     */
+    updateParticipantLambdaConstruct.lambdaFunction.addEventSource(
+      new SqsEventSource(updateParticipantQueue, {
+        batchSize: 3, // default
+        maxBatchingWindow: cdk.Duration.minutes(2),
+        reportBatchItemFailures: true, // default to false
+      })
     );
 
     /**

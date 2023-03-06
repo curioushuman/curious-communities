@@ -9,35 +9,32 @@ import {
   parseData,
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { RepositoryItemUpdateError } from '@curioushuman/error-factory';
+import { RequestSourceEnum } from '@curioushuman/common';
 
-import { UpdateParticipantRequestDto } from './dto/update-participant.request.dto';
+import {
+  parseUpdateParticipantRequestDto,
+  UpdateParticipantRequestDto,
+} from './dto/update-participant.request.dto';
 import { UpdateParticipantCommand } from '../../application/commands/update-participant/update-participant.command';
 import { ParticipantMapper } from '../participant.mapper';
 import { ParticipantSource } from '../../domain/entities/participant-source';
 import { FindParticipantMapper } from '../../application/queries/find-participant/find-participant.mapper';
 import { FindParticipantQuery } from '../../application/queries/find-participant/find-participant.query';
 import { Participant } from '../../domain/entities/participant';
-import { parseUpdateParticipantDto } from '../../application/commands/update-participant/update-participant.dto';
+import {
+  parseUpdateParticipantDto,
+  UpdateParticipantDto,
+} from '../../application/commands/update-participant/update-participant.dto';
 import { FindParticipantSourceMapper } from '../../application/queries/find-participant-source/find-participant-source.mapper';
 import { FindParticipantSourceQuery } from '../../application/queries/find-participant-source/find-participant-source.query';
 import {
-  prepareResponsePayload,
+  prepareUpsertResponsePayload,
   ResponsePayload,
 } from '../dto/response-payload';
 
 /**
  * Controller for update participant operations
- *
- * NOTES
- * - we initially returned void for create/update actions
- *   see create controller for more info
- *
- * TODO
- * - [ ] should this actually be a service?
- * - [ ] should we be doing auth. here as well?
- *       OR is it ok that we're assuming it is done at higher levels?
- *       AKA it seems like a waste of resources to repeat the same task
- *       ONLY if auth. at this level differs from higher ups should we implement
  */
 
 @Controller()
@@ -51,47 +48,87 @@ export class UpdateParticipantController {
   }
 
   /**
-   * TODO
-   * - [ ] this could all be within fp-ts syntax
-   *       I can't recall why I took it out (#2)
+   * Public method to update a participant
+   *
+   * TODO:
+   * - [ ] whole thing could be done in fp-ts
    */
   public async update(
     requestDto: UpdateParticipantRequestDto
   ): Promise<ResponsePayload<'participant'>> {
+    // log the dto
+    this.logger.debug(requestDto, 'update');
+
     // #1. validate the dto
     const validDto = pipe(
       requestDto,
-      parseData(UpdateParticipantRequestDto.check, this.logger)
+      parseData(parseUpdateParticipantRequestDto, this.logger)
     );
 
-    // #2. find source and participant
-    // NOTE: These will error if they need to
-    // including NotFound for either
-    const [participant, participantSource] = await Promise.all([
-      this.findParticipant(validDto),
-      this.findParticipantSource(validDto),
-    ]);
+    // here we determine which route to take
+    // update via source or update via participant
+    const participantDto = validDto.participant;
+    let participant: Participant;
+    let participantSource: ParticipantSource | undefined = undefined;
+    if (participantDto) {
+      participant = pipe(
+        participantDto,
+        parseData(ParticipantMapper.fromResponseDto, this.logger)
+      );
+      if (validDto.requestSource !== RequestSourceEnum.INTERNAL) {
+        // this is purely a check, we're not going to use the value
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const participantExists = await this.findParticipantById(validDto);
+      }
+    } else {
+      [participant, participantSource] = await Promise.all([
+        this.findParticipant(validDto),
+        this.findParticipantSource(validDto),
+      ]);
+    }
+
+    // ? should the comparison of source to participant be done here?
 
     // set up the command dto
     const updateDto = {
       participant,
       participantSource,
-    };
+    } as UpdateParticipantDto;
 
+    // #3. execute the command
+    const updatedParticipant = await this.updateParticipant(updateDto);
+
+    // #4. return the response
+    let payload = pipe(
+      participant,
+      parseData(ParticipantMapper.toResponseDto, this.logger)
+    );
+    if (updatedParticipant) {
+      payload = pipe(
+        updatedParticipant,
+        parseData(ParticipantMapper.toResponseDto, this.logger)
+      );
+    }
+
+    return pipe(
+      payload,
+      prepareUpsertResponsePayload('participant', true, !updatedParticipant)
+    );
+  }
+
+  private updateParticipant(
+    updateDto: UpdateParticipantDto
+  ): Promise<Participant> {
     const task = pipe(
       updateDto,
 
-      // #3. validate the dto
+      // #1. validate the command dto
       // NOTE: this will also occur in the command itself
       // but the Runtype.check function is such a useful way to
       // also make sure the types are correct. Better than typecasting
-      parseActionData(
-        parseUpdateParticipantDto,
-        this.logger,
-        'RequestInvalidError'
-      ),
+      parseActionData(parseUpdateParticipantDto, this.logger),
 
-      // #4. call the command
+      // #2. call the command
       // NOTE: proper error handling within the command itself
       TE.chain((commandDto) =>
         TE.tryCatch(
@@ -105,9 +142,12 @@ export class UpdateParticipantController {
         )
       ),
 
-      // #5. transform to the response DTO
-      TE.chain(parseActionData(ParticipantMapper.toResponseDto, this.logger)),
-      TE.map(prepareResponsePayload('participant', 'updated', 'success'))
+      // #3. catch the update error specifically
+      TE.orElse((err) => {
+        return err instanceof RepositoryItemUpdateError
+          ? TE.right(undefined)
+          : TE.left(err);
+      })
     );
 
     return executeTask(task);
@@ -127,14 +167,39 @@ export class UpdateParticipantController {
 
       // #2. call the query
       TE.chain((findDto) =>
-        pipe(
-          TE.tryCatch(
-            async () => {
-              const query = new FindParticipantQuery(findDto);
-              return await this.queryBus.execute<FindParticipantQuery>(query);
-            },
-            (error: unknown) => error as Error
-          )
+        TE.tryCatch(
+          async () => {
+            const query = new FindParticipantQuery(findDto);
+            return await this.queryBus.execute<FindParticipantQuery>(query);
+          },
+          (error: unknown) => error as Error
+        )
+      )
+    );
+
+    return executeTask(task);
+  }
+
+  private findParticipantById(
+    validDto: UpdateParticipantRequestDto
+  ): Promise<Participant> {
+    const task = pipe(
+      validDto,
+
+      // #1. transform dto
+      parseActionData(
+        FindParticipantMapper.fromUpdateParticipantRequestDto,
+        this.logger
+      ),
+
+      // #2. call the query
+      TE.chain((findDto) =>
+        TE.tryCatch(
+          async () => {
+            const query = new FindParticipantQuery(findDto);
+            return await this.queryBus.execute<FindParticipantQuery>(query);
+          },
+          (error: unknown) => error as Error
         )
       )
     );
@@ -143,10 +208,10 @@ export class UpdateParticipantController {
   }
 
   private findParticipantSource(
-    requestDto: UpdateParticipantRequestDto
+    validDto: UpdateParticipantRequestDto
   ): Promise<ParticipantSource> {
     const task = pipe(
-      requestDto,
+      validDto,
 
       // #1. transform dto
       parseActionData(
@@ -156,16 +221,14 @@ export class UpdateParticipantController {
 
       // #2. call the query
       TE.chain((findDto) =>
-        pipe(
-          TE.tryCatch(
-            async () => {
-              const query = new FindParticipantSourceQuery(findDto);
-              return await this.queryBus.execute<FindParticipantSourceQuery>(
-                query
-              );
-            },
-            (error: unknown) => error as Error
-          )
+        TE.tryCatch(
+          async () => {
+            const query = new FindParticipantSourceQuery(findDto);
+            return await this.queryBus.execute<FindParticipantSourceQuery>(
+              query
+            );
+          },
+          (error: unknown) => error as Error
         )
       )
     );

@@ -1,9 +1,11 @@
+import { InternalRequestInvalidError } from '@curioushuman/error-factory';
+import { parseExternalIdSourceValue } from '@curioushuman/common';
+
 import { FindParticipantSourceDto } from './find-participant-source.dto';
 import { prepareParticipantExternalIdSource } from '../../../domain/entities/participant';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
 import { Source } from '../../../domain/value-objects/source';
 import { UpdateParticipantRequestDto } from '../../../infra/update-participant/dto/update-participant.request.dto';
-import { parseExternalIdSourceValue } from '@curioushuman/common';
 import { FindParticipantSourceRequestDto } from '../../../infra/find-participant-source/dto/find-participant-source.request.dto';
 
 /**
@@ -36,6 +38,9 @@ export class FindParticipantSourceMapper {
   public static fromUpdateParticipantRequestDto(
     dto: UpdateParticipantRequestDto
   ): FindParticipantSourceDto {
+    if (!dto.idSourceValue) {
+      throw new InternalRequestInvalidError('idSourceValue is required');
+    }
     return FindParticipantSourceMapper.fromIdSourceValue(dto.idSourceValue);
   }
 }

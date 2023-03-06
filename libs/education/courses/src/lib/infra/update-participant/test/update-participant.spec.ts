@@ -72,6 +72,54 @@ defineFeature(feature, (test) => {
   });
 
   test('Successfully updating a participant', ({ given, and, when, then }) => {
+    // disabling no-explicit-any for testing purposes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
+    let updateParticipantDto: UpdateParticipantRequestDto;
+    let error: Error;
+
+    given('the request is valid', () => {
+      // we know this to exist in our fake repo
+      updateParticipantDto = ParticipantBuilder()
+        .updatedAlpha()
+        .buildUpdateParticipantRequestDto();
+    });
+
+    when('I attempt to update a participant', async () => {
+      try {
+        result = await controller.update(updateParticipantDto);
+      } catch (err) {
+        error = err as Error;
+        expect(error).toBeUndefined();
+      }
+    });
+
+    then('the related record should have been updated', async () => {
+      const participants = await executeTask(repository.all());
+      const participantAfter = participants.find(
+        (participant) => updateParticipantDto.participant?.id === participant.id
+      );
+      expect(participantAfter).toBeDefined();
+      if (participantAfter) {
+        expect(participantAfter.status).toEqual(
+          updateParticipantDto.participant?.status
+        );
+      }
+    });
+
+    and('saved participant is returned within payload', () => {
+      expect(result.detail.id).toBeDefined();
+      expect(result.event).toEqual('updated');
+      expect(result.outcome).toEqual('success');
+    });
+  });
+
+  test('Successfully updating a participant from source', ({
+    given,
+    and,
+    when,
+    then,
+  }) => {
     let updatedParticipantSource: ParticipantSource;
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,7 +131,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       updateParticipantDto = ParticipantBuilder()
         .updated()
-        .buildUpdateParticipantRequestDto();
+        .buildUpdateFromSourceParticipantRequestDto();
     });
 
     and('a matching record is found at the source', async () => {
@@ -151,7 +199,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       updateParticipantDto = ParticipantBuilder()
         .invalid()
-        .buildUpdateParticipantRequestDto();
+        .buildUpdateFromSourceParticipantRequestDto();
     });
 
     when('I attempt to update a participant', async () => {
@@ -175,7 +223,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       updateParticipantDto = ParticipantBuilder()
         .noMatchingSource()
-        .buildUpdateParticipantRequestDto();
+        .buildUpdateFromSourceParticipantRequestDto();
     });
 
     when('I attempt to update a participant', async () => {
@@ -207,7 +255,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       updateParticipantDto = ParticipantBuilder()
         .doesntExist()
-        .buildUpdateParticipantRequestDto();
+        .buildUpdateFromSourceParticipantRequestDto();
     });
 
     and('the returned source populates a valid participant', () => {
@@ -247,7 +295,7 @@ defineFeature(feature, (test) => {
       // we know this to exist in our fake repo
       updateParticipantDto = ParticipantBuilder()
         .invalidOther()
-        .buildUpdateParticipantRequestDto();
+        .buildUpdateFromSourceParticipantRequestDto();
     });
 
     and('the returned source has an invalid status', () => {

@@ -15,6 +15,7 @@ import {
 } from '../../ports/participant.repository';
 import {
   Participant,
+  ParticipantFilters,
   ParticipantIdentifier,
   prepareParticipantExternalIdSource,
 } from '../../../domain/entities/participant';
@@ -22,6 +23,8 @@ import { DynamoDbParticipantMapper } from './participant.mapper';
 import { ParticipantSourceIdSourceValue } from '../../../domain/value-objects/participant-source-id-source';
 import { DynamoDbParticipant } from './entities/participant';
 import { CoursesItem } from './entities/item';
+import { CourseId } from '../../../domain/value-objects/course-id';
+import { ParticipantId } from '../../../domain/value-objects/participant-id';
 
 /**
  * A repository for participants
@@ -69,15 +72,13 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
     return domainItem;
   }
 
-  /**
-   * ! UPDATE: removed until we figure out the best way to do this
-   */
-  // findOneById = (value: ParticipantId): TE.TaskEither<Error, Participant> => {
-  //   const params = this.dynamoDbRepository.prepareParamsGetOne({
-  //     primaryKey: value,
-  //   });
-  //   return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
-  // };
+  findOneById = (value: ParticipantId): TE.TaskEither<Error, Participant> => {
+    const params = this.dynamoDbRepository.prepareParamsQueryOne({
+      indexId: 'id',
+      value,
+    });
+    return this.dynamoDbRepository.tryQueryOne(params, this.processFindOne);
+  };
 
   findOneByIdSourceValue = (
     value: ParticipantSourceIdSourceValue
@@ -95,11 +96,23 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
    * Object lookup for findOneBy methods
    */
   findOneBy: Record<ParticipantIdentifier, ParticipantFindMethod> = {
+    id: this.findOneById,
     idSourceValue: this.findOneByIdSourceValue,
   };
 
   findOne = (identifier: ParticipantIdentifier): ParticipantFindMethod => {
     return this.findOneBy[identifier];
+  };
+
+  findAll = (props: {
+    parentId?: CourseId;
+    filters?: ParticipantFilters;
+  }): TE.TaskEither<Error, Participant[]> => {
+    const params = this.dynamoDbRepository.prepareParamsFindAll({
+      keyValue: props.parentId,
+      filters: props.filters,
+    });
+    return this.dynamoDbRepository.tryFindAll(params, this.processFindOne);
   };
 
   processSave(

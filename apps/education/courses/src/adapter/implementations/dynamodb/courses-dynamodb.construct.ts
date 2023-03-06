@@ -139,6 +139,30 @@ export class CoursesDynamoDbConstruct extends Construct {
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
+    // Global secondary index - participant.Id
+    // Identifier
+    const byParticipantIdIndexId = generateCompositeResourceId(
+      id,
+      'participant-id'
+    );
+    const byParticipantIdGsiName = transformIdToResourceName(
+      byParticipantIdIndexId,
+      'DynamoDbGSI'
+    );
+    this.globalIndexNames.push(byParticipantIdGsiName);
+    this.table.addGlobalSecondaryIndex({
+      indexName: byParticipantIdGsiName,
+      partitionKey: {
+        name: 'Participant_Id',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'Sk_Participant_Id',
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
     // Global secondary index - participant.SourceIdValue
     // Identifier
     const byParticipantSourceIdValueIndexId = generateCompositeResourceId(

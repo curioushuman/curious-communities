@@ -77,6 +77,7 @@ export class DynamoDbParticipantMapper {
       sortKey: participant.id,
 
       // other keys; participant
+      Sk_Participant_Id: participant.id,
       ...sourceIds,
 
       // other keys; course

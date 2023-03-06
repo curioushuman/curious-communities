@@ -6,6 +6,7 @@ import {
 } from '../../../domain/entities/participant';
 import { Source } from '../../../domain/value-objects/source';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
+import { ParticipantId } from '../../../domain/value-objects/participant-id';
 
 /**
  * This type sets up our identifiers as discriminated unions.
@@ -42,6 +43,7 @@ type FindParticipantDtoParsers = {
  * The concrete object that houses all our actual parsers
  */
 const parsers: FindParticipantDtoParsers = {
+  id: (dto) => ParticipantId.check(dto.value),
   idSourceValue: (dto) =>
     parseExternalIdSourceValue(dto.value, ParticipantSourceId, Source),
 };

@@ -98,6 +98,12 @@ export const ParticipantSourceBuilder = () => {
       return this;
     },
 
+    updatedAlpha() {
+      overrides.id = ExternalId.check('ThisSourceUsedForUpdatingAlpha');
+      overrides.status = 'attended' as ParticipantSourceStatus;
+      return this;
+    },
+
     doesntExist() {
       overrides.id = ExternalId.check('DoesntExist');
       return this;

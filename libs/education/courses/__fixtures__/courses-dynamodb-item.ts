@@ -20,6 +20,7 @@ export const participantDynamoDbItem: DynamoDbItem<CoursesItem> = {
   Member_Email: 'mike@curioushuman.com.au',
   Member_Name: 'Mike Kelly',
   Participant_Id: 'b9ba3547-6953-4902-a4f3-903a66d4af2a',
+  Sk_Participant_Id: 'b9ba3547-6953-4902-a4f3-903a66d4af2a',
   Course_DateOpen: 1676851200000,
   Sk_Course_SourceIdCOURSE: 'b9ba3547-6953-4902-a4f3-903a66d4af2a',
   Participant_SourceIdCOURSE: 'COURSE#a0n9s000000G0kEAAS',

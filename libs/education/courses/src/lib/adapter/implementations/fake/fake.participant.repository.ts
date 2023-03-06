@@ -5,6 +5,8 @@ import { pipe } from 'fp-ts/lib/function';
 
 import {
   Participant,
+  ParticipantBase,
+  ParticipantFilters,
   ParticipantIdentifier,
 } from '../../../domain/entities/participant';
 import {
@@ -16,15 +18,32 @@ import { ParticipantSourceIdSourceValue } from '../../../domain/value-objects/pa
 import { prepareExternalIdSource } from '@curioushuman/common';
 import { Source } from '../../../domain/value-objects/source';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
-import { ParticipantStatusEnum } from '../../../domain/value-objects/participant-status';
+import {
+  ParticipantStatus,
+  ParticipantStatusEnum,
+} from '../../../domain/value-objects/participant-status';
+import { CourseId } from '../../../domain/value-objects/course-id';
+import { ParticipantId } from '../../../domain/value-objects/participant-id';
 
 @Injectable()
 export class FakeParticipantRepository implements ParticipantRepository {
   private participants: Participant[] = [];
 
+  private restatusParticipant<T extends Participant | ParticipantBase>(
+    participant: T
+  ): T {
+    participant.status = ParticipantStatusEnum.PENDING as ParticipantStatus;
+    return participant;
+  }
+
   constructor() {
     this.participants.push(ParticipantBuilder().exists().build());
-    this.participants.push(ParticipantBuilder().updated().build());
+    this.participants.push(
+      this.restatusParticipant(ParticipantBuilder().updated().build())
+    );
+    this.participants.push(
+      this.restatusParticipant(ParticipantBuilder().updatedAlpha().build())
+    );
     const invalidSource = ParticipantBuilder().invalidOther().buildNoCheck();
     invalidSource.status = ParticipantStatusEnum.PENDING;
     this.participants.push(invalidSource);
@@ -34,34 +53,32 @@ export class FakeParticipantRepository implements ParticipantRepository {
 
   /**
    * Find by internal ID
-   *
-   * ? Should the value check be extracted into it's own (functional) step?
    */
-  // findOneById = (value: ParticipantId): TE.TaskEither<Error, Participant> => {
-  //   return TE.tryCatch(
-  //     async () => {
-  //       const id = ParticipantId.check(value);
-  //       const participant = this.participants.find((cs) => cs.id === id);
-  //       return pipe(
-  //         participant,
-  //         O.fromNullable,
-  //         O.fold(
-  //           () => {
-  //             // this mimics an API or DB call throwing an error
-  //             throw new NotFoundException(
-  //               `Participant with id ${id} not found`
-  //             );
-  //           },
-  //           // this mimics the fact that all non-fake adapters
-  //           // will come with a mapper, which will perform a check
-  //           // prior to return
-  //           (participant) => participant
-  //         )
-  //       );
-  //     },
-  //     (reason: unknown) => reason as Error
-  //   );
-  // };
+  findOneById = (value: ParticipantId): TE.TaskEither<Error, Participant> => {
+    return TE.tryCatch(
+      async () => {
+        const id = ParticipantId.check(value);
+        const participant = this.participants.find((p) => p.id === id);
+        return pipe(
+          participant,
+          O.fromNullable,
+          O.fold(
+            () => {
+              // this mimics an API or DB call throwing an error
+              throw new NotFoundException(
+                `Participant with id ${id} not found`
+              );
+            },
+            // this mimics the fact that all non-fake adapters
+            // will come with a mapper, which will perform a check
+            // prior to return
+            (participant) => participant
+          )
+        );
+      },
+      (reason: unknown) => reason as Error
+    );
+  };
 
   /**
    * Find by ID from a particular source
@@ -79,8 +96,8 @@ export class FakeParticipantRepository implements ParticipantRepository {
           ParticipantSourceId,
           Source
         );
-        const participant = this.participants.find((cs) => {
-          const matches = cs.sourceIds.filter(
+        const participant = this.participants.find((p) => {
+          const matches = p.sourceIds.filter(
             (sId) => sId.id === idSource.id && sId.source === idSource.source
           );
           return matches.length > 0;
@@ -110,12 +127,26 @@ export class FakeParticipantRepository implements ParticipantRepository {
    * Object lookup for findOneBy methods
    */
   findOneBy: Record<ParticipantIdentifier, ParticipantFindMethod> = {
-    // id: this.findOneById,
+    id: this.findOneById,
     idSourceValue: this.findOneByIdSourceValue,
   };
 
   findOne = (identifier: ParticipantIdentifier): ParticipantFindMethod => {
     return this.findOneBy[identifier];
+  };
+
+  /**
+   * ! Filters not yet implemented
+   */
+  findAll = (props: {
+    parentId?: CourseId;
+    filters?: ParticipantFilters;
+  }): TE.TaskEither<Error, Participant[]> => {
+    return TE.right(
+      this.participants.filter(
+        (participant) => participant.courseId === props.parentId
+      )
+    );
   };
 
   save = (participant: Participant): TE.TaskEither<Error, Participant> => {

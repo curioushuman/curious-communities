@@ -2,6 +2,12 @@ Feature: Update Participant
 
 Scenario: Successfully updating a participant
   Given the request is valid
+  When I attempt to update a participant
+  Then the related record should have been updated
+  And saved participant is returned within payload
+
+Scenario: Successfully updating a participant from source
+  Given the request is valid
   And a matching record is found at the source
   When I attempt to update a participant
   Then the related record should have been updated in the repository

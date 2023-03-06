@@ -12,16 +12,6 @@ import { ParticipantMapper as DomainParticipantMapper } from '../../../domain/ma
  * - create base abstract class for mappers
  */
 export class UpdateParticipantMapper extends UpdateMapper {
-  // public static fromUpdateParticipantRequestDto(
-  //   dto: UpdateParticipantRequestDto
-  // ): UpdateParticipantDto {
-  //   return {
-  //     participant: InfraParticipantMapper.fromResponseDtoToBase(
-  //       dto.participant
-  //     ),
-  //   };
-  // }
-
   /**
    * Returning an anonymous function here so we can combine the values
    * from both an existing course, and the source that will be overriding it

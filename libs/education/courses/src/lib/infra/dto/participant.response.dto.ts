@@ -42,3 +42,23 @@ export const ParticipantResponseDto = ParticipantBaseResponseDto.extend({
  * DTO that accepts any of the identifiers
  */
 export type ParticipantResponseDto = Static<typeof ParticipantResponseDto>;
+
+/**
+ * An alternative parser, instead of ParticipantResponseDto.check()
+ *
+ * Participant being a Union and a Composite I think has proven too much
+ */
+export const parseParticipantResponseDto = (
+  participantResponseDto: ParticipantResponseDto
+): ParticipantResponseDto => {
+  const { course, member, ...participantResponseDtoBase } =
+    participantResponseDto;
+  const parsedParticipantBaseResponseDto = ParticipantBaseResponseDto.check(
+    participantResponseDtoBase
+  );
+  return {
+    ...parsedParticipantBaseResponseDto,
+    course: CourseBaseResponseDto.check(course),
+    member: MemberDto.check(member),
+  };
+};

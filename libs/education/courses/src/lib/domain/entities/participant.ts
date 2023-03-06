@@ -55,25 +55,31 @@ export const Participant = ParticipantBase.extend({
 export type Participant = Static<typeof Participant>;
 
 /**
- * An alternative parser, instead of Participant.check()
- *
- * Participant being a Union and a Composite I think has proven too much
+ * ----
+ * Additional helper types used during various operations
+ * ----
  */
-export const parseParticipant = (participant: Participant): Participant => {
-  const { course, member, ...participantBase } = participant;
-  const parsedParticipantBase = ParticipantBase.check(participantBase);
-  return {
-    ...parsedParticipantBase,
-    course: CourseBase.check(course),
-    member: Member.check(member),
-  };
-};
 
 /**
- * ----
- * Additional helper types used during identification
- * ----
+ * The currently supported fields in a findAll query
  */
+export const ParticipantFilters = ParticipantBase.pick('memberId');
+
+/**
+ * The currently supported fields in a findAll query
+ */
+export type ParticipantFilters = Static<typeof ParticipantFilters>;
+
+/**
+ * Type for what can be updated on a group member, en masse
+ */
+export const ParticipantForMultiUpdate = ParticipantBase.pick('status');
+/**
+ * Type for what can be updated on a group member, en masse
+ */
+export type ParticipantForMultiUpdate = Static<
+  typeof ParticipantForMultiUpdate
+>;
 
 /**
  * An alternate version of Participant that excludes the ID
@@ -115,6 +121,7 @@ export type ParticipantForSourceIdentify = Static<
  * UPDATE: removed id and entity until they are required and we have more context
  */
 export type ParticipantIdentifiers = {
+  id: ParticipantId;
   idSourceValue: ParticipantSourceIdSourceValue;
 };
 export type ParticipantIdentifier = keyof ParticipantIdentifiers;
@@ -175,6 +182,21 @@ export type ParticipantFromSourceAndMember = Static<
  * Other related helper functions
  * ----
  */
+
+/**
+ * An alternative parser, instead of Participant.check()
+ *
+ * Participant being a Union and a Composite I think has proven too much
+ */
+export const parseParticipant = (participant: Participant): Participant => {
+  const { course, member, ...participantBase } = participant;
+  const parsedParticipantBase = ParticipantBase.check(participantBase);
+  return {
+    ...parsedParticipantBase,
+    course: CourseBase.check(course),
+    member: Member.check(member),
+  };
+};
 
 /**
  * Convenience function to prepare a ParticipantSourceIdSource

@@ -44,7 +44,11 @@ export class CreateMemberHandler
     // #1. validate the dto
     const validDto = pipe(
       createMemberDto,
-      parseData(CreateMemberDto.check, this.logger, 'RequestInvalidError')
+      parseData(
+        CreateMemberDto.check,
+        this.logger,
+        'InternalRequestInvalidError'
+      )
     );
 
     const { memberSource } = validDto;

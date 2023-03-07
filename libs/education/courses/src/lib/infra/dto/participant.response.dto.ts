@@ -1,4 +1,4 @@
-import { Array, Record, Static, String } from 'runtypes';
+import { Array, Optional, Record, Static, String } from 'runtypes';
 import { CourseBaseResponseDto } from './course.response.dto';
 import { MemberDto } from './member.dto';
 
@@ -12,6 +12,7 @@ export const ParticipantBaseResponseDto = Record({
   memberId: String,
   courseId: String,
   status: String,
+  sourceOrigin: Optional(String),
   sourceIds: Array(String),
   accountOwner: String,
 });

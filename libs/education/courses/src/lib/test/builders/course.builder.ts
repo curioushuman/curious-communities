@@ -62,7 +62,7 @@ export const CourseBuilder = () => {
     id: '8e925369-7dd5-4d92-b2a0-fba16384ce79',
     slug: 'learn_to_be_a_dancer',
     status: CourseStatusEnum.PENDING as CourseStatus,
-
+    sourceOrigin: config.defaults.primaryAccountSource,
     sourceIds: [
       {
         id: '5008s1234519CjBBHU',
@@ -82,7 +82,7 @@ export const CourseBuilder = () => {
     id: defaultProperties.id,
     slug: defaultProperties.slug,
     status: defaultProperties.status,
-
+    sourceOrigin: defaultProperties.sourceOrigin,
     sourceIds: defaultProperties.sourceIds,
 
     supportType: defaultProperties.supportType,

@@ -16,6 +16,7 @@ export class DynamoDbCourseMapper {
     return CourseBase.check({
       id: item.Course_Id,
 
+      sourceOrigin: item.Course_Source_Origin,
       sourceIds: DynamoDbMapper.prepareDomainSourceIds<
         CoursesDynamoDbItem,
         CourseSourceIdSource
@@ -81,6 +82,7 @@ export class DynamoDbCourseMapper {
         config.defaults.accountSources
       );
     return {
+      Course_Source_Origin: course.sourceOrigin,
       ...sourceIdFields,
       Course_Id: course.id,
       Course_Slug: course.slug,

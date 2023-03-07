@@ -15,7 +15,7 @@ Scenario: Successfully creating a member by email
 Scenario: Fail; Invalid request
   Given the request contains invalid data
   When I attempt to create a member
-  Then I should receive a RequestInvalidError
+  Then I should receive a InternalRequestInvalidError
 
 Scenario: Fail; Source not found for ID provided
   Given no record exists that matches our request

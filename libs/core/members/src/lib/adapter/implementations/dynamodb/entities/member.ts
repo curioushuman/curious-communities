@@ -37,6 +37,7 @@ export type DynamoDbMemberKeys = Static<typeof DynamoDbMemberKeys>;
  */
 export const DynamoDbMemberAttributes = DynamoDbMemberCommonAttributes.pick(
   'Member_Id',
+  'Member-Source_Origin',
   'Member_SourceIdCRM',
   'Member_SourceIdAUTH',
   'Member_SourceIdCOMMUNITY',

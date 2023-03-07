@@ -1,4 +1,4 @@
-import { Array, Record, Static } from 'runtypes';
+import { Array, Optional, Record, Static } from 'runtypes';
 
 import { GroupId } from '../value-objects/group-id';
 import { GroupStatus } from '../value-objects/group-status';
@@ -11,6 +11,7 @@ import {
 import { GroupSlug } from '../value-objects/group-slug';
 import { StandardGroupMemberBase } from './standard-group-member';
 import { GroupType } from '../value-objects/group-type';
+import { Source } from '../value-objects/source';
 
 /**
  * Base type for internal group entity
@@ -20,7 +21,7 @@ import { GroupType } from '../value-objects/group-type';
 export const StandardGroupBase = Record({
   _type: GroupType,
   id: GroupId,
-
+  sourceOrigin: Optional(Source),
   sourceIds: Array(GroupSourceIdSource),
 
   slug: GroupSlug,

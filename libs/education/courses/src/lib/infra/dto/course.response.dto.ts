@@ -10,6 +10,7 @@ export const CourseBaseResponseDto = Record({
   id: String,
   slug: String,
   status: String,
+  sourceOrigin: Optional(String),
   sourceIds: Array(String),
   supportType: String,
   name: String,

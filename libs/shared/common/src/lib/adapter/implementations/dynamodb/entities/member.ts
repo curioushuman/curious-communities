@@ -31,6 +31,7 @@ export const DynamoDbMemberCommonAttributes = Record({
   // a table, or an index etc
   Member_Id: String,
   // primary source
+  Member_Source_Origin: Optional(String),
   Member_SourceIdCRM: Optional(String.Or(Null)),
   // other sources
   Member_SourceIdAUTH: Optional(String.Or(Null)),

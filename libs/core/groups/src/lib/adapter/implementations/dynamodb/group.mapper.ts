@@ -17,6 +17,7 @@ export class DynamoDbGroupMapper {
       // other ids
       // standard
       slug: item.Group_Slug,
+      sourceOrigin: item.Group_Source_Origin,
       sourceIds: DynamoDbMapper.prepareDomainSourceIds<
         GroupsDynamoDbItem,
         GroupSourceIdSource
@@ -79,6 +80,7 @@ export class DynamoDbGroupMapper {
     return {
       Group_Type: group._type,
       Group_Id: group.id,
+      Group_Source_Origin: group.sourceOrigin,
       ...sourceIdFields,
 
       Group_CourseId: courseId,

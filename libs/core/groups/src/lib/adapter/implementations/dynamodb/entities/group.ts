@@ -47,6 +47,7 @@ export type DynamoDbGroupKeys = Static<typeof DynamoDbGroupKeys>;
 export const DynamoDbGroupAttributes = Record({
   Group_Type: String,
   Group_Id: String,
+  Group_Source_Origin: Optional(String),
   Group_SourceIdCOMMUNITY: Optional(String.Or(Null)),
   'Group_SourceIdMICRO-COURSE': Optional(String.Or(Null)),
 

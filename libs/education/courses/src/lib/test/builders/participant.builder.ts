@@ -54,7 +54,7 @@ export const ParticipantBuilder = () => {
     memberId: 'bd4dfd87-70c1-4a6f-b590-b3bbfce99f51',
     courseId: '5aad9387-2bfb-4391-82b3-8501a4fca58e',
     status: ParticipantStatusEnum.PENDING,
-
+    sourceOrigin: config.defaults.primaryAccountSource,
     sourceIds: [
       {
         id: '5008s1234519CjIPPU',
@@ -69,7 +69,7 @@ export const ParticipantBuilder = () => {
     memberId: defaultProperties.memberId,
     courseId: defaultProperties.courseId,
     status: defaultProperties.status,
-
+    sourceOrigin: defaultProperties.sourceOrigin,
     sourceIds: defaultProperties.sourceIds,
 
     accountOwner: defaultProperties.accountOwner,

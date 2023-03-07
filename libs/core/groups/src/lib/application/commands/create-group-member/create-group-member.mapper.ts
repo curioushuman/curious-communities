@@ -81,6 +81,7 @@ export class CreateGroupMemberMapper {
       id: createGroupMemberId(),
       groupId: group.id,
       memberId: 'TBD',
+      sourceOrigin: source.source,
       status: source.status,
 
       accountOwner: 'TBD',

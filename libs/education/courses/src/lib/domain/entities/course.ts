@@ -29,7 +29,7 @@ export const CourseBase = Record({
   id: CourseId,
   slug: CourseSlug,
   status: CourseStatus,
-
+  sourceOrigin: Optional(Source),
   sourceIds: Array(CourseSourceIdSource),
 
   supportType: CourseSupportType,

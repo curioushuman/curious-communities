@@ -61,7 +61,7 @@ export const GroupBuilder = () => {
   const defaultProperties: GroupLooseMimic = {
     _type: config.defaults.groupTypeStandard as GroupType,
     id: '6fce9d10-aeed-4bb1-8c8c-92094f1983ff',
-
+    sourceOrigin: config.defaults.primaryAccountSource,
     sourceIds: [
       {
         id: '5008s1234519CjIPPU',
@@ -77,7 +77,7 @@ export const GroupBuilder = () => {
   const overrides: GroupLooseMimic = {
     _type: defaultProperties._type,
     id: defaultProperties.id,
-
+    sourceOrigin: defaultProperties.sourceOrigin,
     sourceIds: defaultProperties.sourceIds,
 
     status: defaultProperties.status,

@@ -43,7 +43,7 @@ export const MemberBuilder = () => {
   const defaultProperties: MemberLooseMimic = {
     id: '6fce9d10-aeed-4bb1-8c8c-92094f1982ff',
     status: MemberStatusEnum.PENDING,
-
+    sourceOrigin: config.defaults.primaryAccountSource,
     sourceIds: [
       {
         id: '5008s1234519CjIPPU',
@@ -60,7 +60,7 @@ export const MemberBuilder = () => {
   const overrides: MemberLooseMimic = {
     id: defaultProperties.id,
     status: defaultProperties.status,
-
+    sourceOrigin: defaultProperties.sourceOrigin,
     sourceIds: defaultProperties.sourceIds,
 
     name: defaultProperties.name,

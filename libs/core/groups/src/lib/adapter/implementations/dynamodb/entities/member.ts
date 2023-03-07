@@ -15,6 +15,7 @@ import { DynamoDbMemberCommonAttributes } from '@curioushuman/common';
  */
 export const DynamoDbMemberAttributes = DynamoDbMemberCommonAttributes.pick(
   'Member_Id',
+  'Member_Source_Origin',
   'Member_SourceIdCRM',
   'Member_SourceIdAUTH',
   'Member_SourceIdCOMMUNITY',

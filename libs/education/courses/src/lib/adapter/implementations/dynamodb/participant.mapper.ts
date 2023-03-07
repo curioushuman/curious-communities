@@ -24,6 +24,7 @@ export class DynamoDbParticipantMapper {
 
       // other ids
       memberId: item.Member_Id,
+      sourceOrigin: item.Participant_Source_Origin,
       sourceIds: DynamoDbMapper.prepareDomainSourceIds<
         CoursesDynamoDbItem,
         ParticipantSourceIdSource
@@ -103,6 +104,7 @@ export class DynamoDbParticipantMapper {
       );
     return {
       ...sourceIdFields,
+      Participant_Source_Origin: participant.sourceOrigin,
       Participant_Id: participant.id,
       Participant_Status: participant.status,
       AccountOwner: participant.accountOwner,

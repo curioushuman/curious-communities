@@ -1,4 +1,4 @@
-import { Array, Record, Static, String } from 'runtypes';
+import { Array, Optional, Record, Static, String } from 'runtypes';
 
 /**
  * This is the structure of data the world will receive
@@ -24,6 +24,7 @@ import { Array, Record, Static, String } from 'runtypes';
 export const MemberResponseDto = Record({
   id: String,
   status: String,
+  sourceOrigin: Optional(String),
   sourceIds: Array(String),
   name: String,
   email: String,

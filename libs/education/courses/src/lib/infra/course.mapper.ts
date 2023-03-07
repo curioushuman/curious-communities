@@ -38,7 +38,7 @@ export class CourseMapper {
       id: course.id,
       slug: course.slug,
       status: course.status,
-
+      sourceOrigin: course.sourceOrigin,
       sourceIds: course.sourceIds.map(CourseMapper.toResponseDtoIdSource),
 
       supportType: course.supportType,
@@ -74,7 +74,7 @@ export class CourseMapper {
       slug: dto.slug,
       status: dto.status,
       supportType: dto.supportType,
-
+      sourceOrigin: dto.sourceOrigin,
       sourceIds: dto.sourceIds.map(prepareCourseExternalIdSource),
 
       name: dto.name,

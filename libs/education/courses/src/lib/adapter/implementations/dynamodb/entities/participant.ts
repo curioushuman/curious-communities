@@ -49,6 +49,7 @@ export const DynamoDbParticipantAttributes = Record({
   Participant_Id: String,
   // we don't need Course_Id as that is already part of DdbCourseAttributes
   // we do need the value for each of our sourceIds
+  Participant_Source_Origin: Optional(String),
   Participant_SourceIdCOURSE: Optional(String.Or(Null)),
   // we don't need Member_Id as that will be included with DdbMemberAttributes
 

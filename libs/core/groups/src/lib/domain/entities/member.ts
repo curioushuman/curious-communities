@@ -1,4 +1,4 @@
-import { Array, Record, Static } from 'runtypes';
+import { Array, Optional, Record, Static } from 'runtypes';
 
 import { MemberId } from '../value-objects/member-id';
 import { MemberStatus } from '../value-objects/member-status';
@@ -19,6 +19,7 @@ import { MemberSource } from '../value-objects/member-source';
  */
 export const Member = Record({
   id: MemberId,
+  sourceOrigin: Optional(MemberSource),
   sourceIds: Array(MemberSourceIdSource),
 
   status: MemberStatus,

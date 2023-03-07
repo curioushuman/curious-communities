@@ -13,6 +13,7 @@ export class DynamoDbMemberMapper {
     return Member.check({
       id: item.Member_Id,
 
+      sourceOrigin: item.Member_Source_Origin,
       sourceIds: DynamoDbMapper.prepareDomainSourceIds<
         MembersDynamoDbItem,
         MemberSourceIdSource
@@ -65,6 +66,7 @@ export class DynamoDbMemberMapper {
         config.defaults.accountSources
       );
     return {
+      Member_Source_Origin: member.sourceOrigin,
       ...sourceIdFields,
 
       Member_Id: member.id,

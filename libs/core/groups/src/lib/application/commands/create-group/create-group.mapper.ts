@@ -46,6 +46,7 @@ export class CreateGroupMapper {
     return StandardGroupBase.check({
       _type: config.defaults.groupTypeStandard,
       id: createGroupId(),
+      sourceOrigin: source.source,
       sourceIds: [
         {
           id: source.id,

@@ -3,8 +3,8 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
 import {
+  InternalRequestInvalidError,
   RepositoryItemNotFoundError,
-  RequestInvalidError,
   SourceInvalidError,
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
@@ -170,8 +170,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a RequestInvalidError', () => {
-      expect(error).toBeInstanceOf(RequestInvalidError);
+    then('I should receive a InternalRequestInvalidError', () => {
+      expect(error).toBeInstanceOf(InternalRequestInvalidError);
     });
   });
 

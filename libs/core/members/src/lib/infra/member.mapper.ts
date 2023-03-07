@@ -15,7 +15,7 @@ export class MemberMapper {
     return MemberResponseDto.check({
       id: member.id,
       status: member.status,
-
+      sourceOrigin: member.sourceOrigin,
       sourceIds: member.sourceIds.map((idSource) =>
         prepareExternalIdSourceValue(idSource.id, idSource.source)
       ),
@@ -32,7 +32,7 @@ export class MemberMapper {
     return Member.check({
       id: dto.id,
       status: dto.status,
-
+      sourceOrigin: dto.sourceOrigin,
       sourceIds: dto.sourceIds.map((idSourceValue) =>
         prepareMemberExternalIdSource(idSourceValue)
       ),

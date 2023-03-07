@@ -380,7 +380,6 @@ export const GroupMemberBuilder = () => {
         ...defaultProperties,
         ...overrides,
         ...courseGroupMemberOverrides,
-        sourceIds: [],
       };
       delete dto.group;
       delete dto.member;
@@ -398,7 +397,6 @@ export const GroupMemberBuilder = () => {
         ...defaultProperties,
         ...overrides,
         ...courseGroupMemberOverrides,
-        sourceIds: [],
         group,
         member,
       };

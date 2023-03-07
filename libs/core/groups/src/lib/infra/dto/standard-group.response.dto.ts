@@ -1,4 +1,4 @@
-import { Array, Record, Static, String } from 'runtypes';
+import { Array, Optional, Record, Static, String } from 'runtypes';
 import { StandardGroupMemberBaseResponseDto } from './standard-group-member.response.dto';
 
 /**
@@ -9,7 +9,7 @@ import { StandardGroupMemberBaseResponseDto } from './standard-group-member.resp
 export const StandardGroupBaseResponseDto = Record({
   _type: String,
   id: String,
-
+  sourceOrigin: Optional(String),
   sourceIds: Array(String),
 
   slug: String,

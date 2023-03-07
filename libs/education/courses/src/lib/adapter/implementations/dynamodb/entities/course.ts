@@ -45,6 +45,7 @@ export type DynamoDbCourseKeys = Static<typeof DynamoDbCourseKeys>;
  */
 export const DynamoDbCourseAttributes = Record({
   Course_Id: String,
+  Course_Source_Origin: Optional(String),
   Course_SourceIdCOURSE: Optional(String.Or(Null)),
 
   Course_Slug: String,

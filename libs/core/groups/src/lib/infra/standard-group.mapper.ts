@@ -35,7 +35,7 @@ export class StandardGroupMapper {
     const dto: StandardGroupBaseResponseDto = {
       _type: config.defaults.groupTypeStandard,
       id: group.id,
-
+      sourceOrigin: group.sourceOrigin,
       sourceIds: group.sourceIds.map(StandardGroupMapper.toResponseDtoIdSource),
 
       slug: group.slug,
@@ -64,7 +64,7 @@ export class StandardGroupMapper {
     const group = {
       _type: dto._type,
       id: dto.id,
-
+      sourceOrigin: dto.sourceOrigin,
       sourceIds: dto.sourceIds.map(prepareGroupExternalIdSource),
 
       slug: dto.slug,

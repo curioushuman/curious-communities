@@ -34,11 +34,11 @@ export class CourseMapper {
   ): Omit<CourseBase, 'id' | 'slug'> {
     return {
       status: CourseMapper.fromSourceStatus(source.status),
-
+      sourceOrigin: source.source,
       sourceIds: [
         {
           id: source.id,
-          source: config.defaults.primaryAccountSource,
+          source: source.source,
         },
       ],
 

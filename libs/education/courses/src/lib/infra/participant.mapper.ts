@@ -39,7 +39,7 @@ export class ParticipantMapper {
       memberId: participant.memberId,
       courseId: participant.courseId,
       status: participant.status,
-
+      sourceOrigin: participant.sourceOrigin,
       sourceIds: participant.sourceIds.map(
         ParticipantMapper.toResponseDtoIdSource
       ),
@@ -66,7 +66,7 @@ export class ParticipantMapper {
       status: dto.status,
       memberId: dto.memberId,
       courseId: dto.courseId,
-
+      sourceOrigin: dto.sourceOrigin,
       sourceIds: dto.sourceIds.map(prepareParticipantExternalIdSource),
 
       accountOwner: dto.accountOwner,

@@ -1,4 +1,4 @@
-import { Array, Record, Static } from 'runtypes';
+import { Array, Optional, Record, Static } from 'runtypes';
 
 import { CourseBase } from './course';
 import { Member } from './member';
@@ -24,6 +24,7 @@ export const ParticipantBase = Record({
   id: ParticipantId,
   memberId: MemberId,
   courseId: CourseId,
+  sourceOrigin: Optional(Source),
   sourceIds: Array(ParticipantSourceIdSource),
 
   status: ParticipantStatus,
@@ -145,6 +146,7 @@ export type ParticipantIdentifier = keyof ParticipantIdentifiers;
 export const ParticipantFromSource = ParticipantBase.pick(
   'id',
   'status',
+  'sourceOrigin',
   'sourceIds',
   'accountOwner'
 );
@@ -164,6 +166,7 @@ export const ParticipantFromSourceAndMember = Participant.pick(
   'id',
   'accountOwner',
   'status',
+  'sourceOrigin',
   'sourceIds',
 
   'memberId',

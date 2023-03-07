@@ -14,6 +14,7 @@ export class DynamoDbMemberMapper {
       id: item.Member_Id,
 
       // other ids
+      sourceOrigin: item.Member_Source_Origin,
       sourceIds: DynamoDbMapper.prepareDomainSourceIds<
         GroupsDynamoDbItem,
         MemberSourceIdSource
@@ -41,6 +42,7 @@ export class DynamoDbMemberMapper {
         memberSources
       );
     return {
+      Member_Source_Origin: member.sourceOrigin,
       ...sourceIdFields,
       Member_Id: member.id,
 

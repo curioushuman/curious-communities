@@ -42,10 +42,11 @@ export class CreateParticipantMapper {
     const participantFromSource = {
       id: createParticipantId(),
       status: ParticipantMapper.fromSourceStatus(source.status),
+      sourceOrigin: source.source,
       sourceIds: [
         {
           id: source.id,
-          source: config.defaults.primaryAccountSource,
+          source: source.source,
         },
       ],
       accountOwner: config.defaults.accountOwner as AccountSlug,

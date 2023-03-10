@@ -7,9 +7,9 @@ import { UpsertMemberSourceRequestDto } from '../../infra/upsert-member-source/d
 export type MemberSourceMessage = UpsertMemberSourceRequestDto;
 
 /**
- * A repository for member source messaging
+ * A repository for member source queue
  */
-export abstract class MemberSourceMessagingService {
+export abstract class MemberSourceQueueService {
   /**
    * Send a batch of messages
    */

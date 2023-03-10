@@ -8,8 +8,8 @@ import { ParticipantRepository } from './adapter/ports/participant.repository';
 import { DynamoDbParticipantRepository } from './adapter/implementations/dynamodb/participant.repository';
 import { ParticipantRepositoryErrorFactory } from './adapter/ports/participant.repository.error-factory';
 import { UpdateParticipantMultiController } from './infra/update-participant-multi/update-participant-multi.controller';
-import { ParticipantMessagingService } from './adapter/ports/participant.messaging-service';
-import { SqsParticipantMessagingService } from './adapter/implementations/sqs/participant.messaging-service';
+import { ParticipantQueueService } from './adapter/ports/participant.queue-service';
+import { SqsParticipantQueueService } from './adapter/implementations/sqs/participant.queue-service';
 
 const imports = [CqrsModule, LoggableModule];
 
@@ -26,8 +26,8 @@ const repositories = [
 
 const services = [
   {
-    provide: ParticipantMessagingService,
-    useClass: SqsParticipantMessagingService,
+    provide: ParticipantQueueService,
+    useClass: SqsParticipantQueueService,
   },
   {
     provide: ParticipantRepositoryErrorFactory,

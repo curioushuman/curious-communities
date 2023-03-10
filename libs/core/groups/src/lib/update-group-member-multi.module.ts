@@ -8,8 +8,8 @@ import { GroupMemberRepository } from './adapter/ports/group-member.repository';
 import { DynamoDbGroupMemberRepository } from './adapter/implementations/dynamodb/group-member.repository';
 import { GroupMemberRepositoryErrorFactory } from './adapter/ports/group-member.repository.error-factory';
 import { UpdateGroupMemberMultiController } from './infra/update-group-member-multi/update-group-member-multi.controller';
-import { GroupMemberMessagingService } from './adapter/ports/group-member.messaging-service';
-import { SqsGroupMemberMessagingService } from './adapter/implementations/sqs/group-member.messaging-service';
+import { GroupMemberQueueService } from './adapter/ports/group-member.queue-service';
+import { SqsGroupMemberQueueService } from './adapter/implementations/sqs/group-member.queue-service';
 
 const imports = [CqrsModule, LoggableModule];
 
@@ -26,8 +26,8 @@ const repositories = [
 
 const services = [
   {
-    provide: GroupMemberMessagingService,
-    useClass: SqsGroupMemberMessagingService,
+    provide: GroupMemberQueueService,
+    useClass: SqsGroupMemberQueueService,
   },
   {
     provide: GroupMemberRepositoryErrorFactory,

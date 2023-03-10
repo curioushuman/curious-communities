@@ -11,8 +11,8 @@ import {
 
 import { FindParticipantSourceHandler } from './application/queries/find-participant-source/find-participant-source.query';
 import { UpsertParticipantMultiController } from './infra/upsert-participant-multi/upsert-participant-multi.controller';
-import { ParticipantMessagingService } from './adapter/ports/participant.messaging-service';
-import { SqsParticipantMessagingService } from './adapter/implementations/sqs/participant.messaging-service';
+import { ParticipantQueueService } from './adapter/ports/participant.queue-service';
+import { SqsParticipantQueueService } from './adapter/implementations/sqs/participant.queue-service';
 import { ParticipantSourceRepository } from './adapter/ports/participant-source.repository';
 import { ParticipantSourceRepositoryErrorFactory } from './adapter/ports/participant-source.repository.error-factory';
 
@@ -37,8 +37,8 @@ const repositories = [
 
 const services = [
   {
-    provide: ParticipantMessagingService,
-    useClass: SqsParticipantMessagingService,
+    provide: ParticipantQueueService,
+    useClass: SqsParticipantQueueService,
   },
   {
     provide: ParticipantSourceRepositoryErrorFactory,

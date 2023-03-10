@@ -5,33 +5,31 @@ import { SqsService } from '@curioushuman/common';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import {
-  MemberSourceMessage,
-  MemberSourceMessagingService,
-} from '../../ports/member-source.messaging-service';
+  GroupMemberMessage,
+  GroupMemberQueueService,
+} from '../../ports/group-member.queue-service';
 
 @Injectable()
-export class SqsMemberSourceMessagingService
-  implements MemberSourceMessagingService
-{
-  private sqsService: SqsService<MemberSourceMessage>;
+export class SqsGroupMemberQueueService implements GroupMemberQueueService {
+  private sqsService: SqsService<GroupMemberMessage>;
 
   constructor(public logger: LoggableLogger) {
-    this.logger.setContext(SqsMemberSourceMessagingService.name);
+    this.logger.setContext(SqsGroupMemberQueueService.name);
 
     this.sqsService = new SqsService(
       {
-        stackId: 'members',
+        stackId: 'groups',
         prefix: 'cc',
       },
       this.logger
     );
   }
 
-  public upsertMembers = (
-    messages: MemberSourceMessage[]
+  public updateGroupMembers = (
+    messages: GroupMemberMessage[]
   ): TE.TaskEither<Error, void> => {
     return this.sqsService.sendMessageBatch({
-      id: 'member-source-upsert',
+      id: 'group-member-update',
       messages,
     });
   };

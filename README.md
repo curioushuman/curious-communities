@@ -40,6 +40,12 @@ NX_DESTROY_TARGET=destroy-local
 * ./tools/scripts/set-stage.sh updates the dynamic values automatically
 * all of this scripted in package.json
 
+### Diagrams as code
+
+Must add some notes on how to install:
+
+* https://diagrams.mingrammer.com/docs/getting-started/installation
+
 ## Loaclstack
 
 ### Issues

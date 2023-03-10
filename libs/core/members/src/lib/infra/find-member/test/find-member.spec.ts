@@ -3,14 +3,10 @@ import { loadFeature, defineFeature } from 'jest-cucumber';
 import { Test } from '@nestjs/testing';
 
 import { MemberModule } from '../../../test/member.module.fake';
-import {
-  FindByEmailMemberRequestDto,
-  FindByIdMemberRequestDto,
-  FindByIdSourceValueMemberRequestDto,
-} from '../dto/find-member.request.dto';
 import { MemberBuilder } from '../../../test/builders/member.builder';
 import { FindMemberController } from '../../../infra/find-member/find-member.controller';
-import { RequestInvalidError } from '@curioushuman/error-factory';
+import { InternalRequestInvalidError } from '@curioushuman/error-factory';
+import { FindMemberRequestDto } from '../dto/find-member.request.dto';
 
 /**
  * INTEGRATION TEST
@@ -56,7 +52,7 @@ defineFeature(feature, (test) => {
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
-    let findMemberDto: FindByIdMemberRequestDto;
+    let findMemberDto: FindMemberRequestDto;
     let error: Error;
 
     given('the request is valid', () => {
@@ -86,7 +82,7 @@ defineFeature(feature, (test) => {
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
-    let findMemberDto: FindByIdSourceValueMemberRequestDto;
+    let findMemberDto: FindMemberRequestDto;
     let error: Error;
 
     given('the request is valid', () => {
@@ -114,7 +110,7 @@ defineFeature(feature, (test) => {
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
-    let findMemberDto: FindByEmailMemberRequestDto;
+    let findMemberDto: FindMemberRequestDto;
     let error: Error;
 
     given('the request is valid', () => {
@@ -142,7 +138,7 @@ defineFeature(feature, (test) => {
     // disabling no-explicit-any for testing purposes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: any;
-    let findMemberDto: FindByIdSourceValueMemberRequestDto;
+    let findMemberDto: FindMemberRequestDto;
     let error: Error;
 
     given('the request contains invalid data', () => {
@@ -160,8 +156,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a RequestInvalidError', () => {
-      expect(error).toBeInstanceOf(RequestInvalidError);
+    then('I should receive a InternalRequestInvalidError', () => {
+      expect(error).toBeInstanceOf(InternalRequestInvalidError);
     });
 
     and('no result is returned', () => {

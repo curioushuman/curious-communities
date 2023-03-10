@@ -45,6 +45,14 @@ NX_DESTROY_TARGET=destroy-local
 Must add some notes on how to install:
 
 * https://diagrams.mingrammer.com/docs/getting-started/installation
+  * I installed pipenv
+    * https://formulae.brew.sh/formula/pipenv
+  * Then `pipenv install diagrams`
+
+And some notes on how to use:
+
+* `pipenv run python apps/education/courses/diagrams/course-upsert.py`
+* `pnpm nx run cc-courses:diagram`
 
 ## Loaclstack
 

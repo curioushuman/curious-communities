@@ -271,10 +271,16 @@ export class CoursesStack extends cdk.Stack {
 
     /**
      * State machine: Upsert participant
+     *
+     * Triggers
+     * - external event bus; participant created/updated
+     * - upsert participant function;
+     *   triggered by upsert participant multi;
+     *   triggered by course create;
      */
     const upsertParticipantId = generateCompositeResourceId(
       stackId,
-      'participant-upsert'
+      'participant-upsert-state-machine'
     );
     const upsertParticipantConstruct = new UpsertParticipantConstruct(
       this,
@@ -315,6 +321,111 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
+     * Function: Upsert participant
+     *
+     * NOTE: this is here as a proxy between SQS and step functions
+     *
+     * Triggers
+     * - personal SQS (below)
+     *
+     * Invokes
+     * - upsertParticipant state machine
+     *
+     * TODO:
+     * - [ ] refactor/remove to use Events Pipes (when it has L2 constructs)
+     */
+    const upsertParticipantLambdaId = generateCompositeResourceId(
+      stackId,
+      'participant-upsert-function'
+    );
+    const upsertParticipantLambdaConstruct = new LambdaConstruct(
+      this,
+      upsertParticipantLambdaId,
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/upsert-participant/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
+    );
+
+    /**
+     * Function: Upsert participant multi
+     *
+     * Triggers
+     * - course created
+     */
+    const upsertParticipantMultiLambdaId = generateCompositeResourceId(
+      stackId,
+      'participant-upsert-multi'
+    );
+    const upsertParticipantMultiLambdaConstruct = new LambdaConstruct(
+      this,
+      upsertParticipantMultiLambdaId,
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/upsert-participant-multi/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
+    );
+
+    /**
+     * Subscribing the lambda to the internal event bus; when course is created
+     */
+    const upsertParticipantMultiRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(upsertParticipantMultiLambdaId, 'rule'),
+      {
+        eventBus: internalEventBusConstruct.eventBus,
+        entity: [
+          'course-base',
+          'course',
+          { suffix: '-course-base' },
+          { suffix: '-course' },
+        ],
+        event: ['created'],
+        outcome: ['success'],
+      }
+    );
+    upsertParticipantMultiRuleConstruct.rule.addTarget(
+      new targets.LambdaFunction(
+        upsertParticipantMultiLambdaConstruct.lambdaFunction
+      )
+    );
+
+    /**
+     * SQS queue to throttle requests to upsertParticipant
+     */
+    const [upsertParticipantQueueName, upsertParticipantQueueTitle] =
+      resourceNameTitle(upsertParticipantLambdaId, 'Queue');
+    const upsertParticipantQueue = new sqs.Queue(
+      this,
+      upsertParticipantQueueTitle,
+      {
+        queueName: upsertParticipantQueueName,
+        visibilityTimeout: cdk.Duration.seconds(60),
+      }
+    );
+    // allow the (above) multi lambda to send messages to the queue
+    upsertParticipantQueue.grantSendMessages(
+      upsertParticipantMultiLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Subscribe the function, to the queue
+     */
+    upsertParticipantLambdaConstruct.lambdaFunction.addEventSource(
+      new SqsEventSource(upsertParticipantQueue, {
+        batchSize: 3, // default
+        maxBatchingWindow: cdk.Duration.minutes(2),
+        reportBatchItemFailures: true, // default to false
+      })
+    );
+
+    /**
      * Function: Update participant multi
      *
      * Triggers
@@ -338,15 +449,11 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
-     * Subscribing the lambda to the internal event bus
+     * Subscribing the lambda to the internal event bus; when course OR member is updated
      */
-    const courseUpdateParticipantMultiRuleId = generateCompositeResourceId(
-      updateParticipantMultiLambdaId,
-      'course'
-    );
-    const courseUpdateParticipantMultiRuleConstruct = new RuleEntityEvent(
+    const updateParticipantMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(courseUpdateParticipantMultiRuleId, 'rule'),
+      generateCompositeResourceId(updateParticipantMultiLambdaId, 'rule'),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [
@@ -354,30 +461,6 @@ export class CoursesStack extends cdk.Stack {
           'course',
           { suffix: '-course-base' },
           { suffix: '-course' },
-        ],
-        event: ['created', 'updated'],
-        outcome: ['success'],
-      }
-    );
-    courseUpdateParticipantMultiRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(
-        updateParticipantMultiLambdaConstruct.lambdaFunction
-      )
-    );
-
-    /**
-     * Second rule, just for member update
-     */
-    const memberUpdateParticipantMultiRuleId = generateCompositeResourceId(
-      updateParticipantMultiLambdaId,
-      'member'
-    );
-    const memberUpdateParticipantMultiRuleConstruct = new RuleEntityEvent(
-      this,
-      generateCompositeResourceId(memberUpdateParticipantMultiRuleId, 'rule'),
-      {
-        eventBus: internalEventBusConstruct.eventBus,
-        entity: [
           'member-base',
           'member',
           { suffix: '-member-base' },
@@ -387,7 +470,7 @@ export class CoursesStack extends cdk.Stack {
         outcome: ['success'],
       }
     );
-    memberUpdateParticipantMultiRuleConstruct.rule.addTarget(
+    updateParticipantMultiRuleConstruct.rule.addTarget(
       new targets.LambdaFunction(
         updateParticipantMultiLambdaConstruct.lambdaFunction
       )

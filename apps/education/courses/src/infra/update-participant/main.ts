@@ -103,5 +103,6 @@ export const handler = async (
   // SEE **Error handling and logging** in README for more info.
   return updateParticipantController.update({
     idSourceValue: validRequestDto.participantIdSourceValue,
+    participant: validRequestDto.participant,
   });
 };

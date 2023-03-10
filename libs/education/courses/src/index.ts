@@ -18,6 +18,10 @@ export * from './lib/infra/update-participant/update-participant.controller';
 export * from './lib/update-participant.module';
 export * from './lib/infra/update-participant-multi/update-participant-multi.controller';
 export * from './lib/update-participant-multi.module';
+export * from './lib/infra/upsert-participant/upsert-participant.controller';
+export * from './lib/upsert-participant.module';
+export * from './lib/infra/upsert-participant-multi/upsert-participant-multi.controller';
+export * from './lib/upsert-participant-multi.module';
 
 // types
 export * from './lib/infra/dto/participant.response.dto';

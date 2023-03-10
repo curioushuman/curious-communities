@@ -7,9 +7,9 @@ import { UpdateGroupMemberRequestDto } from '../../infra/update-group-member/dto
 export type GroupMemberMessage = UpdateGroupMemberRequestDto;
 
 /**
- * A repository for member source messaging
+ * A repository for member source queue
  */
-export abstract class GroupMemberMessagingService {
+export abstract class GroupMemberQueueService {
   /**
    * Send a batch of messages
    */

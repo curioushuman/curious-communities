@@ -6,19 +6,17 @@ import { LoggableLogger } from '@curioushuman/loggable';
 
 import {
   ParticipantMessage,
-  ParticipantMessagingService,
-} from '../../ports/participant.messaging-service';
+  ParticipantQueueService,
+} from '../../ports/participant.queue-service';
 import { UpdateParticipantRequestDto } from '../../../infra/update-participant/dto/update-participant.request.dto';
 import { UpsertParticipantRequestDto } from '../../../infra/upsert-participant/dto/upsert-participant.request.dto';
 
 @Injectable()
-export class SqsParticipantMessagingService
-  implements ParticipantMessagingService
-{
+export class SqsParticipantQueueService implements ParticipantQueueService {
   private sqsService: SqsService<ParticipantMessage>;
 
   constructor(public logger: LoggableLogger) {
-    this.logger.setContext(SqsParticipantMessagingService.name);
+    this.logger.setContext(SqsParticipantQueueService.name);
 
     this.sqsService = new SqsService(
       {

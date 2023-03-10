@@ -2,7 +2,7 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 import { ParticipantSource } from '../../domain/entities/participant-source';
 
 /**
- * A repository for member source messaging
+ * A repository for member source queue
  */
 export abstract class ParticipantOrchestrationService {
   /**

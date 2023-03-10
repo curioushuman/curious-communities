@@ -8,21 +8,21 @@ import config from '../../static/config';
 import { Source } from '../../domain/value-objects/source';
 import { MemberResponseDto } from '../dto/member.response.dto';
 import { UpsertMemberSourceRequestDto } from '../upsert-member-source/dto/upsert-member-source.request.dto';
-import { MemberSourceMessagingService } from '../../adapter/ports/member-source.messaging-service';
+import { MemberSourceQueueService } from '../../adapter/ports/member-source.queue-service';
 
 /**
  * Controller to handle upserting multiple member sources
  *
  * NOTES:
- * - I'm directly injecting an SQS messaging service.
- *   If at some later point we would like to offer multiple messaging services
- *   we could create a messaging service interface and inject that instead.
+ * - I'm directly injecting an SQS queue service.
+ *   If at some later point we would like to offer multiple queue services
+ *   we could create a queue service interface and inject that instead.
  */
 @Controller()
 export class UpsertMemberSourceMultiController {
   constructor(
     private logger: LoggableLogger,
-    private messagingService: MemberSourceMessagingService
+    private queueService: MemberSourceQueueService
   ) {
     this.logger.setContext(UpsertMemberSourceMultiController.name);
   }
@@ -65,7 +65,7 @@ export class UpsertMemberSourceMultiController {
       parseData(UpsertMemberSourceMultiRequestDto.check, this.logger),
       (validDto) => validDto.member,
       this.prepareMessages(sources),
-      this.messagingService.upsertMembers
+      this.queueService.upsertMembers
     );
 
     return executeTask(task);

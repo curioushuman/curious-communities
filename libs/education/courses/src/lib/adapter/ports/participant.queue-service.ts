@@ -10,9 +10,9 @@ export type ParticipantMessage =
   | UpsertParticipantRequestDto;
 
 /**
- * A repository for member source messaging
+ * A repository for member source queue
  */
-export abstract class ParticipantMessagingService {
+export abstract class ParticipantQueueService {
   /**
    * Update participants
    */

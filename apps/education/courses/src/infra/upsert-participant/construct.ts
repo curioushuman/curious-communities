@@ -54,6 +54,8 @@ export interface UpsertParticipantProps {
  *
  * TODO
  * - [ ] better error handling
+ * - [ ] when coming from upsertParticipantMulti, deal with participantSource as input
+ *       rather than, currently, using idSource to re-request the participantSource
  * - [ ] add DQL to rule
  *       https://github.com/aws-samples/serverless-patterns/blob/main/cdk-eventbridge-stepfunction-sqs/cdk/lib/eventbridge-stepfunction-sqs-stack.ts
  */
@@ -98,6 +100,7 @@ export class UpsertParticipantConstruct extends Construct {
     this.prepareLogGroup();
 
     // prepare our definition
+    // add the first task, everything else is pre-chained
     this.definition = sfn.Chain.start(this.tasks.findParticipant);
 
     // create our state machine
@@ -140,6 +143,11 @@ export class UpsertParticipantConstruct extends Construct {
     };
   }
 
+  private prepareExternalFunction(functionId: string): lambda.IFunction {
+    const lambdaFrom = new ChLambdaFrom(this, functionId);
+    return lambdaFrom.lambdaFunction;
+  }
+
   private prepareExternalFunctions(): void {
     const functionIds: Record<string, string> = {
       findMember: 'cc-members-member-find',
@@ -148,11 +156,6 @@ export class UpsertParticipantConstruct extends Construct {
     for (const [key, value] of Object.entries(functionIds)) {
       this.externalFunctions[key] = this.prepareExternalFunction(value);
     }
-  }
-
-  private prepareExternalFunction(functionId: string): lambda.IFunction {
-    const lambdaFrom = new ChLambdaFrom(this, functionId);
-    return lambdaFrom.lambdaFunction;
   }
 
   private prepareTaskTitle(taskId: ResourceId): string {

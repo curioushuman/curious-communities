@@ -1,5 +1,9 @@
-import { Record, Static, String } from 'runtypes';
-import { EventbridgePutEvent } from '@curioushuman/common';
+import { Optional, Record, Static, String } from 'runtypes';
+import {
+  EventbridgePutEvent,
+  SqsAsEventSourceEvent,
+} from '@curioushuman/common';
+import { ParticipantResponseDto } from '@curioushuman/cc-courses-service';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -11,8 +15,9 @@ import { EventbridgePutEvent } from '@curioushuman/common';
  */
 
 export const UpdateParticipantRequestDto = Record({
-  participantIdSourceValue: String,
-});
+  participantIdSourceValue: Optional(String),
+  participant: Optional(ParticipantResponseDto),
+}).withConstraint((dto) => !!(dto.participantIdSourceValue || dto.participant));
 
 export type UpdateParticipantRequestDto = Static<
   typeof UpdateParticipantRequestDto
@@ -25,11 +30,19 @@ export type UpdateParticipantPutEvent =
   EventbridgePutEvent<UpdateParticipantRequestDto>;
 
 /**
+ * What the input looks like when SQS is event source
+ */
+export type UpdateParticipantSqsEvent =
+  SqsAsEventSourceEvent<UpdateParticipantRequestDto>;
+
+/**
  * The types of event we support
  *
  * This allows us space to add additional event types
  */
-export type UpdateParticipantEvent = UpdateParticipantPutEvent;
+export type UpdateParticipantEvent =
+  | UpdateParticipantPutEvent
+  | UpdateParticipantSqsEvent;
 
 /**
  * The two types of input we support
@@ -46,8 +59,11 @@ export type UpdateParticipantDtoOrEvent =
  * NOTE: validation of data is a separate step
  */
 export function locateDto(incomingEvent: UpdateParticipantDtoOrEvent): unknown {
-  if ('participantIdSourceValue' in incomingEvent) {
-    return incomingEvent;
+  if ('Records' in incomingEvent) {
+    return incomingEvent.Records[0].body;
   }
-  return incomingEvent.detail;
+  if ('detail' in incomingEvent) {
+    return incomingEvent.detail;
+  }
+  return incomingEvent;
 }

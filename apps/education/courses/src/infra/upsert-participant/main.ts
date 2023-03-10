@@ -2,17 +2,16 @@ import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
-  UpdateParticipantModule,
-  UpdateParticipantController,
-  ResponsePayload,
+  UpsertParticipantModule,
+  UpsertParticipantController,
 } from '@curioushuman/cc-courses-service';
 import { LoggableLogger } from '@curioushuman/loggable';
 import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 import {
   locateDto,
-  UpdateParticipantDtoOrEvent,
-  UpdateParticipantRequestDto,
+  UpsertParticipantDtoOrEvent,
+  UpsertParticipantRequestDto,
 } from './dto/request.dto';
 
 /**
@@ -34,12 +33,12 @@ let lambdaApp: INestApplicationContext;
  */
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(
-    UpdateParticipantModule,
+    UpsertParticipantModule,
     {
       bufferLogs: true,
     }
   );
-  UpdateParticipantModule.applyDefaults(app);
+  UpsertParticipantModule.applyDefaults(app);
   return app;
 }
 
@@ -67,9 +66,9 @@ async function waitForApp() {
  *   Which basically indicates success.
  */
 export const handler = async (
-  requestDtoOrEvent: UpdateParticipantDtoOrEvent
-): Promise<ResponsePayload<'participant'>> => {
-  const context = 'UpdateParticipant.Lambda';
+  requestDtoOrEvent: UpsertParticipantDtoOrEvent
+): Promise<void> => {
+  const context = 'UpsertParticipant.Lambda';
   const logger = new LoggableLogger(context);
 
   logger.debug
@@ -85,13 +84,13 @@ export const handler = async (
   // NOTE: throws error
   const validRequestDto = validateRequestPayload({
     requestPayload,
-    checkRequest: UpdateParticipantRequestDto.guard,
+    checkRequest: UpsertParticipantRequestDto.guard,
     logger,
   });
 
   // init the app
   const app = await waitForApp();
-  const updateParticipantController = app.get(UpdateParticipantController);
+  const upsertParticipantController = app.get(UpsertParticipantController);
 
   // perform the action
   // NOTE: no try/catch here. According to the docs:
@@ -101,8 +100,7 @@ export const handler = async (
   //    https://docs.aws.amazon.com/lambda/latest/dg/typescript-handler.html
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
-  return updateParticipantController.update({
-    idSourceValue: validRequestDto.participantIdSourceValue,
-    participant: validRequestDto.participant,
+  return upsertParticipantController.upsert({
+    participantSource: validRequestDto.participantSource,
   });
 };

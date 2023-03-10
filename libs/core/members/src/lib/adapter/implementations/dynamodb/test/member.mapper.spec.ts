@@ -33,6 +33,7 @@ defineFeature(feature, (test) => {
       primaryKey: member.id,
       sortKey: member.id,
       Member_Id: member.id,
+      Member_Source_Origin: 'CRM',
       Member_SourceIdCRM: 'CRM#crm.id',
       Member_SourceIdAUTH: 'AUTH#auth.id',
       Member_SourceIdCOMMUNITY: 'COMMUNITY#community.id',

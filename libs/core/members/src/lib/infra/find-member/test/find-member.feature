@@ -18,7 +18,7 @@ Scenario: Successfully finding a member by email
 Scenario: Fail; Invalid request
   Given the request contains invalid data
   When I attempt to find a member
-  Then I should receive a RequestInvalidError
+  Then I should receive a InternalRequestInvalidError
   And no result is returned
 
 # TODO - needs to be implemented

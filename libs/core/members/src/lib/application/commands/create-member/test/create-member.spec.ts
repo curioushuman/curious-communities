@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import {
   FakeRepositoryErrorFactory,
-  RequestInvalidError,
+  InternalRequestInvalidError,
 } from '@curioushuman/error-factory';
 import { executeTask } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
@@ -114,8 +114,8 @@ defineFeature(feature, (test) => {
       }
     });
 
-    then('I should receive a RequestInvalidError', () => {
-      expect(error).toBeInstanceOf(RequestInvalidError);
+    then('I should receive a InternalRequestInvalidError', () => {
+      expect(error).toBeInstanceOf(InternalRequestInvalidError);
     });
   });
 });

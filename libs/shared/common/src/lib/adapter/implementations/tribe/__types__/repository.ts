@@ -32,14 +32,14 @@ export type TribeApiFindAllPropsConfirmed = Required<TribeApiFindAllProps>;
 export type TribeApiFindAllResponse<SourceT> = SourceT[];
 
 /**
- * Type contract for processing findAll results from DynamoDB
+ * Type contract for processing findAll results from Tribe API
  */
 export type TribeApiFindAllProcessMethod<DomainT, SourceT> = (
   item: SourceT
 ) => DomainT;
 
 /**
- * Type contract for processing saveOne results from DynamoDB
+ * Type contract for processing saveOne results from Tribe API
  */
 export type TribeApiSaveOneProcessMethod<DomainT, SourceT> = (
   item: SourceT

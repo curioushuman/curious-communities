@@ -17,8 +17,10 @@ export type SalesforceApiResponse<T> = T & SalesforceApiResponseBase;
  * A type for a list of responses from SF
  */
 export type SalesforceApiResponses<T> = {
+  done: boolean;
   totalSize: number;
   records: SalesforceApiResponse<T>[];
+  nextRecordsUrl?: string;
 };
 
 /**

@@ -8,6 +8,8 @@ import {
   SalesforceApiRepository,
   SourceRepository,
   SalesforceApiRepositoryProps,
+  SalesforceApiQueryField,
+  RestApiFindAllResponse,
 } from '@curioushuman/common';
 import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 
@@ -23,6 +25,7 @@ import { SalesforceApiParticipantSource } from './entities/participant-source';
 import { SalesforceApiParticipantSourceMapper } from './participant-source.mapper';
 import { Source } from '../../../domain/value-objects/source';
 import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
+import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
 
 @Injectable()
 export class SalesforceApiParticipantSourceRepository
@@ -94,6 +97,40 @@ export class SalesforceApiParticipantSourceRepository
     return this.salesforceApiRepository.tryFindOne(
       id,
       this.processFindOne(this.SOURCE)
+    );
+  };
+
+  processFindAll =
+    (source: Source) =>
+    (item: SalesforceApiParticipantSource): ParticipantSource => {
+      // is it what we expected?
+      // will throw error if not
+      const participantItem = SalesforceApiParticipantSource.check(item);
+
+      // NOTE: if the response was invalid, an error would have been thrown
+      // could this similarly be in a serialisation decorator?
+      return SalesforceApiParticipantSourceMapper.toDomain(
+        participantItem,
+        source
+      );
+    };
+
+  /**
+   * ! NOTE: does not yet support paging
+   */
+  findAll = (props: {
+    parentId: CourseSourceId;
+  }): TE.TaskEither<Error, RestApiFindAllResponse<ParticipantSource>> => {
+    const courseSourceId = CourseSourceId.check(props.parentId);
+    const values: SalesforceApiQueryField[] = [
+      {
+        field: 'Case__c',
+        value: courseSourceId,
+      },
+    ];
+    return this.salesforceApiRepository.tryQueryAll(
+      values,
+      this.processFindAll(this.SOURCE)
     );
   };
 

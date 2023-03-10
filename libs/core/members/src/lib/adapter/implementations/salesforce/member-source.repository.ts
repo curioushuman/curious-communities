@@ -122,8 +122,8 @@ export class SalesforceApiMemberSourceRepository
     ];
     return this.salesforceApiRepository.tryQueryOne(
       values,
-      'OR',
-      this.processFindOne(this.SOURCE)
+      this.processFindOne(this.SOURCE),
+      'OR'
     );
   };
 

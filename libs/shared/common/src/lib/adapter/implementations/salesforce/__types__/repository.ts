@@ -23,7 +23,7 @@ export interface SalesforceApiQueryField {
 }
 
 /**
- * Type contract for processing findOne results from DynamoDB
+ * Type contract for processing findOne results from Salesforce API
  */
 export type SalesforceApiFindOneProcessMethod<DomainT, SourceT> = (
   item?: SalesforceApiResponse<SourceT>,
@@ -31,7 +31,14 @@ export type SalesforceApiFindOneProcessMethod<DomainT, SourceT> = (
 ) => DomainT;
 
 /**
- * Type contract for processing saveOne results from DynamoDB
+ * Type contract for processing queryAll results from Salesforce API
+ */
+export type SalesforceApiQueryAllProcessMethod<DomainT, SourceT> = (
+  item: SalesforceApiResponse<SourceT>
+) => DomainT;
+
+/**
+ * Type contract for processing saveOne results from Salesforce API
  */
 export type SalesforceApiSaveOneProcessMethod<DomainT, SourceT> = (
   item: SourceT

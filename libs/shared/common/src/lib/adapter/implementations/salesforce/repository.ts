@@ -14,9 +14,11 @@ import {
   SalesforceApiResponseFromCreate,
   SalesforceApiResponses,
   SalesforceApiSaveOneProcessMethod,
+  SalesforceApiQueryAllProcessMethod,
 } from './__types__';
 import { SalesforceApiRepositoryErrorFactory } from './repository.error-factory';
 import { RunTypeReplica } from '../__types__/repository';
+import { RestApiFindAllResponse } from '../__types__';
 
 /**
  * E is for entity
@@ -102,12 +104,12 @@ export class SalesforceApiRepository<DomainT, SourceT> {
   };
 
   /**
-   * Query by a series of WHERE values
+   * Query by a series of WHERE values, return one
    */
   tryQueryOne = (
     values: SalesforceApiQueryField[],
-    operator: SalesforceApiQueryOperator,
-    processResult: SalesforceApiFindOneProcessMethod<DomainT, SourceT>
+    processResult: SalesforceApiFindOneProcessMethod<DomainT, SourceT>,
+    operator?: SalesforceApiQueryOperator
   ): TE.TaskEither<Error, DomainT> => {
     return TE.tryCatch(
       async () => {
@@ -119,6 +121,48 @@ export class SalesforceApiRepository<DomainT, SourceT> {
         // NOTE: if not found, an error would have been thrown and caught
 
         return processResult(response.data.records[0], uri);
+      },
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: SalesforceApiRepositoryError) => reason as Error
+    );
+  };
+
+  private prepareQueryAllResponse(
+    response: SalesforceApiResponses<SourceT>,
+    processResult: SalesforceApiQueryAllProcessMethod<DomainT, SourceT>
+  ): RestApiFindAllResponse<DomainT> {
+    return {
+      items: response.records.map(processResult),
+      next: response.done === false,
+    };
+  }
+
+  /**
+   * Query by a series of WHERE values
+   *
+   * ! NOTE: doesn't yet handle paging, SF has a weird way of doing this
+   * Ref: https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_query.htm
+   *
+   * ! OPEN ISSUES
+   * - SF uses different paging system i.e. nextPageUrl
+   * - may require caching
+   * - paging probably unnecessary in this context (2000 limit is a lot)
+   */
+  tryQueryAll = (
+    values: SalesforceApiQueryField[],
+    processResult: SalesforceApiQueryAllProcessMethod<DomainT, SourceT>,
+    operator?: SalesforceApiQueryOperator
+  ): TE.TaskEither<Error, RestApiFindAllResponse<DomainT>> => {
+    return TE.tryCatch(
+      async () => {
+        const uri = this.prepareQueryUri(values, operator);
+        const request$ =
+          this.httpService.get<SalesforceApiResponses<SourceT>>(uri);
+        const response = await firstValueFrom(request$);
+
+        // NOTE: if not found, an error would have been thrown and caught
+
+        return this.prepareQueryAllResponse(response.data, processResult);
       },
       // NOTE: we don't use an error factory here, it is one level up
       (reason: SalesforceApiRepositoryError) => reason as Error

@@ -14,6 +14,8 @@ import {
 import { ParticipantSourceBuilder } from '../../../test/builders/participant-source.builder';
 import { ParticipantSourceId } from '../../../domain/value-objects/participant-source-id';
 import { ParticipantSourceIdSource } from '../../../domain/value-objects/participant-source-id-source';
+import { CourseSourceId } from '../../../domain/value-objects/course-source-id';
+import { RestApiFindAllResponse } from '@curioushuman/common';
 
 @Injectable()
 export class FakeParticipantSourceRepository
@@ -76,6 +78,21 @@ export class FakeParticipantSourceRepository
     identifier: ParticipantSourceIdentifier
   ): ParticipantSourceFindMethod => {
     return this.findOneBy[identifier];
+  };
+
+  /**
+   * ! Filters not yet implemented
+   */
+  findAll = (props: {
+    parentId?: CourseSourceId;
+  }): TE.TaskEither<Error, RestApiFindAllResponse<ParticipantSource>> => {
+    const items = this.participantSources.filter(
+      (participantSource) => participantSource.courseId === props.parentId
+    );
+    return TE.right({
+      items,
+      next: false,
+    });
   };
 
   save = (participantSource: ParticipantSource): TE.TaskEither<Error, void> => {

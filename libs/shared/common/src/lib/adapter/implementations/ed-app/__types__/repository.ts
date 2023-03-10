@@ -35,14 +35,14 @@ export interface EdAppApiFindAllResponse<SourceT> {
 }
 
 /**
- * Type contract for processing findAll results from DynamoDB
+ * Type contract for processing findAll results from Ed-App API
  */
 export type EdAppApiFindAllProcessMethod<DomainT, SourceT> = (
   item?: SourceT
 ) => DomainT;
 
 /**
- * Type contract for processing saveOne results from DynamoDB
+ * Type contract for processing saveOne results from Ed-App API
  */
 export type EdAppApiSaveOneProcessMethod<DomainT, SourceT> = (
   item: SourceT

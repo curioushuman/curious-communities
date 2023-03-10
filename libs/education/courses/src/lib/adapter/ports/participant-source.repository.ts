@@ -1,4 +1,8 @@
-import { RepositoryFindOne, RepositoryFindMethod } from '@curioushuman/common';
+import {
+  RepositoryFindOne,
+  RepositoryFindMethod,
+  RestApiFindAllResponse,
+} from '@curioushuman/common';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
@@ -6,6 +10,7 @@ import {
   ParticipantSourceIdentifier,
   ParticipantSourceIdentifiers,
 } from '../../domain/entities/participant-source';
+import { CourseSourceId } from '../../domain/value-objects/course-source-id';
 import { ParticipantSourceIdSource } from '../../domain/value-objects/participant-source-id-source';
 
 /**
@@ -38,4 +43,11 @@ export abstract class ParticipantSourceRepository
   abstract findOneByIdSource(
     id: ParticipantSourceIdSource
   ): TaskEither<Error, ParticipantSource>;
+
+  /**
+   * Find all participants
+   */
+  abstract findAll(props: {
+    parentId?: CourseSourceId;
+  }): TaskEither<Error, RestApiFindAllResponse<ParticipantSource>>;
 }

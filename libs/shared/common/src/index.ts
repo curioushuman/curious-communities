@@ -51,6 +51,8 @@ export * from './lib/utils/functions';
 /**
  * Services
  */
+export * from './lib/application/services/sfn/__types__';
+export * from './lib/application/services/sfn/sfn.service';
 export * from './lib/application/services/sqs/__types__';
 export * from './lib/application/services/sqs/sqs.service';
 

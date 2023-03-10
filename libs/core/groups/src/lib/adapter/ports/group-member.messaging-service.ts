@@ -13,7 +13,7 @@ export abstract class GroupMemberMessagingService {
   /**
    * Send a batch of messages
    */
-  abstract sendMessageBatch(
+  abstract updateGroupMembers(
     messages: GroupMemberMessage[]
   ): TaskEither<Error, void>;
 }

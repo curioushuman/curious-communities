@@ -13,7 +13,7 @@ export abstract class MemberSourceMessagingService {
   /**
    * Send a batch of messages
    */
-  abstract sendMessageBatch(
+  abstract upsertMembers(
     messages: MemberSourceMessage[]
   ): TaskEither<Error, void>;
 }

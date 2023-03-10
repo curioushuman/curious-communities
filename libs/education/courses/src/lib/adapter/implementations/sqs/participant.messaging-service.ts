@@ -1,37 +1,49 @@
 import { Injectable } from '@nestjs/common';
 import * as TE from 'fp-ts/lib/TaskEither';
-import { pipe } from 'fp-ts/lib/function';
 
-import { SqsService, SqsServiceProps } from '@curioushuman/common';
+import { SqsService } from '@curioushuman/common';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import {
   ParticipantMessage,
   ParticipantMessagingService,
 } from '../../ports/participant.messaging-service';
+import { UpdateParticipantRequestDto } from '../../../infra/update-participant/dto/update-participant.request.dto';
+import { UpsertParticipantRequestDto } from '../../../infra/upsert-participant/dto/upsert-participant.request.dto';
 
 @Injectable()
 export class SqsParticipantMessagingService
   implements ParticipantMessagingService
 {
-  private sqsService: SqsService;
+  private sqsService: SqsService<ParticipantMessage>;
 
   constructor(public logger: LoggableLogger) {
     this.logger.setContext(SqsParticipantMessagingService.name);
 
-    const props: SqsServiceProps = {
-      queueId: 'participant-update',
-      prefix: 'cc',
-    };
-    this.sqsService = new SqsService(props, this.logger);
+    this.sqsService = new SqsService(
+      {
+        stackId: 'courses',
+        prefix: 'cc',
+      },
+      this.logger
+    );
   }
 
-  public sendMessageBatch = (
-    messages: ParticipantMessage[]
+  public updateParticipants = (
+    messages: UpdateParticipantRequestDto[]
   ): TE.TaskEither<Error, void> => {
-    return pipe(
-      this.sqsService.prepareMessages(messages),
-      this.sqsService.sendMessageBatch
-    );
+    return this.sqsService.sendMessageBatch({
+      id: 'participant-update',
+      messages,
+    });
+  };
+
+  public upsertParticipants = (
+    messages: UpsertParticipantRequestDto[]
+  ): TE.TaskEither<Error, void> => {
+    return this.sqsService.sendMessageBatch({
+      id: 'participant-upsert',
+      messages,
+    });
   };
 }

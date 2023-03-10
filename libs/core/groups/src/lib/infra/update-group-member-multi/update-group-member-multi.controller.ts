@@ -152,7 +152,7 @@ export class UpdateGroupMemberMultiController {
       // #3. prepare the messages
       this.prepareMessages(members),
       // #4. send the messages
-      this.messagingService.sendMessageBatch
+      this.messagingService.updateGroupMembers
     );
 
     return executeTask(task);

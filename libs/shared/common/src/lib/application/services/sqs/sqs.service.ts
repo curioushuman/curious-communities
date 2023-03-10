@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 import {
@@ -14,78 +14,36 @@ import {
 } from '@aws-sdk/client-sqs';
 
 import {
-  BasicServiceErrorFactory,
   ServiceError,
-  ServiceErrorFactory,
   ServiceNotFoundError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
 import { logAction } from '@curioushuman/fp-ts-utils';
 
-import { dashToCamelCase, generateUniqueId } from '../../../utils/functions';
-import { SqsMessageBase, SqsServiceProps } from './__types__';
+import { generateUniqueId } from '../../../utils/functions';
+import { SqsMessageBase, SqsSendMessageBatchProps } from './__types__';
+import { AwsService } from '../aws/aws.service';
+import { AwsServiceProps } from '../aws/__types__';
 
 /**
  * A service for engaging with SQS
- *
- * TODO:
- * - [ ] init the queueUrl in the constructor
- *       include it as an exportable from a dynamic module with async register function
  */
 @Injectable()
-export class SqsService implements OnModuleDestroy {
+export class SqsService<DomainMessage> extends AwsService {
   private client: SQSClient;
-  private errorFactory: ServiceErrorFactory;
+  awsResourceName = 'Queue';
 
-  /**
-   * This stuff must mirror what's in the CDK stack and cdk-utils
-   */
-  private awsResourceQueue = 'Queue';
+  constructor(props: AwsServiceProps, private logger: LoggableLogger) {
+    super(props);
 
-  private prefix!: string;
-  private queueId!: string;
-  private queueName!: string;
-
-  private prepareName(id: string): string {
-    return dashToCamelCase(id);
-  }
-
-  private preparePrefix(prefix: string | undefined): void {
-    const envPrefix = process.env.AWS_NAME_PREFIX || '';
-    this.prefix = this.prepareName(prefix || envPrefix);
-  }
-
-  private prepareQueue(id: string): void {
-    this.queueId = id;
-    const suffix = this.awsResourceQueue;
-    this.queueName = `${this.prefix}${this.prepareName(id)}${suffix}`;
-  }
-
-  constructor(props: SqsServiceProps, private logger: LoggableLogger) {
-    const { queueId, prefix } = props;
-    // set the resources, in order
-    this.preparePrefix(prefix);
-    this.prepareQueue(queueId);
-
-    // prepare the clients
+    // prepare the client
     this.client = new SQSClient({ region: process.env.CDK_DEPLOY_REGION });
-
-    // prepare the error factory
-    this.errorFactory = new BasicServiceErrorFactory();
   }
 
   /**
    * A Nest.js lifecycle hook
    *
-   * Based on the docs it looks like this hook will be called either
-   * when the application is closed (app.close()) or when the application
-   * receives a termination signal (SIGINT, SIGTERM, etc.)
-   *
-   * https://docs.nestjs.com/fundamentals/lifecycle-events#application-shutdown
-   *
-   * TODO:
-   * - [ ] is there a way to throw an error if the module does not include the
-   *       correct listeners?
+   * A Nest.js lifecycle hook; see AwsService for more info
    */
   onModuleDestroy() {
     this.client.destroy();
@@ -94,14 +52,13 @@ export class SqsService implements OnModuleDestroy {
   /**
    * Send away for the queueUrl based on the name
    */
-  private tryGetQueueUrlResponse = (): TE.TaskEither<
-    Error,
-    GetQueueUrlCommandOutput
-  > => {
+  private tryGetQueueUrl = (
+    queueName: string
+  ): TE.TaskEither<Error, GetQueueUrlCommandOutput> => {
     return TE.tryCatch(
       async () => {
         const params: GetQueueUrlCommandInput = {
-          QueueName: this.queueName,
+          QueueName: queueName,
         };
         return this.client.send(new GetQueueUrlCommand(params));
       },
@@ -113,27 +70,29 @@ export class SqsService implements OnModuleDestroy {
   /**
    * Process the response from the GetQueueUrlCommand
    */
-  private processGetQueueUrlResponse = (
-    response: GetQueueUrlCommandOutput
-  ): string => {
-    // ? logging?
-    // If anything do logging specific to GetCommand or AWS stats
-    this.logger.debug(response);
+  private processGetQueueUrl = (
+    queueId: string
+  ): ((response: GetQueueUrlCommandOutput) => string) => {
+    return (response) => {
+      // ? logging?
+      // If anything do logging specific to GetCommand or AWS stats
+      this.logger.debug(response);
 
-    if (!response.QueueUrl) {
-      throw new ServiceNotFoundError(`Queue URL not found: ${this.queueName}`);
-    }
+      if (!response.QueueUrl) {
+        throw new ServiceNotFoundError(`Queue URL not found: ${queueId}`);
+      }
 
-    return response.QueueUrl;
+      return response.QueueUrl;
+    };
   };
 
-  public prepareMessage(body: object): SqsMessageBase {
+  public prepareMessage(body: DomainMessage): SqsMessageBase {
     return {
       MessageBody: JSON.stringify(body),
     };
   }
 
-  public prepareMessages(messages: object[]): SqsMessageBase[] {
+  public prepareMessages(messages: DomainMessage[]): SqsMessageBase[] {
     return messages.map(this.prepareMessage);
   }
 
@@ -178,36 +137,41 @@ export class SqsService implements OnModuleDestroy {
    * TODO:
    * - [ ] use errorFactory to throw the error
    */
-  private processSendMessageBatchResponse = (
-    response: SendMessageBatchCommandOutput
-  ): void => {
-    // ? logging?
-    // If anything do logging specific to GetCommand or AWS stats
-    this.logger.debug(response);
+  private processSendMessageBatch = (
+    queueId: string
+  ): ((response: SendMessageBatchCommandOutput) => void) => {
+    return (response) => {
+      // ? logging?
+      // If anything do logging specific to GetCommand or AWS stats
+      this.logger.debug(response);
 
-    if (response.Failed && response.Failed.length > 0) {
-      this.logger.error(response.Failed);
-      throw new ServiceError(`Error sending messages: ${this.queueName}`);
-    }
+      if (response.Failed && response.Failed.length > 0) {
+        this.logger.error(response.Failed);
+        throw new ServiceError(`Error sending messages: ${queueId}`);
+      }
 
-    if (!response.Successful) {
-      throw new ServiceError(`Error sending messages: ${this.queueName}`);
-    }
+      if (!response.Successful) {
+        throw new ServiceError(`Error sending messages: ${queueId}`);
+      }
 
-    response.Successful.forEach(this.processMessageBatchResult);
+      response.Successful.forEach(this.processMessageBatchResult);
+    };
   };
 
   /**
    * Actually send the batch request
    */
   private trySendMessageBatch =
-    (messages: SqsMessageBase[]) =>
+    (messages: DomainMessage[]) =>
     (queueUrl: string): TE.TaskEither<Error, SendMessageBatchCommandOutput> => {
+      const preparedMessages = this.prepareMessages(messages);
       return TE.tryCatch(
         async () => {
           const params: SendMessageBatchCommandInput = {
             QueueUrl: queueUrl,
-            Entries: messages.map((msg) => this.prepareMessageBatchEntry(msg)),
+            Entries: preparedMessages.map((msg) =>
+              this.prepareMessageBatchEntry(msg)
+            ),
           };
           return this.client.send(new SendMessageBatchCommand(params));
         },
@@ -220,22 +184,24 @@ export class SqsService implements OnModuleDestroy {
    * API for batch sending
    */
   public sendMessageBatch = (
-    messages: SqsMessageBase[]
+    props: SqsSendMessageBatchProps<DomainMessage>
   ): TE.TaskEither<Error, void> => {
-    if (messages.length === 0) {
+    if (props.messages.length === 0) {
       throw new ServiceError('Empty message list received for sending');
     }
     return pipe(
-      this.tryGetQueueUrlResponse(),
-      TE.map(this.processGetQueueUrlResponse),
+      props.id,
+      this.prepareResourceName,
+      this.tryGetQueueUrl,
+      TE.map(this.processGetQueueUrl(props.id)),
       logAction(
         this.logger,
         this.errorFactory,
         'successfully retrieved Queue URL',
         'failed to retrieve Queue URL'
       ),
-      TE.chain(this.trySendMessageBatch(messages)),
-      TE.map(this.processSendMessageBatchResponse),
+      TE.chain(this.trySendMessageBatch(props.messages)),
+      TE.map(this.processSendMessageBatch(props.id)),
       logAction(
         this.logger,
         this.errorFactory,

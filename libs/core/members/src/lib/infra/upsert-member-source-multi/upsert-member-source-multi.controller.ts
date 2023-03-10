@@ -65,7 +65,7 @@ export class UpsertMemberSourceMultiController {
       parseData(UpsertMemberSourceMultiRequestDto.check, this.logger),
       (validDto) => validDto.member,
       this.prepareMessages(sources),
-      this.messagingService.sendMessageBatch
+      this.messagingService.upsertMembers
     );
 
     return executeTask(task);

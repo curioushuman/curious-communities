@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as TE from 'fp-ts/lib/TaskEither';
-import { pipe } from 'fp-ts/lib/function';
 
-import { SqsService, SqsServiceProps } from '@curioushuman/common';
+import { SqsService } from '@curioushuman/common';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import {
@@ -14,24 +13,26 @@ import {
 export class SqsGroupMemberMessagingService
   implements GroupMemberMessagingService
 {
-  private sqsService: SqsService;
+  private sqsService: SqsService<GroupMemberMessage>;
 
   constructor(public logger: LoggableLogger) {
     this.logger.setContext(SqsGroupMemberMessagingService.name);
 
-    const props: SqsServiceProps = {
-      queueId: 'group-member-update',
-      prefix: 'cc',
-    };
-    this.sqsService = new SqsService(props, this.logger);
+    this.sqsService = new SqsService(
+      {
+        stackId: 'groups',
+        prefix: 'cc',
+      },
+      this.logger
+    );
   }
 
-  public sendMessageBatch = (
+  public updateGroupMembers = (
     messages: GroupMemberMessage[]
   ): TE.TaskEither<Error, void> => {
-    return pipe(
-      this.sqsService.prepareMessages(messages),
-      this.sqsService.sendMessageBatch
-    );
+    return this.sqsService.sendMessageBatch({
+      id: 'group-member-update',
+      messages,
+    });
   };
 }

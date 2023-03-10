@@ -64,6 +64,7 @@ export class LambdaConstruct extends Construct {
       entry: props.lambdaEntry,
       ...lambdaProps,
     });
+
     // ALWAYS ADD TAGS
     // TODO - add better tags
     cdk.Tags.of(this.lambdaFunction).add('identifier', functionTitle);

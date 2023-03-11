@@ -7,7 +7,7 @@ graph_attr = {
 }
 
 with Diagram("Course updated", show=False, filename="course-updated", direction="TB", graph_attr=graph_attr):
-  ext_event_bus = EventbridgeCustomEventBusResource("EXT\ncourse\ncreated")
+  ext_event_bus = EventbridgeCustomEventBusResource("EXT\ncourse\nupdated")
   int_event_bus_course_created = EventbridgeCustomEventBusResource("INT\ncourse\ncreated")
   int_event_bus_course_updated = EventbridgeCustomEventBusResource("INT\ncourse\nupdated")
   int_event_bus_participant_created = EventbridgeCustomEventBusResource("INT\nparticipant\ncreated")

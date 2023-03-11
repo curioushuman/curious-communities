@@ -147,7 +147,7 @@
     "diagram": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "./tools/scripts/diagram.sh apps/education/courses/diagrams",
+        "command": "./tools/scripts/diagram.sh apps/core/groups/diagrams",
         "cwd": "."
       }
     }

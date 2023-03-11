@@ -1,12 +1,13 @@
 from diagrams import Cluster, Diagram
 from diagrams.aws.compute import LambdaFunction
 from diagrams.aws.integration import EventbridgeCustomEventBusResource
+from diagrams.aws.database import Dynamodb
 
 graph_attr = {
     "overlap": "false"
 }
 
-with Diagram("Participant created/updated", show=False, filename="participant-upserted", direction="TB", graph_attr=graph_attr):
+with Diagram("Upsert participant", show=False, filename="participant-upsert", direction="TB", graph_attr=graph_attr):
   ext_event_bus = EventbridgeCustomEventBusResource("EXT\nparticipant\ncreated")
 
   with Cluster("Upsert participant state machine"):
@@ -20,6 +21,8 @@ with Diagram("Participant created/updated", show=False, filename="participant-up
     lambda_participant_update = LambdaFunction("participant-update")
     lambda_member_find = LambdaFunction("member-find")
     lambda_member_create = LambdaFunction("member-create")
+    ddb_courses = Dynamodb("courses")
+    ddb_members = Dynamodb("members")
 
   ext_event_bus >> lambda_participant_find
   lambda_participant_find >> lambda_participant_update
@@ -30,7 +33,10 @@ with Diagram("Participant created/updated", show=False, filename="participant-up
   lambda_course_find >> lambda_member_find
   lambda_member_find >> lambda_member_create
   lambda_member_create >> int_event_bus_member_created
+  lambda_member_create >> ddb_members
   int_event_bus_member_created >> lambda_participant_create
+  lambda_participant_create >> ddb_courses
 
   lambda_member_find >> lambda_participant_create
   lambda_participant_create >> int_event_bus_participant_created
+  lambda_participant_update >> ddb_courses

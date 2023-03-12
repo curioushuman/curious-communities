@@ -107,7 +107,7 @@ export class MembersStack extends cdk.Stack {
      * Function: Create Member
      *
      * Triggers
-     * - Subscribed to external event bus
+     * - (TBD) Subscribed to external event bus
      * - create participant step functions
      *
      * NOTE: destination is not invoked when called within step functions

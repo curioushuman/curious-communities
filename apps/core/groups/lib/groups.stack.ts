@@ -220,7 +220,12 @@ export class GroupsStack extends cdk.Stack {
       generateCompositeResourceId(upsertGroupSourceMultiId, 'rule'),
       {
         eventBus: internalEventBusConstruct.eventBus,
-        entity: ['course-group-base', 'group-base', 'standard-group-base'],
+        entity: [
+          'group-base',
+          'group',
+          { suffix: '-group-base' },
+          { suffix: '-group' },
+        ],
         event: ['created', 'updated'],
         outcome: ['success'],
       }

@@ -309,15 +309,15 @@ export class GroupsStack extends cdk.Stack {
     );
 
     /**
-     * Subscribing the lambda to the internal event bus
+     * Subscribing the lambda to the internal event bus; group or member updated
      */
-    const groupUpdateGroupMemberMultiRuleId = generateCompositeResourceId(
+    const updateGroupMemberMultiRuleId = generateCompositeResourceId(
       updateGroupMemberMultiLambdaId,
       'group'
     );
-    const groupUpdateGroupMemberMultiRuleConstruct = new RuleEntityEvent(
+    const updateGroupMemberMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(groupUpdateGroupMemberMultiRuleId, 'rule'),
+      generateCompositeResourceId(updateGroupMemberMultiRuleId, 'rule'),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [
@@ -325,30 +325,6 @@ export class GroupsStack extends cdk.Stack {
           'group',
           { suffix: '-group-base' },
           { suffix: '-group' },
-        ],
-        event: ['created', 'updated'],
-        outcome: ['success'],
-      }
-    );
-    groupUpdateGroupMemberMultiRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(
-        updateGroupMemberMultiLambdaConstruct.lambdaFunction
-      )
-    );
-
-    /**
-     * Second rule, just for member update
-     */
-    const memberUpdateGroupMemberMultiRuleId = generateCompositeResourceId(
-      updateGroupMemberMultiLambdaId,
-      'member'
-    );
-    const memberUpdateGroupMemberMultiRuleConstruct = new RuleEntityEvent(
-      this,
-      generateCompositeResourceId(memberUpdateGroupMemberMultiRuleId, 'rule'),
-      {
-        eventBus: internalEventBusConstruct.eventBus,
-        entity: [
           'member-base',
           'member',
           { suffix: '-member-base' },
@@ -358,7 +334,7 @@ export class GroupsStack extends cdk.Stack {
         outcome: ['success'],
       }
     );
-    memberUpdateGroupMemberMultiRuleConstruct.rule.addTarget(
+    updateGroupMemberMultiRuleConstruct.rule.addTarget(
       new targets.LambdaFunction(
         updateGroupMemberMultiLambdaConstruct.lambdaFunction
       )
@@ -452,11 +428,28 @@ export class GroupsStack extends cdk.Stack {
     upsertGroupMemberSourceLambdaConstruct.addEnvironmentTribe();
 
     /**
-     * Subscribing the lambda to the internal event bus
+     * State machine: Upsert group member source multi
      */
-    const upsertGroupMemberSourceRuleConstruct = new RuleEntityEvent(
+    const upsertGroupMemberSourceMultiId = generateCompositeResourceId(
+      stackId,
+      'group-member-source-upsert-multi'
+    );
+    const upsertGroupMemberSourceMultiConstruct =
+      new UpsertSourceMultiConstruct(this, upsertGroupMemberSourceMultiId, {
+        lambdas: {
+          updateDomain: undefined,
+          upsertSource: upsertGroupMemberSourceLambdaConstruct,
+        },
+        entityId: 'member',
+        sources: ['COMMUNITY', 'MICRO-COURSE'],
+      });
+
+    /**
+     * Subscribing the state machine to the internal event bus
+     */
+    const updateGroupMemberSourceMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(upsertGroupMemberSourceLambdaId, 'rule'),
+      generateCompositeResourceId(upsertGroupMemberSourceMultiId, 'rule'),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [
@@ -467,19 +460,19 @@ export class GroupsStack extends cdk.Stack {
         ],
         event: ['created', 'updated'],
         outcome: ['success'],
-        // we could limit it to just the above lambdas if we wanted to
-        // source:{
-        //   lambdas: [
-        //     upsertCourseGroupMemberLambdaConstruct.lambdaFunction,
-        //     updateGroupMemberLambdaConstruct.lambdaFunction,
-        //   ]
-        // }
       }
     );
-    upsertGroupMemberSourceRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(
-        upsertGroupMemberSourceLambdaConstruct.lambdaFunction
+    updateGroupMemberSourceMultiRuleConstruct.rule.addTarget(
+      new targets.SfnStateMachine(
+        upsertGroupMemberSourceMultiConstruct.stateMachine
       )
+    );
+
+    /**
+     * Allow the internal event bus to invoke the state machine
+     */
+    upsertGroupMemberSourceMultiConstruct.stateMachine.grantStartExecution(
+      internalEventBusConstruct.role
     );
 
     /**

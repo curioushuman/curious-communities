@@ -4,7 +4,7 @@ from diagrams.aws.compute import LambdaFunction
 from diagrams.aws.integration import EventbridgeCustomEventBusResource
 
 graph_attr = {
-    "overlap": "false"
+    "pad": "0.75",
 }
 
 with Diagram("Upsert group member sources", show=False, filename="group-member-sources-upsert", direction="TB", graph_attr=graph_attr):

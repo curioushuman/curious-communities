@@ -4,7 +4,7 @@ from diagrams.aws.integration import EventbridgeCustomEventBusResource, SimpleQu
 from diagrams.aws.database import Dynamodb
 
 graph_attr = {
-    "overlap": "false"
+    "pad": "0.75",
 }
 
 with Diagram("Update participants", show=False, filename="participants-update", direction="TB", graph_attr=graph_attr):

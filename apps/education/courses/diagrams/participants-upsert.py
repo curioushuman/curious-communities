@@ -3,7 +3,7 @@ from diagrams.aws.compute import LambdaFunction
 from diagrams.aws.integration import EventbridgeCustomEventBusResource, SimpleQueueServiceSqs, StepFunctions
 
 graph_attr = {
-    "overlap": "false"
+    "pad": "0.75",
 }
 
 with Diagram("Upsert participants", show=False, filename="participants-upsert", direction="TB", graph_attr=graph_attr):

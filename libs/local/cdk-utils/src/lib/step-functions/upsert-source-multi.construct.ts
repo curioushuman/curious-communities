@@ -16,7 +16,10 @@ import { ResourceId } from '../utils/name.types';
  */
 interface UpsertSourceMultiLambdas {
   upsertSource: LambdaConstruct;
-  updateDomain: LambdaConstruct;
+  // For GroupMembers (and maybe others) there is no need for a post upsert update
+  // We still want to make sure most instances DO specify an update task
+  // By forcing GroupMembers to specify `undefined` we can ensure that
+  updateDomain: LambdaConstruct | undefined;
 }
 export interface UpsertSourceMultiProps {
   lambdas: UpsertSourceMultiLambdas;
@@ -81,11 +84,6 @@ export class UpsertSourceMultiConstruct extends Construct {
     this.prepareEndStates();
 
     /**
-     * Prepare the update tasks
-     */
-    this.prepareUpdateTask();
-
-    /**
      * Create tasks for upserting a source
      */
     this.upsertTaskId = generateCompositeResourceId(
@@ -106,10 +104,11 @@ export class UpsertSourceMultiConstruct extends Construct {
     });
 
     /**
-     * Connect the last task to the update task
-     * The update task then goes to the success state
+     * Prepare the update task
+     *
+     * NOTE: must be done AFTER the upsert tasks have been prepared
      */
-    this.upsertTasks[this.lastTaskKey].next(this.updateTask);
+    this.prepareUpdateTask();
 
     /**
      * Prepare the input check step
@@ -159,7 +158,17 @@ export class UpsertSourceMultiConstruct extends Construct {
     );
   }
 
+  /**
+   * Prepares an optional update task
+   *
+   * NOTE: most entities will have an update task
+   *       it is used to capture the source Ids against the domain entity
+   *       but some (e.g. GroupMembers) will not require this, as no source Id exists
+   */
   private prepareUpdateTask(): void {
+    if (this.lambdas.updateDomain === undefined) {
+      return;
+    }
     const updateResourceId = generateCompositeResourceId(
       this.constructId,
       `${this.entityId}-update`
@@ -180,6 +189,12 @@ export class UpsertSourceMultiConstruct extends Construct {
     })
       .addCatch(this.endStates.fail)
       .next(this.endStates.success);
+
+    /**
+     * Connect the last task to the update task
+     * The update task then goes to the success state
+     */
+    this.upsertTasks[this.lastTaskKey].next(this.updateTask);
   }
 
   /**

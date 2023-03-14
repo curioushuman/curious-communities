@@ -34,7 +34,7 @@ export abstract class AwsService implements OnModuleDestroy {
     const envPrefix = process.env.AWS_NAME_PREFIX || '';
     const prefixName = this.prepareName(prefix || envPrefix);
     const stackName = this.prepareName(stackId);
-    this.stackPrefix = `${prefixName}-${stackName}`;
+    this.stackPrefix = `${prefixName}${stackName}`;
   }
 
   constructor(props: AwsServiceProps) {
@@ -61,16 +61,20 @@ export abstract class AwsService implements OnModuleDestroy {
    */
   abstract onModuleDestroy(): void;
 
-  protected prepareResourceName(resourceId: string): string {
-    return `${this.stackPrefix}${this.prepareName(resourceId)}${
-      this.awsResourceName
-    }`;
+  protected prepareResourceName(
+    awsService: AwsService
+  ): (resourceId: string) => string {
+    return (resourceId): string => {
+      return `${awsService.stackPrefix}${awsService.prepareName(resourceId)}${
+        awsService.awsResourceName
+      }`;
+    };
   }
 
   protected prepareStateMachineArn(resourceName: string): string {
-    confirmEnvVars(['CDK_DEPLOY_REGION', 'AWS_ACCESS_KEY_ID']);
-    const region = process.env.CDK_DEPLOY_REGION;
-    const accountId = process.env.AWS_ACCESS_KEY_ID;
+    confirmEnvVars(['AWS_REGION', 'AWS_ACCOUNT']);
+    const region = process.env.AWS_REGION;
+    const accountId = process.env.AWS_ACCOUNT;
     return `arn:aws:states:${region}:${accountId}:stateMachine:${resourceName}`;
   }
 }

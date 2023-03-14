@@ -13,6 +13,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { SfnStartExecutionProps } from './__types__/sfn.service';
 import { AwsService } from '../aws/aws.service';
 import { AwsServiceProps } from '../aws/__types__';
+import { confirmEnvVars } from '../../../utils/functions';
 
 /**
  * A service for engaging with Step Functions
@@ -26,7 +27,8 @@ export class SfnService extends AwsService {
     super(props);
 
     // prepare the clients
-    this.client = new SFNClient({ region: process.env.CDK_DEPLOY_REGION });
+    confirmEnvVars(['AWS_REGION']);
+    this.client = new SFNClient({ region: process.env.AWS_REGION });
   }
 
   /**
@@ -55,7 +57,9 @@ export class SfnService extends AwsService {
           this.logger.debug
             ? this.logger.debug(params, 'SfnService.startExecution.params')
             : this.logger.log(params, 'SfnService.startExecution.params');
-          const response = this.client.send(new StartExecutionCommand(params));
+          const response = await this.client.send(
+            new StartExecutionCommand(params)
+          );
           this.logger.debug
             ? this.logger.debug(response, 'SfnService.startExecution.response')
             : this.logger.log(response, 'SfnService.startExecution.response');
@@ -73,7 +77,7 @@ export class SfnService extends AwsService {
   ): TE.TaskEither<Error, void> => {
     return pipe(
       props.id,
-      this.prepareResourceName,
+      this.prepareResourceName(this),
       this.prepareStateMachineArn,
       this.tryStartExecution(props.input),
       logAction(

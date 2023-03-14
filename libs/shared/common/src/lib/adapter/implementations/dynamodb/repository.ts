@@ -30,7 +30,7 @@ import {
   DynamoDbSaveParams,
   DynamoDBSaveProcessMethod,
 } from './__types__';
-import { dashToCamelCase } from '../../../utils/functions';
+import { confirmEnvVars, dashToCamelCase } from '../../../utils/functions';
 
 /**
  * A base repository for DynamoDb
@@ -136,9 +136,10 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     this.prepareGlobalIndexes(globalIndexIds);
 
     // prepare the DDB clients
+    confirmEnvVars(['AWS_REGION']);
     // wrap it in the AWS X-Ray SDK
     this.client = captureAWSv3Client(
-      new DynamoDBClient({ region: process.env.CDK_DEPLOY_REGION })
+      new DynamoDBClient({ region: process.env.AWS_REGION })
     );
     // NOTE: this is a wrapper of the above that is designed to be simpler to use
     this.docClient = DynamoDBDocumentClient.from(this.client, {

@@ -20,7 +20,7 @@ import {
 import { LoggableLogger } from '@curioushuman/loggable';
 import { logAction } from '@curioushuman/fp-ts-utils';
 
-import { generateUniqueId } from '../../../utils/functions';
+import { confirmEnvVars, generateUniqueId } from '../../../utils/functions';
 import { SqsMessageBase, SqsSendMessageBatchProps } from './__types__';
 import { AwsService } from '../aws/aws.service';
 import { AwsServiceProps } from '../aws/__types__';
@@ -37,12 +37,11 @@ export class SqsService<DomainMessage> extends AwsService {
     super(props);
 
     // prepare the client
-    this.client = new SQSClient({ region: process.env.CDK_DEPLOY_REGION });
+    confirmEnvVars(['AWS_REGION']);
+    this.client = new SQSClient({ region: process.env.AWS_REGION });
   }
 
   /**
-   * A Nest.js lifecycle hook
-   *
    * A Nest.js lifecycle hook; see AwsService for more info
    */
   onModuleDestroy() {
@@ -60,6 +59,7 @@ export class SqsService<DomainMessage> extends AwsService {
         const params: GetQueueUrlCommandInput = {
           QueueName: queueName,
         };
+        this.logger.debug(queueName, 'tryGetQueueUrl');
         return this.client.send(new GetQueueUrlCommand(params));
       },
       // NOTE: we don't use an error factory here, it is one level up
@@ -76,7 +76,7 @@ export class SqsService<DomainMessage> extends AwsService {
     return (response) => {
       // ? logging?
       // If anything do logging specific to GetCommand or AWS stats
-      this.logger.debug(response);
+      this.logger.debug(response, 'processGetQueueUrl');
 
       if (!response.QueueUrl) {
         throw new ServiceNotFoundError(`Queue URL not found: ${queueId}`);
@@ -191,7 +191,7 @@ export class SqsService<DomainMessage> extends AwsService {
     }
     return pipe(
       props.id,
-      this.prepareResourceName,
+      this.prepareResourceName(this),
       this.tryGetQueueUrl,
       TE.map(this.processGetQueueUrl(props.id)),
       logAction(

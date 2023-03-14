@@ -5,16 +5,16 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { LoggableLogger, LoggableModule } from '@curioushuman/loggable';
 import {
   SalesforceApiHttpConfigService,
-  SalesforceApiRepository,
   SalesforceApiRepositoryErrorFactory,
 } from '@curioushuman/common';
 
-import { FindParticipantSourceHandler } from './application/queries/find-participant-source/find-participant-source.query';
 import { UpsertParticipantMultiController } from './infra/upsert-participant-multi/upsert-participant-multi.controller';
 import { ParticipantQueueService } from './adapter/ports/participant.queue-service';
 import { SqsParticipantQueueService } from './adapter/implementations/sqs/participant.queue-service';
 import { ParticipantSourceRepository } from './adapter/ports/participant-source.repository';
 import { ParticipantSourceRepositoryErrorFactory } from './adapter/ports/participant-source.repository.error-factory';
+import { SalesforceApiParticipantSourceRepository } from './adapter/implementations/salesforce/participant-source.repository';
+import { FindParticipantSourcesHandler } from './application/queries/find-participant-sources/find-participant-sources.query';
 
 const imports = [
   CqrsModule,
@@ -26,12 +26,12 @@ const imports = [
 
 const controllers = [UpsertParticipantMultiController];
 
-const handlers = [FindParticipantSourceHandler];
+const handlers = [FindParticipantSourcesHandler];
 
 const repositories = [
   {
     provide: ParticipantSourceRepository,
-    useClass: SalesforceApiRepository,
+    useClass: SalesforceApiParticipantSourceRepository,
   },
 ];
 

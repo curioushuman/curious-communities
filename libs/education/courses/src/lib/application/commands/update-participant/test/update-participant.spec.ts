@@ -112,7 +112,6 @@ defineFeature(feature, (test) => {
       'the related record should have been updated in the repository',
       async () => {
         const participants = await executeTask(repository.all());
-        console.log(participants);
         const participantAfter = participants.find(
           (participant) =>
             participant.id === updateParticipantDto.participant.id

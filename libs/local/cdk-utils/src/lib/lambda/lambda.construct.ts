@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
@@ -10,13 +11,21 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve as pathResolve } from 'path';
 
 import { ChLayerFrom } from '../lambda/layer-from.construct';
-import { resourceNameTitle } from '../utils/name';
+import {
+  generateCompositeResourceId,
+  resourceNameTitle,
+  transformIdToResourceTitle,
+} from '../utils/name';
 import { LambdaProps } from './lambda.types';
 
 /**
  * Create a lambda function with useful defaults
  */
 export class LambdaConstruct extends Construct {
+  private constructId!: string;
+  private assumedRole: iam.IRole | undefined = undefined;
+  private serviceRole: iam.IRole | undefined = undefined;
+
   public lambdaFunction: NodejsFunction;
 
   private defaultProps: NodejsFunctionProps = {
@@ -48,6 +57,8 @@ export class LambdaConstruct extends Construct {
   constructor(scope: Construct, id: string, props: LambdaProps) {
     super(scope, id);
 
+    this.constructId = id;
+
     /**
      * Required layers
      */
@@ -64,6 +75,11 @@ export class LambdaConstruct extends Construct {
       entry: props.lambdaEntry,
       ...lambdaProps,
     });
+
+    // Add REQUIRED environment variables
+    // the ones above are optional with defaults
+    const envVars = ['AWS_ACCOUNT'];
+    this.addEnvironmentVars(envVars);
 
     // ALWAYS ADD TAGS
     // TODO - add better tags
@@ -92,6 +108,61 @@ export class LambdaConstruct extends Construct {
       },
       layers,
     };
+  }
+
+  /**
+   * When using SDK from within a lambda function an assumed role is used. It has the pattern:
+   *
+   * arn:aws:sts::{AccountID}:assumed-role/{RoleName}/{FunctionName}
+   */
+  private prepareAssumedRoleArn(): string {
+    const accountId =
+      process.env.NODE_ENV === 'local'
+        ? process.env.AWS_ACCOUNT_LOCAL
+        : cdk.Aws.ACCOUNT_ID;
+    const functionName = this.lambdaFunction.functionName;
+    const roleName = this.lambdaFunction.role?.roleName || 'NO-ROLE-NAME-FOUND';
+    console.log(
+      `arn:aws:sts::${accountId}:assumed-role/${roleName}/${functionName}`
+    );
+    return `arn:aws:sts::${accountId}:assumed-role/${roleName}/${functionName}`;
+  }
+
+  private prepareAssumedRole(): iam.IRole {
+    const assumedRoleArn = this.prepareAssumedRoleArn();
+    const assumedRoleId = generateCompositeResourceId(
+      this.constructId,
+      'assumed'
+    );
+    const assumedRoleTitle = transformIdToResourceTitle(assumedRoleId, 'Role');
+    return new iam.Role(this, assumedRoleTitle, {
+      assumedBy: new iam.ArnPrincipal(assumedRoleArn),
+    });
+  }
+
+  public getAssumedRole(): iam.IRole {
+    if (!this.assumedRole) {
+      this.assumedRole = this.prepareAssumedRole();
+    }
+    return this.assumedRole;
+  }
+
+  private prepareServiceRole(): iam.IRole {
+    const serviceRoleId = generateCompositeResourceId(
+      this.constructId,
+      'service'
+    );
+    const serviceRoleTitle = transformIdToResourceTitle(serviceRoleId, 'Role');
+    return new iam.Role(this, serviceRoleTitle, {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+    });
+  }
+
+  public getServiceRole(): iam.IRole {
+    if (!this.serviceRole) {
+      this.serviceRole = this.prepareServiceRole();
+    }
+    return this.serviceRole;
   }
 
   /**

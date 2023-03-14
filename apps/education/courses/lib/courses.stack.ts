@@ -336,7 +336,7 @@ export class CoursesStack extends cdk.Stack {
      */
     const upsertParticipantLambdaId = generateCompositeResourceId(
       stackId,
-      'participant-upsert-function'
+      'participant-upsert'
     );
     const upsertParticipantLambdaConstruct = new LambdaConstruct(
       this,
@@ -348,6 +348,24 @@ export class CoursesStack extends cdk.Stack {
         ),
         lambdaProps: this.lambdaProps,
       }
+    );
+    new cdk.CfnOutput(this, 'upsertParticipantLambdaRole', {
+      value:
+        upsertParticipantLambdaConstruct.lambdaFunction.role?.roleArn ||
+        'No role',
+    });
+
+    /**
+     * Allow the lambda to invoke the state machine
+     */
+    upsertParticipantConstruct.stateMachine.grantStartExecution(
+      upsertParticipantLambdaConstruct.lambdaFunction
+    );
+    // upsertParticipantConstruct.stateMachine.grantStartExecution(
+    //   upsertParticipantLambdaConstruct.getAssumedRole()
+    // );
+    upsertParticipantConstruct.stateMachine.grantStartExecution(
+      upsertParticipantLambdaConstruct.getServiceRole()
     );
 
     /**
@@ -371,6 +389,8 @@ export class CoursesStack extends cdk.Stack {
         lambdaProps: this.lambdaProps,
       }
     );
+    // add salesforce env vars
+    upsertParticipantMultiLambdaConstruct.addEnvironmentSalesforce();
 
     /**
      * Subscribing the lambda to the internal event bus; when course is created

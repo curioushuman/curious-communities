@@ -5,18 +5,19 @@ import { SqsService } from '@curioushuman/common';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import {
-  ParticipantMessage,
-  ParticipantQueueService,
-} from '../../ports/participant.queue-service';
+  CoursesMessage,
+  CoursesQueueService,
+} from '../../ports/courses.queue-service';
 import { UpdateParticipantRequestDto } from '../../../infra/update-participant/dto/update-participant.request.dto';
 import { UpsertParticipantRequestDto } from '../../../infra/upsert-participant/dto/upsert-participant.request.dto';
+import { UpdateCourseRequestDto } from '../../../infra/update-course/dto/update-course.request.dto';
 
 @Injectable()
-export class SqsParticipantQueueService implements ParticipantQueueService {
-  private sqsService: SqsService<ParticipantMessage>;
+export class SqsCoursesQueueService implements CoursesQueueService {
+  private sqsService: SqsService<CoursesMessage>;
 
   constructor(public logger: LoggableLogger) {
-    this.logger.setContext(SqsParticipantQueueService.name);
+    this.logger.setContext(SqsCoursesQueueService.name);
 
     this.sqsService = new SqsService(
       {
@@ -26,6 +27,15 @@ export class SqsParticipantQueueService implements ParticipantQueueService {
       this.logger
     );
   }
+
+  public updateCourses = (
+    messages: UpdateCourseRequestDto[]
+  ): TE.TaskEither<Error, void> => {
+    return this.sqsService.sendMessageBatch({
+      id: 'course-update',
+      messages,
+    });
+  };
 
   public updateParticipants = (
     messages: UpdateParticipantRequestDto[]

@@ -9,7 +9,7 @@ export type GroupMemberMessage = UpdateGroupMemberRequestDto;
 /**
  * A repository for member source queue
  */
-export abstract class GroupMemberQueueService {
+export abstract class GroupsQueueService {
   /**
    * Send a batch of messages
    */

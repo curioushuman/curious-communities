@@ -6,15 +6,15 @@ import { LoggableLogger } from '@curioushuman/loggable';
 
 import {
   GroupMemberMessage,
-  GroupMemberQueueService,
-} from '../../ports/group-member.queue-service';
+  GroupsQueueService,
+} from '../../ports/groups.queue-service';
 
 @Injectable()
-export class SqsGroupMemberQueueService implements GroupMemberQueueService {
+export class SqsGroupsQueueService implements GroupsQueueService {
   private sqsService: SqsService<GroupMemberMessage>;
 
   constructor(public logger: LoggableLogger) {
-    this.logger.setContext(SqsGroupMemberQueueService.name);
+    this.logger.setContext(SqsGroupsQueueService.name);
 
     this.sqsService = new SqsService(
       {

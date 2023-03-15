@@ -5,23 +5,20 @@ import { LoggableLogger } from '@curioushuman/loggable';
 
 import {
   GroupMemberMessage,
-  GroupMemberQueueService,
-} from '../../ports/group-member.queue-service';
+  GroupsQueueService,
+} from '../../ports/groups.queue-service';
 
 @Injectable()
-export class FakeGroupMemberQueueService implements GroupMemberQueueService {
+export class FakeGroupsQueueService implements GroupsQueueService {
   constructor(public logger: LoggableLogger) {
-    this.logger.setContext(FakeGroupMemberQueueService.name);
+    this.logger.setContext(FakeGroupsQueueService.name);
   }
 
   public updateGroupMembers = (
     messages: GroupMemberMessage[]
   ): TE.TaskEither<Error, void> => {
     messages.forEach((message) => {
-      this.logger.debug(
-        message,
-        'FakeGroupMemberQueueService.sendMessageBatch'
-      );
+      this.logger.debug(message, 'FakeGroupsQueueService.sendMessageBatch');
     });
     return TE.right(undefined);
   };

@@ -102,7 +102,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
 
   private setIndexes(indexes: DynamoDbRepositoryIndex[]): void {
     indexes.forEach((index) => {
-      this.indexes[index.id] = index;
+      this.indexes[`${index.id}-${index.type}`] = index;
     });
   }
 
@@ -111,7 +111,8 @@ export class DynamoDbRepository<DomainT, PersistenceT>
    * Otherwise it returns default information for use with a DDB table.
    */
   private getIndexDetails(
-    id: string | undefined
+    id: string | undefined,
+    type = 'global'
   ): Partial<Pick<DynamoDbRepositoryIndex, 'name'>> &
     Pick<DynamoDbRepositoryIndex, 'partitionKey' | 'sortKey'> {
     if (!id) {
@@ -121,14 +122,15 @@ export class DynamoDbRepository<DomainT, PersistenceT>
         sortKey: 'sortKey',
       };
     }
-    if (!(id in this.indexes)) {
+    const indexId = `${id}-${type}`;
+    if (!(indexId in this.indexes)) {
       throw new RepositoryServerError(
-        `Index ${id} not found. Available indexes: ${JSON.stringify(
+        `Index ${indexId} not found. Available indexes: ${JSON.stringify(
           this.indexes
         )}`
       );
     }
-    return this.indexes[id];
+    return this.indexes[indexId];
   }
 
   private prepareIndexName(indexId: string, suffix: string): string {
@@ -159,6 +161,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
       sortKey,
       partitionKey,
       name: this.prepareIndexName(id, this.awsResourceTypeLsi),
+      type: 'local',
     };
   }
 
@@ -194,6 +197,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
       sortKey,
       partitionKey,
       name: this.prepareIndexName(id, this.awsResourceTypeGsi),
+      type: 'global',
     };
   }
 
@@ -305,19 +309,22 @@ export class DynamoDbRepository<DomainT, PersistenceT>
    *   could be numerous records of varying types. The point of this
    *   function is to return one record, of the type specified by this
    *   repository. So we use entityType to filter out the rest.
+   *
+   * TODO:
+   * - [ ] would be good to allow sortKey to be included in this as well
    */
   public prepareParamsQueryOne(
     props: DynamoDbRepositoryQueryOneProps
   ): QueryCommandInput {
     const { indexId, value } = props;
     const index = this.getIndexDetails(indexId);
-    const KeyConditionExpression = `${index.partitionKey} = :v`;
+    const KeyConditionExpression = `${index.partitionKey} = :pk`;
     const params = {
       KeyConditionExpression,
-      FilterExpression: 'entityType = :e',
+      FilterExpression: 'entityType = :ent',
       ExpressionAttributeValues: {
-        ':v': value,
-        ':e': this.entityName,
+        ':pk': value,
+        ':ent': this.entityName,
       },
       TableName: this.tableName,
       IndexName: index.name,
@@ -421,18 +428,20 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   private prepareFilterExpressions(
     filters: Record<string, DDBQueryAllFilterValue> | undefined
   ): DDBQueryAllCommandInputExpression {
-    const result: DDBQueryAllCommandInputExpression = {
-      FilterExpression: undefined,
-      ExpressionAttributeValues: undefined,
+    const filterExpressions: string[] = ['entityType = :ent'];
+    const ExpressionAttributeValues: DDBQueryAllCommandInputExpressionValues = {
+      ':ent': this.entityName,
     };
     if (!filters) {
-      return result;
+      return {
+        FilterExpression: filterExpressions.join(' AND '),
+        ExpressionAttributeValues,
+      };
     }
+
     let letterIndex = 0;
     const allLetters = 'abcdefghijklmnopqrstuvwxyz';
-    const filterExpressions: string[] = [];
-    const ExpressionAttributeValues: DDBQueryAllCommandInputExpressionValues =
-      {};
+
     Object.entries(filters).forEach(([field, valueOrValueObject]) => {
       const filterExpression =
         this.prepareFilterExpression<DDBQueryAllFilterValue>(
@@ -448,6 +457,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
         );
       }
     });
+
     return {
       FilterExpression: filterExpressions.join(' AND '),
       ExpressionAttributeValues,
@@ -462,13 +472,10 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   ): QueryCommandInput {
     const { indexId, partitionKeyValue, sortKeyValue, filters } = props;
     const index = this.getIndexDetails(indexId);
-    const IndexName = index.name;
-    const sortKey = index.sortKey;
-    const partitionKey = index.partitionKey;
 
-    const keyConditionExpressions = [`${partitionKey} = :pk`];
+    const keyConditionExpressions = [`${index.partitionKey} = :pk`];
     const preparedSortKeyExpression = this.prepareFilterExpression(
-      sortKey,
+      index.sortKey,
       sortKeyValue
     );
     if (preparedSortKeyExpression.FilterExpression) {
@@ -486,7 +493,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
       FilterExpression: preparedFilters.FilterExpression,
       ExpressionAttributeValues,
       TableName: this.tableName,
-      IndexName,
+      IndexName: index.name,
     };
     this.logger.debug(params, 'prepareParamsQueryAll');
     return params;

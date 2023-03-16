@@ -12,23 +12,25 @@ export type DynamoDbSaveParams = PutCommandInput;
  */
 export interface DynamoDbRepositoryIndex {
   id: string;
-  name: string;
   sortKey: string;
   partitionKey: string;
+  //---
+  name: string;
+  type: 'local' | 'global';
 }
 
 /**
  * Type for local index; if string, it is the id, and the rest is defaults
  */
 export type DynamoDbRepositoryLocalIndex =
-  | Omit<DynamoDbRepositoryIndex, 'partitionKey' | 'name'>
+  | Pick<DynamoDbRepositoryIndex, 'id' | 'sortKey'>
   | string;
 
 /**
  * Type for global index; if string, it is the id, and the rest are defaults
  */
 export type DynamoDbRepositoryGlobalIndex =
-  | Omit<DynamoDbRepositoryIndex, 'name'>
+  | Pick<DynamoDbRepositoryIndex, 'id' | 'sortKey' | 'partitionKey'>
   | string;
 
 /**
@@ -51,10 +53,15 @@ export interface DynamoDbRepositoryGetOneProps {
 }
 
 /**
+ * queryAll with operator, allowed operators
+ */
+type DDBQueryAllValueWithOperatorBasic = '>' | '<' | '>=' | '<=';
+
+/**
  * queryAll with operator
  */
 export interface DDBQueryAllValueWithOperator {
-  operator: string;
+  operator: DDBQueryAllValueWithOperatorBasic;
   value: number;
 }
 /**

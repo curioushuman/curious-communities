@@ -44,8 +44,21 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
     const props: DynamoDbRepositoryProps = {
       entityId: 'participant',
       tableId: 'courses',
-      globalIndexIds: ['source-id-COURSE'],
-      localIndexIds: ['last-name'],
+      globalIndexes: [
+        'id',
+        'source-id-COURSE',
+        {
+          id: 'member-id',
+          sortKey: 'Member_Id',
+          partitionKey: 'Sk_Member_Id',
+        },
+      ],
+      localIndexes: [
+        {
+          id: 'member-last-name',
+          sortKey: 'Member_LastName',
+        },
+      ],
       prefix: 'cc',
     };
     this.dynamoDbRepository = new DynamoDbRepository(props, this.logger);
@@ -104,13 +117,23 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
     return this.findOneBy[identifier];
   };
 
+  /**
+   * It is at this stage we know
+   * - what the dto/input looks like
+   * - what DDB indexes we have
+   * So it is here, that we reshape the input to match the indexes
+   */
   findAll = (props: {
     parentId?: CourseId;
     filters?: ParticipantFilters;
   }): TE.TaskEither<Error, Participant[]> => {
+    const { parentId, filters } = props;
+    const { memberId } = filters || {};
+    const indexId = memberId ? 'member-id' : undefined;
+    const partitionKeyValue = memberId || parentId;
     const params = this.dynamoDbRepository.prepareParamsFindAll({
-      keyValue: props.parentId,
-      filters: props.filters,
+      partitionKeyValue,
+      indexId,
     });
     return this.dynamoDbRepository.tryFindAll(params, this.processFindOne);
   };

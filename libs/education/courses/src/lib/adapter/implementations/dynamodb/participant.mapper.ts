@@ -74,7 +74,7 @@ export class DynamoDbParticipantMapper {
       );
     return DynamoDbParticipantKeys.check({
       // composite key
-      primaryKey: participant.courseId,
+      partitionKey: participant.courseId,
       sortKey: participant.id,
 
       // other keys; participant

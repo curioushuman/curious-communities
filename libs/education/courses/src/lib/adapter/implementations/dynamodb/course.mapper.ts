@@ -54,7 +54,7 @@ export class DynamoDbCourseMapper {
       );
     return DynamoDbCourseKeys.check({
       // composite key
-      primaryKey: course.id,
+      partitionKey: course.id,
       sortKey: course.id,
 
       // index sort keys; course

@@ -49,7 +49,10 @@ export class CoursesDynamoDbConstruct extends Construct {
     this.table = new dynamodb.Table(this, tableTitle, {
       tableName,
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      partitionKey: { name: 'primaryKey', type: dynamodb.AttributeType.STRING },
+      partitionKey: {
+        name: 'partitionKey',
+        type: dynamodb.AttributeType.STRING,
+      },
       sortKey: { name: 'sortKey', type: dynamodb.AttributeType.STRING },
       stream,
       // pointInTimeRecovery: true,
@@ -78,7 +81,7 @@ export class CoursesDynamoDbConstruct extends Construct {
     // Sort by
     const byMemberLastNameIndexId = generateCompositeResourceId(
       id,
-      'member-last-name'
+      'participant-member-last-name'
     );
     const byMemberLastNameLsiName = transformIdToResourceName(
       byMemberLastNameIndexId,

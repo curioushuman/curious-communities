@@ -43,7 +43,7 @@ export class DynamoDbMapper {
       if (!guardExternalIdSourceValue(idSourceValue, sources)) {
         const ik = typeof itemKey === 'string' ? `.${itemKey}` : '';
         throw new SourceInvalidError(
-          `${entityId}${ik} with id ${item.primaryKey} contains invalid data`
+          `${entityId}${ik} with id ${item.partitionKey} contains invalid data`
         );
       }
       // we are type casting as we've checked things manually in the guard

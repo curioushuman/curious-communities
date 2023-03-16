@@ -48,7 +48,7 @@ export class DynamoDbGroupMapper {
     const skCourseId = isCourseGroupBase(group) ? group.id : undefined;
     return DynamoDbGroupKeys.check({
       // composite key
-      primaryKey: group.id,
+      partitionKey: group.id,
       sortKey: group.id,
 
       // index sort keys; group

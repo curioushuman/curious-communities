@@ -15,15 +15,23 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 
 import { LoggableLogger } from '@curioushuman/loggable';
+import { RepositoryServerError } from '@curioushuman/error-factory';
 
 import { DynamoDbDiscriminatedItem, DynamoDbItem } from './entities/item';
 import {
+  DDBQueryAllCommandInputExpression,
+  DDBQueryAllCommandInputExpressionValues,
+  DDBQueryAllFilterValue,
+  DDBQueryAllKeyValue,
   DynamoDBFindAllProcessMethod,
   DynamoDbFindAllResponse,
   DynamoDbFindOneParams,
   DynamoDBFindOneProcessMethod,
   DynamoDbRepositoryFindAllProps,
   DynamoDbRepositoryGetOneProps,
+  DynamoDbRepositoryGlobalIndex,
+  DynamoDbRepositoryIndex,
+  DynamoDbRepositoryLocalIndex,
   DynamoDbRepositoryProps,
   DynamoDbRepositoryQueryAllProps,
   DynamoDbRepositoryQueryOneProps,
@@ -58,8 +66,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   private entityName!: string;
   private tableId!: string;
   private tableName!: string;
-  private localIndexes!: Record<string, string>;
-  private globalIndexes!: Record<string, string>;
+  private indexes: Record<string, DynamoDbRepositoryIndex> = {};
 
   private marshallOptions = {
     // Whether to automatically convert empty strings, blobs, and sets to `null`.
@@ -78,62 +85,138 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     return dashToCamelCase(id);
   }
 
-  private preparePrefix(prefix: string | undefined): void {
+  private setPrefix(prefix: string | undefined): void {
     const envPrefix = process.env.AWS_NAME_PREFIX || '';
     this.prefix = this.prepareName(prefix || envPrefix);
   }
 
-  private prepareEntity(id: string): void {
+  private setEntity(id: string): void {
     this.entityName = this.prepareName(id);
   }
 
-  private prepareTable(id: string): void {
+  private setTable(id: string): void {
     this.tableId = id;
     const suffix = this.awsResourceTable;
     this.tableName = `${this.prefix}${this.prepareName(id)}${suffix}`;
   }
 
-  private prepareIndexes(
-    indexIds: string[],
-    indexType: string
-  ): Record<string, string> {
+  private setIndexes(indexes: DynamoDbRepositoryIndex[]): void {
+    indexes.forEach((index) => {
+      this.indexes[index.id] = index;
+    });
+  }
+
+  /**
+   * This function is used to get the index details, if an index is actually requested
+   * Otherwise it returns default information for use with a DDB table.
+   */
+  private getIndexDetails(
+    id: string | undefined
+  ): Partial<Pick<DynamoDbRepositoryIndex, 'name'>> &
+    Pick<DynamoDbRepositoryIndex, 'partitionKey' | 'sortKey'> {
+    if (!id) {
+      return {
+        name: undefined,
+        partitionKey: 'partitionKey',
+        sortKey: 'sortKey',
+      };
+    }
+    if (!(id in this.indexes)) {
+      throw new RepositoryServerError(
+        `Index ${id} not found. Available indexes: ${JSON.stringify(
+          this.indexes
+        )}`
+      );
+    }
+    return this.indexes[id];
+  }
+
+  private prepareIndexName(indexId: string, suffix: string): string {
     const prefixes = [
       this.prefix,
       this.prepareName(this.tableId),
       this.entityName,
     ];
     const prefix = prefixes.join('');
-    const suffix = indexType;
-    const indexes: Record<string, string> = {};
-    indexIds.forEach(
-      (indexId) =>
-        (indexes[indexId] = `${prefix}${this.prepareName(indexId)}${suffix}`)
+    return `${prefix}${this.prepareName(indexId)}${suffix}`;
+  }
+
+  private prepareLocalIndex(
+    localIndex: DynamoDbRepositoryLocalIndex
+  ): DynamoDbRepositoryIndex {
+    let id: string;
+    let sortKey: string;
+    const partitionKey = 'partitionKey';
+    if (typeof localIndex === 'string') {
+      id = localIndex;
+      sortKey = `${this.entityName}_${this.prepareName(localIndex)}`;
+    } else {
+      id = localIndex.id;
+      sortKey = localIndex.sortKey;
+    }
+    return {
+      id,
+      sortKey,
+      partitionKey,
+      name: this.prepareIndexName(id, this.awsResourceTypeLsi),
+    };
+  }
+
+  private setLocalIndexes(
+    indexes: DynamoDbRepositoryLocalIndex[] | undefined
+  ): void {
+    if (!indexes) {
+      return;
+    }
+    const preparedIndexes = indexes.map((index) =>
+      this.prepareLocalIndex(index)
     );
-    return indexes;
+    this.setIndexes(preparedIndexes);
   }
 
-  private prepareLocalIndexes(indexIds: string[] | undefined): void {
-    if (!indexIds) {
-      return;
+  private prepareGlobalIndex(
+    globalIndex: DynamoDbRepositoryGlobalIndex
+  ): DynamoDbRepositoryIndex {
+    let id: string;
+    let sortKey: string;
+    let partitionKey: string;
+    if (typeof globalIndex === 'string') {
+      id = globalIndex;
+      partitionKey = `${this.entityName}_${this.prepareName(globalIndex)}`;
+      sortKey = `Sk_${this.entityName}_${this.prepareName(globalIndex)}`;
+    } else {
+      id = globalIndex.id;
+      sortKey = globalIndex.sortKey;
+      partitionKey = globalIndex.partitionKey;
     }
-    this.localIndexes = this.prepareIndexes(indexIds, this.awsResourceTypeLsi);
+    return {
+      id,
+      sortKey,
+      partitionKey,
+      name: this.prepareIndexName(id, this.awsResourceTypeGsi),
+    };
   }
 
-  private prepareGlobalIndexes(indexIds: string[] | undefined): void {
-    if (!indexIds) {
+  private setGlobalIndexes(
+    indexes: DynamoDbRepositoryGlobalIndex[] | undefined
+  ): void {
+    if (!indexes) {
       return;
     }
-    this.globalIndexes = this.prepareIndexes(indexIds, this.awsResourceTypeGsi);
+    const preparedIndexes = indexes.map((index) =>
+      this.prepareGlobalIndex(index)
+    );
+    this.setIndexes(preparedIndexes);
   }
 
   constructor(props: DynamoDbRepositoryProps, private logger: LoggableLogger) {
-    const { entityId, tableId, localIndexIds, globalIndexIds, prefix } = props;
+    const { entityId, tableId, localIndexes, globalIndexes, prefix } = props;
     // set the resources, in order
-    this.preparePrefix(prefix);
-    this.prepareEntity(entityId);
-    this.prepareTable(tableId);
-    this.prepareLocalIndexes(localIndexIds);
-    this.prepareGlobalIndexes(globalIndexIds);
+    this.setPrefix(prefix);
+    this.setEntity(entityId);
+    this.setTable(tableId);
+    this.setLocalIndexes(localIndexes);
+    this.setGlobalIndexes(globalIndexes);
 
     // prepare the DDB clients
     confirmEnvVars(['AWS_REGION']);
@@ -197,13 +280,13 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   public prepareParamsGetOne(
     props: DynamoDbRepositoryGetOneProps
   ): GetCommandInput {
-    const { primaryKey, sortKey } = props;
+    const { partitionKey, sortKey } = props;
     // if only the primary key is provided
     // we assume they want the parent record
     // our pattern for parent records is for pk and sk to match
-    const sk = sortKey || primaryKey;
+    const sk = sortKey || partitionKey;
     return this.prepareParamsGet({
-      primaryKey,
+      partitionKey,
       sortKey: sk,
     });
   }
@@ -226,10 +309,9 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   public prepareParamsQueryOne(
     props: DynamoDbRepositoryQueryOneProps
   ): QueryCommandInput {
-    const { indexId, keyName, value } = props;
-    const kName = keyName || this.prepareName(indexId);
-    const primaryKey = `${this.entityName}_${kName}`;
-    const KeyConditionExpression = `${primaryKey} = :v`;
+    const { indexId, value } = props;
+    const index = this.getIndexDetails(indexId);
+    const KeyConditionExpression = `${index.partitionKey} = :v`;
     const params = {
       KeyConditionExpression,
       FilterExpression: 'entityType = :e',
@@ -238,34 +320,137 @@ export class DynamoDbRepository<DomainT, PersistenceT>
         ':e': this.entityName,
       },
       TableName: this.tableName,
-      IndexName: this.globalIndexes[indexId],
+      IndexName: index.name,
     };
     this.logger.debug(params, 'prepareParamsQueryOne');
     return params;
   }
 
-  private prepareFiltersFindAll(
-    props: DynamoDbRepositoryFindAllProps
-  ): Pick<QueryCommandInput, 'FilterExpression' | 'ExpressionAttributeValues'> {
-    // ALWAYS add the entity name filter
-    const allFilters = props.filters || {};
-    allFilters.entityType = this.entityName;
+  private prepareFilterExpressionOperator<T extends DDBQueryAllKeyValue>(
+    sortKey: string,
+    valueObject: T,
+    fieldKey: string
+  ): DDBQueryAllCommandInputExpression | undefined {
+    if (!(typeof valueObject === 'object') || !('operator' in valueObject)) {
+      return;
+    }
+    const { operator, value } = valueObject;
+    const FilterExpression =
+      operator === 'begins_with'
+        ? `${operator}(${sortKey}, :${fieldKey})`
+        : `${sortKey} ${operator} :${fieldKey}`;
+    const ExpressionAttributeValues: DDBQueryAllCommandInputExpressionValues =
+      {};
+    ExpressionAttributeValues[`:${fieldKey}`] = value;
+    return {
+      FilterExpression,
+      ExpressionAttributeValues,
+    };
+  }
 
-    // set up some useful variables
+  private prepareFilterExpressionRange<T extends DDBQueryAllKeyValue>(
+    sortKey: string,
+    valueObject: T,
+    fieldKey: string
+  ): DDBQueryAllCommandInputExpression | undefined {
+    if (!(typeof valueObject === 'object') || !('start' in valueObject)) {
+      return;
+    }
+    const { start, end } = valueObject;
+    const FilterExpression = `${sortKey} BETWEEN :${fieldKey}Start AND :${fieldKey}End`;
+    const ExpressionAttributeValues: DDBQueryAllCommandInputExpressionValues =
+      {};
+    ExpressionAttributeValues[`:${fieldKey}Start`] = start;
+    ExpressionAttributeValues[`:${fieldKey}End`] = end;
+    return {
+      FilterExpression,
+      ExpressionAttributeValues,
+    };
+  }
+
+  private prepareFilterExpressionEquality<T extends DDBQueryAllKeyValue>(
+    sortKey: string,
+    value: T,
+    fieldKey: string
+  ): DDBQueryAllCommandInputExpression | undefined {
+    if (!(typeof value == 'string' || typeof value === 'number')) {
+      return;
+    }
+    const FilterExpression = `${sortKey} = :${fieldKey}`;
+    const ExpressionAttributeValues: DDBQueryAllCommandInputExpressionValues =
+      {};
+    ExpressionAttributeValues[`:${fieldKey}`] = value;
+    return {
+      FilterExpression,
+      ExpressionAttributeValues,
+    };
+  }
+
+  private prepareFilterExpression<T extends DDBQueryAllKeyValue>(
+    field: string,
+    valueOrValueObject: T | undefined,
+    fieldKey = 'sk'
+  ): DDBQueryAllCommandInputExpression {
+    let result: DDBQueryAllCommandInputExpression = {
+      FilterExpression: undefined,
+      ExpressionAttributeValues: undefined,
+    };
+    if (!valueOrValueObject) {
+      return result;
+    }
+    const expressionPreparers = [
+      this.prepareFilterExpressionOperator,
+      this.prepareFilterExpressionRange,
+      this.prepareFilterExpressionEquality,
+    ];
+    for (const preparer of expressionPreparers) {
+      // const prepared = preparer.call(this, field, valueOrValueObject);
+      const prepared = preparer(field, valueOrValueObject, fieldKey);
+      if (prepared) {
+        result = prepared;
+      }
+    }
+    if (!result.FilterExpression) {
+      throw new RepositoryServerError(
+        `Unable to prepare filter expression for ${field} with value ${valueOrValueObject}`
+      );
+    }
+    return result;
+  }
+
+  private prepareFilterExpressions(
+    filters: Record<string, DDBQueryAllFilterValue> | undefined
+  ): DDBQueryAllCommandInputExpression {
+    const result: DDBQueryAllCommandInputExpression = {
+      FilterExpression: undefined,
+      ExpressionAttributeValues: undefined,
+    };
+    if (!filters) {
+      return result;
+    }
     let letterIndex = 0;
     const allLetters = 'abcdefghijklmnopqrstuvwxyz';
-
-    // prep filters and attributes
-    const filterExpressions = [];
-    const attributeValues: QueryCommandInput['ExpressionAttributeValues'] = {};
-    for (const [key, value] of Object.entries(allFilters)) {
-      filterExpressions.push(`${key} = :${allLetters[letterIndex]}`);
-      attributeValues[`:${allLetters[letterIndex]}`] = value;
-      letterIndex++;
-    }
+    const filterExpressions: string[] = [];
+    const ExpressionAttributeValues: DDBQueryAllCommandInputExpressionValues =
+      {};
+    Object.entries(filters).forEach(([field, valueOrValueObject]) => {
+      const filterExpression =
+        this.prepareFilterExpression<DDBQueryAllFilterValue>(
+          field,
+          valueOrValueObject,
+          `${allLetters[letterIndex++]}`
+        );
+      if (filterExpression.FilterExpression) {
+        filterExpressions.push(filterExpression.FilterExpression);
+        Object.assign(
+          ExpressionAttributeValues,
+          filterExpression.ExpressionAttributeValues
+        );
+      }
+    });
     return {
       FilterExpression: filterExpressions.join(' AND '),
-      ExpressionAttributeValues: attributeValues,
+      ExpressionAttributeValues,
     };
   }
 
@@ -275,54 +460,70 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   public prepareParamsQueryAll(
     props: DynamoDbRepositoryQueryAllProps
   ): QueryCommandInput {
-    const { indexId, keyName, keyValue } = props;
-    let primaryKey = 'primaryKey';
-    let IndexName: string | undefined = undefined;
-    if (indexId) {
-      const kName = keyName || this.prepareName(indexId);
-      primaryKey = `${this.entityName}_${kName}`;
-      IndexName = this.globalIndexes[indexId];
+    const { indexId, partitionKeyValue, sortKeyValue, filters } = props;
+    const index = this.getIndexDetails(indexId);
+    const IndexName = index.name;
+    const sortKey = index.sortKey;
+    const partitionKey = index.partitionKey;
+
+    const keyConditionExpressions = [`${partitionKey} = :pk`];
+    const preparedSortKeyExpression = this.prepareFilterExpression(
+      sortKey,
+      sortKeyValue
+    );
+    if (preparedSortKeyExpression.FilterExpression) {
+      keyConditionExpressions.push(preparedSortKeyExpression.FilterExpression);
     }
-    const KeyConditionExpression = `${primaryKey} = :v`;
-    const preparedFilters = this.prepareFiltersFindAll(props);
-    // add the primary key as well
-    const ExpressionAttributeValues = {
+
+    const preparedFilters = this.prepareFilterExpressions(filters);
+    const ExpressionAttributeValues: DDBQueryAllCommandInputExpressionValues = {
+      ':pk': partitionKeyValue,
+      ...preparedSortKeyExpression.ExpressionAttributeValues,
       ...preparedFilters.ExpressionAttributeValues,
-      ':v': keyValue,
     };
-    return {
-      KeyConditionExpression,
+    const params = {
+      KeyConditionExpression: keyConditionExpressions.join(' AND '),
       FilterExpression: preparedFilters.FilterExpression,
       ExpressionAttributeValues,
       TableName: this.tableName,
       IndexName,
     };
+    this.logger.debug(params, 'prepareParamsQueryAll');
+    return params;
   }
 
   /**
    * Convenience function to prep for a queryAll or scanAll command
    *
-   * IMPORTANT: ALWAYS USE queryAll where possible i.e. include a keyName and keyValue
+   * IMPORTANT: ALWAYS USE queryAll where possible i.e. include a partitionKeyValue
    */
   public prepareParamsFindAll(
     props: DynamoDbRepositoryFindAllProps
   ): QueryCommandInput | ScanCommandInput {
-    const { indexId, keyName, keyValue, filters } = props;
-    if (keyValue) {
+    const { indexId, partitionKeyValue, sortKeyValue, filters } = props;
+    if (partitionKeyValue) {
       return this.prepareParamsQueryAll({
         indexId,
-        keyName,
-        keyValue,
+        partitionKeyValue,
+        sortKeyValue,
         filters,
       });
     }
-    const IndexName = indexId ? this.globalIndexes[indexId] : undefined;
-    const preparedFilters = this.prepareFiltersFindAll(props);
-    return {
+    if (sortKeyValue) {
+      throw new RepositoryServerError(
+        'Cannot use sortKeyValue without partitionKeyValue'
+      );
+    }
+    const index = this.getIndexDetails(indexId);
+    const IndexName = index.name;
+    const preparedFilters = this.prepareFilterExpressions(filters);
+    const params = {
       ...preparedFilters,
       TableName: this.tableName,
       IndexName,
     };
+    this.logger.debug(params, 'prepareParamsFindAll');
+    return params;
   }
 
   private prepareFindAllResponse(
@@ -510,23 +711,4 @@ export class DynamoDbRepository<DomainT, PersistenceT>
       (reason: unknown) => reason as Error
     );
   };
-
-  /**
-   * Some getters, mostly for testing purposes
-   */
-  public getTableName(): string {
-    return this.tableName;
-  }
-
-  public getLocalIndexes(): Record<string, string> {
-    return this.localIndexes;
-  }
-
-  public getGlobalIndexes(): Record<string, string> {
-    return this.globalIndexes;
-  }
-
-  public getEntityName(): string {
-    return this.entityName;
-  }
 }

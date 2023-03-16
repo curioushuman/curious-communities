@@ -41,7 +41,7 @@ export class DynamoDbGroupRepository implements GroupRepository {
     const props: DynamoDbRepositoryProps = {
       entityId: 'group',
       tableId: 'groups',
-      globalIndexIds: [
+      globalIndexes: [
         'slug',
         'source-id-COMMUNITY',
         'source-id-MICRO-COURSE',
@@ -79,7 +79,7 @@ export class DynamoDbGroupRepository implements GroupRepository {
     // Set the parameters.
     // Group in DDB has PK = groupId and SK = groupId
     const params = this.dynamoDbRepository.prepareParamsGetOne({
-      primaryKey: value,
+      partitionKey: value,
     });
     return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   };

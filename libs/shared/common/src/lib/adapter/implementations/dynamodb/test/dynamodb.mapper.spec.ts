@@ -5,7 +5,7 @@ import { DynamoDbMapper } from '../mapper';
 import { TestSourceIdSource } from './value-objects//test-source-id-source';
 
 type TestItem = {
-  primaryKey: string;
+  partitionKey: string;
   sortKey: string;
   Test_SourceIdALPHA: string;
   Test_SourceIdBETA: string;
@@ -35,7 +35,7 @@ defineFeature(feature, (test) => {
       Test_SourceIdBETA: 'BETA#b234',
     };
     itemValid = {
-      primaryKey: 'test1',
+      partitionKey: 'test1',
       sortKey: 'test2',
       Test_SourceIdALPHA: 'ALPHA#a123',
       Test_SourceIdBETA: 'BETA#b234',

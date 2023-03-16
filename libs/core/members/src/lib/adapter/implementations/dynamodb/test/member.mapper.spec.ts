@@ -30,7 +30,7 @@ defineFeature(feature, (test) => {
   beforeAll(() => {
     const member = MemberBuilder().build();
     validPersistenceItem = {
-      primaryKey: member.id,
+      partitionKey: member.id,
       sortKey: member.id,
       Member_Id: member.id,
       Member_Source_Origin: 'CRM',
@@ -70,14 +70,14 @@ defineFeature(feature, (test) => {
     };
 
     validPersistenceKeys = {
-      primaryKey: validPersistenceItem.primaryKey,
+      partitionKey: validPersistenceItem.partitionKey,
       sortKey: validPersistenceItem.sortKey,
-      Sk_Member_Email: validPersistenceItem.primaryKey as string,
-      Sk_Member_SourceIdCRM: validPersistenceItem.primaryKey as string,
-      Sk_Member_SourceIdAUTH: validPersistenceItem.primaryKey as string,
-      Sk_Member_SourceIdCOMMUNITY: validPersistenceItem.primaryKey as string,
+      Sk_Member_Email: validPersistenceItem.partitionKey as string,
+      Sk_Member_SourceIdCRM: validPersistenceItem.partitionKey as string,
+      Sk_Member_SourceIdAUTH: validPersistenceItem.partitionKey as string,
+      Sk_Member_SourceIdCOMMUNITY: validPersistenceItem.partitionKey as string,
       'Sk_Member_SourceIdMICRO-COURSE':
-        validPersistenceItem.primaryKey as string,
+        validPersistenceItem.partitionKey as string,
     };
 
     validPersistenceAttributes = {

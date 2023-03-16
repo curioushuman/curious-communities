@@ -4,7 +4,7 @@ import { Record, Static, String } from 'runtypes';
  * Common Keys for the all items
  */
 export const DynamoDbItemKeys = Record({
-  primaryKey: String,
+  partitionKey: String,
   sortKey: String,
 });
 

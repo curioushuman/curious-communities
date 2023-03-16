@@ -73,7 +73,7 @@ export class DynamoDbGroupMemberMapper {
       : undefined;
     return DynamoDbGroupMemberKeys.check({
       // composite key
-      primaryKey: groupMember.groupId,
+      partitionKey: groupMember.groupId,
       sortKey: groupMember.id,
 
       // index sort keys; group

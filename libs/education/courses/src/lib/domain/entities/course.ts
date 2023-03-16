@@ -67,6 +67,27 @@ export const Course = CourseBase.extend({
 export type Course = Static<typeof Course>;
 
 /**
+ * ----
+ * Additional helper types used during various operations
+ * ----
+ */
+
+/**
+ * The currently supported fields in a findAll query
+ */
+export const CourseFilters = Record({
+  dateOpenRange: Record({
+    start: Timestamp,
+    end: Timestamp,
+  }),
+});
+
+/**
+ * The currently supported fields in a findAll query
+ */
+export type CourseFilters = Static<typeof CourseFilters>;
+
+/**
  * Type that defines all the possible identifiers for a course
  * NOTE: this is utilized in find-course.dto.ts and course.repository.ts
  * to define parsers and finders.

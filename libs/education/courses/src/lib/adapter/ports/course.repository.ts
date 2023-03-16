@@ -2,6 +2,7 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 import {
   CourseBase,
+  CourseFilters,
   CourseIdentifier,
   CourseIdentifiers,
 } from '../../domain/entities/course';
@@ -62,6 +63,13 @@ export abstract class CourseRepository
    * NOTE: will throw NotFoundException if not found
    */
   abstract findOneBySlug(slug: CourseSlug): TaskEither<Error, CourseBase>;
+
+  /**
+   * Find all participants
+   */
+  abstract findAll(props: {
+    filters: CourseFilters;
+  }): TaskEither<Error, CourseBase[]>;
 
   /**
    * Create/update a course

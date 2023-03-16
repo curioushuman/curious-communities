@@ -16,6 +16,7 @@ import {
 import { CourseId } from '../../../domain/value-objects/course-id';
 import {
   CourseBase,
+  CourseFilters,
   CourseIdentifier,
   prepareCourseExternalIdSource,
 } from '../../../domain/entities/course';
@@ -43,7 +44,7 @@ export class DynamoDbCourseRepository implements CourseRepository {
     const props: DynamoDbRepositoryProps = {
       entityId: 'course',
       tableId: 'courses',
-      globalIndexIds: ['slug', 'source-id-COURSE'],
+      globalIndexes: ['slug', 'source-id-COURSE'],
       prefix: 'cc',
     };
     this.dynamoDbRepository = new DynamoDbRepository(props, this.logger);
@@ -76,7 +77,7 @@ export class DynamoDbCourseRepository implements CourseRepository {
     // Set the parameters.
     // Course in DDB has PK = courseId and SK = courseId
     const params = this.dynamoDbRepository.prepareParamsGetOne({
-      primaryKey: value,
+      partitionKey: value,
     });
     return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   };
@@ -113,6 +114,29 @@ export class DynamoDbCourseRepository implements CourseRepository {
 
   findOne = (identifier: CourseIdentifier): CourseFindMethod => {
     return this.findOneBy[identifier];
+  };
+
+  /**
+   * It is at this stage we know
+   * - what the dto/input looks like
+   * - what DDB indexes we have
+   * So it is here, that we reshape the input to match the indexes
+   *
+   * NOTE: this has to be a scan, because no matter what we'll be
+   * querying across partitions. Each partition being a course.
+   *
+   * NOTE: You could, if performance suffered, created a new index with a PK
+   * or each day, with the course fields only. Only if required.
+   */
+  findAll = (props: {
+    filters: CourseFilters;
+  }): TE.TaskEither<Error, CourseBase[]> => {
+    const { filters } = props;
+    const { dateOpenRange } = filters;
+    const params = this.dynamoDbRepository.prepareParamsFindAll({
+      filters: { Course__DateOpen: dateOpenRange },
+    });
+    return this.dynamoDbRepository.tryFindAll(params, this.processFindOne);
   };
 
   processSave(

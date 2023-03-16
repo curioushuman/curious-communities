@@ -38,7 +38,10 @@ export class GroupsDynamoDbConstruct extends Construct {
     this.table = new dynamodb.Table(this, tableTitle, {
       tableName,
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      partitionKey: { name: 'primaryKey', type: dynamodb.AttributeType.STRING },
+      partitionKey: {
+        name: 'partitionKey',
+        type: dynamodb.AttributeType.STRING,
+      },
       sortKey: { name: 'sortKey', type: dynamodb.AttributeType.STRING },
       stream,
       // pointInTimeRecovery: true,

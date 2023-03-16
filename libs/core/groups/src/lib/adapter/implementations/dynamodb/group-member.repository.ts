@@ -47,8 +47,8 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
     const props: DynamoDbRepositoryProps = {
       entityId: 'group-member',
       tableId: 'groups',
-      globalIndexIds: ['member-id', 'participant-id', 'source-id-COURSE'],
-      localIndexIds: ['last-name'],
+      globalIndexes: ['member-id', 'participant-id', 'source-id-COURSE'],
+      localIndexes: ['last-name'],
       prefix: 'cc',
     };
     this.dynamoDbRepository = new DynamoDbRepository(props, this.logger);

@@ -43,7 +43,7 @@ export class DynamoDbMemberRepository implements MemberRepository {
     const props: DynamoDbRepositoryProps = {
       entityId: 'member',
       tableId: 'members',
-      globalIndexIds: [
+      globalIndexes: [
         'email',
         'source-id-CRM',
         'source-id-AUTH',
@@ -77,7 +77,7 @@ export class DynamoDbMemberRepository implements MemberRepository {
 
   findOneById = (value: MemberId): TE.TaskEither<Error, Member> => {
     const params = this.dynamoDbRepository.prepareParamsGetOne({
-      primaryKey: value,
+      partitionKey: value,
     });
     return this.dynamoDbRepository.tryGetOne(params, this.processFindOne);
   };

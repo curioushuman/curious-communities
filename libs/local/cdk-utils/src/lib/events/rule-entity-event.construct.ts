@@ -50,7 +50,7 @@ export class RuleEntityEvent extends Construct {
 
     const [ruleName, ruleTitle] = resourceNameTitle(constructId, 'Rule');
     this.rule = new events.Rule(this, ruleTitle, {
-      ruleName: ruleName,
+      ruleName,
       eventBus,
       description,
       eventPattern: {

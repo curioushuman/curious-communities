@@ -10,7 +10,7 @@ import {
 } from '@curioushuman/fp-ts-utils';
 import { LoggableLogger } from '@curioushuman/loggable';
 
-import { ParticipantQueueService } from '../../adapter/ports/participant.queue-service';
+import { CoursesQueueService } from '../../adapter/ports/courses.queue-service';
 import { UpsertParticipantMultiRequestDto } from './dto/upsert-participant-multi.request.dto';
 import { UpsertParticipantRequestDto } from '../upsert-participant/dto/upsert-participant.request.dto';
 import { ParticipantSource } from '../../domain/entities/participant-source';
@@ -29,7 +29,7 @@ export class UpsertParticipantMultiController {
   constructor(
     private logger: LoggableLogger,
     private readonly queryBus: QueryBus,
-    private queueService: ParticipantQueueService
+    private queueService: CoursesQueueService
   ) {
     this.logger.setContext(UpsertParticipantMultiController.name);
   }

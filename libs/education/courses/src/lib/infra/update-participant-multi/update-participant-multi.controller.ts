@@ -11,7 +11,7 @@ import {
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RequestSourceEnum } from '@curioushuman/common';
 
-import { ParticipantQueueService } from '../../adapter/ports/participant.queue-service';
+import { CoursesQueueService } from '../../adapter/ports/courses.queue-service';
 import { UpdateParticipantMultiRequestDto } from './dto/update-participant-multi.request.dto';
 import { Participant } from '../../domain/entities/participant';
 import { FindParticipantsMapper } from '../../application/queries/find-participants/find-participants.mapper';
@@ -38,7 +38,7 @@ export class UpdateParticipantMultiController {
   constructor(
     private logger: LoggableLogger,
     private readonly queryBus: QueryBus,
-    private queueService: ParticipantQueueService
+    private queueService: CoursesQueueService
   ) {
     this.logger.setContext(UpdateParticipantMultiController.name);
   }

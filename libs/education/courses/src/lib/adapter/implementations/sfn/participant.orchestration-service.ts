@@ -38,10 +38,14 @@ export class SfnParticipantOrchestrationService
       participantSource.source
     );
     return this.sqsService.startExecution({
-      id: 'participant-upsert',
+      id: 'participant-upsert-state-machine',
       input: {
-        participantSource,
-        participantIdSourceValue,
+        // detail is what the state machine expects
+        // later we could remove this, and update the state machine to deal with either
+        detail: {
+          participantSource,
+          participantIdSourceValue,
+        },
       },
     });
   };

@@ -9,8 +9,8 @@ import {
 } from '@curioushuman/common';
 
 import { UpsertParticipantMultiController } from './infra/upsert-participant-multi/upsert-participant-multi.controller';
-import { ParticipantQueueService } from './adapter/ports/participant.queue-service';
-import { SqsParticipantQueueService } from './adapter/implementations/sqs/participant.queue-service';
+import { CoursesQueueService } from './adapter/ports/courses.queue-service';
+import { SqsCoursesQueueService } from './adapter/implementations/sqs/courses.queue-service';
 import { ParticipantSourceRepository } from './adapter/ports/participant-source.repository';
 import { ParticipantSourceRepositoryErrorFactory } from './adapter/ports/participant-source.repository.error-factory';
 import { SalesforceApiParticipantSourceRepository } from './adapter/implementations/salesforce/participant-source.repository';
@@ -37,8 +37,8 @@ const repositories = [
 
 const services = [
   {
-    provide: ParticipantQueueService,
-    useClass: SqsParticipantQueueService,
+    provide: CoursesQueueService,
+    useClass: SqsCoursesQueueService,
   },
   {
     provide: ParticipantSourceRepositoryErrorFactory,

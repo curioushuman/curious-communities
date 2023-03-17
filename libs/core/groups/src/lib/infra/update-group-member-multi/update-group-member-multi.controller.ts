@@ -11,7 +11,7 @@ import {
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RequestSourceEnum } from '@curioushuman/common';
 
-import { GroupMemberQueueService } from '../../adapter/ports/group-member.queue-service';
+import { GroupsQueueService } from '../../adapter/ports/groups.queue-service';
 import { UpdateGroupMemberMultiRequestDto } from './dto/update-group-member-multi.request.dto';
 import { GroupMember } from '../../domain/entities/group-member';
 import { FindGroupMembersMapper } from '../../application/queries/find-group-members/find-group-members.mapper';
@@ -38,7 +38,7 @@ export class UpdateGroupMemberMultiController {
   constructor(
     private logger: LoggableLogger,
     private readonly queryBus: QueryBus,
-    private queueService: GroupMemberQueueService
+    private queueService: GroupsQueueService
   ) {
     this.logger.setContext(UpdateGroupMemberMultiController.name);
   }

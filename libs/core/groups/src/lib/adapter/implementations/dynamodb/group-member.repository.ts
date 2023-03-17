@@ -120,12 +120,20 @@ export class DynamoDbGroupMemberRepository implements GroupMemberRepository {
     return this.findOneBy[identifier];
   };
 
+  /**
+   * It is at this stage we know
+   * - what the dto/input looks like
+   * - what DDB indexes we have
+   * So it is here, that we reshape the input to match the indexes
+   *
+   * NOTE: currently filters are in a format the DDB can handle
+   */
   findAll = (props: {
     parentId?: GroupId;
     filters?: GroupMemberFilters;
   }): TE.TaskEither<Error, GroupMember[]> => {
     const params = this.dynamoDbRepository.prepareParamsFindAll({
-      keyValue: props.parentId,
+      partitionKeyValue: props.parentId,
       filters: props.filters,
     });
     return this.dynamoDbRepository.tryFindAll(params, this.processFindOne);

@@ -36,6 +36,8 @@ export class LambdaConstruct extends Construct {
       externalModules: [
         'aws-sdk',
         '@curioushuman/loggable',
+        '@curioushuman/error-factory',
+        '@curioushuman/common',
         '@nestjs/common',
         '@nestjs/core',
       ],
@@ -108,43 +110,6 @@ export class LambdaConstruct extends Construct {
       },
       layers,
     };
-  }
-
-  /**
-   * When using SDK from within a lambda function an assumed role is used. It has the pattern:
-   *
-   * arn:aws:sts::{AccountID}:assumed-role/{RoleName}/{FunctionName}
-   */
-  private prepareAssumedRoleArn(): string {
-    const accountId =
-      process.env.NODE_ENV === 'local'
-        ? process.env.AWS_ACCOUNT_LOCAL
-        : cdk.Aws.ACCOUNT_ID;
-    const functionName = this.lambdaFunction.functionName;
-    const roleName = this.lambdaFunction.role?.roleName || 'NO-ROLE-NAME-FOUND';
-    console.log(
-      `arn:aws:sts::${accountId}:assumed-role/${roleName}/${functionName}`
-    );
-    return `arn:aws:sts::${accountId}:assumed-role/${roleName}/${functionName}`;
-  }
-
-  private prepareAssumedRole(): iam.IRole {
-    const assumedRoleArn = this.prepareAssumedRoleArn();
-    const assumedRoleId = generateCompositeResourceId(
-      this.constructId,
-      'assumed'
-    );
-    const assumedRoleTitle = transformIdToResourceTitle(assumedRoleId, 'Role');
-    return new iam.Role(this, assumedRoleTitle, {
-      assumedBy: new iam.ArnPrincipal(assumedRoleArn),
-    });
-  }
-
-  public getAssumedRole(): iam.IRole {
-    if (!this.assumedRole) {
-      this.assumedRole = this.prepareAssumedRole();
-    }
-    return this.assumedRole;
   }
 
   private prepareServiceRole(): iam.IRole {

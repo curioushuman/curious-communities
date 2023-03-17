@@ -199,7 +199,6 @@ export class CoursesStack extends cdk.Stack {
       openCourseMultiRuleTitle,
       {
         ruleName: openCourseMultiRuleName,
-        eventBus: internalEventBusConstruct.eventBus,
         schedule: events.Schedule.cron({ minute: '0', hour: '23', day: '1' }),
       }
     );
@@ -458,12 +457,6 @@ export class CoursesStack extends cdk.Stack {
      */
     upsertParticipantConstruct.stateMachine.grantStartExecution(
       upsertParticipantLambdaConstruct.lambdaFunction
-    );
-    // upsertParticipantConstruct.stateMachine.grantStartExecution(
-    //   upsertParticipantLambdaConstruct.getAssumedRole()
-    // );
-    upsertParticipantConstruct.stateMachine.grantStartExecution(
-      upsertParticipantLambdaConstruct.getServiceRole()
     );
 
     /**

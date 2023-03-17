@@ -7,13 +7,13 @@ import {
   ResponsePayload,
 } from '@curioushuman/cc-courses-service';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 import {
   CreateParticipantDtoOrEvent,
   CreateParticipantRequestDto,
   locateDto,
 } from './dto/request.dto';
-import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO

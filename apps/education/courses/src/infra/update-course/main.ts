@@ -1,22 +1,19 @@
-import { EventBridgeEvent } from 'aws-lambda';
 import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import {
   UpdateCourseModule,
   UpdateCourseController,
-  type CourseBaseResponseDto,
   ResponsePayload,
 } from '@curioushuman/cc-courses-service';
-import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
+import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 import {
   locateDto,
   UpdateCourseDtoOrEvent,
   UpdateCourseRequestDto,
 } from './dto/request.dto';
-import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 /**
  * TODO
@@ -102,6 +99,7 @@ export const handler = async (
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
   return updateCourseController.update({
+    idSourceValue: validRequestDto.courseIdSourceValue,
     course: validRequestDto.course,
   });
 };

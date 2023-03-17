@@ -3,6 +3,8 @@ import { CreateCourseRequestDto } from '../../../infra/create-course/dto/create-
 import { prepareCourseExternalIdSource } from '../../../domain/entities/course';
 import { Source } from '../../../domain/value-objects/source';
 import { UpsertCourseRequestDto } from '../../../infra/upsert-course/dto/upsert-course.request.dto';
+import { UpdateCourseRequestDto } from '../../../infra/update-course/dto/update-course.request.dto';
+import { InternalRequestInvalidError } from '@curioushuman/error-factory';
 
 /**
  * TODO
@@ -31,6 +33,15 @@ export class FindCourseSourceMapper {
   public static fromUpsertCourseRequestDto(
     dto: UpsertCourseRequestDto
   ): FindCourseSourceDto {
+    return FindCourseSourceMapper.fromIdSourceValue(dto.idSourceValue);
+  }
+
+  public static fromUpdateCourseRequestDto(
+    dto: UpdateCourseRequestDto
+  ): FindCourseSourceDto {
+    if (!dto.idSourceValue) {
+      throw new InternalRequestInvalidError('idSourceValue is required');
+    }
     return FindCourseSourceMapper.fromIdSourceValue(dto.idSourceValue);
   }
 }

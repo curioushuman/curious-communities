@@ -1,16 +1,25 @@
 # Course
 
-## Creating a course in the system
+## Creating / updating a course in the system
 
-If course is created externally, and it does not yet exist in the system, it will be created.
+#### NOTES
 
-<img src="../apps/api/admin/diagrams/api-admin.png" width="200" />
-<img src="../apps/education/courses/diagrams/course-create.png" width="300" />
-
-If a course is updated externally, but does not yet exist in the system, it will be created; otherwise updated.
+* If a course is updated externally, but does not yet exist in the system, it will be created
 
 <img src="../apps/api/admin/diagrams/api-admin.png" width="200" />
-<img src="../apps/education/courses/diagrams/course-update.png" width="400" />
+<img src="../apps/education/courses/diagrams/course-upsert.png" width="300" />
+
+<font color="green">Tested!</font>
+
+## Opening a course in the system
+
+Daily scheduled check for courses that are open today
+
+#### NOTES
+
+* This will invoke the functions that follow a course-update (outlined below) e.g. groups will become active, group members will be created, etc.
+
+<img src="../apps/education/courses/diagrams/courses-open.png" width="300" />
 
 ## Events based on course creation
 
@@ -20,6 +29,8 @@ A corresponding group will be created in the system, and in related sources.
 
 <img src="../apps/core/groups/diagrams/course-group-upsert.png" width="400" />
 <img src="../apps/core/groups/diagrams/group-sources-upsert.png" width="400" />
+
+<font color="green">Tested!</font>
 
 ### Participants / group members
 
@@ -55,9 +66,19 @@ This feels like a potential conflict of the previous, but the only info group me
 <img src="../apps/core/groups/diagrams/course-group-member-upsert.png" width="400" />
 <img src="../apps/core/groups/diagrams/group-members-update.png" width="300" />
 
+## Schedule check for change in course status
+
+i.e. is today the day that the course opens.
+
+TBD
+
 # Participant
 
 ## Creating / updating a participant in the system
+
+#### NOTES
+
+* If a participant is updated externally, but does not yet exist in the system, it will be created
 
 <img src="../apps/api/admin/diagrams/api-admin.png" width="200" />
 <img src="../apps/education/courses/diagrams/participant-upsert.png" width="400" />

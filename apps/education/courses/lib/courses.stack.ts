@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
+import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
@@ -103,8 +104,6 @@ export class CoursesStack extends cdk.Stack {
 
     /**
      * Function: Upsert Course
-     *
-     * NOTE: create and update have both been removed for now
      */
     const upsertCourseId = generateCompositeResourceId(
       stackId,
@@ -149,7 +148,7 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
-     * Find Course
+     * Function: Find Course
      */
     const findCourseLambdaConstruct = new LambdaConstruct(
       this,
@@ -163,6 +162,105 @@ export class CoursesStack extends cdk.Stack {
     // allow the lambda access to the table
     coursesTableConstruct.table.grantReadData(
       findCourseLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Function: Open courses
+     */
+    const openCourseMultiLambdaId = generateCompositeResourceId(
+      stackId,
+      'course-open-multi'
+    );
+    const openCourseMultiLambdaConstruct = new LambdaConstruct(
+      this,
+      openCourseMultiLambdaId,
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/open-course-multi/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
+    );
+    // add salesforce env vars
+    openCourseMultiLambdaConstruct.addEnvironmentSalesforce();
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      openCourseMultiLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Rule: Scheduled event to check for courses opening today
+     */
+    const [openCourseMultiRuleName, openCourseMultiRuleTitle] =
+      resourceNameTitle(openCourseMultiLambdaId, 'Rule');
+    const openCourseMultiRule = new events.Rule(
+      this,
+      openCourseMultiRuleTitle,
+      {
+        ruleName: openCourseMultiRuleName,
+        eventBus: internalEventBusConstruct.eventBus,
+        schedule: events.Schedule.cron({ minute: '0', hour: '23', day: '1' }),
+      }
+    );
+    openCourseMultiRule.addTarget(
+      new targets.LambdaFunction(openCourseMultiLambdaConstruct.lambdaFunction)
+    );
+
+    /**
+     * Function: Update Course
+     */
+    const updateCourseLambdaId = generateCompositeResourceId(
+      stackId,
+      'course-update'
+    );
+    const updateCourseLambdaConstruct = new LambdaConstruct(
+      this,
+      updateCourseLambdaId,
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/update-course/main.ts'
+        ),
+        lambdaProps: lambdaPropsWithDestination,
+      }
+    );
+    // add salesforce env vars
+    updateCourseLambdaConstruct.addEnvironmentSalesforce();
+
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      updateCourseLambdaConstruct.lambdaFunction
+    );
+    coursesTableConstruct.table.grantWriteData(
+      updateCourseLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * SQS queue to throttle requests to updateCourse
+     */
+    const [updateCourseQueueName, updateCourseQueueTitle] = resourceNameTitle(
+      updateCourseLambdaId,
+      'Queue'
+    );
+    const updateCourseQueue = new sqs.Queue(this, updateCourseQueueTitle, {
+      queueName: updateCourseQueueName,
+      visibilityTimeout: cdk.Duration.seconds(60),
+    });
+    // allow the (above) multi lambda to send messages to the queue
+    updateCourseQueue.grantSendMessages(
+      openCourseMultiLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Subscribe the function, to the queue
+     */
+    updateCourseLambdaConstruct.lambdaFunction.addEventSource(
+      new SqsEventSource(updateCourseQueue, {
+        batchSize: 3, // default
+        maxBatchingWindow: cdk.Duration.minutes(2),
+        reportBatchItemFailures: true, // default to false
+      })
     );
 
     /**

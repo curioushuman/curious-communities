@@ -12,6 +12,7 @@ import { Source } from '../../../domain/value-objects/source';
 import { CreateCourseRequestDto } from '../../../infra/create-course/dto/create-course.request.dto';
 import { UpdateCourseRequestDto } from '../../../infra/update-course/dto/update-course.request.dto';
 import { UpsertCourseRequestDto } from '../../../infra/upsert-course/dto/upsert-course.request.dto';
+import { CourseSourceIdSourceValue } from '../../../domain/value-objects/course-source-id-source';
 
 export class FindCourseMapper {
   public static fromFindRequestDto(dto: FindCourseRequestDto): FindCourseDto {
@@ -31,6 +32,13 @@ export class FindCourseMapper {
   ): FindCourseDto {
     // this will throw an error if the id is not valid
     const value = CourseId.check(dto.id);
+    return {
+      identifier: 'id',
+      value,
+    } as FindCourseDto;
+  }
+
+  public static fromId(value: string): FindCourseDto {
     return {
       identifier: 'id',
       value,
@@ -71,10 +79,12 @@ export class FindCourseMapper {
   public static fromUpdateCourseRequestDto(
     dto: UpdateCourseRequestDto
   ): FindCourseDto {
-    const value = CourseId.check(dto.course.id);
-    return {
-      identifier: 'id',
-      value,
-    } as FindCourseDto;
+    if (dto.course) {
+      return FindCourseMapper.fromId(dto.course.id);
+    }
+    // typecasting as DTO includes constraint for one of either
+    return FindCourseMapper.fromIdSourceValue(
+      dto.idSourceValue as CourseSourceIdSourceValue
+    );
   }
 }

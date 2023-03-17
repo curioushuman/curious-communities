@@ -22,6 +22,8 @@ export * from './lib/infra/upsert-participant/upsert-participant.controller';
 export * from './lib/upsert-participant.module';
 export * from './lib/infra/upsert-participant-multi/upsert-participant-multi.controller';
 export * from './lib/upsert-participant-multi.module';
+export * from './lib/infra/update-course-multi/update-course-multi.controller';
+export * from './lib/update-course-multi.module';
 
 // types
 export * from './lib/infra/dto/participant.response.dto';

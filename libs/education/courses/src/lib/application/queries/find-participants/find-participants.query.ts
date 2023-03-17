@@ -38,9 +38,6 @@ export class FindParticipantsHandler
 
     const task = pipe(
       findParticipantsDto,
-      // #1. parse the dto
-      // NOTE: this uses a dynamic parser that will parse the dto based on the
-      //       identifier within the dto
       parseActionData(
         FindParticipantsDto.check,
         this.logger,

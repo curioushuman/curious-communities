@@ -66,7 +66,9 @@ export type CreateMemberDtoOrEvent = CreateMemberRequestDto | CreateMemberEvent;
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: CreateMemberDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: CreateMemberDtoOrEvent
+): CreateMemberRequestDto {
   if ('participantSource' in incomingEvent) {
     return { email: incomingEvent.participantSource.detail.memberEmail };
   }

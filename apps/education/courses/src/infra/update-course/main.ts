@@ -82,7 +82,7 @@ export const handler = async (
   // NOTE: throws error
   const validRequestDto = validateRequestPayload({
     requestPayload,
-    checkRequest: UpdateCourseRequestDto.guard,
+    guard: UpdateCourseRequestDto.guard,
     logger,
   });
 

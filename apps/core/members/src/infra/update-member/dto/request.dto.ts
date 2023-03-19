@@ -72,7 +72,9 @@ export type UpdateMemberDtoOrEvent = UpdateMemberRequestDto | UpdateMemberEvent;
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: UpdateMemberDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: UpdateMemberDtoOrEvent
+): UpdateMemberRequestDto {
   if ('sources' in incomingEvent) {
     // new sources we've just updated
     const sourceIds: string[] = [

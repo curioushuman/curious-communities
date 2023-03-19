@@ -46,7 +46,9 @@ export type UpsertParticipantDtoOrEvent =
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: UpsertParticipantDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: UpsertParticipantDtoOrEvent
+): UpsertParticipantRequestDto {
   if ('Records' in incomingEvent) {
     return incomingEvent.Records[0].body;
   }

@@ -71,7 +71,7 @@ export type UpsertMemberSourceMultiDtoOrEvent =
  */
 export function locateDto(
   incomingEvent: UpsertMemberSourceMultiDtoOrEvent
-): unknown {
+): UpsertMemberSourceMultiRequestDto {
   if (
     'member' in incomingEvent ||
     isResponsePayload<MemberResponseDto>(incomingEvent)

@@ -68,7 +68,9 @@ export type UpdateGroupDtoOrEvent =
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: UpdateGroupDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: UpdateGroupDtoOrEvent
+): UpdateGroupRequestDto {
   if ('sources' in incomingEvent) {
     const sourceIds = [
       prepareExternalIdSourceValue(

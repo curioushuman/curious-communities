@@ -40,7 +40,9 @@ export type CreateCourseDtoOrEvent = CreateCourseRequestDto | CreateCourseEvent;
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: CreateCourseDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: CreateCourseDtoOrEvent
+): CreateCourseRequestDto {
   if ('courseIdSourceValue' in incomingEvent) {
     return incomingEvent;
   }

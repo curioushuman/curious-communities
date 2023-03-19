@@ -43,12 +43,12 @@ export type UpsertMemberSourceDtoOrEvent =
  */
 export function locateDto(
   incomingEvent: UpsertMemberSourceDtoOrEvent
-): unknown {
-  if (typeof incomingEvent.source === 'string') {
-    return incomingEvent;
+): UpsertMemberSourceRequestDto {
+  if (typeof incomingEvent.source === 'object') {
+    return {
+      source: incomingEvent.source.value,
+      member: incomingEvent.member,
+    };
   }
-  return {
-    source: incomingEvent.source.value,
-    member: incomingEvent.member,
-  };
+  return incomingEvent as UpsertMemberSourceRequestDto;
 }

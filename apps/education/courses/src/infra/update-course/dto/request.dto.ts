@@ -51,7 +51,9 @@ export type UpdateCourseDtoOrEvent = UpdateCourseRequestDto | UpdateCourseEvent;
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: UpdateCourseDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: UpdateCourseDtoOrEvent
+): UpdateCourseRequestDto {
   if ('Records' in incomingEvent) {
     return incomingEvent.Records[0].body;
   }

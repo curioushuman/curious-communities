@@ -39,12 +39,14 @@ export type UpsertGroupSourceDtoOrEvent =
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: UpsertGroupSourceDtoOrEvent): unknown {
-  if (typeof incomingEvent.source === 'string') {
-    return incomingEvent;
+export function locateDto(
+  incomingEvent: UpsertGroupSourceDtoOrEvent
+): UpsertGroupSourceRequestDto {
+  if (typeof incomingEvent.source === 'object') {
+    return {
+      source: incomingEvent.source.value,
+      group: incomingEvent.group,
+    };
   }
-  return {
-    source: incomingEvent.source.value,
-    group: incomingEvent.group,
-  };
+  return incomingEvent as UpsertGroupSourceRequestDto;
 }

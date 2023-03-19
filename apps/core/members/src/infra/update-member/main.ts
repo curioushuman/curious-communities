@@ -91,7 +91,7 @@ export const handler = async (
   // NOTE: throws error
   const validRequestDto = validateRequestPayload({
     requestPayload,
-    checkRequest: UpdateMemberRequestDto.guard,
+    guard: UpdateMemberRequestDto.guard,
     logger,
   });
 

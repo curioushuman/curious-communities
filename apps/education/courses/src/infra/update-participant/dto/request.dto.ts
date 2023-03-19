@@ -3,7 +3,11 @@ import {
   EventbridgePutEvent,
   SqsAsEventSourceEvent,
 } from '@curioushuman/common';
-import { ParticipantResponseDto } from '@curioushuman/cc-courses-service';
+import {
+  guardParticipantResponseDto,
+  parseParticipantResponseDto,
+  ParticipantResponseDto,
+} from '@curioushuman/cc-courses-service';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -22,6 +26,25 @@ export const UpdateParticipantRequestDto = Record({
 export type UpdateParticipantRequestDto = Static<
   typeof UpdateParticipantRequestDto
 >;
+
+/**
+ * An alternative parser, instead of UpdateParticipantRequestDto.check()
+ *
+ * Runtypes can't deal with Records with too many layers i.e. participantResponseDt
+ */
+export const guardUpdateParticipantRequestDto = (
+  dto: UpdateParticipantRequestDto
+): boolean => {
+  const { participant, participantIdSourceValue } = dto;
+
+  if (!participant && !participantIdSourceValue) {
+    return false;
+  }
+  if (participant) {
+    return guardParticipantResponseDto(participant);
+  }
+  return true;
+};
 
 /**
  * What the input would look like if someone 'put's it to an eventBus
@@ -58,7 +81,9 @@ export type UpdateParticipantDtoOrEvent =
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: UpdateParticipantDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: UpdateParticipantDtoOrEvent
+): UpdateParticipantRequestDto {
   if ('Records' in incomingEvent) {
     return incomingEvent.Records[0].body;
   }

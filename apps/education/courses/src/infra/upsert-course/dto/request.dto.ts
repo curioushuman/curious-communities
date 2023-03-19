@@ -49,7 +49,9 @@ export type UpsertCourseDtoOrEvent = UpsertCourseRequestDto | UpsertCourseEvent;
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: UpsertCourseDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: UpsertCourseDtoOrEvent
+): UpsertCourseRequestDto {
   if ('courseIdSourceValue' in incomingEvent) {
     return incomingEvent;
   }

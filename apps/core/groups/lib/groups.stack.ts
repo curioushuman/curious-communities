@@ -318,6 +318,11 @@ export class GroupsStack extends cdk.Stack {
       }
     );
 
+    // allow the lambda access to the table
+    groupsTableConstruct.table.grantReadData(
+      updateGroupMemberMultiLambdaConstruct.lambdaFunction
+    );
+
     /**
      * Subscribing the lambda to the internal event bus; group or member updated
      */
@@ -435,6 +440,10 @@ export class GroupsStack extends cdk.Stack {
     );
     upsertGroupMemberSourceLambdaConstruct.addEnvironmentEdApp();
     upsertGroupMemberSourceLambdaConstruct.addEnvironmentTribe();
+    // allow the lambda access to the table
+    groupsTableConstruct.table.grantReadData(
+      upsertGroupMemberSourceLambdaConstruct.lambdaFunction
+    );
 
     /**
      * State machine: Upsert group member source multi

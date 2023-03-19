@@ -409,7 +409,7 @@ export class CoursesStack extends cdk.Stack {
      */
     const upsertParticipantRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(upsertParticipantId, 'rule'),
+      generateCompositeResourceId(upsertParticipantId, 'entity-event'),
       {
         eventBus: externalEventBusConstruct.eventBus,
         entity: ['participant'],
@@ -491,7 +491,10 @@ export class CoursesStack extends cdk.Stack {
      */
     const upsertParticipantMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(upsertParticipantMultiLambdaId, 'rule'),
+      generateCompositeResourceId(
+        upsertParticipantMultiLambdaId,
+        'entity-event'
+      ),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [
@@ -567,7 +570,10 @@ export class CoursesStack extends cdk.Stack {
      */
     const updateParticipantMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(updateParticipantMultiLambdaId, 'rule'),
+      generateCompositeResourceId(
+        updateParticipantMultiLambdaId,
+        'entity-event'
+      ),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [

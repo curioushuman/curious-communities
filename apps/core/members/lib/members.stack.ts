@@ -143,7 +143,7 @@ export class MembersStack extends cdk.Stack {
      */
     const createMemberRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(createMemberId, 'rule'),
+      generateCompositeResourceId(createMemberId, 'entity-event'),
       {
         eventBus: externalEventBusConstruct.eventBus,
         entity: ['member'],
@@ -192,7 +192,7 @@ export class MembersStack extends cdk.Stack {
      */
     const updateMemberRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(updateMemberId, 'rule'),
+      generateCompositeResourceId(updateMemberId, 'entity-event'),
       {
         eventBus: externalEventBusConstruct.eventBus,
         entity: ['member'],
@@ -275,7 +275,7 @@ export class MembersStack extends cdk.Stack {
      */
     const updateMemberSourceMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(upsertMemberSourceMultiId, 'rule'),
+      generateCompositeResourceId(upsertMemberSourceMultiId, 'entity-event'),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: ['member-base', 'member'],

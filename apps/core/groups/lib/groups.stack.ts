@@ -125,7 +125,7 @@ export class GroupsStack extends cdk.Stack {
      */
     const upsertCourseGroupRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(upsertCourseGroupLambdaId, 'rule'),
+      generateCompositeResourceId(upsertCourseGroupLambdaId, 'entity-event'),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: ['course-base', 'course'],
@@ -217,7 +217,7 @@ export class GroupsStack extends cdk.Stack {
      */
     const upsertGroupSourceMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(upsertGroupSourceMultiId, 'rule'),
+      generateCompositeResourceId(upsertGroupSourceMultiId, 'entity-event'),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [
@@ -278,7 +278,10 @@ export class GroupsStack extends cdk.Stack {
      */
     const upsertCourseGroupMemberRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(upsertCourseGroupMemberLambdaId, 'rule'),
+      generateCompositeResourceId(
+        upsertCourseGroupMemberLambdaId,
+        'entity-event'
+      ),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: ['participant', 'participant-base'],
@@ -318,13 +321,12 @@ export class GroupsStack extends cdk.Stack {
     /**
      * Subscribing the lambda to the internal event bus; group or member updated
      */
-    const updateGroupMemberMultiRuleId = generateCompositeResourceId(
-      updateGroupMemberMultiLambdaId,
-      'group'
-    );
     const updateGroupMemberMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(updateGroupMemberMultiRuleId, 'rule'),
+      generateCompositeResourceId(
+        updateGroupMemberMultiLambdaId,
+        'entity-event'
+      ),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [
@@ -456,7 +458,10 @@ export class GroupsStack extends cdk.Stack {
      */
     const updateGroupMemberSourceMultiRuleConstruct = new RuleEntityEvent(
       this,
-      generateCompositeResourceId(upsertGroupMemberSourceMultiId, 'rule'),
+      generateCompositeResourceId(
+        upsertGroupMemberSourceMultiId,
+        'entity-event'
+      ),
       {
         eventBus: internalEventBusConstruct.eventBus,
         entity: [

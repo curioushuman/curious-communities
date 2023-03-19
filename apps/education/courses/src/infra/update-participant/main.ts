@@ -10,6 +10,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { parseDto, validateRequestPayload } from '@curioushuman/common';
 
 import {
+  guardUpdateParticipantRequestDto,
   locateDto,
   UpdateParticipantDtoOrEvent,
   UpdateParticipantRequestDto,
@@ -85,7 +86,7 @@ export const handler = async (
   // NOTE: throws error
   const validRequestDto = validateRequestPayload({
     requestPayload,
-    checkRequest: UpdateParticipantRequestDto.guard,
+    guard: guardUpdateParticipantRequestDto,
     logger,
   });
 

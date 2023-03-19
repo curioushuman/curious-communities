@@ -63,3 +63,18 @@ export const parseParticipantResponseDto = (
     member: MemberDto.check(member),
   };
 };
+
+/**
+ * This is for use at the lambda level
+ */
+export const guardParticipantResponseDto = (
+  participantResponseDto: ParticipantResponseDto
+): boolean => {
+  const { course, member, ...participantResponseDtoBase } =
+    participantResponseDto;
+  return (
+    ParticipantBaseResponseDto.guard(participantResponseDtoBase) &&
+    CourseBaseResponseDto.guard(course) &&
+    MemberDto.guard(member)
+  );
+};

@@ -68,7 +68,9 @@ export type CreateParticipantDtoOrEvent =
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: CreateParticipantDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: CreateParticipantDtoOrEvent
+): CreateParticipantRequestDto {
   if (isCreateParticipantAsSfnResult(incomingEvent)) {
     // member might be a MemberResponseDto or a CoAwsRequestPayload<MemberResponseDto>
     // as it could be either found, or created

@@ -44,12 +44,11 @@ export type FindMemberDtoOrEvent = FindMemberRequestDto | FindMemberAsSfnResult;
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: FindMemberDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: FindMemberDtoOrEvent
+): FindMemberRequestDto {
   if ('participantSource' in incomingEvent) {
     return { email: incomingEvent.participantSource.detail.memberEmail };
-  }
-  if ('detail' in incomingEvent) {
-    return incomingEvent.detail;
   }
   return incomingEvent;
 }

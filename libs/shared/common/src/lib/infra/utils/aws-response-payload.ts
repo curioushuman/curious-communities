@@ -47,7 +47,7 @@ export function checkForNullRequestPayload(
 
 type ValidatedRequestPayloadProps<T> = {
   requestPayload: T;
-  checkRequest: (request: T) => boolean;
+  guard: (request: T) => boolean;
   context?: string;
   logger?: LoggableLogger;
 };
@@ -58,7 +58,7 @@ type ValidatedRequestPayloadProps<T> = {
 export function validateRequestPayload<T>(
   props: ValidatedRequestPayloadProps<T>
 ): T {
-  if (!props.requestPayload || !props.checkRequest(props.requestPayload)) {
+  if (!props.requestPayload || !props.guard(props.requestPayload)) {
     const contextStr = props.context ? ` (${props.context})` : '';
     // NOTE: this is a 500 error, not a 400
     const error = new InternalRequestInvalidError(

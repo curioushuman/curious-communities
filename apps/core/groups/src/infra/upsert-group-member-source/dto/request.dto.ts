@@ -52,14 +52,15 @@ export type UpsertGroupMemberSourceDtoOrEvent =
  */
 export function locateDto(
   incomingEvent: UpsertGroupMemberSourceDtoOrEvent
-): unknown {
+): UpsertGroupMemberSourceRequestDto {
   if ('groupMember' in incomingEvent) {
     return incomingEvent;
   }
-  if (isLambdaDestinationEvent(incomingEvent)) {
+  if ('Records' in incomingEvent) {
+    return incomingEvent.Records[0].body;
+  }
+  if ('responsePayload' in incomingEvent.detail) {
     return incomingEvent.detail.responsePayload;
   }
-  return 'Records' in incomingEvent
-    ? incomingEvent.Records[0].body
-    : incomingEvent.detail;
+  return incomingEvent.detail;
 }

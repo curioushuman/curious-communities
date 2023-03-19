@@ -31,6 +31,6 @@ export type FindParticipantSourceDtoOrEvent = FindParticipantSourceRequestDto;
  */
 export function locateDto(
   incomingEvent: FindParticipantSourceDtoOrEvent
-): unknown {
+): FindParticipantSourceRequestDto {
   return incomingEvent;
 }

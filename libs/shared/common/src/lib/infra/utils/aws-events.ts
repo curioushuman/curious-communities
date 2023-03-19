@@ -30,15 +30,11 @@ export function isSqsEventSourceEvent<T extends SqsAsEventSourceEvent<T>>(
 /**
  * This will check the data is in the correct format
  */
-export function parseDto<T>(
-  incomingEvent: T,
-  locateDto: (incomingEvent: T) => unknown
-): unknown | undefined {
-  if (incomingEvent === undefined) {
-    return undefined;
-  }
+export function parseDto<EventOrDto, Dto>(
+  incomingEvent: EventOrDto,
+  locateDto: (incomingEvent: EventOrDto) => Dto
+): Dto {
   const dto = locateDto(incomingEvent);
-
   return typeof dto === 'string' ? JSON.parse(dto) : dto;
 }
 

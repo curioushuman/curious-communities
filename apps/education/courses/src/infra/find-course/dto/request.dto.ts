@@ -46,16 +46,15 @@ export type FindCourseDtoOrEvent = FindCourseRequestDto | FindCourseAsSfnResult;
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: FindCourseDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: FindCourseDtoOrEvent
+): FindCourseRequestDto {
   if ('participantSource' in incomingEvent) {
     const courseIdSourceValue = prepareExternalIdSourceValue(
       incomingEvent.participantSource.detail.courseId,
       incomingEvent.participantSource.detail.source
     );
     return { courseIdSourceValue };
-  }
-  if ('detail' in incomingEvent) {
-    return incomingEvent.detail;
   }
   return incomingEvent;
 }

@@ -112,7 +112,7 @@ export const handler = async (
   // NOTE: throws error
   const validRequestDto = validateRequestPayload({
     requestPayload,
-    checkRequest: UpsertGroupSourceRequestDto.guard,
+    guard: UpsertGroupSourceRequestDto.guard,
     logger,
   });
 

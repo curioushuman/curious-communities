@@ -148,10 +148,12 @@ export class MembersStack extends cdk.Stack {
         eventBus: externalEventBusConstruct.eventBus,
         entity: ['member'],
         event: ['created'],
+        targets: [
+          new targets.LambdaFunction(
+            createMemberLambdaConstruct.lambdaFunction
+          ),
+        ],
       }
-    );
-    createMemberRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(createMemberLambdaConstruct.lambdaFunction)
     );
 
     /**
@@ -195,10 +197,12 @@ export class MembersStack extends cdk.Stack {
         eventBus: externalEventBusConstruct.eventBus,
         entity: ['member'],
         event: ['updated'],
+        targets: [
+          new targets.LambdaFunction(
+            updateMemberLambdaConstruct.lambdaFunction
+          ),
+        ],
       }
-    );
-    updateMemberRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(updateMemberLambdaConstruct.lambdaFunction)
     );
 
     /**
@@ -277,10 +281,12 @@ export class MembersStack extends cdk.Stack {
         entity: ['member-base', 'member'],
         event: ['created', 'updated'],
         outcome: ['success'],
+        targets: [
+          new targets.SfnStateMachine(
+            upsertMemberSourceMultiConstruct.stateMachine
+          ),
+        ],
       }
-    );
-    updateMemberSourceMultiRuleConstruct.rule.addTarget(
-      new targets.SfnStateMachine(upsertMemberSourceMultiConstruct.stateMachine)
     );
 
     /**

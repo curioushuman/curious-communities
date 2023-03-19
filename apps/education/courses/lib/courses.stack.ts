@@ -141,10 +141,12 @@ export class CoursesStack extends cdk.Stack {
         eventBus: externalEventBusConstruct.eventBus,
         entity: ['course'],
         event: ['created', 'updated'],
+        targets: [
+          new targets.LambdaFunction(
+            upsertCourseLambdaConstruct.lambdaFunction
+          ),
+        ],
       }
-    );
-    upsertCourseRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(upsertCourseLambdaConstruct.lambdaFunction)
     );
 
     /**
@@ -199,7 +201,8 @@ export class CoursesStack extends cdk.Stack {
       openCourseMultiRuleTitle,
       {
         ruleName: openCourseMultiRuleName,
-        schedule: events.Schedule.cron({ minute: '0', hour: '23', day: '1' }),
+        // schedule: events.Schedule.cron({ minute: '0', hour: '16' }),
+        schedule: events.Schedule.cron({ minute: '15' }),
       }
     );
     openCourseMultiRule.addTarget(
@@ -411,10 +414,10 @@ export class CoursesStack extends cdk.Stack {
         eventBus: externalEventBusConstruct.eventBus,
         entity: ['participant'],
         event: ['created', 'updated'],
+        targets: [
+          new targets.SfnStateMachine(upsertParticipantConstruct.stateMachine),
+        ],
       }
-    );
-    upsertParticipantRuleConstruct.rule.addTarget(
-      new targets.SfnStateMachine(upsertParticipantConstruct.stateMachine)
     );
 
     /**
@@ -499,12 +502,12 @@ export class CoursesStack extends cdk.Stack {
         ],
         event: ['created'],
         outcome: ['success'],
+        targets: [
+          new targets.LambdaFunction(
+            upsertParticipantMultiLambdaConstruct.lambdaFunction
+          ),
+        ],
       }
-    );
-    upsertParticipantMultiRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(
-        upsertParticipantMultiLambdaConstruct.lambdaFunction
-      )
     );
 
     /**
@@ -579,12 +582,12 @@ export class CoursesStack extends cdk.Stack {
         ],
         event: ['updated'],
         outcome: ['success'],
+        targets: [
+          new targets.LambdaFunction(
+            updateParticipantMultiLambdaConstruct.lambdaFunction
+          ),
+        ],
       }
-    );
-    updateParticipantMultiRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(
-        updateParticipantMultiLambdaConstruct.lambdaFunction
-      )
     );
 
     /**

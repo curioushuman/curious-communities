@@ -16,6 +16,7 @@ import {
  */
 export class RuleEntityEvent extends Construct {
   public rule: events.Rule;
+  // public rules: events.Rule[] = [];
 
   constructor(
     scope: Construct,
@@ -48,6 +49,7 @@ export class RuleEntityEvent extends Construct {
     // Optional: will be undefined if no detailType provided
     const detailType = this.prepareSourceDetailType(props.source?.detailType);
 
+    // Single rule
     const [ruleName, ruleTitle] = resourceNameTitle(constructId, 'Rule');
     this.rule = new events.Rule(this, ruleTitle, {
       ruleName,
@@ -69,6 +71,51 @@ export class RuleEntityEvent extends Construct {
       },
       targets,
     });
+
+    // Two rule version
+    // const rulePutEventId = generateCompositeResourceId(
+    //   constructId,
+    //   'put-event'
+    // );
+    // const [rulePutEventName, rulePutEventTitle] = resourceNameTitle(
+    //   rulePutEventId,
+    //   'Rule'
+    // );
+    // const rulePutEvent = new events.Rule(this, rulePutEventTitle, {
+    //   ruleName: rulePutEventName,
+    //   eventBus,
+    //   description,
+    //   eventPattern: {
+    //     resources,
+    //     detailType,
+    //     detail: entityEvent,
+    //   },
+    //   targets,
+    // });
+    // this.rules.push(rulePutEvent);
+
+    // const ruleLambdaSuccessId = generateCompositeResourceId(
+    //   constructId,
+    //   'lambda-success'
+    // );
+    // const [ruleLambdaSuccessName, ruleLambdaSuccessTitle] = resourceNameTitle(
+    //   ruleLambdaSuccessId,
+    //   'Rule'
+    // );
+    // const roleLambdaSuccess = new events.Rule(this, ruleLambdaSuccessTitle, {
+    //   ruleName: ruleLambdaSuccessName,
+    //   eventBus,
+    //   description,
+    //   eventPattern: {
+    //     resources,
+    //     detailType,
+    //     detail: {
+    //       responsePayload: entityEvent,
+    //     },
+    //   },
+    //   targets,
+    // });
+    // this.rules.push(roleLambdaSuccess);
   }
 
   private prepareSourceLambdas(lambdas: lambda.IFunction[] | undefined) {

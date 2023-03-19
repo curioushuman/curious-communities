@@ -131,12 +131,12 @@ export class GroupsStack extends cdk.Stack {
         entity: ['course-base', 'course'],
         event: ['created', 'updated'],
         outcome: ['success'],
+        targets: [
+          new targets.LambdaFunction(
+            upsertCourseGroupLambdaConstruct.lambdaFunction
+          ),
+        ],
       }
-    );
-    upsertCourseGroupRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(
-        upsertCourseGroupLambdaConstruct.lambdaFunction
-      )
     );
 
     /**
@@ -228,10 +228,12 @@ export class GroupsStack extends cdk.Stack {
         ],
         event: ['created', 'updated'],
         outcome: ['success'],
+        targets: [
+          new targets.SfnStateMachine(
+            upsertGroupSourceMultiConstruct.stateMachine
+          ),
+        ],
       }
-    );
-    upsertGroupSourceMultiRuleConstruct.rule.addTarget(
-      new targets.SfnStateMachine(upsertGroupSourceMultiConstruct.stateMachine)
     );
 
     /**
@@ -282,12 +284,12 @@ export class GroupsStack extends cdk.Stack {
         entity: ['participant', 'participant-base'],
         event: ['created', 'updated'],
         outcome: ['success'],
+        targets: [
+          new targets.LambdaFunction(
+            upsertCourseGroupMemberLambdaConstruct.lambdaFunction
+          ),
+        ],
       }
-    );
-    upsertCourseGroupMemberRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(
-        upsertCourseGroupMemberLambdaConstruct.lambdaFunction
-      )
     );
 
     /**
@@ -337,12 +339,12 @@ export class GroupsStack extends cdk.Stack {
         ],
         event: ['updated'],
         outcome: ['success'],
+        targets: [
+          new targets.LambdaFunction(
+            updateGroupMemberMultiLambdaConstruct.lambdaFunction
+          ),
+        ],
       }
-    );
-    updateGroupMemberMultiRuleConstruct.rule.addTarget(
-      new targets.LambdaFunction(
-        updateGroupMemberMultiLambdaConstruct.lambdaFunction
-      )
     );
 
     /**
@@ -465,12 +467,12 @@ export class GroupsStack extends cdk.Stack {
         ],
         event: ['created', 'updated'],
         outcome: ['success'],
+        targets: [
+          new targets.SfnStateMachine(
+            upsertGroupMemberSourceMultiConstruct.stateMachine
+          ),
+        ],
       }
-    );
-    updateGroupMemberSourceMultiRuleConstruct.rule.addTarget(
-      new targets.SfnStateMachine(
-        upsertGroupMemberSourceMultiConstruct.stateMachine
-      )
     );
 
     /**

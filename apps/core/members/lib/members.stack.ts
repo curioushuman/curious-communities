@@ -249,6 +249,10 @@ export class MembersStack extends cdk.Stack {
     upsertMemberSourceLambdaConstruct.addEnvironmentEdApp();
     // upsertMemberSourceLambdaConstruct.addEnvironmentSalesforce();
     upsertMemberSourceLambdaConstruct.addEnvironmentTribe();
+    // allow the lambda access to the table
+    membersTableConstruct.table.grantReadData(
+      upsertMemberSourceLambdaConstruct.lambdaFunction
+    );
 
     /**
      * State machine: Upsert member source multi

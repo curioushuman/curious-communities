@@ -449,11 +449,6 @@ export class CoursesStack extends cdk.Stack {
         lambdaProps: this.lambdaProps,
       }
     );
-    new cdk.CfnOutput(this, 'upsertParticipantLambdaRole', {
-      value:
-        upsertParticipantLambdaConstruct.lambdaFunction.role?.roleArn ||
-        'No role',
-    });
 
     /**
      * Allow the lambda to invoke the state machine
@@ -563,6 +558,11 @@ export class CoursesStack extends cdk.Stack {
         ),
         lambdaProps: this.lambdaProps,
       }
+    );
+
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      updateParticipantMultiLambdaConstruct.lambdaFunction
     );
 
     /**

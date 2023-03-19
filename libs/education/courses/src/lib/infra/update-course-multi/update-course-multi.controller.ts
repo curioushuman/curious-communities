@@ -56,6 +56,9 @@ export class UpdateCourseMultiController {
       return courses.map((course) => this.prepareUpdateDto(course));
     };
 
+  /**
+   * ? should we handle a lack of messages here? Rather than in the queue service?
+   */
   public async update(requestDto: UpdateCourseMultiRequestDto): Promise<void> {
     // #1. validate dto
     const validDto = pipe(

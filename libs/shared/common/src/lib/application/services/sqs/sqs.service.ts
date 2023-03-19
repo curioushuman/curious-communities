@@ -187,7 +187,9 @@ export class SqsService<DomainMessage> extends AwsService {
     props: SqsSendMessageBatchProps<DomainMessage>
   ): TE.TaskEither<Error, void> => {
     if (props.messages.length === 0) {
-      throw new ServiceError('Empty message list received for sending');
+      // throw new ServiceError('Empty message list received for sending');
+      // UPDATE: I don't think it deserves an error... just don't send anything
+      return TE.right(undefined);
     }
     return pipe(
       props.id,

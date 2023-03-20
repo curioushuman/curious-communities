@@ -30,7 +30,7 @@ export type UpdateParticipantRequestDto = Static<
 /**
  * An alternative parser, instead of UpdateParticipantRequestDto.check()
  *
- * Runtypes can't deal with Records with too many layers i.e. participantResponseDt
+ * Runtypes can't deal with Records with too many layers i.e. participantResponseDto
  */
 export const guardUpdateParticipantRequestDto = (
   dto: UpdateParticipantRequestDto

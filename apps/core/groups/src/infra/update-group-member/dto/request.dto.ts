@@ -1,5 +1,8 @@
 import { Record, Static } from 'runtypes';
-import { GroupMemberResponseDto } from '@curioushuman/cc-groups-service';
+import {
+  GroupMemberResponseDto,
+  guardGroupMemberResponseDto,
+} from '@curioushuman/cc-groups-service';
 import {
   CoAwsRequestPayload,
   EventbridgePutEvent,
@@ -14,6 +17,19 @@ export const UpdateGroupMemberRequestDto = Record({
 export type UpdateGroupMemberRequestDto = Static<
   typeof UpdateGroupMemberRequestDto
 >;
+
+/**
+ * An alternative parser, instead of UpdateGroupMemberRequestDto.check()
+ *
+ * Runtypes can't deal with Records with too many layers i.e. groupMemberResponseDto
+ */
+export const guardUpdateParticipantRequestDto = (
+  dto: UpdateGroupMemberRequestDto
+): boolean => {
+  const { groupMember } = dto;
+
+  return guardGroupMemberResponseDto(groupMember);
+};
 
 /**
  * The data could be handed to us as the above DTO, OR a response payload
@@ -61,7 +77,9 @@ export type UpdateGroupMemberDtoOrEvent =
  *
  * NOTE: validation of data is a separate step
  */
-export function locateDto(incomingEvent: UpdateGroupMemberDtoOrEvent): unknown {
+export function locateDto(
+  incomingEvent: UpdateGroupMemberDtoOrEvent
+): UpdateGroupMemberRequestDto {
   if (
     'groupMember' in incomingEvent ||
     isResponsePayload<GroupMemberResponseDto>(incomingEvent)

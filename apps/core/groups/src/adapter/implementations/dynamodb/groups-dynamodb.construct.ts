@@ -183,7 +183,10 @@ export class GroupsDynamoDbConstruct extends Construct {
 
     // Global secondary index - groupMember.memberId
     // Identifier
-    const byMemberIdIndexId = generateCompositeResourceId(stackId, 'member-id');
+    const byMemberIdIndexId = generateCompositeResourceId(
+      stackId,
+      'group-member-member-id'
+    );
     const byMemberIdGsiName = transformIdToResourceName(
       byMemberIdIndexId,
       'DynamoDbGSI'

@@ -49,8 +49,8 @@ export class DynamoDbParticipantRepository implements ParticipantRepository {
         'source-id-COURSE',
         {
           id: 'member-id',
-          sortKey: 'Member_Id',
-          partitionKey: 'Sk_Member_Id',
+          partitionKey: 'Member_Id',
+          sortKey: 'Sk_Member_Id',
         },
       ],
       localIndexes: [

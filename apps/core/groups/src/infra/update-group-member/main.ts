@@ -14,6 +14,7 @@ import {
 } from '@curioushuman/common';
 
 import {
+  guardUpdateParticipantRequestDto,
   locateDto,
   UpdateGroupMemberDtoOrEvent,
   UpdateGroupMemberRequestDto,
@@ -97,7 +98,7 @@ export const handler = async (
   // NOTE: throws error
   const validRequestDto = validateRequestPayload({
     requestPayload,
-    guard: UpdateGroupMemberRequestDto.guard,
+    guard: guardUpdateParticipantRequestDto,
     logger,
   });
 

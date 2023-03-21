@@ -127,6 +127,9 @@ export class DynamoDbCourseRepository implements CourseRepository {
    *
    * NOTE: You could, if performance suffered, created a new index with a PK
    * or each day, with the course fields only. Only if required.
+   *
+   * TODO:
+   * - [ ] more dynamic method of mapping the filters
    */
   findAll = (props: {
     filters: CourseFilters;

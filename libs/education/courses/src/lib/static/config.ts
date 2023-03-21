@@ -8,4 +8,7 @@ export default {
     memberAccountSources: ['AUTH', 'COURSE', 'COMMUNITY', 'MICRO-COURSE'],
     primaryAccountSource: 'COURSE',
   },
+  timezone: {
+    offset: -11,
+  },
 };

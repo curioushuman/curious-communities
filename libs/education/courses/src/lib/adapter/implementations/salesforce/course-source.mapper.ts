@@ -5,6 +5,7 @@ import {
   CourseSourceStatusEnum,
 } from '../../../domain/value-objects/course-source-status';
 import { Source } from '../../../domain/value-objects/source';
+import config from '../../../static/config';
 import { SalesforceApiCourseSource } from './entities/course-source';
 
 export class SalesforceApiCourseSourceMapper {
@@ -57,11 +58,18 @@ export class SalesforceApiCourseSourceMapper {
     return CourseSourceStatusEnum.ACTIVE;
   }
 
+  /**
+   * TODO: find a better place to put the timezone stuff; value, and functions
+   */
   public static prepareTimestamp(
     dateString: string | null | undefined
   ): Timestamp | undefined {
-    return dateString
-      ? (new Date(dateString).getTime() as Timestamp)
-      : undefined;
+    if (!dateString) {
+      return undefined;
+    }
+    const timestampUtc = new Date(dateString).getTime();
+    const timestampTimezone =
+      timestampUtc + config.timezone.offset * 60 * 60 * 1000;
+    return Timestamp.check(timestampTimezone);
   }
 }

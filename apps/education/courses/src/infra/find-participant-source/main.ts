@@ -103,6 +103,6 @@ export const handler = async (
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
   return findParticipantSourceController.find({
-    idSourceValue: validRequestDto.participantIdSourceValue,
+    idSourceValue: validRequestDto.idSourceValue,
   });
 };

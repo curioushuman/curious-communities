@@ -104,6 +104,6 @@ export const handler = async (
   // TODO: replace this with a try/catch, and throw the error in the controller
   return createMemberController.create({
     email: validRequestDto.email,
-    idSourceValue: validRequestDto.memberIdSourceValue,
+    idSourceValue: validRequestDto.idSourceValue,
   });
 };

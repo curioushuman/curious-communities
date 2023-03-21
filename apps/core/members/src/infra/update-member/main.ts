@@ -102,7 +102,7 @@ export const handler = async (
   // call the controller
   // TODO: replace this with a try/catch, and throw the error in the controller
   return updateMemberController.update({
-    idSourceValue: validRequestDto.memberIdSourceValue,
+    idSourceValue: validRequestDto.idSourceValue,
     member: validRequestDto.member,
   });
 };

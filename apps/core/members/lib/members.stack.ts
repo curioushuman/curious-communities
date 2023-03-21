@@ -107,7 +107,6 @@ export class MembersStack extends cdk.Stack {
      * Function: Create Member
      *
      * Triggers
-     * - (TBD) Subscribed to external event bus
      * - create participant step functions
      *
      * NOTE: destination is not invoked when called within step functions
@@ -136,24 +135,6 @@ export class MembersStack extends cdk.Stack {
     );
     membersTableConstruct.table.grantWriteData(
       createMemberLambdaConstruct.lambdaFunction
-    );
-
-    /**
-     * Subscribing the lambda to the external event bus
-     */
-    const createMemberRuleConstruct = new RuleEntityEvent(
-      this,
-      generateCompositeResourceId(createMemberId, 'entity-event'),
-      {
-        eventBus: externalEventBusConstruct.eventBus,
-        entity: ['member'],
-        event: ['created'],
-        targets: [
-          new targets.LambdaFunction(
-            createMemberLambdaConstruct.lambdaFunction
-          ),
-        ],
-      }
     );
 
     /**

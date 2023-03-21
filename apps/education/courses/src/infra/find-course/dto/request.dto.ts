@@ -18,9 +18,9 @@ import { ParticipantSourceResponseDto } from '@curioushuman/cc-courses-service';
  * DTO that accepts any of the identifiers
  */
 export const FindCourseRequestDto = Record({
-  courseId: Optional(String),
-  courseIdSourceValue: Optional(String),
-}).withConstraint((dto) => !!(dto.courseId || dto.courseIdSourceValue));
+  id: Optional(String),
+  idSourceValue: Optional(String),
+}).withConstraint((dto) => !!(dto.id || dto.idSourceValue));
 
 /**
  * DTO that accepts any of the identifiers
@@ -50,11 +50,11 @@ export function locateDto(
   incomingEvent: FindCourseDtoOrEvent
 ): FindCourseRequestDto {
   if ('participantSource' in incomingEvent) {
-    const courseIdSourceValue = prepareExternalIdSourceValue(
+    const idSourceValue = prepareExternalIdSourceValue(
       incomingEvent.participantSource.detail.courseId,
       incomingEvent.participantSource.detail.source
     );
-    return { courseIdSourceValue };
+    return { idSourceValue };
   }
   return incomingEvent;
 }

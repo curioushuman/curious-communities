@@ -99,6 +99,6 @@ export const handler = async (
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
   return upsertCourseController.upsert({
-    idSourceValue: validRequestDto.courseIdSourceValue,
+    idSourceValue: validRequestDto.idSourceValue,
   });
 };

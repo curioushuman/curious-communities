@@ -99,7 +99,7 @@ export const handler = async (
   // Error will be thrown during `executeTask` within the controller.
   // SEE **Error handling and logging** in README for more info.
   return updateCourseController.update({
-    idSourceValue: validRequestDto.courseIdSourceValue,
+    idSourceValue: validRequestDto.idSourceValue,
     course: validRequestDto.course,
   });
 };

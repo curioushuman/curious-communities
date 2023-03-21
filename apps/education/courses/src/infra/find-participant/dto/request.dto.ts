@@ -13,11 +13,9 @@ import { Optional, Record, Static, String } from 'runtypes';
  * DTO that accepts any of the identifiers
  */
 export const FindParticipantRequestDto = Record({
-  participantId: Optional(String),
-  participantIdSourceValue: Optional(String),
-}).withConstraint(
-  (dto) => !!(dto.participantId || dto.participantIdSourceValue)
-);
+  id: Optional(String),
+  idSourceValue: Optional(String),
+}).withConstraint((dto) => !!(dto.id || dto.idSourceValue));
 
 /**
  * DTO that accepts any of the identifiers

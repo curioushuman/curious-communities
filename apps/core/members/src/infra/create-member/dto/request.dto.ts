@@ -20,8 +20,8 @@ import { ParticipantSourceResponseDto } from '@curioushuman/cc-courses-service';
  */
 export const CreateMemberRequestDto = Record({
   email: Optional(String),
-  memberIdSourceValue: Optional(String),
-}).withConstraint((dto) => !!(dto.email || dto.memberIdSourceValue));
+  idSourceValue: Optional(String),
+}).withConstraint((dto) => !!(dto.email || dto.idSourceValue));
 
 /**
  * DTO that accepts any of the identifiers
@@ -72,7 +72,7 @@ export function locateDto(
   if ('participantSource' in incomingEvent) {
     return { email: incomingEvent.participantSource.detail.memberEmail };
   }
-  if ('email' in incomingEvent || 'memberIdSourceValue' in incomingEvent) {
+  if ('email' in incomingEvent || 'idSourceValue' in incomingEvent) {
     return incomingEvent;
   }
   if ('Records' in incomingEvent) {

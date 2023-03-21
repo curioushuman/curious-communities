@@ -228,9 +228,7 @@ export class UpsertParticipantConstruct extends Construct {
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
         inputPath: '$.detail',
         payload: sfn.TaskInput.fromObject({
-          participantIdSourceValue: sfn.JsonPath.stringAt(
-            '$.participantIdSourceValue'
-          ),
+          idSourceValue: sfn.JsonPath.stringAt('$.participantIdSourceValue'),
         }),
         resultPath: '$.participant',
         resultSelector: prepareSfnTaskResponsePayload(
@@ -411,9 +409,7 @@ export class UpsertParticipantConstruct extends Construct {
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
         inputPath: '$.detail',
         payload: sfn.TaskInput.fromObject({
-          participantIdSourceValue: sfn.JsonPath.stringAt(
-            '$.participantIdSourceValue'
-          ),
+          idSourceValue: sfn.JsonPath.stringAt('$.participantIdSourceValue'),
         }),
         resultPath: '$.participantSource',
         resultSelector: prepareSfnTaskResponsePayload(
@@ -439,9 +435,7 @@ export class UpsertParticipantConstruct extends Construct {
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
         inputPath: '$.detail',
         payload: sfn.TaskInput.fromObject({
-          participantIdSourceValue: sfn.JsonPath.stringAt(
-            '$.participantIdSourceValue'
-          ),
+          idSourceValue: sfn.JsonPath.stringAt('$.participantIdSourceValue'),
         }),
         resultPath: '$.participant',
         resultSelector: prepareSfnTaskResponsePayload(

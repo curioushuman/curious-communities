@@ -134,7 +134,7 @@ export class DynamoDbCourseRepository implements CourseRepository {
     const { filters } = props;
     const { dateOpenRange } = filters;
     const params = this.dynamoDbRepository.prepareParamsFindAll({
-      filters: { Course__DateOpen: dateOpenRange },
+      filters: { Course_DateOpen: dateOpenRange },
     });
     return this.dynamoDbRepository.tryFindAll(params, this.processFindOne);
   };

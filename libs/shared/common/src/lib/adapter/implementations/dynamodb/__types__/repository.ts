@@ -127,20 +127,30 @@ export type DDBQueryAllCommandInputExpressionValues =
 export type DDBQueryAllFilterValue = DDBQueryAllKeyValue;
 
 /**
+ * A type to define the shape of the filters object we'll accept
+ *
+ * Mostly here to make sure we get the field names correct
+ */
+export type DynamoDbRepositoryQueryAllFilters<PersistenceT> = Partial<
+  Record<keyof PersistenceT, DDBQueryAllFilterValue>
+>;
+
+/**
  * Props for DynamoDbRepository.queryAll
  */
-export interface DynamoDbRepositoryQueryAllProps {
+export interface DynamoDbRepositoryQueryAllProps<PersistenceT> {
   indexId?: string;
   partitionKeyValue: string | number;
   sortKeyValue?: DDBQueryAllKeyValue;
-  filters?: Record<string, DDBQueryAllFilterValue>;
+  filters?: DynamoDbRepositoryQueryAllFilters<PersistenceT>;
 }
 
 /**
  * Props for DynamoDbRepository.findAll
  */
-export type DynamoDbRepositoryFindAllProps =
-  Partial<DynamoDbRepositoryQueryAllProps>;
+export type DynamoDbRepositoryFindAllProps<PersistenceT> = Partial<
+  DynamoDbRepositoryQueryAllProps<PersistenceT>
+>;
 
 /**
  * Props for DynamoDbRepository.queryOne

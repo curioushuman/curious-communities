@@ -33,6 +33,7 @@ import {
   DynamoDbRepositoryIndex,
   DynamoDbRepositoryLocalIndex,
   DynamoDbRepositoryProps,
+  DynamoDbRepositoryQueryAllFilters,
   DynamoDbRepositoryQueryAllProps,
   DynamoDbRepositoryQueryOneProps,
   DynamoDbSaveParams,
@@ -410,13 +411,12 @@ export class DynamoDbRepository<DomainT, PersistenceT>
       this.prepareFilterExpressionRange,
       this.prepareFilterExpressionEquality,
     ];
-    for (const preparer of expressionPreparers) {
-      // const prepared = preparer.call(this, field, valueOrValueObject);
-      const prepared = preparer(field, valueOrValueObject, fieldKey);
+    expressionPreparers.forEach((preparer) => {
+      const prepared = preparer.call(this, field, valueOrValueObject, fieldKey);
       if (prepared) {
         result = prepared;
       }
-    }
+    });
     if (!result.FilterExpression) {
       throw new RepositoryServerError(
         `Unable to prepare filter expression for ${field} with value ${valueOrValueObject}`
@@ -426,7 +426,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   }
 
   private prepareFilterExpressions(
-    filters: Record<string, DDBQueryAllFilterValue> | undefined
+    filters: DynamoDbRepositoryQueryAllFilters<PersistenceT> | undefined
   ): DDBQueryAllCommandInputExpression {
     const filterExpressions: string[] = ['entityType = :ent'];
     const ExpressionAttributeValues: DDBQueryAllCommandInputExpressionValues = {
@@ -442,11 +442,12 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     let letterIndex = 0;
     const allLetters = 'abcdefghijklmnopqrstuvwxyz';
 
-    Object.entries(filters).forEach(([field, valueOrValueObject]) => {
+    let field: keyof PersistenceT;
+    for (field in filters) {
       const filterExpression =
         this.prepareFilterExpression<DDBQueryAllFilterValue>(
           field,
-          valueOrValueObject,
+          filters[field],
           `${allLetters[letterIndex++]}`
         );
       if (filterExpression.FilterExpression) {
@@ -456,7 +457,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
           filterExpression.ExpressionAttributeValues
         );
       }
-    });
+    }
 
     return {
       FilterExpression: filterExpressions.join(' AND '),
@@ -468,7 +469,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
    * Convenience function to prep for a queryAll command
    */
   public prepareParamsQueryAll(
-    props: DynamoDbRepositoryQueryAllProps
+    props: DynamoDbRepositoryQueryAllProps<PersistenceT>
   ): QueryCommandInput {
     const { indexId, partitionKeyValue, sortKeyValue, filters } = props;
     const index = this.getIndexDetails(indexId);
@@ -505,7 +506,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
    * IMPORTANT: ALWAYS USE queryAll where possible i.e. include a partitionKeyValue
    */
   public prepareParamsFindAll(
-    props: DynamoDbRepositoryFindAllProps
+    props: DynamoDbRepositoryFindAllProps<PersistenceT>
   ): QueryCommandInput | ScanCommandInput {
     const { indexId, partitionKeyValue, sortKeyValue, filters } = props;
     if (partitionKeyValue) {

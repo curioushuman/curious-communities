@@ -21,9 +21,9 @@ import {
  */
 
 export const UpdateMemberRequestDto = Record({
-  memberIdSourceValue: Optional(String),
+  idSourceValue: Optional(String),
   member: Optional(MemberResponseDto),
-}).withConstraint((dto) => !!(dto.memberIdSourceValue || dto.member));
+}).withConstraint((dto) => !!(dto.idSourceValue || dto.member));
 
 export type UpdateMemberRequestDto = Static<typeof UpdateMemberRequestDto>;
 
@@ -51,14 +51,23 @@ interface UpdateMemberAsSfnResult {
 }
 
 /**
- * What the input would look like if someone 'put's it to an eventBus
+ * This is the shape of the DTO coming in from an external event
  */
-export type UpdateMemberPutEvent = EventbridgePutEvent<UpdateMemberRequestDto>;
+export type ExternalMemberEventDto = {
+  memberIdSourceValue: string;
+};
+/**
+ * External events will be passed to us via EventBridge
+ */
+export type ExternalMemberPutEvent =
+  EventbridgePutEvent<ExternalMemberEventDto>;
 
 /**
  * The types of event we support
  */
-export type UpdateMemberEvent = UpdateMemberPutEvent | UpdateMemberAsSfnResult;
+export type UpdateMemberEvent =
+  | ExternalMemberPutEvent
+  | UpdateMemberAsSfnResult;
 
 /**
  * The two types of input we support
@@ -71,6 +80,8 @@ export type UpdateMemberDtoOrEvent = UpdateMemberRequestDto | UpdateMemberEvent;
  * and extract the data we need from it
  *
  * NOTE: validation of data is a separate step
+ *
+ * TODO: split into multiple functions
  */
 export function locateDto(
   incomingEvent: UpdateMemberDtoOrEvent
@@ -106,7 +117,9 @@ export function locateDto(
     return { member };
   }
   if ('detail' in incomingEvent) {
-    return incomingEvent.detail;
+    return {
+      idSourceValue: incomingEvent.detail.memberIdSourceValue,
+    };
   }
   return incomingEvent;
 }

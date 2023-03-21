@@ -100,6 +100,6 @@ export const handler = async (
   return findMemberController.find({
     id: validRequestDto.id,
     email: validRequestDto.email,
-    idSourceValue: validRequestDto.memberIdSourceValue,
+    idSourceValue: validRequestDto.idSourceValue,
   });
 };

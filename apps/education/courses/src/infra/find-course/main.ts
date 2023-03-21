@@ -100,6 +100,6 @@ export const handler = async (
   // SEE **Error handling and logging** in README for more info.
   return findCourseController.find({
     id: validRequestDto.courseId,
-    idSourceValue: validRequestDto.courseIdSourceValue,
+    idSourceValue: validRequestDto.idSourceValue,
   });
 };

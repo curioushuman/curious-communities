@@ -11,16 +11,6 @@
 
 <font color="green">Tested!</font>
 
-## Opening a course in the system
-
-Daily scheduled check for courses that are open today
-
-#### NOTES
-
-* This will invoke the functions that follow a course-update (outlined below) e.g. groups will become active, group members will be created, etc.
-
-<img src="../apps/education/courses/diagrams/courses-open.png" width="300" />
-
 ## Events based on course creation
 
 ### Groups
@@ -47,6 +37,9 @@ The system will check for the existence of external participants and add them to
 <img src="../apps/core/groups/diagrams/course-group-member-upsert.png" width="400" />
 <img src="../apps/core/groups/diagrams/group-member-sources-upsert.png" width="300" />
 
+<font color="green">Tested!</font>
+<font color="orange">Remaining: group-member-upsert-source</font>
+
 ## Events based on course update
 
 ### Groups / group members
@@ -58,19 +51,27 @@ The group will be updated, which will cause the group sources to be updated AND 
 <img src="../apps/core/groups/diagrams/group-members-update.png" width="300" />
 <img src="../apps/core/groups/diagrams/group-member-sources-upsert.png" width="300" />
 
+<font color="green">Tested!</font>
+
 ### Participants / group members
 
 This feels like a potential conflict of the previous, but the only info group members are receiving from participants is the status. As this (path for) change is invoked by an update in the course, the group-member-update will result in a `no-change` outcome and therefore will not invoke a group-member-source-upsert.
 
 <img src="../apps/education/courses/diagrams/participants-update.png" width="300" />
 <img src="../apps/core/groups/diagrams/course-group-member-upsert.png" width="400" />
-<img src="../apps/core/groups/diagrams/group-members-update.png" width="300" />
 
-## Schedule check for change in course status
+<font color="green">Tested!</font>
+<font color="red">ISSUE: only one participant is being updated. Two records found, two messages sent, one lambda activation.</font>
 
-i.e. is today the day that the course opens.
+## Opening a course in the system
 
-TBD
+Daily scheduled check for courses that are open today.
+
+#### NOTES
+
+* This will invoke the functions that follow a course-update (outlined above) e.g. groups will become active, group members will be created, etc.
+
+<img src="../apps/education/courses/diagrams/courses-open.png" width="300" />
 
 # Participant
 

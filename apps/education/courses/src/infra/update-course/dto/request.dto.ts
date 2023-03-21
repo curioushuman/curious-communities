@@ -15,9 +15,9 @@ import { CourseResponseDto } from '@curioushuman/cc-courses-service';
  */
 
 export const UpdateCourseRequestDto = Record({
-  courseIdSourceValue: Optional(String),
+  idSourceValue: Optional(String),
   course: Optional(CourseResponseDto),
-}).withConstraint((dto) => !!(dto.courseIdSourceValue || dto.course));
+}).withConstraint((dto) => !!(dto.idSourceValue || dto.course));
 
 export type UpdateCourseRequestDto = Static<typeof UpdateCourseRequestDto>;
 

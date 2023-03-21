@@ -96,6 +96,6 @@ export const handler = async (
   const createCourseController = app.get(CreateCourseController);
 
   return createCourseController.create({
-    idSourceValue: validRequestDto.courseIdSourceValue,
+    idSourceValue: validRequestDto.idSourceValue,
   });
 };

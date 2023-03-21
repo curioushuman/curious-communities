@@ -60,7 +60,7 @@ async function waitForApp() {
 export const handler = async (): Promise<void> => {
   // create the date range to check
   const start = new Date().getTime();
-  const end = start + 1000 * 60 * 60 * 24 * 7;
+  const end = start + 1000 * 60 * 60 * 24;
 
   // init the app
   const app = await waitForApp();

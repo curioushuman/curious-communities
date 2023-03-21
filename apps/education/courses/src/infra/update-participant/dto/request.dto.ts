@@ -5,7 +5,6 @@ import {
 } from '@curioushuman/common';
 import {
   guardParticipantResponseDto,
-  parseParticipantResponseDto,
   ParticipantResponseDto,
 } from '@curioushuman/cc-courses-service';
 
@@ -19,9 +18,9 @@ import {
  */
 
 export const UpdateParticipantRequestDto = Record({
-  participantIdSourceValue: Optional(String),
+  idSourceValue: Optional(String),
   participant: Optional(ParticipantResponseDto),
-}).withConstraint((dto) => !!(dto.participantIdSourceValue || dto.participant));
+}).withConstraint((dto) => !!(dto.idSourceValue || dto.participant));
 
 export type UpdateParticipantRequestDto = Static<
   typeof UpdateParticipantRequestDto
@@ -35,9 +34,9 @@ export type UpdateParticipantRequestDto = Static<
 export const guardUpdateParticipantRequestDto = (
   dto: UpdateParticipantRequestDto
 ): boolean => {
-  const { participant, participantIdSourceValue } = dto;
+  const { participant, idSourceValue } = dto;
 
-  if (!participant && !participantIdSourceValue) {
+  if (!participant && !idSourceValue) {
     return false;
   }
   if (participant) {

@@ -11,7 +11,7 @@ import { EventbridgePutEvent } from '@curioushuman/common';
  */
 
 export const CreateCourseRequestDto = Record({
-  courseIdSourceValue: String,
+  idSourceValue: String,
 });
 
 export type CreateCourseRequestDto = Static<typeof CreateCourseRequestDto>;
@@ -43,7 +43,7 @@ export type CreateCourseDtoOrEvent = CreateCourseRequestDto | CreateCourseEvent;
 export function locateDto(
   incomingEvent: CreateCourseDtoOrEvent
 ): CreateCourseRequestDto {
-  if ('courseIdSourceValue' in incomingEvent) {
+  if ('idSourceValue' in incomingEvent) {
     return incomingEvent;
   }
   return incomingEvent.detail;

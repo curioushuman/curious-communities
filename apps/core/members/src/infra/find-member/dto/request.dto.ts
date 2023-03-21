@@ -17,8 +17,8 @@ import { SfnTaskResponsePayload } from '@curioushuman/common';
 export const FindMemberRequestDto = Record({
   id: Optional(String),
   email: Optional(String),
-  memberIdSourceValue: Optional(String),
-}).withConstraint((dto) => !!(dto.id || dto.email || dto.memberIdSourceValue));
+  idSourceValue: Optional(String),
+}).withConstraint((dto) => !!(dto.id || dto.email || dto.idSourceValue));
 
 /**
  * DTO that accepts any of the identifiers

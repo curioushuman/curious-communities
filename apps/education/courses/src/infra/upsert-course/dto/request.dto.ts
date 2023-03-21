@@ -14,15 +14,22 @@ import {
  */
 
 export const UpsertCourseRequestDto = Record({
-  courseIdSourceValue: String,
+  idSourceValue: String,
 });
 
 export type UpsertCourseRequestDto = Static<typeof UpsertCourseRequestDto>;
 
 /**
- * What the input would look like if someone 'put's it to an eventBus
+ * This is the shape of the DTO coming in from an external event
  */
-export type UpsertCoursePutEvent = EventbridgePutEvent<UpsertCourseRequestDto>;
+export type ExternalCourseEventDto = {
+  courseIdSourceValue: string;
+};
+/**
+ * External events will be passed to us via EventBridge
+ */
+export type ExternalCoursePutEvent =
+  EventbridgePutEvent<ExternalCourseEventDto>;
 
 /**
  * What the input looks like when SQS is event source
@@ -35,7 +42,7 @@ export type UpsertCourseSqsEvent =
  *
  * This allows us space to add additional event types
  */
-export type UpsertCourseEvent = UpsertCoursePutEvent | UpsertCourseSqsEvent;
+export type UpsertCourseEvent = ExternalCoursePutEvent | UpsertCourseSqsEvent;
 
 /**
  * The two types of input we support
@@ -52,11 +59,13 @@ export type UpsertCourseDtoOrEvent = UpsertCourseRequestDto | UpsertCourseEvent;
 export function locateDto(
   incomingEvent: UpsertCourseDtoOrEvent
 ): UpsertCourseRequestDto {
-  if ('courseIdSourceValue' in incomingEvent) {
+  if ('idSourceValue' in incomingEvent) {
     return incomingEvent;
   }
   if ('Records' in incomingEvent) {
     return incomingEvent.Records[0].body;
   }
-  return incomingEvent.detail;
+  return {
+    idSourceValue: incomingEvent.detail.courseIdSourceValue,
+  };
 }

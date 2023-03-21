@@ -40,6 +40,7 @@ export class SalesforceApiParticipantSourceMapper {
     }
     const status = SalesforceApiParticipantSourceStatus.check(sourceStatus);
     const statusMap: Record<string, string> = {
+      Confirmed: 'active',
       Pending: 'pending',
       Registered: 'registered',
       Cancelled: 'cancelled',

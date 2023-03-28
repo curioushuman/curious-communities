@@ -8,6 +8,7 @@ import { prepareExternalIdSource } from '@curioushuman/common';
 import {
   Course,
   CourseBase,
+  CourseFilters,
   CourseIdentifier,
 } from '../../../domain/entities/course';
 import {
@@ -137,6 +138,16 @@ export class FakeCourseRepository implements CourseRepository {
 
   findOne = (identifier: CourseIdentifier): CourseFindMethod => {
     return this.findOneBy[identifier];
+  };
+
+  /**
+   * ! Filters not yet implemented
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  findAll = (_: {
+    filters?: CourseFilters;
+  }): TE.TaskEither<Error, Course[]> => {
+    return TE.right(this.courses);
   };
 
   save = (courseBase: CourseBase): TE.TaskEither<Error, Course> => {

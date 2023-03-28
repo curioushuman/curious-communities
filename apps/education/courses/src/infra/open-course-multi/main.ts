@@ -5,6 +5,7 @@ import {
   UpdateCourseMultiModule,
   UpdateCourseMultiController,
 } from '@curioushuman/cc-courses-service';
+import { timezoneTimestampOffset } from '@curioushuman/common';
 
 /**
  * TODO
@@ -59,18 +60,22 @@ async function waitForApp() {
  */
 export const handler = async (): Promise<void> => {
   // create the date range to check
-  const start = new Date().getTime();
-  const end = start + 1000 * 60 * 60 * 24;
+  // NOTE: these date ranges are for a 1am check, and midnight opens
+  // if you want to get more specific, bring this to 2, and hourly checks
+  // const start = timezoneTimestampOffset(-4);
+  // -10 is for testing
+  const start = timezoneTimestampOffset(-10);
+  const end = timezoneTimestampOffset(1);
 
   // init the app
   const app = await waitForApp();
   const controller = app.get(UpdateCourseMultiController);
 
-  // try/catch doesn't work at this level
   return controller.update({
     dateOpenRange: {
       start,
       end,
     },
+    status: 'closed',
   });
 };

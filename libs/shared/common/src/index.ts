@@ -45,8 +45,8 @@ export * from './lib/domain/value-objects';
 /**
  * Utils
  */
+export * from './lib/utils';
 export * from './lib/utils/__types__';
-export * from './lib/utils/functions';
 
 /**
  * Services

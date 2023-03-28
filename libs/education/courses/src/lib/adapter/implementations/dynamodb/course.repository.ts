@@ -4,6 +4,7 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import { LoggableLogger } from '@curioushuman/loggable';
 import { RepositoryItemNotFoundError } from '@curioushuman/error-factory';
 import {
+  DDBQueryAllFilterValue,
   DynamoDbFindOneParams,
   DynamoDbRepository,
   DynamoDbRepositoryProps,
@@ -135,9 +136,16 @@ export class DynamoDbCourseRepository implements CourseRepository {
     filters: CourseFilters;
   }): TE.TaskEither<Error, CourseBase[]> => {
     const { filters } = props;
-    const { dateOpenRange } = filters;
+    const { dateOpenRange, status } = filters;
+    const ddbFilters: Record<string, DDBQueryAllFilterValue> = {};
+    if (dateOpenRange) {
+      ddbFilters.Course_DateOpen = dateOpenRange;
+    }
+    if (status) {
+      ddbFilters.Course_Status = status;
+    }
     const params = this.dynamoDbRepository.prepareParamsFindAll({
-      filters: { Course_DateOpen: dateOpenRange },
+      filters: ddbFilters,
     });
     return this.dynamoDbRepository.tryFindAll(params, this.processFindOne);
   };

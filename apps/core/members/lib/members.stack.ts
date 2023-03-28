@@ -35,6 +35,12 @@ export class MembersStack extends cdk.Stack {
     super(scope, stackId, props);
 
     /**
+     * Required layers, additional to normal defaults
+     */
+    const chLayerMembers = new ChLayerFrom(this, 'cc-members-service');
+    this.lambdaProps.layers?.push(chLayerMembers.layer);
+
+    /**
      * Other AWS services this stack needs pay attention to
      */
 
@@ -62,37 +68,6 @@ export class MembersStack extends cdk.Stack {
       this,
       'cc-events-internal'
     );
-
-    /**
-     * Eventbridge destination for our lambdas
-     *
-     * Resulting event should look something like:
-     *
-     * {
-     *   "DetailType":"Lambda Function Invocation Result - Success",
-     *   "Source": "lambda",
-     *   "EventBusName": "{eventBusArn}",
-     *   "Detail": {
-     *     ...Member
-     *   }
-     * }
-     *
-     * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_destinations-readme.html#destination-specific-json-format
-     */
-    const onLambdaSuccess = new destinations.EventBridgeDestination(
-      internalEventBusConstruct.eventBus
-    );
-    // use this for any lambda that needs to send events to the internal event bus
-    const lambdaPropsWithDestination: NodejsFunctionProps = {
-      ...this.lambdaProps,
-      onSuccess: onLambdaSuccess,
-    };
-
-    /**
-     * Required layers, additional to normal defaults
-     */
-    const chLayerMembers = new ChLayerFrom(this, 'cc-members-service');
-    this.lambdaProps.layers?.push(chLayerMembers.layer);
 
     /**
      * Stack env vars
@@ -123,7 +98,12 @@ export class MembersStack extends cdk.Stack {
           __dirname,
           '../src/infra/create-member/main.ts'
         ),
-        lambdaProps: lambdaPropsWithDestination,
+        lambdaProps: this.lambdaProps,
+        destinations: {
+          onSuccess: {
+            eventBus: internalEventBusConstruct.eventBus,
+          },
+        },
       }
     );
     // add env vars
@@ -154,7 +134,12 @@ export class MembersStack extends cdk.Stack {
           __dirname,
           '../src/infra/update-member/main.ts'
         ),
-        lambdaProps: lambdaPropsWithDestination,
+        lambdaProps: this.lambdaProps,
+        destinations: {
+          onSuccess: {
+            eventBus: internalEventBusConstruct.eventBus,
+          },
+        },
       }
     );
     // add env vars

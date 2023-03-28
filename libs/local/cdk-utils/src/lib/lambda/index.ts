@@ -1,4 +1,7 @@
 export * from './lambda.construct';
+export * from './lambda.types';
+export * from './lambda-throttled.construct';
+export * from './lambda-throttled.types';
 export * from './lambda-from.construct';
 export * from './layer.construct';
 export * from './layer.types';

@@ -17,6 +17,7 @@ import {
   generateCompositeResourceId,
   RuleEntityEvent,
   resourceNameTitle,
+  LambdaThrottledConstruct,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -37,6 +38,12 @@ export class CoursesStack extends cdk.Stack {
 
   constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
     super(scope, stackId, props);
+
+    /**
+     * Required layers, additional to normal defaults
+     */
+    const chLayerCourses = new ChLayerFrom(this, 'cc-courses-service');
+    this.lambdaProps.layers?.push(chLayerCourses.layer);
 
     /**
      * Other AWS services this stack needs pay attention to
@@ -68,37 +75,6 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
-     * Eventbridge destination for our lambdas
-     *
-     * Resulting event should look something like:
-     *
-     * {
-     *   "DetailType":"Lambda Function Invocation Result - Success",
-     *   "Source": "lambda",
-     *   "EventBusName": "{eventBusArn}",
-     *   "Detail": {
-     *     ...Participant (or Course)
-     *   }
-     * }
-     *
-     * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_destinations-readme.html#destination-specific-json-format
-     */
-    const onLambdaSuccess = new destinations.EventBridgeDestination(
-      internalEventBusConstruct.eventBus
-    );
-    // use this for any lambda that needs to send events to the internal event bus
-    const lambdaPropsWithDestination: NodejsFunctionProps = {
-      ...this.lambdaProps,
-      onSuccess: onLambdaSuccess,
-    };
-
-    /**
-     * Required layers, additional to normal defaults
-     */
-    const chLayerCourses = new ChLayerFrom(this, 'cc-courses-service');
-    this.lambdaProps.layers?.push(chLayerCourses.layer);
-
-    /**
      * Functions
      */
 
@@ -117,7 +93,12 @@ export class CoursesStack extends cdk.Stack {
           __dirname,
           '../src/infra/upsert-course/main.ts'
         ),
-        lambdaProps: lambdaPropsWithDestination,
+        lambdaProps: this.lambdaProps,
+        destinations: {
+          onSuccess: {
+            eventBus: internalEventBusConstruct.eventBus,
+          },
+        },
       }
     );
     // add salesforce env vars
@@ -201,8 +182,8 @@ export class CoursesStack extends cdk.Stack {
       openCourseMultiRuleTitle,
       {
         ruleName: openCourseMultiRuleName,
-        // schedule: events.Schedule.cron({ minute: '0', hour: '16' }),
-        schedule: events.Schedule.cron({ minute: '15' }),
+        // schedule: events.Schedule.cron({ minute: '0', hour: '13' }),
+        schedule: events.Schedule.cron({ minute: '10' }),
       }
     );
     openCourseMultiRule.addTarget(
@@ -211,6 +192,11 @@ export class CoursesStack extends cdk.Stack {
 
     /**
      * Function: Update Course
+     *
+     * NOTE: lambda destinations will not work in this context as
+     * SQS is considered SYNCHRONOUS and destinations are only
+     * triggered in ASYNCHRONOUS mode
+     * Ref: https://repost.aws/questions/QUNhSAWNwVR2uEYDbuts9bLw/lambda-events-not-triggering-event-bridge-destination
      */
     const updateCourseLambdaId = generateCompositeResourceId(
       stackId,
@@ -224,7 +210,12 @@ export class CoursesStack extends cdk.Stack {
           __dirname,
           '../src/infra/update-course/main.ts'
         ),
-        lambdaProps: lambdaPropsWithDestination,
+        lambdaProps: this.lambdaProps,
+        destinations: {
+          onSuccess: {
+            eventBus: internalEventBusConstruct.eventBus,
+          },
+        },
       }
     );
     // add salesforce env vars
@@ -239,30 +230,23 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
-     * SQS queue to throttle requests to updateCourse
+     * We're also going to create a throttled version of this lambda
      */
-    const [updateCourseQueueName, updateCourseQueueTitle] = resourceNameTitle(
+    const updateCourseThrottledLambdaId = generateCompositeResourceId(
       updateCourseLambdaId,
-      'Queue'
+      'throttled'
     );
-    const updateCourseQueue = new sqs.Queue(this, updateCourseQueueTitle, {
-      queueName: updateCourseQueueName,
-      visibilityTimeout: cdk.Duration.seconds(60),
-    });
-    // allow the (above) multi lambda to send messages to the queue
-    updateCourseQueue.grantSendMessages(
-      openCourseMultiLambdaConstruct.lambdaFunction
-    );
-
-    /**
-     * Subscribe the function, to the queue
-     */
-    updateCourseLambdaConstruct.lambdaFunction.addEventSource(
-      new SqsEventSource(updateCourseQueue, {
-        batchSize: 3, // default
-        maxBatchingWindow: cdk.Duration.minutes(2),
-        reportBatchItemFailures: true, // default to false
-      })
+    const updateCourseThrottledLambdaConstruct = new LambdaThrottledConstruct(
+      this,
+      updateCourseThrottledLambdaId,
+      {
+        lambdas: {
+          throttled: updateCourseLambdaConstruct,
+          queue: openCourseMultiLambdaConstruct,
+        },
+        stackId,
+        prefix: 'cc',
+      }
     );
 
     /**
@@ -281,7 +265,12 @@ export class CoursesStack extends cdk.Stack {
           __dirname,
           '../src/infra/create-participant/main.ts'
         ),
-        lambdaProps: lambdaPropsWithDestination,
+        lambdaProps: this.lambdaProps,
+        destinations: {
+          onSuccess: {
+            eventBus: internalEventBusConstruct.eventBus,
+          },
+        },
       }
     );
     // add salesforce env vars
@@ -304,7 +293,10 @@ export class CoursesStack extends cdk.Stack {
      *   triggered by course update i.e. course opens/closes;
      *   triggered by member update
      *
-     * NOTE: destination is not invoked when called within step functions
+     * NOTE: lambda destinations will not work in this context as
+     * SQS is considered SYNCHRONOUS and destinations are only
+     * triggered in ASYNCHRONOUS mode
+     * Ref: https://repost.aws/questions/QUNhSAWNwVR2uEYDbuts9bLw/lambda-events-not-triggering-event-bridge-destination
      */
     const updateParticipantLambdaId = generateCompositeResourceId(
       stackId,
@@ -318,7 +310,12 @@ export class CoursesStack extends cdk.Stack {
           __dirname,
           '../src/infra/update-participant/main.ts'
         ),
-        lambdaProps: lambdaPropsWithDestination,
+        lambdaProps: this.lambdaProps,
+        destinations: {
+          onSuccess: {
+            eventBus: internalEventBusConstruct.eventBus,
+          },
+        },
       }
     );
     // add salesforce env vars
@@ -331,6 +328,82 @@ export class CoursesStack extends cdk.Stack {
     coursesTableConstruct.table.grantWriteData(
       updateParticipantLambdaConstruct.lambdaFunction
     );
+
+    /**
+     * Function: Update participant multi
+     *
+     * Triggers
+     * - course update
+     * - member update
+     */
+    const updateParticipantMultiLambdaId = generateCompositeResourceId(
+      stackId,
+      'participant-update-multi'
+    );
+    const updateParticipantMultiLambdaConstruct = new LambdaConstruct(
+      this,
+      updateParticipantMultiLambdaId,
+      {
+        lambdaEntry: pathResolve(
+          __dirname,
+          '../src/infra/update-participant-multi/main.ts'
+        ),
+        lambdaProps: this.lambdaProps,
+      }
+    );
+
+    // allow the lambda access to the table
+    coursesTableConstruct.table.grantReadData(
+      updateParticipantMultiLambdaConstruct.lambdaFunction
+    );
+
+    /**
+     * Subscribing the lambda to the internal event bus; when course OR member is updated
+     */
+    const updateParticipantMultiRuleConstruct = new RuleEntityEvent(
+      this,
+      generateCompositeResourceId(
+        updateParticipantMultiLambdaId,
+        'entity-event'
+      ),
+      {
+        eventBus: internalEventBusConstruct.eventBus,
+        entity: [
+          'course-base',
+          'course',
+          { suffix: '-course-base' },
+          { suffix: '-course' },
+          'member-base',
+          'member',
+          { suffix: '-member-base' },
+          { suffix: '-member' },
+        ],
+        event: ['updated'],
+        outcome: ['success'],
+        targets: [
+          new targets.LambdaFunction(
+            updateParticipantMultiLambdaConstruct.lambdaFunction
+          ),
+        ],
+      }
+    );
+
+    /**
+     * We're also going to create a throttled version of this lambda
+     */
+    const updateParticipantThrottledLambdaId = generateCompositeResourceId(
+      updateParticipantLambdaId,
+      'throttled'
+    );
+    const updateParticipantThrottledLambdaConstruct =
+      new LambdaThrottledConstruct(this, updateParticipantThrottledLambdaId, {
+        lambdas: {
+          throttled: updateParticipantLambdaConstruct,
+          queue: updateParticipantMultiLambdaConstruct,
+        },
+        stackId,
+        prefix: 'cc',
+      });
 
     /**
      * Function: Find Participant
@@ -531,94 +604,6 @@ export class CoursesStack extends cdk.Stack {
      */
     upsertParticipantLambdaConstruct.lambdaFunction.addEventSource(
       new SqsEventSource(upsertParticipantQueue, {
-        batchSize: 3, // default
-        maxBatchingWindow: cdk.Duration.minutes(2),
-        reportBatchItemFailures: true, // default to false
-      })
-    );
-
-    /**
-     * Function: Update participant multi
-     *
-     * Triggers
-     * - course update
-     * - member update
-     */
-    const updateParticipantMultiLambdaId = generateCompositeResourceId(
-      stackId,
-      'participant-update-multi'
-    );
-    const updateParticipantMultiLambdaConstruct = new LambdaConstruct(
-      this,
-      updateParticipantMultiLambdaId,
-      {
-        lambdaEntry: pathResolve(
-          __dirname,
-          '../src/infra/update-participant-multi/main.ts'
-        ),
-        lambdaProps: this.lambdaProps,
-      }
-    );
-
-    // allow the lambda access to the table
-    coursesTableConstruct.table.grantReadData(
-      updateParticipantMultiLambdaConstruct.lambdaFunction
-    );
-
-    /**
-     * Subscribing the lambda to the internal event bus; when course OR member is updated
-     */
-    const updateParticipantMultiRuleConstruct = new RuleEntityEvent(
-      this,
-      generateCompositeResourceId(
-        updateParticipantMultiLambdaId,
-        'entity-event'
-      ),
-      {
-        eventBus: internalEventBusConstruct.eventBus,
-        entity: [
-          'course-base',
-          'course',
-          { suffix: '-course-base' },
-          { suffix: '-course' },
-          'member-base',
-          'member',
-          { suffix: '-member-base' },
-          { suffix: '-member' },
-        ],
-        event: ['updated'],
-        outcome: ['success'],
-        targets: [
-          new targets.LambdaFunction(
-            updateParticipantMultiLambdaConstruct.lambdaFunction
-          ),
-        ],
-      }
-    );
-
-    /**
-     * SQS queue to throttle requests to updateParticipant
-     */
-    const [updateParticipantQueueName, updateParticipantQueueTitle] =
-      resourceNameTitle(updateParticipantLambdaId, 'Queue');
-    const updateParticipantQueue = new sqs.Queue(
-      this,
-      updateParticipantQueueTitle,
-      {
-        queueName: updateParticipantQueueName,
-        visibilityTimeout: cdk.Duration.seconds(60),
-      }
-    );
-    // allow the (above) multi lambda to send messages to the queue
-    updateParticipantQueue.grantSendMessages(
-      updateParticipantMultiLambdaConstruct.lambdaFunction
-    );
-
-    /**
-     * Subscribe the function, to the queue
-     */
-    updateParticipantLambdaConstruct.lambdaFunction.addEventSource(
-      new SqsEventSource(updateParticipantQueue, {
         batchSize: 3, // default
         maxBatchingWindow: cdk.Duration.minutes(2),
         reportBatchItemFailures: true, // default to false

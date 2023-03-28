@@ -22,7 +22,7 @@ export type UpsertMemberSourceRequestDto = Static<
 /**
  * A representation of the input structure we create during Sfn task definition
  */
-interface UpsertGroupSourceAsSfnResult {
+interface UpsertMemberSourceAsSfnResult {
   source: SfnTaskInputTextReplica;
   member: MemberResponseDto;
 }
@@ -33,7 +33,7 @@ interface UpsertGroupSourceAsSfnResult {
  */
 export type UpsertMemberSourceDtoOrEvent =
   | UpsertMemberSourceRequestDto
-  | UpsertGroupSourceAsSfnResult;
+  | UpsertMemberSourceAsSfnResult;
 
 /**
  * This will determine what kind of input we have received

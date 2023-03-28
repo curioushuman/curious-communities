@@ -2,10 +2,13 @@ import { Record, Static, String } from 'runtypes';
 
 import {
   EventBridgeAsLambdaDestinationEvent,
-  isLambdaDestinationEvent,
+  SfnTaskInputTextReplica,
   SqsAsEventSourceEvent,
 } from '@curioushuman/common';
-import { GroupMemberResponseDto } from '@curioushuman/cc-groups-service';
+import {
+  GroupMemberResponseDto,
+  guardGroupMemberResponseDto,
+} from '@curioushuman/cc-groups-service';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -24,6 +27,27 @@ export type UpsertGroupMemberSourceRequestDto = Static<
 >;
 
 /**
+ * An alternative parser, instead of UpsertGroupMemberSourceRequestDto.check()
+ *
+ * Runtypes can't deal with Records with too many layers i.e. groupMemberResponseDto
+ */
+export const guardUpsertGroupMemberSourceRequestDto = (
+  dto: UpsertGroupMemberSourceRequestDto
+): boolean => {
+  const { groupMember } = dto;
+
+  return guardGroupMemberResponseDto(groupMember);
+};
+
+/**
+ * A representation of the input structure we create during Sfn task definition
+ */
+interface UpsertGroupMemberSourceAsSfnResult {
+  source: SfnTaskInputTextReplica;
+  groupMember: GroupMemberResponseDto;
+}
+
+/**
  * What the input looks like when lambda is subscribed as a destination
  */
 export type UpsertGroupMemberSourceAsDestinationEvent =
@@ -40,8 +64,9 @@ export type UpsertGroupMemberSourceSqsEvent =
  * Straight up DTO or an event
  */
 export type UpsertGroupMemberSourceDtoOrEvent =
-  | UpsertGroupMemberSourceAsDestinationEvent
   | UpsertGroupMemberSourceRequestDto
+  | UpsertGroupMemberSourceAsSfnResult
+  | UpsertGroupMemberSourceAsDestinationEvent
   | UpsertGroupMemberSourceSqsEvent;
 
 /**
@@ -53,14 +78,17 @@ export type UpsertGroupMemberSourceDtoOrEvent =
 export function locateDto(
   incomingEvent: UpsertGroupMemberSourceDtoOrEvent
 ): UpsertGroupMemberSourceRequestDto {
-  if ('groupMember' in incomingEvent) {
-    return incomingEvent;
-  }
   if ('Records' in incomingEvent) {
     return incomingEvent.Records[0].body;
   }
-  if ('responsePayload' in incomingEvent.detail) {
+  if ('detail' in incomingEvent) {
     return incomingEvent.detail.responsePayload;
   }
-  return incomingEvent.detail;
+  if (typeof incomingEvent.source === 'object') {
+    return {
+      source: incomingEvent.source.value,
+      groupMember: incomingEvent.groupMember,
+    };
+  }
+  return incomingEvent as UpsertGroupMemberSourceRequestDto;
 }

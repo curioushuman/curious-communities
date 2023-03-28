@@ -67,6 +67,8 @@ export class SalesforceApiCourseSourceRepository
       // will throw error if not
       const courseItem = SalesforceApiCourseSource.check(item);
 
+      this.logger.debug(item, 'processFindOne');
+
       // NOTE: if the response was invalid, an error would have been thrown
       // could this similarly be in a serialisation decorator?
       return SalesforceApiCourseSourceMapper.toDomain(courseItem, source);

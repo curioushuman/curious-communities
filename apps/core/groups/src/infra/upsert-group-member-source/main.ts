@@ -15,9 +15,9 @@ import {
 } from '@curioushuman/common';
 
 import {
+  guardUpsertGroupMemberSourceRequestDto,
   locateDto,
   UpsertGroupMemberSourceDtoOrEvent,
-  UpsertGroupMemberSourceRequestDto,
 } from './dto/request.dto';
 
 /**
@@ -112,7 +112,7 @@ export const handler = async (
   // NOTE: throws error
   const validRequestDto = validateRequestPayload({
     requestPayload,
-    guard: UpsertGroupMemberSourceRequestDto.guard,
+    guard: guardUpsertGroupMemberSourceRequestDto,
     logger,
   });
 

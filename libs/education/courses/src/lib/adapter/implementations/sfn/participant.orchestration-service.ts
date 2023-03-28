@@ -11,12 +11,12 @@ import { ParticipantSource } from '../../../domain/entities/participant-source';
 export class SfnParticipantOrchestrationService
   implements ParticipantOrchestrationService
 {
-  private sqsService: SfnService;
+  private sfnService: SfnService;
 
   constructor(public logger: LoggableLogger) {
     this.logger.setContext(SfnParticipantOrchestrationService.name);
 
-    this.sqsService = new SfnService(
+    this.sfnService = new SfnService(
       {
         stackId: 'courses',
         prefix: 'cc',
@@ -37,7 +37,7 @@ export class SfnParticipantOrchestrationService
       participantSource.id,
       participantSource.source
     );
-    return this.sqsService.startExecution({
+    return this.sfnService.startExecution({
       id: 'participant-upsert-state-machine',
       input: {
         // detail is what the state machine expects

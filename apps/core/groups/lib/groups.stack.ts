@@ -1,5 +1,4 @@
 import * as cdk from 'aws-cdk-lib';
-import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
@@ -14,9 +13,9 @@ import {
   ChEventBusFrom,
   LambdaConstruct,
   generateCompositeResourceId,
-  resourceNameTitle,
   UpsertSourceMultiConstruct,
   RuleEntityEvent,
+  LambdaThrottledConstruct,
 } from '../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -36,6 +35,12 @@ export class GroupsStack extends cdk.Stack {
 
   constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
     super(scope, stackId, props);
+
+    /**
+     * Required layers, additional to normal defaults
+     */
+    const chLayerGroups = new ChLayerFrom(this, 'cc-groups-service');
+    this.lambdaProps.layers?.push(chLayerGroups.layer);
 
     /**
      * Other AWS services this stack needs pay attention to
@@ -59,37 +64,6 @@ export class GroupsStack extends cdk.Stack {
     );
 
     /**
-     * Eventbridge destination for our lambdas
-     *
-     * Resulting event should look something like:
-     *
-     * {
-     *   "DetailType":"Lambda Function Invocation Result - Success",
-     *   "Source": "lambda",
-     *   "EventBusName": "{eventBusArn}",
-     *   "Detail": {
-     *     ...GroupMember (or Group)
-     *   }
-     * }
-     *
-     * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_destinations-readme.html#destination-specific-json-format
-     */
-    const onLambdaSuccess = new destinations.EventBridgeDestination(
-      internalEventBusConstruct.eventBus
-    );
-    // use this for any lambda that needs to send events to the internal event bus
-    const lambdaPropsWithDestination: NodejsFunctionProps = {
-      ...this.lambdaProps,
-      onSuccess: onLambdaSuccess,
-    };
-
-    /**
-     * Required layers, additional to normal defaults
-     */
-    const chLayerGroups = new ChLayerFrom(this, 'cc-groups-service');
-    this.lambdaProps.layers?.push(chLayerGroups.layer);
-
-    /**
      * Function: Upsert course group
      *
      * Triggers
@@ -108,7 +82,12 @@ export class GroupsStack extends cdk.Stack {
           __dirname,
           '../src/infra/upsert-course-group/main.ts'
         ),
-        lambdaProps: lambdaPropsWithDestination,
+        lambdaProps: this.lambdaProps,
+        destinations: {
+          onSuccess: {
+            eventBus: internalEventBusConstruct.eventBus,
+          },
+        },
       }
     );
 
@@ -261,7 +240,12 @@ export class GroupsStack extends cdk.Stack {
           __dirname,
           '../src/infra/upsert-course-group-member/main.ts'
         ),
-        lambdaProps: lambdaPropsWithDestination,
+        lambdaProps: this.lambdaProps,
+        destinations: {
+          onSuccess: {
+            eventBus: internalEventBusConstruct.eventBus,
+          },
+        },
       }
     );
 
@@ -361,20 +345,34 @@ export class GroupsStack extends cdk.Stack {
      * - personal SQS; triggered by update group member multi;
      *   triggered by course group update i.e. course opens/closes;
      *   triggered by member update
+     *
+     * NOTE: lambda destinations will not work in SQS context as
+     * SQS is considered SYNCHRONOUS and destinations are only
+     * triggered in ASYNCHRONOUS mode
+     * Ref: https://repost.aws/questions/QUNhSAWNwVR2uEYDbuts9bLw/lambda-events-not-triggering-event-bridge-destination
+     *
+     * It is important to leave the destination in place so that the throttled knows
+     * it needs to create the destination replacement. It also allows this lambda
+     * to be used independently of the throttled version.
      */
-    const updateGroupMemberResourceId = generateCompositeResourceId(
+    const updateGroupMemberLambdaId = generateCompositeResourceId(
       stackId,
       'group-member-update'
     );
     const updateGroupMemberLambdaConstruct = new LambdaConstruct(
       this,
-      updateGroupMemberResourceId,
+      updateGroupMemberLambdaId,
       {
         lambdaEntry: pathResolve(
           __dirname,
           '../src/infra/update-group-member/main.ts'
         ),
-        lambdaProps: lambdaPropsWithDestination,
+        lambdaProps: this.lambdaProps,
+        destinations: {
+          onSuccess: {
+            eventBus: internalEventBusConstruct.eventBus,
+          },
+        },
       }
     );
 
@@ -387,33 +385,21 @@ export class GroupsStack extends cdk.Stack {
     );
 
     /**
-     * SQS queue to throttle requests to updateGroupMember
+     * We're also going to create a throttled version of this lambda
      */
-    const [updateGroupMemberQueueName, updateGroupMemberQueueTitle] =
-      resourceNameTitle(updateGroupMemberResourceId, 'Queue');
-    const updateGroupMemberQueue = new sqs.Queue(
-      this,
-      updateGroupMemberQueueTitle,
-      {
-        queueName: updateGroupMemberQueueName,
-        visibilityTimeout: cdk.Duration.seconds(60),
-      }
+    const updateGroupMemberThrottledLambdaId = generateCompositeResourceId(
+      updateGroupMemberLambdaId,
+      'throttled'
     );
-    // allow the (above) multi lambda to send messages to the queue
-    updateGroupMemberQueue.grantSendMessages(
-      updateGroupMemberMultiLambdaConstruct.lambdaFunction
-    );
-
-    /**
-     * Subscribe the function, to the queue
-     */
-    updateGroupMemberLambdaConstruct.lambdaFunction.addEventSource(
-      new SqsEventSource(updateGroupMemberQueue, {
-        batchSize: 3, // default
-        maxBatchingWindow: cdk.Duration.minutes(2),
-        reportBatchItemFailures: true, // default to false
-      })
-    );
+    const updateGroupMemberThrottledLambdaConstruct =
+      new LambdaThrottledConstruct(this, updateGroupMemberThrottledLambdaId, {
+        lambdas: {
+          throttled: updateGroupMemberLambdaConstruct,
+          queue: updateGroupMemberMultiLambdaConstruct,
+        },
+        stackId,
+        prefix: 'cc',
+      });
 
     /**
      * Function: Upsert group member source
@@ -458,14 +444,14 @@ export class GroupsStack extends cdk.Stack {
           updateDomain: undefined,
           upsertSource: upsertGroupMemberSourceLambdaConstruct,
         },
-        entityId: 'member',
+        entityId: 'group-member',
         sources: ['COMMUNITY', 'MICRO-COURSE'],
       });
 
     /**
      * Subscribing the state machine to the internal event bus
      */
-    const updateGroupMemberSourceMultiRuleConstruct = new RuleEntityEvent(
+    const upsertGroupMemberSourceMultiRuleConstruct = new RuleEntityEvent(
       this,
       generateCompositeResourceId(
         upsertGroupMemberSourceMultiId,

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import type { LoggerService } from '@nestjs/common';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 import { logAction } from '@curioushuman/fp-ts-utils';
@@ -17,14 +17,23 @@ import { confirmEnvVars } from '../../../utils/functions';
 
 /**
  * A service for engaging with Step Functions
+ *
+ * TODO:
+ * - [ ] at this point, I don't think onModuleDestroy is being called
+ *       need new method of tapping into the Nest.js lifecycle while
+ *       allowing these kind of services to also be called sans Nest
+ * - [ ] at some point implement a better backup logger than console
  */
-@Injectable()
 export class SfnService extends AwsService {
   private client: SFNClient;
+  private logger: LoggerService;
   awsResourceName = 'SfnStateMachine';
 
-  constructor(props: AwsServiceProps, private logger: LoggableLogger) {
+  constructor(props: AwsServiceProps, logger?: LoggableLogger) {
     super(props);
+
+    // prepare the logger
+    this.logger = logger || console;
 
     // prepare the clients
     confirmEnvVars(['AWS_REGION']);

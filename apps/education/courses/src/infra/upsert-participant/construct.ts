@@ -70,9 +70,9 @@ export class UpsertParticipantConstruct extends Construct {
     maxAttempts: 3,
   };
 
-  public tasks: Record<string, sfn.Chain> = {};
-  public definition: sfn.Chain;
-  public logGroup!: logs.ILogGroup;
+  private tasks: Record<string, sfn.Chain> = {};
+  private definition: sfn.Chain;
+  private logGroup!: logs.ILogGroup;
   public stateMachine: sfn.StateMachine;
 
   constructor(
@@ -169,6 +169,7 @@ export class UpsertParticipantConstruct extends Construct {
   /**
    * NOTE: similar function exists in:
    * /libs/local/cdk-utils/src/lib/step-functions/upsert-source-multi.construct.ts
+   * /libs/local/cdk-utils/src/lib/lambda/lambda-throttled.construct.ts
    */
   private preparePassTitle(taskId: ResourceId): string {
     // this will throw an error if the taskId is not valid
@@ -181,6 +182,10 @@ export class UpsertParticipantConstruct extends Construct {
   private prepareTasks(): void {
     /**
      * Task: Announce participant update
+     *
+     * NOTE: this is required! Lambda destinations won't work in this context as
+     * step machines are SYNCHRONOUS and destinations are only triggered in ASYNC.
+     * Ref: https://repost.aws/questions/QUNhSAWNwVR2uEYDbuts9bLw/lambda-events-not-triggering-event-bridge-destination
      *
      * NEXT: success
      * CATCH: fail
@@ -278,6 +283,8 @@ export class UpsertParticipantConstruct extends Construct {
 
     /**
      * Task: Announce member creation
+     *
+     * NOTE: required for the same reason as putEventParticipantUpserted
      *
      * NEXT: createParticipant
      * CATCH: fail

@@ -23,7 +23,7 @@ export type UpdateGroupMemberRequestDto = Static<
  *
  * Runtypes can't deal with Records with too many layers i.e. groupMemberResponseDto
  */
-export const guardUpdateParticipantRequestDto = (
+export const guardUpdateGroupMemberRequestDto = (
   dto: UpdateGroupMemberRequestDto
 ): boolean => {
   const { groupMember } = dto;

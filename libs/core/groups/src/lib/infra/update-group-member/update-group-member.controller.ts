@@ -96,10 +96,14 @@ export class UpdateGroupMemberController {
       payload = pipe(updatedGroupMember, parseData(mapper, this.logger));
     }
 
-    return pipe(
+    const response = pipe(
       payload,
       prepareUpsertResponsePayload('group-member', true, !updatedGroupMember)
     );
+
+    this.logger.debug(response, 'update response');
+
+    return response;
   }
 
   private updateGroupMember(

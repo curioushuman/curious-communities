@@ -34,7 +34,7 @@ export class UpsertParticipantController {
 
     const task = pipe(
       participantSource,
-      // #4. send the messages
+      // #3. send the messages
       this.orchestrationService.upsertParticipant
     );
 

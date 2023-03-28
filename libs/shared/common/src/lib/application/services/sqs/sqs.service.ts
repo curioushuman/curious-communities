@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import * as TE from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/function';
 import {
@@ -28,7 +27,6 @@ import { AwsServiceProps } from '../aws/__types__';
 /**
  * A service for engaging with SQS
  */
-@Injectable()
 export class SqsService<DomainMessage> extends AwsService {
   private client: SQSClient;
   awsResourceName = 'Queue';

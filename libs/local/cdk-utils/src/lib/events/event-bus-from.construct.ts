@@ -46,6 +46,7 @@ export class ChEventBusFrom extends Construct {
      *      and sub them in here
      *
      * TODO:
+     * - [ ] extract into it's own function
      * - [ ] create more specific roles
      * - [ ] build the role id from the id provided; OR change inputs
      */

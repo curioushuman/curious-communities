@@ -72,15 +72,22 @@ export type Course = Static<typeof Course>;
  * ----
  */
 
+const CourseFiltersDateOpenRange = Record({
+  start: Timestamp,
+  end: Timestamp,
+});
+
 /**
  * The currently supported fields in a findAll query
+ *
+ * TODO:
+ * - [ ] allow filters to dynamically handle multiple filters
+ * - [ ] add support for OR filters
  */
 export const CourseFilters = Record({
-  dateOpenRange: Record({
-    start: Timestamp,
-    end: Timestamp,
-  }),
-});
+  dateOpenRange: Optional(CourseFiltersDateOpenRange),
+  status: Optional(CourseStatus),
+}).withConstraint((dto) => !!(dto.dateOpenRange || dto.status));
 
 /**
  * The currently supported fields in a findAll query

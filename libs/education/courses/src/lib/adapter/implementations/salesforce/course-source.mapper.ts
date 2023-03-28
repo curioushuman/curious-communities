@@ -1,4 +1,8 @@
-import { Timestamp } from '@curioushuman/common';
+import {
+  Timestamp,
+  timezoneNow,
+  timezoneTimestamp,
+} from '@curioushuman/common';
 import { CourseSource } from '../../../domain/entities/course-source';
 import {
   CourseSourceStatus,
@@ -51,7 +55,7 @@ export class SalesforceApiCourseSourceMapper {
     if (!dateOpen) {
       return CourseSourceStatusEnum.PENDING;
     }
-    const now = Date.now();
+    const now = timezoneNow(config);
     if (now < dateOpen || (dateClosed && now > dateClosed)) {
       return CourseSourceStatusEnum.CLOSED;
     }
@@ -59,7 +63,10 @@ export class SalesforceApiCourseSourceMapper {
   }
 
   /**
-   * TODO: find a better place to put the timezone stuff; value, and functions
+   * This function does need to use the timezoneTimestamp function
+   * as the date string from SF is date only, not date time.
+   *
+   * If we ever have a dateTime (or ISO) string, then we wouldn't use the timezone function
    */
   public static prepareTimestamp(
     dateString: string | null | undefined
@@ -67,9 +74,6 @@ export class SalesforceApiCourseSourceMapper {
     if (!dateString) {
       return undefined;
     }
-    const timestampUtc = new Date(dateString).getTime();
-    const timestampTimezone =
-      timestampUtc + config.timezone.offset * 60 * 60 * 1000;
-    return Timestamp.check(timestampTimezone);
+    return Timestamp.check(timezoneTimestamp(dateString, config));
   }
 }

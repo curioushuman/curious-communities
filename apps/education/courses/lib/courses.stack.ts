@@ -1,5 +1,4 @@
 import * as cdk from 'aws-cdk-lib';
-import * as destinations from 'aws-cdk-lib/aws-lambda-destinations';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
@@ -453,7 +452,7 @@ export class CoursesStack extends cdk.Stack {
      */
     const upsertParticipantId = generateCompositeResourceId(
       stackId,
-      'participant-upsert-state-machine'
+      'participant-upsert-orch'
     );
     const upsertParticipantConstruct = new UpsertParticipantConstruct(
       this,

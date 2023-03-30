@@ -38,7 +38,7 @@ export class SfnParticipantOrchestrationService
       participantSource.source
     );
     return this.sfnService.startExecution({
-      id: 'participant-upsert-state-machine',
+      id: 'participant-upsert-orch-sfn',
       input: {
         // detail is what the state machine expects
         // later we could remove this, and update the state machine to deal with either

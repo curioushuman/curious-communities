@@ -16,6 +16,7 @@ import {
   resourceNameTitle,
   transformIdToResourceTitle,
 } from '../../../../../../dist/local/@curioushuman/cdk-utils/src';
+import { StepFunctionsConstruct } from '../../../../../../libs/local/cdk-utils/src/lib/step-functions/step-functions.construct';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
@@ -64,15 +65,10 @@ export class UpsertParticipantConstruct extends Construct {
   private lambdas: UpsertParticipantLambdas;
   private eventBus: events.IEventBus;
   private externalFunctions: Record<string, lambda.IFunction> = {};
-  private endStates!: Record<string, sfn.State>;
-  private retryProps: sfn.RetryProps = {
-    interval: cdk.Duration.seconds(2),
-    maxAttempts: 3,
-  };
 
+  private stepFunctionsId: ResourceId;
+  private stepFunctions?: StepFunctionsConstruct;
   private tasks: Record<string, sfn.Chain> = {};
-  private definition: sfn.Chain;
-  private logGroup!: logs.ILogGroup;
   public stateMachine: sfn.StateMachine;
 
   constructor(
@@ -84,11 +80,22 @@ export class UpsertParticipantConstruct extends Construct {
 
     // save some props
     this.constructId = constructId;
+    this.stepFunctionsId = generateCompositeResourceId(this.constructId, 'sfn');
     this.lambdas = props.lambdas;
     this.eventBus = props.eventBus;
 
-    // prepare our end states
-    this.prepareEndStates();
+    // init the step functions construct
+    // NOTE: this does nothing until you feed it tasks
+    this.stepFunctions = new StepFunctionsConstruct(
+      this,
+      this.stepFunctionsId,
+      {
+        endStates: {
+          fail: 'Participant upsert failed',
+          success: 'Participant upsert succeeded',
+        },
+      }
+    );
 
     // prepare other required external functions
     this.prepareExternalFunctions();
@@ -96,51 +103,12 @@ export class UpsertParticipantConstruct extends Construct {
     // prepare our tasks
     this.prepareTasks();
 
-    // prepare our log group
-    this.prepareLogGroup();
+    // add the tasks to the step function
+    this.stepFunctions.addTasks(this.tasks);
 
-    // prepare our definition
-    // add the first task, everything else is pre-chained
-    this.definition = sfn.Chain.start(this.tasks.findParticipant);
-
-    // create our state machine
-    const [stateMachineName, stateMachineTitle] = resourceNameTitle(
-      constructId,
-      'SfnStateMachine'
-    );
-    this.stateMachine = new sfn.StateMachine(this, stateMachineTitle, {
-      stateMachineName: stateMachineName,
-      definition: this.definition,
-      timeout: cdk.Duration.minutes(5),
-      tracingEnabled: true,
-      stateMachineType: sfn.StateMachineType.EXPRESS,
-      logs: {
-        destination: this.logGroup,
-        level: sfn.LogLevel.ALL,
-      },
-    });
-  }
-
-  private prepareLogGroup(): void {
-    const [logGroupName, logGroupTitle] = resourceNameTitle(
-      this.constructId,
-      'LogGroup'
-    );
-    this.logGroup = new logs.LogGroup(this, logGroupTitle, {
-      logGroupName: logGroupName,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      retention: logs.RetentionDays.ONE_MONTH,
-    });
-  }
-
-  private prepareEndStates(): void {
-    // Our two end states
-    const fail = new sfn.Fail(this, `Participant upsert failed`, {});
-    const success = new sfn.Succeed(this, `Participant upsert succeeded`);
-    this.endStates = {
-      fail,
-      success,
-    };
+    // prepare the state machine
+    this.stateMachine =
+      this.stepFunctions.prepareStateMachine('findParticipant');
   }
 
   private prepareExternalFunction(functionId: string): lambda.IFunction {
@@ -158,28 +126,10 @@ export class UpsertParticipantConstruct extends Construct {
     }
   }
 
-  private prepareTaskTitle(taskId: ResourceId): string {
-    // this will throw an error if the taskId is not valid
-    ResourceId.check(taskId);
-    const resourceId = generateCompositeResourceId(this.constructId, taskId);
-    const taskTitle = transformIdToResourceTitle(resourceId, 'SfnTask');
-    return taskTitle;
-  }
-
-  /**
-   * NOTE: similar function exists in:
-   * /libs/local/cdk-utils/src/lib/step-functions/upsert-source-multi.construct.ts
-   * /libs/local/cdk-utils/src/lib/lambda/lambda-throttled.construct.ts
-   */
-  private preparePassTitle(taskId: ResourceId): string {
-    // this will throw an error if the taskId is not valid
-    ResourceId.check(taskId);
-    const resourceId = generateCompositeResourceId(this.constructId, taskId);
-    const taskTitle = transformIdToResourceTitle(resourceId, 'SfnPass');
-    return taskTitle;
-  }
-
   private prepareTasks(): void {
+    if (!this.stepFunctions) {
+      throw new Error('Step functions construct not initialized');
+    }
     /**
      * Task: Announce participant update
      *
@@ -192,7 +142,7 @@ export class UpsertParticipantConstruct extends Construct {
      */
     this.tasks.putEventParticipantUpserted = new tasks.EventBridgePutEvents(
       this,
-      this.prepareTaskTitle('participant-upsert-put-event'),
+      this.stepFunctions.prepareTaskTitle('participant-upsert-put-event'),
       {
         inputPath: '$.participant.detail',
         // NOTE: we need to add this in so our other data isn't overridden?
@@ -214,8 +164,8 @@ export class UpsertParticipantConstruct extends Construct {
         ],
       }
     )
-      .addCatch(this.endStates.fail)
-      .next(this.endStates.success);
+      .addCatch(this.stepFunctions.endStates.fail)
+      .next(this.stepFunctions.endStates.success);
 
     /**
      * Task: update participant
@@ -227,7 +177,7 @@ export class UpsertParticipantConstruct extends Construct {
      */
     this.tasks.updateParticipant = new tasks.LambdaInvoke(
       this,
-      this.prepareTaskTitle('participant-update'),
+      this.stepFunctions.prepareTaskTitle('participant-update'),
       {
         lambdaFunction: this.lambdas.updateParticipant.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
@@ -241,7 +191,7 @@ export class UpsertParticipantConstruct extends Construct {
         ),
       }
     )
-      .addCatch(this.endStates.fail)
+      .addCatch(this.stepFunctions.endStates.fail)
       .next(this.tasks.putEventParticipantUpserted);
 
     /**
@@ -252,7 +202,7 @@ export class UpsertParticipantConstruct extends Construct {
      */
     this.tasks.createParticipant = new tasks.LambdaInvoke(
       this,
-      this.prepareTaskTitle('participant-create'),
+      this.stepFunctions.prepareTaskTitle('participant-create'),
       {
         lambdaFunction: this.lambdas.createParticipant.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
@@ -262,7 +212,7 @@ export class UpsertParticipantConstruct extends Construct {
         ),
       }
     )
-      .addCatch(this.endStates.fail)
+      .addCatch(this.stepFunctions.endStates.fail)
       .next(this.tasks.putEventParticipantUpserted);
 
     /**
@@ -275,7 +225,7 @@ export class UpsertParticipantConstruct extends Construct {
      */
     this.tasks.postMemberCreatePause = new sfn.Wait(
       this,
-      this.prepareTaskTitle('member-create-pause'),
+      this.stepFunctions.prepareTaskTitle('member-create-pause'),
       {
         time: sfn.WaitTime.duration(cdk.Duration.seconds(10)),
       }
@@ -291,7 +241,7 @@ export class UpsertParticipantConstruct extends Construct {
      */
     this.tasks.putEventMemberCreated = new tasks.EventBridgePutEvents(
       this,
-      this.prepareTaskTitle('member-create-put-event'),
+      this.stepFunctions.prepareTaskTitle('member-create-put-event'),
       {
         inputPath: '$.member.detail',
         // NOTE: we need to add this in so our other data isn't overridden?
@@ -313,7 +263,7 @@ export class UpsertParticipantConstruct extends Construct {
         ],
       }
     )
-      .addCatch(this.endStates.fail)
+      .addCatch(this.stepFunctions.endStates.fail)
       .next(this.tasks.postMemberCreatePause);
 
     /**
@@ -326,7 +276,7 @@ export class UpsertParticipantConstruct extends Construct {
      */
     this.tasks.createMember = new tasks.LambdaInvoke(
       this,
-      this.prepareTaskTitle('member-create'),
+      this.stepFunctions.prepareTaskTitle('member-create'),
       {
         lambdaFunction: this.externalFunctions.createMember,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
@@ -339,7 +289,7 @@ export class UpsertParticipantConstruct extends Construct {
         ),
       }
     )
-      .addCatch(this.endStates.fail)
+      .addCatch(this.stepFunctions.endStates.fail)
       .next(this.tasks.putEventMemberCreated);
 
     /**
@@ -350,7 +300,7 @@ export class UpsertParticipantConstruct extends Construct {
      */
     this.tasks.findMember = new tasks.LambdaInvoke(
       this,
-      this.prepareTaskTitle('member-find'),
+      this.stepFunctions.prepareTaskTitle('member-find'),
       {
         lambdaFunction: this.externalFunctions.findMember,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
@@ -365,9 +315,10 @@ export class UpsertParticipantConstruct extends Construct {
     )
       // this catches the specific NotFound error, and passes through to create
       .addCatch(
-        new sfn.Pass(this, this.preparePassTitle('member-find')).next(
-          this.tasks.createMember
-        ),
+        new sfn.Pass(
+          this,
+          this.stepFunctions.preparePassTitle('member-find')
+        ).next(this.tasks.createMember),
         {
           errors: ['RepositoryItemNotFoundError'],
           // must include this, otherwise error result overrides full result
@@ -375,7 +326,7 @@ export class UpsertParticipantConstruct extends Construct {
         }
       )
       // will hand off any other error to the fail state
-      .addCatch(this.endStates.fail)
+      .addCatch(this.stepFunctions.endStates.fail)
       .next(this.tasks.createParticipant);
 
     /**
@@ -386,7 +337,7 @@ export class UpsertParticipantConstruct extends Construct {
      */
     this.tasks.findCourse = new tasks.LambdaInvoke(
       this,
-      this.prepareTaskTitle('course-find'),
+      this.stepFunctions.prepareTaskTitle('course-find'),
       {
         lambdaFunction: this.lambdas.findCourse.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
@@ -399,7 +350,7 @@ export class UpsertParticipantConstruct extends Construct {
         ),
       }
     )
-      .addCatch(this.endStates.fail)
+      .addCatch(this.stepFunctions.endStates.fail)
       .next(this.tasks.findMember);
 
     /**
@@ -410,7 +361,7 @@ export class UpsertParticipantConstruct extends Construct {
      */
     this.tasks.findParticipantSource = new tasks.LambdaInvoke(
       this,
-      this.prepareTaskTitle('participant-source-find'),
+      this.stepFunctions.prepareTaskTitle('participant-source-find'),
       {
         lambdaFunction: this.lambdas.findParticipantSource.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
@@ -424,8 +375,8 @@ export class UpsertParticipantConstruct extends Construct {
         ),
       }
     )
-      .addRetry(this.retryProps)
-      .addCatch(this.endStates.fail)
+      .addRetry(this.stepFunctions.retryProps)
+      .addCatch(this.stepFunctions.endStates.fail)
       .next(this.tasks.findCourse);
 
     /**
@@ -436,7 +387,7 @@ export class UpsertParticipantConstruct extends Construct {
      */
     this.tasks.findParticipant = new tasks.LambdaInvoke(
       this,
-      this.prepareTaskTitle('participant-find'),
+      this.stepFunctions.prepareTaskTitle('participant-find'),
       {
         lambdaFunction: this.lambdas.findParticipant.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
@@ -452,9 +403,10 @@ export class UpsertParticipantConstruct extends Construct {
     )
       // this catches the specific NotFound error, and passes through to create
       .addCatch(
-        new sfn.Pass(this, this.preparePassTitle('participant-find')).next(
-          this.tasks.findParticipantSource
-        ),
+        new sfn.Pass(
+          this,
+          this.stepFunctions.preparePassTitle('participant-find')
+        ).next(this.tasks.findParticipantSource),
         {
           errors: ['RepositoryItemNotFoundError'],
           // must include this, otherwise error result overrides full result
@@ -462,7 +414,7 @@ export class UpsertParticipantConstruct extends Construct {
         }
       )
       // will hand off any other error to the fail state
-      .addCatch(this.endStates.fail)
+      .addCatch(this.stepFunctions.endStates.fail)
       .next(this.tasks.updateParticipant);
   }
 }

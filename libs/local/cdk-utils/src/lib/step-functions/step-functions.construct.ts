@@ -100,7 +100,7 @@ export class StepFunctionsConstruct extends Construct {
     };
   }
 
-  public prepareStateMachine(firstTaskId: string): void {
+  public prepareStateMachine(firstTaskId: string): sfn.StateMachine {
     if (Object.keys(this.tasks).length === 0 || !this.tasks[firstTaskId]) {
       throw new Error('Missing tasks');
     }
@@ -123,6 +123,7 @@ export class StepFunctionsConstruct extends Construct {
         level: sfn.LogLevel.ALL,
       },
     });
+    return this.stateMachine;
   }
 
   public prepareTaskTitle(taskId: ResourceId): string {

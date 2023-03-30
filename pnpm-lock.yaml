@@ -107,7 +107,7 @@ importers:
       '@nrwl/linter': 14.3.6_hjwsk7t4rtenhyzw3vpfwjmwy4
       '@nrwl/nest': 14.3.6_psffsd7nhcpxr3uxf6i4ua7oum
       '@nrwl/node': 14.3.6_rqwecdvatvrarnnf5qu7jvhawy
-      '@nrwl/nx-cloud': 15.1.1
+      '@nrwl/nx-cloud': 15.3.3
       '@nrwl/web': 14.3.6_rqwecdvatvrarnnf5qu7jvhawy
       '@nrwl/workspace': 14.3.6_4foxrzka2hlguajhmajnl2bwfq
       '@otterdev/nx-cdk': 0.0.14
@@ -221,27 +221,27 @@ importers:
       constructs: 10.1.196
       tslib: 2.4.1
 
+  apps/shared/common:
+    specifiers:
+      aws-cdk-lib: ^2.55.1
+      constructs: ^10.1.196
+      tslib: ^2.4.1
+    devDependencies:
+      aws-cdk-lib: 2.55.1_constructs@10.1.196
+      constructs: 10.1.196
+      tslib: 2.4.1
+
+  apps/shared/layers:
+    specifiers:
+      aws-cdk-lib: ^2.55.1
+      constructs: ^10.1.196
+      tslib: ^2.4.1
+    devDependencies:
+      aws-cdk-lib: 2.55.1_constructs@10.1.196
+      constructs: 10.1.196
+      tslib: 2.4.1
+
   apps/utils/ci-cd:
-    specifiers:
-      aws-cdk-lib: ^2.55.1
-      constructs: ^10.1.196
-      tslib: ^2.4.1
-    devDependencies:
-      aws-cdk-lib: 2.55.1_constructs@10.1.196
-      constructs: 10.1.196
-      tslib: 2.4.1
-
-  apps/utils/events:
-    specifiers:
-      aws-cdk-lib: ^2.55.1
-      constructs: ^10.1.196
-      tslib: ^2.4.1
-    devDependencies:
-      aws-cdk-lib: 2.55.1_constructs@10.1.196
-      constructs: 10.1.196
-      tslib: 2.4.1
-
-  apps/utils/layers:
     specifiers:
       aws-cdk-lib: ^2.55.1
       constructs: ^10.1.196
@@ -5203,8 +5203,8 @@ packages:
       - webpack-cli
     dev: true
 
-  /@nrwl/nx-cloud/15.1.1:
-    resolution: {integrity: sha512-aIVb87PQpAjwdEaFksQ3rYgFq9MDaBG2KvYZcj/k+z2uWeWH84ha/opO37aCFLf5VXNiyJZGRb/+7vW7BFpNOw==}
+  /@nrwl/nx-cloud/15.3.3:
+    resolution: {integrity: sha512-zU+0YwN2M+G8Z9RjcsIbya6jgTB1SBGhqCXOb/CdwLnCHylAP0T6f9vaQibZE1BhI6doM+betqY0FvPazTjd8g==}
     hasBin: true
     dependencies:
       axios: 0.21.4

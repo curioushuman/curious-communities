@@ -6,7 +6,7 @@
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/utils/layers/cc-members-service/nodejs/node_modules/@curioushuman/cc-members-service",
+        "outputPath": "dist/shared/layers/cc-members-service/nodejs/node_modules/@curioushuman/cc-members-service",
         "tsConfig": "libs/core/members/tsconfig.lib.json",
         "packageJson": "libs/core/members/package.json",
         "main": "libs/core/members/src/index.ts",

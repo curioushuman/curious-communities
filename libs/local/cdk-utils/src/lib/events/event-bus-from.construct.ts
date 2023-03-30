@@ -50,7 +50,7 @@ export class ChEventBusFrom extends Construct {
      * - [ ] create more specific roles
      * - [ ] build the role id from the id provided; OR change inputs
      */
-    const allEventbusRoleId = 'cc-events-all';
+    const allEventbusRoleId = 'cc-common-events-all';
     const [allEventbusRoleName, allEventbusRoleTitle] = resourceNameTitle(
       allEventbusRoleId,
       'Role'

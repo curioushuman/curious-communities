@@ -6,7 +6,7 @@
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/utils/layers/shared/nodejs/node_modules/@curioushuman/common",
+        "outputPath": "dist/shared/layers/shared/nodejs/node_modules/@curioushuman/common",
         "main": "libs/shared/common/src/index.ts",
         "tsConfig": "libs/shared/common/tsconfig.lib.json",
         "packageJson": "libs/shared/common/package.json",

@@ -60,7 +60,7 @@ export class GroupsStack extends cdk.Stack {
      */
     const internalEventBusConstruct = new ChEventBusFrom(
       this,
-      'cc-events-internal'
+      'cc-common-events-internal'
     );
 
     /**
@@ -387,18 +387,12 @@ export class GroupsStack extends cdk.Stack {
     /**
      * We're also going to create a throttled version of this lambda
      */
-    const updateGroupMemberThrottledLambdaId = generateCompositeResourceId(
-      updateGroupMemberLambdaId,
-      'throttled'
-    );
     const updateGroupMemberThrottledLambdaConstruct =
-      new LambdaThrottledConstruct(this, updateGroupMemberThrottledLambdaId, {
+      new LambdaThrottledConstruct(this, updateGroupMemberLambdaId, {
         lambdas: {
           throttled: updateGroupMemberLambdaConstruct,
           queue: updateGroupMemberMultiLambdaConstruct,
         },
-        stackId,
-        prefix: 'cc',
       });
 
     /**

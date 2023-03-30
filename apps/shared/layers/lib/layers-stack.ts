@@ -10,7 +10,7 @@ export class LayersStack extends cdk.Stack {
   constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
     super(scope, stackId, props);
 
-    const fileLocation = '../../../dist/utils/layers';
+    const fileLocation = '../../../dist/shared/layers';
 
     const nodeModulesLayerId = 'node-modules';
     new ChLayer(this, nodeModulesLayerId, { fileLocation });

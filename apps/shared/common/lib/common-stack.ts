@@ -11,7 +11,7 @@ import {
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-export class CcEventsStack extends cdk.Stack {
+export class CcCommonStack extends cdk.Stack {
   constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
     super(scope, stackId, props);
 

@@ -1,0 +1,14 @@
+{
+  "name": "@curioushuman/cc-common",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "devDependencies": {
+    "@curioushuman/common": "workspace:^0.0.1",
+    "@curioushuman/loggable": "workspace:^0.0.1",
+    "@curioushuman/fp-ts-utils": "workspace:^0.0.1",
+    "aws-cdk-lib": "^2.55.1",
+    "constructs": "^10.1.196",
+    "tslib": "^2.4.1"
+  }
+}

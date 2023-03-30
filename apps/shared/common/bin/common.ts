@@ -7,14 +7,14 @@ import { getAccountAndRegion } from '../../../../dist/local/@curioushuman/cdk-ut
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 
-import { CcEventsStack } from '../lib/events-stack';
+import { CcCommonStack } from '../lib/common-stack';
 
 const [account, region] = getAccountAndRegion();
 
 // creating an app in cloud or local
 const app = new cdk.App();
-const stackId = 'cc-events';
-new CcEventsStack(app, stackId, {
+const stackId = 'cc-common';
+new CcCommonStack(app, stackId, {
   env: {
     account,
     region,

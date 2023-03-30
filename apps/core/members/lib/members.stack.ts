@@ -58,7 +58,7 @@ export class MembersStack extends cdk.Stack {
      */
     const externalEventBusConstruct = new ChEventBusFrom(
       this,
-      'cc-events-external'
+      'cc-common-events-external'
     );
 
     /**
@@ -66,7 +66,7 @@ export class MembersStack extends cdk.Stack {
      */
     const internalEventBusConstruct = new ChEventBusFrom(
       this,
-      'cc-events-internal'
+      'cc-common-events-internal'
     );
 
     /**

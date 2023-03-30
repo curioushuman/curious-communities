@@ -24,7 +24,7 @@ import {
 // import {
 //   clientErrors,
 //   serverErrors,
-// } from '../../../../../../dist/utils/layers/shared/nodejs/node_modules/@curioushuman/error-factory/src/index.js';
+// } from '../../../../../../dist/shared/layers/shared/nodejs/node_modules/@curioushuman/error-factory/src/index.js';
 // Long term we'll put them into packages
 // import { clientErrors, serverErrors } from '@curioushuman/error-factory';
 // ! UPDATE

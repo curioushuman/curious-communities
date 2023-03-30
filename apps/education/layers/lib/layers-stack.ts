@@ -13,7 +13,7 @@ export class CcEducationLayersStack extends cdk.Stack {
   constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
     super(scope, stackId, props);
 
-    const fileLocation = '../../../dist/utils/layers';
+    const fileLocation = '../../../dist/shared/layers';
 
     const coursesServiceLayerId = 'cc-courses-service';
     new ChLayer(this, coursesServiceLayerId, { fileLocation });

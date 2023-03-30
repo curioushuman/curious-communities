@@ -6,13 +6,13 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/utils/layers/**/*.ts"]
+        "lintFilePatterns": ["apps/shared/layers/**/*.ts"]
       }
     },
     "list": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/utils/layers",
+        "outputPath": "dist/apps/shared/layers",
         "command": "list",
         "parameters": [
           "--all",
@@ -24,7 +24,7 @@
     "build": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/utils/layers",
+        "outputPath": "dist/apps/shared/layers",
         "command": "synth",
         "parameters": [
           "--all",
@@ -40,7 +40,7 @@
     "synth": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/utils/layers",
+        "outputPath": "dist/apps/shared/layers",
         "command": "synth",
         "parameters": [
           "--all",
@@ -56,12 +56,12 @@
     "deploy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/utils/layers",
+        "outputPath": "dist/apps/shared/layers",
         "command": "deploy",
         "parameters": [
           "--all",
           " --require-approval=never",
-          "--outputs-file ../../../dist/apps/utils/layers/cdk-outputs.json",
+          "--outputs-file ../../../dist/apps/shared/layers/cdk-outputs.json",
           "--profile=$AWS_PROFILE"
         ]
       },
@@ -74,7 +74,7 @@
     "destroy": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/utils/layers",
+        "outputPath": "dist/apps/shared/layers",
         "command": "destroy",
         "parameters": [
           "--all",
@@ -86,7 +86,7 @@
     "diff": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/utils/layers",
+        "outputPath": "dist/apps/shared/layers",
         "command": "diff",
         "parameters": [
           "--all",
@@ -101,7 +101,7 @@
     "metadata": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/utils/layers",
+        "outputPath": "dist/apps/shared/layers",
         "command": "metadata",
         "parameters": [
           "--all",
@@ -112,7 +112,7 @@
     "context": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/utils/layers",
+        "outputPath": "dist/apps/shared/layers",
         "command": "context",
         "parameters": [
           "--all",
@@ -123,7 +123,7 @@
     "docs": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/utils/layers",
+        "outputPath": "dist/apps/shared/layers",
         "command": "docs",
         "parameters": [
           "--all",
@@ -134,7 +134,7 @@
     "doctor": {
       "executor": "@otterdev/nx-cdk:run",
       "options": {
-        "outputPath": "dist/apps/utils/layers",
+        "outputPath": "dist/apps/shared/layers",
         "command": "doctor",
         "parameters": [
           "--all",
@@ -144,9 +144,9 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/utils/layers"],
+      "outputs": ["coverage/apps/shared/layers"],
       "options": {
-        "jestConfig": "apps/utils/layers/jest.config.ts",
+        "jestConfig": "apps/shared/layers/jest.config.ts",
         "passWithNoTests": true
       }
     },
@@ -168,7 +168,7 @@
           "aws lambda remove-layer-version-permission --layer-name NodeModulesLayer --version-number 1 --statement-id NodeModulesLayerLocalStack",
           "aws lambda remove-layer-version-permission --layer-name SharedLayer --version-number 7 --statement-id SharedLayerLocalStack"
         ],
-        "cwd": "apps/utils/layers",
+        "cwd": "apps/shared/layers",
         "parallel": true
       }
     },
@@ -176,10 +176,10 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "../../../node_modules/.bin/rimraf ../../../dist/apps/utils/layers",
-          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/utils/layers"
+          "../../../node_modules/.bin/rimraf ../../../dist/apps/shared/layers",
+          "../../../node_modules/.bin/cdklocal deploy --require-approval=never --output ../../../dist/apps/shared/layers"
         ],
-        "cwd": "apps/utils/layers",
+        "cwd": "apps/shared/layers",
         "parallel": false
       },
       "dependsOn": [{
@@ -190,8 +190,8 @@
     "destroy-local": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/utils/layers",
-        "cwd": "apps/utils/layers",
+        "command": "../../../node_modules/.bin/cdklocal destroy --force --output ../../../dist/apps/shared/layers",
+        "cwd": "apps/shared/layers",
         "parallel": false
       }
     },
@@ -199,10 +199,10 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "rimraf dist/utils/layers/node-modules",
-          "mkdir -p dist/utils/layers/node-modules/nodejs",
-          "cp package.json dist/utils/layers/node-modules/nodejs",
-          "cd dist/utils/layers/node-modules/nodejs && npm install --production"
+          "rimraf dist/shared/layers/node-modules",
+          "mkdir -p dist/shared/layers/node-modules/nodejs",
+          "cp package.json dist/shared/layers/node-modules/nodejs",
+          "cd dist/shared/layers/node-modules/nodejs && npm install --production"
         ],
         "parallel": false
       }

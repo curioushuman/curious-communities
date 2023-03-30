@@ -10,7 +10,7 @@ export class CcCoreLayersStack extends cdk.Stack {
   constructor(scope: cdk.App, stackId: string, props?: cdk.StackProps) {
     super(scope, stackId, props);
 
-    const fileLocation = '../../../dist/utils/layers';
+    const fileLocation = '../../../dist/shared/layers';
 
     new ChLayer(this, 'cc-groups-service', { fileLocation });
     new ChLayer(this, 'cc-members-service', { fileLocation });

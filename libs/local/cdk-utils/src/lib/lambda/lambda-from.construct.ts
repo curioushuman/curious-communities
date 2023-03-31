@@ -28,11 +28,14 @@ export class ChLambdaFrom extends Construct {
     this.id = ResourceId.check(id);
 
     const lambdaTitle = transformIdToResourceTitle(this.id, 'Lambda');
-    const lambdaArn = this.prepareArn(this.id);
-    this.lambdaFunction = lambda.Function.fromFunctionArn(
+    const functionArn = this.prepareArn(this.id);
+    this.lambdaFunction = lambda.Function.fromFunctionAttributes(
       this,
       lambdaTitle,
-      lambdaArn
+      {
+        functionArn,
+        sameEnvironment: true,
+      }
     );
   }
 

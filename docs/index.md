@@ -84,9 +84,16 @@ Daily scheduled check for courses that are open today.
 <img src="../apps/api/admin/diagrams/api-admin.png" width="200" />
 <img src="../apps/education/courses/diagrams/participant-upsert.png" width="400" />
 
+<font color="green">Tested!</font>
+
 ## Events based on participant creation or update
 
 ### Members
+
+#### NOTES
+
+* Members only **created** when participant created
+* No action when participant updated
 
 <img src="../apps/core/members/diagrams/member-sources-upsert.png" width="500" />
 
@@ -99,6 +106,9 @@ Daily scheduled check for courses that are open today.
 
 <img src="../apps/core/groups/diagrams/course-group-member-upsert.png" width="400" />
 <img src="../apps/core/groups/diagrams/group-member-sources-upsert.png" width="300" />
+
+<font color="green">Tested!</font>
+<font color="orange">Remaining: group-member-upsert-source</font>
 
 # Member
 

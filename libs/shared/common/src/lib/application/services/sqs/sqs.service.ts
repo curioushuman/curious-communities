@@ -20,9 +20,14 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import { logAction } from '@curioushuman/fp-ts-utils';
 
 import { confirmEnvVars, generateUniqueId } from '../../../utils/functions';
-import { SqsMessageBase, SqsSendMessageBatchProps } from './__types__';
+import {
+  SqsMessageBase,
+  SqsMsgOrProxyMsg,
+  SqsSendMessageBatchProps,
+} from './__types__';
 import { AwsService } from '../aws/aws.service';
 import { AwsServiceProps } from '../aws/__types__';
+import { prepareSqsSfnProxy } from '../../../infra/__types__';
 
 /**
  * A service for engaging with SQS
@@ -84,14 +89,32 @@ export class SqsService<DomainMessage> extends AwsService {
     };
   };
 
-  public prepareMessage(body: DomainMessage): SqsMessageBase {
+  public proxyMessage(
+    props: SqsSendMessageBatchProps<DomainMessage>
+  ): (body: DomainMessage) => SqsMsgOrProxyMsg<DomainMessage> {
+    return (body) => {
+      return props.queueType === 'throttled'
+        ? prepareSqsSfnProxy<DomainMessage>(
+            props.id,
+            this.stackId,
+            this.stackPrefix
+          )(body)
+        : body;
+    };
+  }
+
+  public prepareMessage(body: SqsMsgOrProxyMsg<DomainMessage>): SqsMessageBase {
     return {
       MessageBody: JSON.stringify(body),
     };
   }
 
-  public prepareMessages(messages: DomainMessage[]): SqsMessageBase[] {
-    return messages.map(this.prepareMessage);
+  public prepareMessages(
+    props: SqsSendMessageBatchProps<DomainMessage>
+  ): SqsMessageBase[] {
+    return props.messages.map((message) => {
+      return pipe(message, this.proxyMessage(props), this.prepareMessage);
+    });
   }
 
   /**
@@ -160,9 +183,9 @@ export class SqsService<DomainMessage> extends AwsService {
    * Actually send the batch request
    */
   private trySendMessageBatch =
-    (messages: DomainMessage[]) =>
+    (props: SqsSendMessageBatchProps<DomainMessage>) =>
     (queueUrl: string): TE.TaskEither<Error, SendMessageBatchCommandOutput> => {
-      const preparedMessages = this.prepareMessages(messages);
+      const preparedMessages = this.prepareMessages(props);
       return TE.tryCatch(
         async () => {
           const params: SendMessageBatchCommandInput = {
@@ -186,7 +209,7 @@ export class SqsService<DomainMessage> extends AwsService {
   ): TE.TaskEither<Error, void> => {
     if (props.messages.length === 0) {
       // throw new ServiceError('Empty message list received for sending');
-      // UPDATE: I don't think it deserves an error... just don't send anything
+      // UPDATE: I don't think it deserves an error... we just don't send anything
       return TE.right(undefined);
     }
     return pipe(
@@ -200,7 +223,7 @@ export class SqsService<DomainMessage> extends AwsService {
         'successfully retrieved Queue URL',
         'failed to retrieve Queue URL'
       ),
-      TE.chain(this.trySendMessageBatch(props.messages)),
+      TE.chain(this.trySendMessageBatch(props)),
       TE.map(this.processSendMessageBatch(props.id)),
       logAction(
         this.logger,

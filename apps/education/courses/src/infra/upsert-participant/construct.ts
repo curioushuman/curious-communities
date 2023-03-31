@@ -1,7 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as logs from 'aws-cdk-lib/aws-logs';
 import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
 import * as tasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { Construct } from 'constructs';
@@ -13,10 +12,8 @@ import {
   generateCompositeResourceId,
   LambdaConstruct,
   ResourceId,
-  resourceNameTitle,
-  transformIdToResourceTitle,
+  StepFunctionsConstruct,
 } from '../../../../../../dist/local/@curioushuman/cdk-utils/src';
-import { StepFunctionsConstruct } from '../../../../../../libs/local/cdk-utils/src/lib/step-functions/step-functions.construct';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
 

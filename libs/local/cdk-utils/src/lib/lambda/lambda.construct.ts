@@ -133,6 +133,11 @@ export class LambdaConstruct extends Construct {
     });
   }
 
+  /**
+   * Last time we tried this it didn't work
+   *
+   * I CANNOT get InlineCode to work.
+   */
   private prepareLambda(props: LambdaProps): lambda.Function {
     if (!props.lambdaCode) {
       throw new Error('LambdaConstruct: no lambdaCode provided');

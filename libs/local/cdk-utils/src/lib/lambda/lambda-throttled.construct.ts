@@ -1,6 +1,4 @@
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import * as cdk from 'aws-cdk-lib';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as tasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
@@ -13,7 +11,8 @@ import {
   LambdaThrottledProps,
 } from './lambda-throttled.types';
 import { StepFunctionsConstruct } from '../step-functions/step-functions.construct';
-import { LambdaConstruct } from './lambda.construct';
+import { ChLambdaFrom } from './lambda-from.construct';
+import { ChQueueFrom } from '../sqs';
 
 /**
  * This will accept a lambda construct and throttle it using SQS. If
@@ -35,43 +34,41 @@ import { LambdaConstruct } from './lambda.construct';
  * - [ ] support other destinations as and when we need them
  */
 export class LambdaThrottledConstruct extends Construct {
-  private stackId: ResourceId;
-  private prefix: ResourceId | undefined;
   private constructId: ResourceId;
   private lambdas: LambdaThrottledLambdas;
-  private queue!: sqs.Queue;
+  private queue!: sqs.IQueue;
 
   private stepFunctionsId: ResourceId;
   private stepFunctions?: StepFunctionsConstruct;
 
-  constructor(
-    scope: Construct,
-    constructId: string,
-    props: LambdaThrottledProps
-  ) {
+  constructor(scope: Construct, lambdaId: string, props: LambdaThrottledProps) {
+    const constructId = generateCompositeResourceId(lambdaId, 'throttled');
     super(scope, constructId);
 
     // save some props
     this.constructId = constructId;
-    this.stackId = ResourceId.check(props.stackId);
-    this.prefix = props.prefix ? ResourceId.check(props.prefix) : undefined;
     this.stepFunctionsId = generateCompositeResourceId(
       this.constructId,
       'destinations'
     );
     this.lambdas = props.lambdas;
 
-    // prepare queue
-    this.prepareQueue();
-
     // prepare the lambda, or step function
     if (props.lambdas.throttled.includesDestinations()) {
+      this.prepareQueueFrom();
       this.prepareStepFunctions();
     } else {
+      this.prepareQueue();
       this.prepareLambda();
     }
+
+    // allow queueing
+    this.allowQueue();
   }
 
+  /**
+   * Prepares a custom queue in this stack
+   */
   private prepareQueue(): void {
     const [queueName, queueTitle] = resourceNameTitle(
       this.constructId,
@@ -81,7 +78,17 @@ export class LambdaThrottledConstruct extends Construct {
       queueName,
       visibilityTimeout: cdk.Duration.seconds(60),
     });
-    // allow the queueing lambda to send messages to the queue
+  }
+
+  /**
+   * Pulls in the throttled queue from the common stack
+   */
+  private prepareQueueFrom(): void {
+    const queueConstruct = new ChQueueFrom(this, 'cc-common-throttled');
+    this.queue = queueConstruct.queue;
+  }
+
+  private allowQueue(): void {
     if (this.lambdas.queue) {
       this.queue.grantSendMessages(this.lambdas.queue.lambdaFunction);
     }
@@ -90,11 +97,8 @@ export class LambdaThrottledConstruct extends Construct {
   /**
    * If no destinations exist, we need do nothing more than subscribe the lambda
    */
-  private prepareLambda(lambdaFunction?: lambda.IFunction): void {
-    const subscribedLambdaFunction =
-      lambdaFunction || this.lambdas.throttled.lambdaFunction;
-    // Subscribe the function, to the queue
-    subscribedLambdaFunction.addEventSource(
+  private prepareLambda(): void {
+    this.lambdas.throttled.lambdaFunction.addEventSource(
       new SqsEventSource(this.queue, {
         batchSize: 3, // default
         maxBatchingWindow: cdk.Duration.minutes(2),
@@ -104,18 +108,13 @@ export class LambdaThrottledConstruct extends Construct {
   }
 
   private prepareSfnProxyLambda(): void {
+    // proxy lambda can be provided, check for it first
     if (!this.lambdas.proxy) {
-      const proxyLambdaId = generateCompositeResourceId(
-        this.constructId,
-        'sqs-sfn-proxy'
-      );
-      this.lambdas.proxy = new LambdaConstruct(this, proxyLambdaId, {
-        lambdaCode: this.prepareSfnProxyLambdaHandler(),
-      });
+      // if not, use the one we prepared earlier
+      this.lambdas.proxy = new ChLambdaFrom(this, 'cc-common-sqs-sfn-proxy');
     }
-    // this will subscribe it to the queue
-    this.prepareLambda(this.lambdas.proxy.lambdaFunction);
-    // this will allow it to execute the step functions
+    // NOTE: The lambda is already subscribed to the queue
+    // Allow it to execute the step functions
     if (this.stepFunctions?.stateMachine) {
       this.stepFunctions.stateMachine.grantStartExecution(
         this.lambdas.proxy.lambdaFunction
@@ -187,16 +186,14 @@ export class LambdaThrottledConstruct extends Construct {
      * CATCH: fail
      * TODO: CATCH: fail event bus || fail
      */
-    const throttledLambdaId = 'lambda';
-    throttledTasks[throttledLambdaId] = new tasks.LambdaInvoke(
+    const throttledLambdaKey = 'lambda';
+    throttledTasks[throttledLambdaKey] = new tasks.LambdaInvoke(
       this,
-      this.stepFunctions.prepareTaskTitle(throttledLambdaId),
+      this.stepFunctions.prepareTaskTitle(throttledLambdaKey),
       {
         lambdaFunction: this.lambdas.throttled.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
-        payload: sfn.TaskInput.fromObject({
-          idSourceValue: sfn.JsonPath.stringAt('$.detail'),
-        }),
+        payload: sfn.TaskInput.fromObject(sfn.JsonPath.objectAt('$.detail')),
         resultPath: '$.outcome',
         resultSelector: this.stepFunctions.prepareSfnTaskResponsePayload(
           sfn.JsonPath.objectAt('$.Payload')
@@ -211,39 +208,9 @@ export class LambdaThrottledConstruct extends Construct {
     this.stepFunctions.addTasks(throttledTasks);
 
     // prepare the state machine
-    this.stepFunctions.prepareStateMachine(throttledLambdaId);
+    this.stepFunctions.prepareStateMachine(throttledLambdaKey);
 
     // prepare the lambda to proxy the queue to the step function
     this.prepareSfnProxyLambda();
-  }
-
-  private prepareSfnProxyLambdaHandler(): string {
-    const { stepFunctionsId, stackId, prefix } = this;
-    return `
-import { executeTask } from '@curioushuman/fp-ts-utils';
-import { SfnService } from '@curioushuman/common';
-import { LoggableLogger } from '@curioushuman/loggable';
-
-export const handler = (dto: unknown): Promise<void> => {
-  const context = 'SfnProxy.Lambda';
-  const logger = new LoggableLogger(context);
-
-  logger.debug
-    ? logger.debug(dto)
-    : logger.log(dto);
-
-  const sfnService = new SfnService({
-    '${stackId}',
-    '${prefix}',
-  });
-  const task = sfnService.startExecution({
-    id: '${stepFunctionsId}',
-    input: {
-      detail: dto,
-    },
-  });
-  return executeTask(task);
-};
-    `;
   }
 }

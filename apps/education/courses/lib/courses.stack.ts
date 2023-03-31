@@ -62,7 +62,7 @@ export class CoursesStack extends cdk.Stack {
      */
     const externalEventBusConstruct = new ChEventBusFrom(
       this,
-      'cc-events-external'
+      'cc-common-events-external'
     );
 
     /**
@@ -70,7 +70,7 @@ export class CoursesStack extends cdk.Stack {
      */
     const internalEventBusConstruct = new ChEventBusFrom(
       this,
-      'cc-events-internal'
+      'cc-common-events-internal'
     );
 
     /**
@@ -229,22 +229,16 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
-     * We're also going to create a throttled version of this lambda
+     * We're also going to create a throttled wrapper for this lambda
      */
-    const updateCourseThrottledLambdaId = generateCompositeResourceId(
-      updateCourseLambdaId,
-      'throttled'
-    );
     const updateCourseThrottledLambdaConstruct = new LambdaThrottledConstruct(
       this,
-      updateCourseThrottledLambdaId,
+      updateCourseLambdaId,
       {
         lambdas: {
           throttled: updateCourseLambdaConstruct,
           queue: openCourseMultiLambdaConstruct,
         },
-        stackId,
-        prefix: 'cc',
       }
     );
 
@@ -388,20 +382,14 @@ export class CoursesStack extends cdk.Stack {
     );
 
     /**
-     * We're also going to create a throttled version of this lambda
+     * We're also going to create a throttled wrapper for this lambda
      */
-    const updateParticipantThrottledLambdaId = generateCompositeResourceId(
-      updateParticipantLambdaId,
-      'throttled'
-    );
     const updateParticipantThrottledLambdaConstruct =
-      new LambdaThrottledConstruct(this, updateParticipantThrottledLambdaId, {
+      new LambdaThrottledConstruct(this, updateParticipantLambdaId, {
         lambdas: {
           throttled: updateParticipantLambdaConstruct,
           queue: updateParticipantMultiLambdaConstruct,
         },
-        stackId,
-        prefix: 'cc',
       });
 
     /**

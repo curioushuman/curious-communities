@@ -1,8 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
-import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { resolve as pathResolve } from 'path';
 
@@ -385,7 +383,7 @@ export class GroupsStack extends cdk.Stack {
     );
 
     /**
-     * We're also going to create a throttled version of this lambda
+     * We're also going to create a throttled wrapper for this lambda
      */
     const updateGroupMemberThrottledLambdaConstruct =
       new LambdaThrottledConstruct(this, updateGroupMemberLambdaId, {

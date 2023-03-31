@@ -5,10 +5,7 @@ import {
   SfnTaskInputTextReplica,
   SqsAsEventSourceEvent,
 } from '@curioushuman/common';
-import {
-  GroupMemberResponseDto,
-  guardGroupMemberResponseDto,
-} from '@curioushuman/cc-groups-service';
+import { GroupMemberBaseResponseDto } from '@curioushuman/cc-groups-service';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -19,7 +16,7 @@ import {
  */
 export const UpsertGroupMemberSourceRequestDto = Record({
   source: String,
-  groupMember: GroupMemberResponseDto,
+  groupMember: GroupMemberBaseResponseDto,
 });
 
 export type UpsertGroupMemberSourceRequestDto = Static<
@@ -36,7 +33,7 @@ export const guardUpsertGroupMemberSourceRequestDto = (
 ): boolean => {
   const { groupMember } = dto;
 
-  return guardGroupMemberResponseDto(groupMember);
+  return GroupMemberBaseResponseDto.guard(groupMember);
 };
 
 /**
@@ -44,7 +41,7 @@ export const guardUpsertGroupMemberSourceRequestDto = (
  */
 interface UpsertGroupMemberSourceAsSfnResult {
   source: SfnTaskInputTextReplica;
-  groupMember: GroupMemberResponseDto;
+  groupMember: GroupMemberBaseResponseDto;
 }
 
 /**

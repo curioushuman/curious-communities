@@ -29,8 +29,9 @@ export class SqsGroupsQueueService implements GroupsQueueService {
     messages: GroupMemberMessage[]
   ): TE.TaskEither<Error, void> => {
     return this.sqsService.sendMessageBatch({
-      id: 'group-member-update-throttled',
+      id: 'group-member-update',
       messages,
+      queueType: 'throttled',
     });
   };
 }

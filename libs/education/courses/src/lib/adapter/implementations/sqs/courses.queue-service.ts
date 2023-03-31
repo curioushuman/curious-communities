@@ -32,8 +32,9 @@ export class SqsCoursesQueueService implements CoursesQueueService {
     messages: UpdateCourseRequestDto[]
   ): TE.TaskEither<Error, void> => {
     return this.sqsService.sendMessageBatch({
-      id: 'course-update-throttled',
+      id: 'course-update',
       messages,
+      queueType: 'throttled',
     });
   };
 
@@ -41,8 +42,9 @@ export class SqsCoursesQueueService implements CoursesQueueService {
     messages: UpdateParticipantRequestDto[]
   ): TE.TaskEither<Error, void> => {
     return this.sqsService.sendMessageBatch({
-      id: 'participant-update-throttled',
+      id: 'participant-update',
       messages,
+      queueType: 'throttled',
     });
   };
 

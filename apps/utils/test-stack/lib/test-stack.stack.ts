@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
 import { TestEventBusConstruct } from '../src/test/events/eventbus';
-import { TestDynamoDbTableConstruct } from '../src/test/dynamodb/table';
+// import { TestDynamoDbTableConstruct } from '../src/test/dynamodb/table';
 
 export class CcTestStack extends cdk.Stack {
   constructor(scope: Construct, stackId: string, props?: cdk.StackProps) {
@@ -13,7 +13,7 @@ export class CcTestStack extends cdk.Stack {
      */
     const testExternalEventsConstruct = new TestEventBusConstruct(
       this,
-      'cc-events-external'
+      'cc-common-events-external'
     );
 
     /**
@@ -21,15 +21,15 @@ export class CcTestStack extends cdk.Stack {
      */
     const testInternalEventsConstruct = new TestEventBusConstruct(
       this,
-      'cc-events-internal'
+      'cc-common-events-internal'
     );
 
     /**
      * Dynamodb table testing
      */
-    const testDynamoDbConstruct = new TestDynamoDbTableConstruct(
-      this,
-      'cc-courses'
-    );
+    // const testDynamoDbConstruct = new TestDynamoDbTableConstruct(
+    //   this,
+    //   'cc-courses'
+    // );
   }
 }

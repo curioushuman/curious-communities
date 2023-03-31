@@ -46,7 +46,6 @@ export class ChLayerFrom extends Construct {
     if (process.env.NODE_ENV === 'local') {
       return this.getSpecificLayerArn(layerId, 1);
     }
-
     const [parameterName, parameterTitle] = resourceNameTitle(
       ChLayer.layerParameterId(this.id),
       'SsmParameter'
@@ -59,6 +58,9 @@ export class ChLayerFrom extends Construct {
     return layerParameter.stringValue;
   }
 
+  /**
+   * NOTE: '$LATEST' doesn't work as a version for layers
+   */
   private getSpecificLayerArn(layerId: ResourceId, layerVersion: number) {
     const accountId =
       process.env.NODE_ENV === 'local'

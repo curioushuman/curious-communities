@@ -1,9 +1,10 @@
+import { ChLambdaFrom } from './lambda-from.construct';
 import type { LambdaConstruct } from './lambda.construct';
 
 export interface LambdaThrottledLambdas {
   throttled: LambdaConstruct;
   queue?: LambdaConstruct;
-  proxy?: LambdaConstruct;
+  proxy?: LambdaConstruct | ChLambdaFrom;
 }
 
 /**
@@ -11,6 +12,4 @@ export interface LambdaThrottledLambdas {
  */
 export interface LambdaThrottledProps {
   lambdas: LambdaThrottledLambdas;
-  stackId: string;
-  prefix?: string;
 }

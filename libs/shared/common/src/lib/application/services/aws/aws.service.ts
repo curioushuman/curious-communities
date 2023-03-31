@@ -17,9 +17,15 @@ export abstract class AwsService implements OnModuleDestroy {
   abstract awsResourceName: string;
 
   /**
+   * The raw stack prefix and id for use later
+   */
+  protected stackId!: string;
+  protected stackPrefix!: string;
+
+  /**
    * This will be in the same format as CDK i.e. cc-courses
    */
-  private stackPrefix!: string;
+  private stackPrefixName!: string;
 
   /**
    * We'll also include an errorFactory for this guy
@@ -34,11 +40,13 @@ export abstract class AwsService implements OnModuleDestroy {
     const envPrefix = process.env.AWS_NAME_PREFIX || '';
     const prefixName = this.prepareName(prefix || envPrefix);
     const stackName = this.prepareName(stackId);
-    this.stackPrefix = `${prefixName}${stackName}`;
+    this.stackPrefixName = `${prefixName}${stackName}`;
   }
 
   constructor(props: AwsServiceProps) {
     const { stackId, prefix } = props;
+    this.stackId = stackId;
+    this.stackPrefix = prefix || '';
     // set the resources, in order
     this.preparePrefix(stackId, prefix);
 
@@ -65,9 +73,9 @@ export abstract class AwsService implements OnModuleDestroy {
     awsService: AwsService
   ): (resourceId: string) => string {
     return (resourceId): string => {
-      return `${awsService.stackPrefix}${awsService.prepareName(resourceId)}${
-        awsService.awsResourceName
-      }`;
+      return `${awsService.stackPrefixName}${awsService.prepareName(
+        resourceId
+      )}${awsService.awsResourceName}`;
     };
   }
 

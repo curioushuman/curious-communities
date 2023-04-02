@@ -34,7 +34,7 @@ export class SqsCoursesQueueService implements CoursesQueueService {
     return this.sqsService.sendMessageBatch({
       id: 'course-update',
       messages,
-      queueType: 'throttled',
+      queueType: 'throttled-destinations',
     });
   };
 
@@ -44,7 +44,7 @@ export class SqsCoursesQueueService implements CoursesQueueService {
     return this.sqsService.sendMessageBatch({
       id: 'participant-update',
       messages,
-      queueType: 'throttled',
+      queueType: 'throttled-destinations',
     });
   };
 

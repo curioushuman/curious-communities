@@ -5,6 +5,7 @@ import {
 import { OnModuleDestroy } from '@nestjs/common';
 
 import { confirmEnvVars, dashToCamelCase } from '../../../utils/functions';
+import { ResourceId } from '../../../utils/name/__types__';
 import { AwsServiceProps } from './__types__';
 
 /**
@@ -36,19 +37,24 @@ export abstract class AwsService implements OnModuleDestroy {
     return dashToCamelCase(id);
   }
 
-  private preparePrefix(stackId: string, prefix: string | undefined): void {
+  private preparePrefix(prefix: string | undefined): string {
     const envPrefix = process.env.AWS_NAME_PREFIX || '';
-    const prefixName = this.prepareName(prefix || envPrefix);
-    const stackName = this.prepareName(stackId);
-    this.stackPrefixName = `${prefixName}${stackName}`;
+    return this.prepareName(prefix || envPrefix);
+  }
+
+  private preparePrefixName(stackId?: string): string {
+    const sId = stackId || this.stackId;
+    const prefixName = this.prepareName(this.stackPrefix);
+    const stackName = this.prepareName(sId);
+    return `${prefixName}${stackName}`;
   }
 
   constructor(props: AwsServiceProps) {
     const { stackId, prefix } = props;
     this.stackId = stackId;
-    this.stackPrefix = prefix || '';
+    this.stackPrefix = this.preparePrefix(prefix);
     // set the resources, in order
-    this.preparePrefix(stackId, prefix);
+    this.stackPrefixName = this.preparePrefixName(stackId);
 
     // prepare the error factory
     this.errorFactory = new BasicServiceErrorFactory();
@@ -70,12 +76,16 @@ export abstract class AwsService implements OnModuleDestroy {
   abstract onModuleDestroy(): void;
 
   protected prepareResourceName(
-    awsService: AwsService
+    awsService: AwsService,
+    stackId?: ResourceId
   ): (resourceId: string) => string {
+    const stackPrefixName = stackId
+      ? awsService.preparePrefixName(stackId)
+      : awsService.stackPrefixName;
     return (resourceId): string => {
-      return `${awsService.stackPrefixName}${awsService.prepareName(
-        resourceId
-      )}${awsService.awsResourceName}`;
+      return `${stackPrefixName}${awsService.prepareName(resourceId)}${
+        awsService.awsResourceName
+      }`;
     };
   }
 

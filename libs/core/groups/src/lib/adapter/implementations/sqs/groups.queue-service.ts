@@ -31,7 +31,7 @@ export class SqsGroupsQueueService implements GroupsQueueService {
     return this.sqsService.sendMessageBatch({
       id: 'group-member-update',
       messages,
-      queueType: 'throttled',
+      queueType: 'throttled-destinations',
     });
   };
 }

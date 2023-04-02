@@ -23,6 +23,7 @@ import { confirmEnvVars, generateUniqueId } from '../../../utils/functions';
 import {
   SqsMessageBase,
   SqsMsgOrProxyMsg,
+  SqsQueueType,
   SqsSendMessageBatchProps,
 } from './__types__';
 import { AwsService } from '../aws/aws.service';
@@ -93,13 +94,14 @@ export class SqsService<DomainMessage> extends AwsService {
     props: SqsSendMessageBatchProps<DomainMessage>
   ): (body: DomainMessage) => SqsMsgOrProxyMsg<DomainMessage> {
     return (body) => {
-      return props.queueType === 'throttled'
-        ? prepareSqsSfnProxy<DomainMessage>(
-            props.id,
-            this.stackId,
-            this.stackPrefix
-          )(body)
-        : body;
+      if (!props.queueType || props.queueType === 'standard') {
+        return body;
+      }
+      return prepareSqsSfnProxy<DomainMessage>(
+        props.id,
+        this.stackId,
+        this.stackPrefix
+      )(body);
     };
   }
 
@@ -202,7 +204,20 @@ export class SqsService<DomainMessage> extends AwsService {
     };
 
   /**
+   * Throttled queues with destination are on the common stack
+   */
+  private stackIdForQueueType(queueType: SqsQueueType | undefined): string {
+    if (!queueType || queueType === 'standard') {
+      return this.stackId;
+    }
+    return queueType === 'throttled-destinations' ? 'common' : this.stackId;
+  }
+
+  /**
    * API for batch sending
+   *
+   * TODO:
+   * - [ ] improve the queue stack id and queue id stuff
    */
   public sendMessageBatch = (
     props: SqsSendMessageBatchProps<DomainMessage>
@@ -212,9 +227,12 @@ export class SqsService<DomainMessage> extends AwsService {
       // UPDATE: I don't think it deserves an error... we just don't send anything
       return TE.right(undefined);
     }
+    const queueStackId = this.stackIdForQueueType(props.queueType);
+    const queueId =
+      props.queueType === 'throttled-destinations' ? 'throttled' : props.id;
     return pipe(
-      props.id,
-      this.prepareResourceName(this),
+      queueId,
+      this.prepareResourceName(this, queueStackId),
       this.tryGetQueueUrl,
       TE.map(this.processGetQueueUrl(props.id)),
       logAction(

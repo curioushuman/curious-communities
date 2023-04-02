@@ -3,13 +3,15 @@ import { SqsSfnProxyRequestDto } from '../../../../infra/__types__';
 
 export type SqsMessageBase = Omit<SendMessageCommandInput, 'QueueUrl'>;
 
+export type SqsQueueType = 'standard' | 'throttled' | 'throttled-destinations';
+
 /**
  * Props for sendMessageBatch
  */
 export interface SqsSendMessageBatchProps<DomainMessage> {
   id: string;
   messages: DomainMessage[];
-  queueType?: 'standard' | 'throttled';
+  queueType?: SqsQueueType;
 }
 
 /**

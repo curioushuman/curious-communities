@@ -26,7 +26,7 @@ export class FindGroupSourceMapper {
     };
   }
 
-  public static fromUpsertGroupMemberRequestDto(
+  public static fromUpsertGroupMemberSourceRequestDto(
     dto: UpsertGroupMemberSourceRequestDto
   ): FindGroupSourceDto {
     const idSourceValue = findSourceIdValue(

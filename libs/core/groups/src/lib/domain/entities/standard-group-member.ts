@@ -94,6 +94,9 @@ export type StandardGroupMemberForSourceIdentify = Static<
  * to define parsers and finders.
  *
  * UPDATE: removed id and entity until they are required and we have more context
+ *
+ * TODO:
+ * - [ ] put ID back in place
  */
 export type StandardGroupMemberIdentifiers = {
   memberId: MemberId;

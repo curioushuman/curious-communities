@@ -13,6 +13,7 @@ import { LoggableLogger } from '@curioushuman/loggable';
 import {
   parseUpsertGroupMemberSourceRequestDto,
   UpsertGroupMemberSourceRequestDto,
+  UpsertGroupMemberSourceRequestDtoInput,
 } from './dto/upsert-group-member-source.request.dto';
 import { CreateGroupMemberSourceMapper } from '../../application/commands/create-group-member-source/create-group-member-source.mapper';
 import { CreateGroupMemberSourceCommand } from '../../application/commands/create-group-member-source/create-group-member-source.command';
@@ -37,11 +38,17 @@ import {
   prepareUpsertResponsePayload,
   ResponsePayload,
 } from '../dto/response-payload';
+import { FindGroupMemberMapper } from '../../application/queries/find-group-member/find-group-member.mapper';
+import { GroupMember } from '../../domain/entities/group-member';
+import { FindGroupMemberQuery } from '../../application/queries/find-group-member/find-group-member.query';
+import { GroupMemberMapper } from '../group-member.mapper';
 
 /**
  * Controller for upsert groupMemberSource operations
+ *
+ * TODO:
+ * - [ ] support base or full dto
  */
-
 @Controller()
 export class UpsertGroupMemberSourceController {
   constructor(
@@ -65,15 +72,16 @@ export class UpsertGroupMemberSourceController {
    *
    * So, we perform the find action first and separately; it'll error if it needs to.
    * Then we pipe that result into the rest of the function.
+   *
+   * TODO:
+   * - [ ] at some point stop accepting base version of group member
    */
   public async upsert(
-    requestDto: UpsertGroupMemberSourceRequestDto
+    requestDto: UpsertGroupMemberSourceRequestDtoInput
   ): Promise<ResponsePayload<'group-member-source'>> {
     // #1. validate the dto
-    const validDto = pipe(
-      requestDto,
-      parseData(parseUpsertGroupMemberSourceRequestDto, this.logger)
-    );
+    this.logger.debug(requestDto, 'upsert');
+    const validDto = await this.parseDtoInput(requestDto);
 
     // extract some values
     const { groupMember } = validDto;
@@ -123,6 +131,24 @@ export class UpsertGroupMemberSourceController {
         groupMemberSource && !upsertedGroupMemberSource
       )
     );
+  }
+
+  private async parseDtoInput(
+    dto: UpsertGroupMemberSourceRequestDtoInput
+  ): Promise<UpsertGroupMemberSourceRequestDto> {
+    // check that we haven't been passed the correct DTO already
+    if ('group' in dto) {
+      return parseUpsertGroupMemberSourceRequestDto(
+        dto as UpsertGroupMemberSourceRequestDto
+      );
+    }
+
+    // otherwise find the groupMember manually and prepare the correct DTO
+    const groupMember = await this.findGroupMember(dto);
+    return {
+      ...dto,
+      groupMember: GroupMemberMapper.toResponseDto(groupMember),
+    };
   }
 
   private deleteGroupMemberSource(
@@ -204,6 +230,36 @@ export class UpsertGroupMemberSourceController {
     );
   }
 
+  private findGroupMember(
+    requestDto: UpsertGroupMemberSourceRequestDtoInput
+  ): Promise<GroupMember> {
+    const task = pipe(
+      requestDto,
+
+      // #1. transform the dto
+      // NOTE: it is within this mapper function that we look for idSource, if not email
+      parseActionData(
+        FindGroupMemberMapper.fromUpsertGroupMemberSourceRequestDtoInput,
+        this.logger
+      ),
+
+      // #2. find the groupMemberSource
+      TE.chain((findDto) =>
+        pipe(
+          TE.tryCatch(
+            async () => {
+              const query = new FindGroupMemberQuery(findDto);
+              return await this.queryBus.execute<FindGroupMemberQuery>(query);
+            },
+            (error: unknown) => error as Error
+          )
+        )
+      )
+    );
+
+    return executeTask(task);
+  }
+
   private findGroupMemberSource(
     requestDto: UpsertGroupMemberSourceRequestDto
   ): Promise<GroupMemberSource | undefined> {
@@ -252,7 +308,7 @@ export class UpsertGroupMemberSourceController {
       // #1. transform the dto
       // NOTE: it is within this mapper function that we look for idSource, if not email
       parseActionData(
-        FindGroupSourceMapper.fromUpsertGroupMemberRequestDto,
+        FindGroupSourceMapper.fromUpsertGroupMemberSourceRequestDto,
         this.logger
       ),
 

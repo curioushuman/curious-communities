@@ -38,7 +38,6 @@ The system will check for the existence of external participants and add them to
 <img src="../apps/core/groups/diagrams/group-member-sources-upsert.png" width="300" />
 
 <font color="green">Tested!</font>
-<font color="orange">Remaining: group-member-upsert-source</font>
 
 ## Events based on course update
 
@@ -108,7 +107,6 @@ Daily scheduled check for courses that are open today.
 <img src="../apps/core/groups/diagrams/group-member-sources-upsert.png" width="300" />
 
 <font color="green">Tested!</font>
-<font color="orange">Remaining: group-member-upsert-source</font>
 
 # Member
 
@@ -130,7 +128,12 @@ Essentially the member info is pushed to all micro-services that use the member 
 
 <img src="../apps/education/courses/diagrams/participants-update.png" width="300" />
 
+<font color="green">Tested!</font>
+
 ### Group members
 
 <img src="../apps/core/groups/diagrams/group-members-update.png" width="300" />
+<img src="../apps/core/groups/diagrams/group-member-sources-upsert.png" width="300" />
+
+<font color="green">Tested!</font>
 

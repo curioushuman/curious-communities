@@ -7,6 +7,7 @@ import { LambdaConstruct } from '../lambda/lambda.construct';
 import {
   generateCompositeResourceId,
   resourceNameTitle,
+  transformIdToKey,
   transformIdToResourceTitle,
 } from '../utils/name';
 import { ResourceId } from '../utils/name.types';
@@ -40,6 +41,7 @@ export interface UpsertSourceMultiProps {
 export class UpsertSourceMultiConstruct extends Construct {
   private constructId: ResourceId;
   private entityId: ResourceId;
+  private entityKey: string;
   private lambdas: UpsertSourceMultiLambdas;
   private endStates!: Record<string, sfn.State>;
   private upsertTaskId: string;
@@ -78,6 +80,7 @@ export class UpsertSourceMultiConstruct extends Construct {
     // save some props
     this.constructId = constructId;
     this.entityId = props.entityId;
+    this.entityKey = transformIdToKey(this.entityId);
     this.lambdas = props.lambdas;
 
     // prepare our end states
@@ -181,7 +184,7 @@ export class UpsertSourceMultiConstruct extends Construct {
     const payloadObject: Record<string, unknown> = {
       sources: sfn.JsonPath.objectAt(`$.sources`),
     };
-    payloadObject[this.entityId] = sfn.JsonPath.objectAt('$.detail');
+    payloadObject[this.entityKey] = sfn.JsonPath.objectAt('$.detail');
     this.updateTask = new tasks.LambdaInvoke(this, updateTaskTitle, {
       lambdaFunction: this.lambdas.updateDomain.lambdaFunction,
       integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
@@ -255,7 +258,7 @@ export class UpsertSourceMultiConstruct extends Construct {
     const payloadObject: Record<string, unknown> = {
       source: sfn.TaskInput.fromText(source),
     };
-    payloadObject[this.entityId] = sfn.JsonPath.objectAt('$.detail');
+    payloadObject[this.entityKey] = sfn.JsonPath.objectAt('$.detail');
 
     // resultSelector allows us to shape the data that is returned from our task/lambda
     const resultSelector: Record<string, unknown> = {

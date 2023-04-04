@@ -1,11 +1,13 @@
-/**
- * Converting a dashed string to camelCase
- */
-export function dashToCamelCase(str: string): string {
+export function dashToUpperCaseFirst(str: string): string {
   return str
     .split('-')
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join('');
+}
+
+export function dashToCamelCase(str: string): string {
+  const upper = dashToUpperCaseFirst(str);
+  return upper[0].toLowerCase() + upper.slice(1);
 }
 
 /**

@@ -4,7 +4,7 @@ import {
 } from '@curioushuman/error-factory';
 import { OnModuleDestroy } from '@nestjs/common';
 
-import { confirmEnvVars, dashToCamelCase } from '../../../utils/functions';
+import { confirmEnvVars, transformIdToName } from '../../../utils';
 import { ResourceId } from '../../../utils/name/__types__';
 import { AwsServiceProps } from './__types__';
 
@@ -33,20 +33,16 @@ export abstract class AwsService implements OnModuleDestroy {
    */
   protected errorFactory: ServiceErrorFactory;
 
-  private prepareName(id: string): string {
-    return dashToCamelCase(id);
-  }
-
   private preparePrefix(prefix: string | undefined): string {
     const envPrefix = process.env.AWS_NAME_PREFIX || '';
-    return this.prepareName(prefix || envPrefix);
+    return prefix || envPrefix;
   }
 
   private preparePrefixName(stackId?: string): string {
+    const stackPrefix = transformIdToName(this.stackPrefix);
     const sId = stackId || this.stackId;
-    const prefixName = this.prepareName(this.stackPrefix);
-    const stackName = this.prepareName(sId);
-    return `${prefixName}${stackName}`;
+    const stackName = transformIdToName(sId);
+    return `${stackPrefix}${stackName}`;
   }
 
   constructor(props: AwsServiceProps) {
@@ -83,7 +79,7 @@ export abstract class AwsService implements OnModuleDestroy {
       ? awsService.preparePrefixName(stackId)
       : awsService.stackPrefixName;
     return (resourceId): string => {
-      return `${stackPrefixName}${awsService.prepareName(resourceId)}${
+      return `${stackPrefixName}${transformIdToName(resourceId)}${
         awsService.awsResourceName
       }`;
     };

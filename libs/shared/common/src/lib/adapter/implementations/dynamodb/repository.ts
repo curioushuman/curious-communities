@@ -39,7 +39,7 @@ import {
   DynamoDbSaveParams,
   DynamoDBSaveProcessMethod,
 } from './__types__';
-import { confirmEnvVars, dashToCamelCase } from '../../../utils/functions';
+import { confirmEnvVars, transformIdToName } from '../../../utils';
 
 /**
  * A base repository for DynamoDb
@@ -82,23 +82,19 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     wrapNumbers: false, // false, by default.
   };
 
-  private prepareName(id: string): string {
-    return dashToCamelCase(id);
-  }
-
   private setPrefix(prefix: string | undefined): void {
     const envPrefix = process.env.AWS_NAME_PREFIX || '';
-    this.prefix = this.prepareName(prefix || envPrefix);
+    this.prefix = transformIdToName(prefix || envPrefix);
   }
 
   private setEntity(id: string): void {
-    this.entityName = this.prepareName(id);
+    this.entityName = transformIdToName(id);
   }
 
   private setTable(id: string): void {
     this.tableId = id;
     const suffix = this.awsResourceTable;
-    this.tableName = `${this.prefix}${this.prepareName(id)}${suffix}`;
+    this.tableName = `${this.prefix}${transformIdToName(id)}${suffix}`;
   }
 
   private setIndexes(indexes: DynamoDbRepositoryIndex[]): void {
@@ -137,11 +133,11 @@ export class DynamoDbRepository<DomainT, PersistenceT>
   private prepareIndexName(indexId: string, suffix: string): string {
     const prefixes = [
       this.prefix,
-      this.prepareName(this.tableId),
+      transformIdToName(this.tableId),
       this.entityName,
     ];
     const prefix = prefixes.join('');
-    return `${prefix}${this.prepareName(indexId)}${suffix}`;
+    return `${prefix}${transformIdToName(indexId)}${suffix}`;
   }
 
   private prepareLocalIndex(
@@ -152,7 +148,7 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     const partitionKey = 'partitionKey';
     if (typeof localIndex === 'string') {
       id = localIndex;
-      sortKey = `${this.entityName}_${this.prepareName(localIndex)}`;
+      sortKey = `${this.entityName}_${transformIdToName(localIndex)}`;
     } else {
       id = localIndex.id;
       sortKey = localIndex.sortKey;
@@ -186,8 +182,8 @@ export class DynamoDbRepository<DomainT, PersistenceT>
     let partitionKey: string;
     if (typeof globalIndex === 'string') {
       id = globalIndex;
-      partitionKey = `${this.entityName}_${this.prepareName(globalIndex)}`;
-      sortKey = `Sk_${this.entityName}_${this.prepareName(globalIndex)}`;
+      partitionKey = `${this.entityName}_${transformIdToName(globalIndex)}`;
+      sortKey = `Sk_${this.entityName}_${transformIdToName(globalIndex)}`;
     } else {
       id = globalIndex.id;
       sortKey = globalIndex.sortKey;

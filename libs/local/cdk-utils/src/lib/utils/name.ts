@@ -10,15 +10,31 @@ import {
   SupportedResourceType,
 } from './name.types';
 
-/**
- * ! DUPLICATE: also in @curioushuman/common
- */
-export function dashToCamelCase(str: string): string {
+export function dashToUpperCaseFirst(str: string): string {
   return str
     .split('-')
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join('');
 }
+
+export function dashToCamelCase(str: string): string {
+  const upper = dashToUpperCaseFirst(str);
+  return upper[0].toLowerCase() + upper.slice(1);
+}
+
+/**
+ * A key is a unique identifier used in an array or object context
+ */
+export const transformIdToKey = (resourceId: ResourceId): string => {
+  return dashToCamelCase(ResourceId.check(resourceId));
+};
+
+/**
+ * A name is used only in AWS naming
+ */
+export const transformIdToName = (resourceId: ResourceId): string => {
+  return dashToUpperCaseFirst(ResourceId.check(resourceId));
+};
 
 /**
  * A resource name needs to be unique across AWS, so is prefixed with the API name,
@@ -45,7 +61,7 @@ export const transformIdToResourceTitle = (
   resourceId: ResourceId,
   resourceType: SupportedResourceType
 ): string => {
-  return `${dashToCamelCase(ResourceId.check(resourceId))}${resourceType}`;
+  return `${dashToUpperCaseFirst(ResourceId.check(resourceId))}${resourceType}`;
 };
 export const transformIdToTestResourceTitle = (
   resourceId: ResourceId,

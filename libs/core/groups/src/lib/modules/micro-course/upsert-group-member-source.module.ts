@@ -26,6 +26,7 @@ import { FindGroupSourceHandler } from '../../application/queries/find-group-sou
 import { GroupSourceRepositoryRead } from '../../adapter/ports/group-source.repository';
 import { EdAppApiGroupSourceRepository } from '../../adapter/implementations/ed-app/group-source.repository';
 import { GroupSourceRepositoryErrorFactory } from '../../adapter/ports/group-source.repository.error-factory';
+import { FindGroupMemberHandler } from '../../application/queries/find-group-member/find-group-member.query';
 
 const imports = [
   CqrsModule,
@@ -41,6 +42,7 @@ const handlers = [
   CreateGroupMemberSourceHandler,
   UpdateGroupMemberSourceHandler,
   FindGroupMemberSourceHandler,
+  FindGroupMemberHandler,
   FindGroupSourceHandler,
 ];
 

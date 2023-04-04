@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { resolve as pathResolve } from 'path';
@@ -25,9 +26,44 @@ export class CcCommonStack extends cdk.Stack {
     const events = new CcCommonEvents(this, eventsId);
 
     /**
-     * SQS to SFN proxy lambda
+     * SQS to SFN proxy lambda and co
      */
     const sqsSfnProxyId = generateCompositeResourceId(stackId, 'sqs-sfn-proxy');
+    const sqsSfnThrottledId = generateCompositeResourceId(stackId, 'throttled');
+
+    /**
+     * Allowing the lambda to execute any state machine
+     *
+     * TODO: lock this down more
+     */
+    const [sqsSfnRoleName, sqsSfnRoleTitle] = resourceNameTitle(
+      sqsSfnProxyId,
+      'Role'
+    );
+    const sqsSfnProxyRole = new iam.Role(this, sqsSfnRoleTitle, {
+      roleName: sqsSfnRoleName,
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+    });
+    sqsSfnProxyRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        'service-role/AWSLambdaBasicExecutionRole'
+      )
+    );
+    sqsSfnProxyRole.addToPolicy(
+      new iam.PolicyStatement({
+        resources: ['*'],
+        actions: [
+          'states:StartExecution',
+          'logs:CreateLogGroup',
+          'logs:CreateLogStream',
+          'logs:PutLogEvents',
+        ],
+      })
+    );
+
+    /**
+     * Function
+     */
     const sqsSfnProxyLambdaConstruct = new LambdaConstruct(
       this,
       sqsSfnProxyId,
@@ -36,27 +72,27 @@ export class CcCommonStack extends cdk.Stack {
           __dirname,
           '../src/utils/sqs-sfn-proxy/main.ts'
         ),
+        lambdaProps: {
+          role: sqsSfnProxyRole,
+        },
       }
     );
 
     /**
      * Throttling queue
      */
-    const sqsSfnThrottledId = generateCompositeResourceId(stackId, 'throttled');
-    const [sqsSfnThrottledQueueName, sqsSfnThrottledQueueTitle] =
-      resourceNameTitle(sqsSfnThrottledId, 'Queue');
-    const sqsSfnThrottledQueue = new sqs.Queue(
-      this,
-      sqsSfnThrottledQueueTitle,
-      {
-        queueName: sqsSfnThrottledQueueName,
-        visibilityTimeout: cdk.Duration.seconds(60),
-      }
+    const [sqsSfnQueueName, sqsSfnQueueTitle] = resourceNameTitle(
+      sqsSfnThrottledId,
+      'Queue'
     );
+    const sqsSfnQueue = new sqs.Queue(this, sqsSfnQueueTitle, {
+      queueName: sqsSfnQueueName,
+      visibilityTimeout: cdk.Duration.seconds(60),
+    });
 
     // Subscribe the function, to the queue
     sqsSfnProxyLambdaConstruct.lambdaFunction.addEventSource(
-      new SqsEventSource(sqsSfnThrottledQueue, {
+      new SqsEventSource(sqsSfnQueue, {
         batchSize: 3, // default
         maxBatchingWindow: cdk.Duration.minutes(2),
         reportBatchItemFailures: true, // default to false

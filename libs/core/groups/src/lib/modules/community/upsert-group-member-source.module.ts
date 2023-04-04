@@ -26,6 +26,7 @@ import { FindGroupSourceHandler } from '../../application/queries/find-group-sou
 import { GroupSourceRepositoryRead } from '../../adapter/ports/group-source.repository';
 import { TribeApiGroupSourceRepository } from '../../adapter/implementations/tribe/group-source.repository';
 import { GroupSourceRepositoryErrorFactory } from '../../adapter/ports/group-source.repository.error-factory';
+import { FindGroupMemberHandler } from '../../application/queries/find-group-member/find-group-member.query';
 
 const imports = [
   CqrsModule,
@@ -40,6 +41,7 @@ const controllers = [UpsertGroupMemberSourceController];
 const handlers = [
   CreateGroupMemberSourceHandler,
   UpdateGroupMemberSourceHandler,
+  FindGroupMemberHandler,
   FindGroupMemberSourceHandler,
   FindGroupSourceHandler,
 ];

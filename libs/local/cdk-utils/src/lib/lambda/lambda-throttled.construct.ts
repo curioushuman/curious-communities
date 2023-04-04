@@ -155,7 +155,7 @@ export class LambdaThrottledConstruct extends Construct {
         this,
         this.stepFunctions.prepareTaskTitle('success'),
         {
-          inputPath: '$.outcome',
+          inputPath: '$.outcome.detail',
           // NOTE: we need to add this in so our other data isn't overridden?
           resultPath: '$.putEvent',
           entries: [

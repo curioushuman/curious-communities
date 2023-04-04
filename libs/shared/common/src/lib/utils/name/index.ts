@@ -1,12 +1,26 @@
 /**
  * Functions used for consistent naming of resources
  */
-import { dashToCamelCase } from '../functions';
+import { dashToCamelCase, dashToUpperCaseFirst } from '../functions';
 import {
   ResourceId,
   ResourceNameTitle,
   SupportedResourceType,
 } from './__types__';
+
+/**
+ * A key is a unique identifier used in an array or object context
+ */
+export const transformIdToKey = (resourceId: ResourceId): string => {
+  return dashToCamelCase(ResourceId.check(resourceId));
+};
+
+/**
+ * Our current means of converting an id to a name
+ */
+export const transformIdToName = (resourceId: ResourceId): string => {
+  return dashToUpperCaseFirst(ResourceId.check(resourceId));
+};
 
 /**
  * A resource name needs to be unique across AWS, so is prefixed with the API name,
@@ -33,7 +47,7 @@ export const transformIdToResourceTitle = (
   resourceId: ResourceId,
   resourceType: SupportedResourceType
 ): string => {
-  return `${dashToCamelCase(ResourceId.check(resourceId))}${resourceType}`;
+  return `${dashToUpperCaseFirst(ResourceId.check(resourceId))}${resourceType}`;
 };
 export const transformIdToTestResourceTitle = (
   resourceId: ResourceId,

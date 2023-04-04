@@ -13,6 +13,7 @@ import {
   LambdaConstruct,
   ResourceId,
   StepFunctionsConstruct,
+  transformIdToKey,
 } from '../../../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -104,8 +105,9 @@ export class UpsertParticipantConstruct extends Construct {
     this.stepFunctions.addTasks(this.tasks);
 
     // prepare the state machine
-    this.stateMachine =
-      this.stepFunctions.prepareStateMachine('findParticipant');
+    this.stateMachine = this.stepFunctions.prepareStateMachine(
+      transformIdToKey('find-participant')
+    );
   }
 
   private prepareExternalFunction(functionId: string): lambda.IFunction {

@@ -17,7 +17,7 @@ import {
   ServiceNotFoundError,
 } from '@curioushuman/error-factory';
 import { LoggableLogger } from '@curioushuman/loggable';
-import { logAction } from '@curioushuman/fp-ts-utils';
+import { executeTask, logAction } from '@curioushuman/fp-ts-utils';
 
 import { confirmEnvVars, generateUniqueId } from '../../../utils/functions';
 import {
@@ -25,6 +25,7 @@ import {
   SqsMsgOrProxyMsg,
   SqsQueueType,
   SqsSendMessageBatchProps,
+  SqsTrySendMessageBatchProps,
 } from './__types__';
 import { AwsService } from '../aws/aws.service';
 import { AwsServiceProps } from '../aws/__types__';
@@ -36,6 +37,11 @@ import { prepareSqsSfnProxy } from '../../../infra/__types__';
 export class SqsService<DomainMessage> extends AwsService {
   private client: SQSClient;
   awsResourceName = 'Queue';
+
+  /**
+   * Configure the service
+   */
+  private maxBatchSize = 5;
 
   constructor(props: AwsServiceProps, private logger: LoggableLogger) {
     super(props);
@@ -148,10 +154,10 @@ export class SqsService<DomainMessage> extends AwsService {
    * - https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-sqs/interfaces/sendmessagebatchresultentry.html
    */
   private processMessageBatchResult(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _: SendMessageBatchResultEntry
-  ): void {
+    result: SendMessageBatchResultEntry
+  ): SendMessageBatchResultEntry {
     // DO nothing for now
+    return result;
   }
 
   /**
@@ -161,46 +167,67 @@ export class SqsService<DomainMessage> extends AwsService {
    * - [ ] use errorFactory to throw the error
    */
   private processSendMessageBatch = (
-    queueId: string
-  ): ((response: SendMessageBatchCommandOutput) => void) => {
-    return (response) => {
-      // ? logging?
-      // If anything do logging specific to GetCommand or AWS stats
-      this.logger.debug(response);
+    queueUrl: string,
+    response: SendMessageBatchCommandOutput
+  ): SendMessageBatchResultEntry[] => {
+    // ? logging?
+    // If anything do logging specific to GetCommand or AWS stats
+    this.logger.debug(response);
 
-      if (response.Failed && response.Failed.length > 0) {
-        this.logger.error(response.Failed);
-        throw new ServiceError(`Error sending messages: ${queueId}`);
-      }
+    if (response.Failed && response.Failed.length > 0) {
+      this.logger.error(response.Failed);
+      throw new ServiceError(`Error sending messages: ${queueUrl}`);
+    }
 
-      if (!response.Successful) {
-        throw new ServiceError(`Error sending messages: ${queueId}`);
-      }
+    if (!response.Successful) {
+      throw new ServiceError(`Error sending messages: ${queueUrl}`);
+    }
 
-      response.Successful.forEach(this.processMessageBatchResult);
-    };
+    return response.Successful.map(this.processMessageBatchResult);
   };
 
   /**
    * Actually send the batch request
    */
-  private trySendMessageBatch =
+  private trySendMessageBatch = (
+    props: SqsTrySendMessageBatchProps
+  ): TE.TaskEither<Error, SendMessageBatchResultEntry[]> => {
+    const { queueUrl, messages } = props;
+    const queuedMessages = messages.splice(0, this.maxBatchSize);
+    return TE.tryCatch(
+      async () => {
+        const params: SendMessageBatchCommandInput = {
+          QueueUrl: queueUrl,
+          Entries: queuedMessages.map((msg) =>
+            this.prepareMessageBatchEntry(msg)
+          ),
+        };
+        const response = await this.client.send(
+          new SendMessageBatchCommand(params)
+        );
+        const results = this.processSendMessageBatch(queueUrl, response);
+        if (messages.length > 0) {
+          const remainingResultsTask = this.trySendMessageBatch({
+            queueUrl,
+            messages,
+          });
+          const remainingResults = await executeTask(remainingResultsTask);
+          return [...results, ...remainingResults];
+        }
+        return results;
+      },
+      // NOTE: we don't use an error factory here, it is one level up
+      (reason: unknown) => reason as Error
+    );
+  };
+
+  private prepareSendMessageBatch =
     (props: SqsSendMessageBatchProps<DomainMessage>) =>
-    (queueUrl: string): TE.TaskEither<Error, SendMessageBatchCommandOutput> => {
-      const preparedMessages = this.prepareMessages(props);
-      return TE.tryCatch(
-        async () => {
-          const params: SendMessageBatchCommandInput = {
-            QueueUrl: queueUrl,
-            Entries: preparedMessages.map((msg) =>
-              this.prepareMessageBatchEntry(msg)
-            ),
-          };
-          return this.client.send(new SendMessageBatchCommand(params));
-        },
-        // NOTE: we don't use an error factory here, it is one level up
-        (reason: unknown) => reason as Error
-      );
+    (queueUrl: string): TE.TaskEither<Error, SqsTrySendMessageBatchProps> => {
+      return TE.right({
+        queueUrl,
+        messages: this.prepareMessages(props),
+      });
     };
 
   /**
@@ -241,14 +268,16 @@ export class SqsService<DomainMessage> extends AwsService {
         'successfully retrieved Queue URL',
         'failed to retrieve Queue URL'
       ),
-      TE.chain(this.trySendMessageBatch(props)),
-      TE.map(this.processSendMessageBatch(props.id)),
+      TE.chain(this.prepareSendMessageBatch(props)),
+      TE.chain(this.trySendMessageBatch),
       logAction(
         this.logger,
         this.errorFactory,
         'successfully sent messages',
         'failed to send messages'
-      )
+      ),
+      // we've logged the result, we don't need to pass the info any further
+      TE.map(() => undefined)
     );
   };
 }

@@ -21,3 +21,11 @@ export interface SqsSendMessageBatchProps<DomainMessage> {
 export type SqsMsgOrProxyMsg<DomainMessage> =
   | DomainMessage
   | SqsSfnProxyRequestDto<DomainMessage>;
+
+/**
+ * Props for trySendMessageBatch
+ */
+export interface SqsTrySendMessageBatchProps {
+  queueUrl: string;
+  messages: SqsMessageBase[];
+}

@@ -97,7 +97,7 @@ export class EdAppApiGroupMemberSourceRepository
 
   /**
    * Non-specific function to find one object from a list of all of them
-   * Recursive to enable paged results returned from the repository
+   * recursive to enable paged results returned from the repository
    */
   findOneFromAll = (
     parentId: GroupSourceId,

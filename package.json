@@ -59,7 +59,9 @@
     "stop-localstack": "pkill docker-compose up",
     "--HYBRID (WIP)": "SCRIPTS--",
     "add-hybrid-permissions": "nx run-many --parallel=1 --target=add-live-layer-permissions --projects=layers,cc-core-layers,cc-education-layers",
-    "remove-hybrid-permissions": "nx run-many --parallel=1 --target=remove-live-layer-permissions --projects=layers,cc-core-layers,cc-education-layers"
+    "remove-hybrid-permissions": "nx run-many --parallel=1 --target=remove-live-layer-permissions --projects=layers,cc-core-layers,cc-education-layers",
+    "--REBOOT": "SCRIPTS--",
+    "reboot-test": "pnpm destroy-test-stack && pnpm destroy-test && pnpm deploy-test && pnpm deploy-test-stack"
   },
   "private": true,
   "dependencies": {

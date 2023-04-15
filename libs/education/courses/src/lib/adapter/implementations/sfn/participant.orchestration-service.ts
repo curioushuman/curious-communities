@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import * as TE from 'fp-ts/lib/TaskEither';
 
-import { prepareExternalIdSourceValue, SfnService } from '@curioushuman/common';
+import { SfnService, prepareExternalIdSourceValue } from '@curioushuman/common';
 import { LoggableLogger } from '@curioushuman/loggable';
 
 import { ParticipantOrchestrationService } from '../../ports/participant.orchestration-service';
-import { ParticipantSource } from '../../../domain/entities/participant-source';
+import { UpsertParticipantRequestDto } from '../../../infra/upsert-participant/dto/upsert-participant.request.dto';
 
 @Injectable()
 export class SfnParticipantOrchestrationService
@@ -31,21 +31,18 @@ export class SfnParticipantOrchestrationService
    * But we'd prefer it to use the full pS. So we're passing both for now.
    */
   public upsertParticipant = (
-    participantSource: ParticipantSource
+    dto: UpsertParticipantRequestDto
   ): TE.TaskEither<Error, void> => {
     const participantIdSourceValue = prepareExternalIdSourceValue(
-      participantSource.id,
-      participantSource.source
+      dto.participantSource.id,
+      dto.participantSource.source
     );
     return this.sfnService.startExecution({
       id: 'participant-upsert-orch-sfn',
       input: {
-        // detail is what the state machine expects
-        // later we could remove this, and update the state machine to deal with either
-        detail: {
-          participantSource,
-          participantIdSourceValue,
-        },
+        ...dto,
+        // we still need this in the step function as we use it to check for participant
+        participantIdSourceValue,
       },
     });
   };

@@ -6,11 +6,13 @@ import {
   generateCompositeResourceId,
   ResourceId,
   resourceNameTitle,
+  SupportedResourceType,
   transformIdToResourceTitle,
 } from '../utils';
 import {
   StateMachineEndStates,
   StateMachineProps,
+  StepFunctionsSupportedStep,
 } from './step-functions.types';
 
 // Cannot import from common until this is a package
@@ -36,7 +38,7 @@ interface SfnTaskResponsePayload<T> {
  */
 export class StepFunctionsConstruct extends Construct {
   private constructId: string;
-  private tasks: Record<string, sfn.Chain> = {};
+  private steps: Record<string, StepFunctionsSupportedStep> = {};
   private definition?: sfn.Chain;
   private logGroup!: logs.ILogGroup;
 
@@ -85,7 +87,7 @@ export class StepFunctionsConstruct extends Construct {
       fail = new sfn.Fail(this, 'State machine failed');
     }
     if (typeof fail === 'string') {
-      fail = new sfn.Succeed(this, fail);
+      fail = new sfn.Fail(this, fail);
     }
     this.endStates = {
       fail,
@@ -93,19 +95,19 @@ export class StepFunctionsConstruct extends Construct {
     };
   }
 
-  public addTasks(tasks: Record<string, sfn.Chain>): void {
-    this.tasks = {
-      ...this.tasks,
-      ...tasks,
+  public addSteps(steps: Record<string, StepFunctionsSupportedStep>): void {
+    this.steps = {
+      ...this.steps,
+      ...steps,
     };
   }
 
   public prepareStateMachine(firstTaskId: string): sfn.StateMachine {
-    if (Object.keys(this.tasks).length === 0 || !this.tasks[firstTaskId]) {
-      throw new Error('Missing tasks');
+    if (Object.keys(this.steps).length === 0 || !this.steps[firstTaskId]) {
+      throw new Error('Missing steps');
     }
     // add the first task, everything else is pre-chained
-    this.definition = sfn.Chain.start(this.tasks[firstTaskId]);
+    this.definition = sfn.Chain.start(this.steps[firstTaskId]);
 
     // create our state machine
     const [stateMachineName, stateMachineTitle] = resourceNameTitle(
@@ -126,20 +128,27 @@ export class StepFunctionsConstruct extends Construct {
     return this.stateMachine;
   }
 
-  public prepareTaskTitle(taskId: ResourceId): string {
-    // this will throw an error if the taskId is not valid
-    ResourceId.check(taskId);
-    const resourceId = generateCompositeResourceId(this.constructId, taskId);
-    const taskTitle = transformIdToResourceTitle(resourceId, 'SfnTask');
-    return taskTitle;
+  private prepareStepTitle(
+    stepId: ResourceId,
+    resourceType: SupportedResourceType
+  ): string {
+    // this will throw an error if the stepId is not valid
+    ResourceId.check(stepId);
+    const resourceId = generateCompositeResourceId(this.constructId, stepId);
+    const stepTitle = transformIdToResourceTitle(resourceId, resourceType);
+    return stepTitle;
   }
 
-  public preparePassTitle(taskId: ResourceId): string {
-    // this will throw an error if the taskId is not valid
-    ResourceId.check(taskId);
-    const resourceId = generateCompositeResourceId(this.constructId, taskId);
-    const taskTitle = transformIdToResourceTitle(resourceId, 'SfnPass');
-    return taskTitle;
+  public prepareChoiceTitle(choiceId: ResourceId): string {
+    return this.prepareStepTitle(choiceId, 'SfnChoice');
+  }
+
+  public prepareTaskTitle(taskId: ResourceId): string {
+    return this.prepareStepTitle(taskId, 'SfnTask');
+  }
+
+  public preparePassTitle(passId: ResourceId): string {
+    return this.prepareStepTitle(passId, 'SfnPass');
   }
 
   public prepareSfnTaskResponsePayload<T>(

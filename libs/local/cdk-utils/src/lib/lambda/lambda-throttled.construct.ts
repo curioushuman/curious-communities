@@ -100,7 +100,7 @@ export class LambdaThrottledConstruct extends Construct {
   private prepareLambda(): void {
     this.lambdas.throttled.lambdaFunction.addEventSource(
       new SqsEventSource(this.queue, {
-        batchSize: 3, // default
+        batchSize: 1, // reducing to 1, as our code only deals with a single record
         maxBatchingWindow: cdk.Duration.minutes(2),
         reportBatchItemFailures: true, // default to false
       })
@@ -205,7 +205,7 @@ export class LambdaThrottledConstruct extends Construct {
       .next(throttledTasks.success || this.stepFunctions.endStates.success);
 
     // add the tasks to the step function
-    this.stepFunctions.addTasks(throttledTasks);
+    this.stepFunctions.addSteps(throttledTasks);
 
     // prepare the state machine
     this.stepFunctions.prepareStateMachine(throttledLambdaKey);

@@ -1,6 +1,9 @@
-import { Record, Static } from 'runtypes';
+import { Optional, Record, Static } from 'runtypes';
 import { SqsAsEventSourceEvent } from '@curioushuman/common';
-import { ParticipantSourceResponseDto } from '@curioushuman/cc-courses-service';
+import {
+  CourseBaseResponseDto,
+  ParticipantSourceResponseDto,
+} from '@curioushuman/cc-courses-service';
 
 /**
  * This is the form of data we expect as input into our Lambda
@@ -13,6 +16,7 @@ import { ParticipantSourceResponseDto } from '@curioushuman/cc-courses-service';
 
 export const UpsertParticipantRequestDto = Record({
   participantSource: ParticipantSourceResponseDto,
+  course: Optional(CourseBaseResponseDto),
 });
 
 export type UpsertParticipantRequestDto = Static<

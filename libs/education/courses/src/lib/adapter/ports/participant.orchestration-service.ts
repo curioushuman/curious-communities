@@ -1,5 +1,5 @@
 import { TaskEither } from 'fp-ts/lib/TaskEither';
-import { ParticipantSource } from '../../domain/entities/participant-source';
+import { UpsertParticipantRequestDto } from '../../infra/upsert-participant/dto/upsert-participant.request.dto';
 
 /**
  * A repository for member source queue
@@ -9,6 +9,6 @@ export abstract class ParticipantOrchestrationService {
    * Upsert Participant
    */
   abstract upsertParticipant(
-    participantSource: ParticipantSource
+    dto: UpsertParticipantRequestDto
   ): TaskEither<Error, void>;
 }

@@ -23,20 +23,12 @@ export class UpsertParticipantController {
   }
 
   public async upsert(requestDto: UpsertParticipantRequestDto): Promise<void> {
-    // #1. validate dto
     const validDto = pipe(
       requestDto,
       parseData(UpsertParticipantRequestDto.check, this.logger)
     );
 
-    // #2. extract the participantSource
-    const { participantSource } = validDto;
-
-    const task = pipe(
-      participantSource,
-      // #3. send the messages
-      this.orchestrationService.upsertParticipant
-    );
+    const task = pipe(validDto, this.orchestrationService.upsertParticipant);
 
     return executeTask(task);
   }

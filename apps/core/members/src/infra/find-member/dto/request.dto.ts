@@ -29,7 +29,9 @@ export type FindMemberRequestDto = Static<typeof FindMemberRequestDto>;
  * Once the step function task is complete, this is what the structure will look like
  */
 interface FindMemberAsSfnResult {
-  participantSource: SfnTaskResponsePayload<ParticipantSourceResponseDto>;
+  participantSource:
+    | SfnTaskResponsePayload<ParticipantSourceResponseDto>
+    | ParticipantSourceResponseDto;
 }
 
 /**
@@ -48,7 +50,11 @@ export function locateDto(
   incomingEvent: FindMemberDtoOrEvent
 ): FindMemberRequestDto {
   if ('participantSource' in incomingEvent) {
-    return { email: incomingEvent.participantSource.detail.memberEmail };
+    const participantSource =
+      'detail' in incomingEvent.participantSource
+        ? incomingEvent.participantSource.detail
+        : incomingEvent.participantSource;
+    return { email: participantSource.memberEmail };
   }
   return incomingEvent;
 }

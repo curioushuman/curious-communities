@@ -32,7 +32,9 @@ export type CreateMemberRequestDto = Static<typeof CreateMemberRequestDto>;
  * Once the step function task is complete, this is what the structure will look like
  */
 interface CreateMemberAsSfnResult {
-  participantSource: SfnTaskResponsePayload<ParticipantSourceResponseDto>;
+  participantSource:
+    | SfnTaskResponsePayload<ParticipantSourceResponseDto>
+    | ParticipantSourceResponseDto;
 }
 
 /**
@@ -70,7 +72,11 @@ export function locateDto(
   incomingEvent: CreateMemberDtoOrEvent
 ): CreateMemberRequestDto {
   if ('participantSource' in incomingEvent) {
-    return { email: incomingEvent.participantSource.detail.memberEmail };
+    const participantSource =
+      'detail' in incomingEvent.participantSource
+        ? incomingEvent.participantSource.detail
+        : incomingEvent.participantSource;
+    return { email: participantSource.memberEmail };
   }
   if ('email' in incomingEvent || 'idSourceValue' in incomingEvent) {
     return incomingEvent;

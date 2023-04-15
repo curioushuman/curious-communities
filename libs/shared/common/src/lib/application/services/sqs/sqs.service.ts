@@ -224,9 +224,13 @@ export class SqsService<DomainMessage> extends AwsService {
   private prepareSendMessageBatch =
     (props: SqsSendMessageBatchProps<DomainMessage>) =>
     (queueUrl: string): TE.TaskEither<Error, SqsTrySendMessageBatchProps> => {
+      const messages = this.prepareMessages(props);
+      // messages.forEach((message) => {
+      //   this.logger.verbose(message, 'prepareSendMessageBatch');
+      // });
       return TE.right({
         queueUrl,
-        messages: this.prepareMessages(props),
+        messages,
       });
     };
 

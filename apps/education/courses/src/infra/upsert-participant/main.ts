@@ -102,5 +102,6 @@ export const handler = async (
   // SEE **Error handling and logging** in README for more info.
   return upsertParticipantController.upsert({
     participantSource: validRequestDto.participantSource,
+    course: validRequestDto.course,
   });
 };

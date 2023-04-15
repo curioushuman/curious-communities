@@ -1,4 +1,4 @@
-import { Record, Static, String } from 'runtypes';
+import { Null, Record, Static, String } from 'runtypes';
 /**
  * This is the structure of data the world will receive
  *
@@ -26,7 +26,7 @@ export const MemberSourceResponseDto = Record({
   status: String,
   name: String,
   email: String,
-  organisationName: String,
+  organisationName: String.Or(Null),
 });
 
 /**

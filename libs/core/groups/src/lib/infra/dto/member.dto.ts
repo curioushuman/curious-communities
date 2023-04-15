@@ -1,4 +1,4 @@
-import { Array, Optional, Record, Static, String } from 'runtypes';
+import { Array, Null, Optional, Record, Static, String } from 'runtypes';
 
 /**
  * Type for external member entity
@@ -16,7 +16,7 @@ export const MemberDto = Record({
   status: String,
   name: String,
   email: String,
-  organisationName: String,
+  organisationName: String.Or(Null),
 
   accountOwner: String,
 });

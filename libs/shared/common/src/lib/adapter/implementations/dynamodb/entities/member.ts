@@ -41,7 +41,7 @@ export const DynamoDbMemberCommonAttributes = Record({
   Member_Status: String,
   Member_Name: String,
   Member_Email: String,
-  Member_OrganisationName: String,
+  Member_OrganisationName: String.Or(Null),
 
   AccountOwner: String,
 });

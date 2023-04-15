@@ -14,6 +14,7 @@ import {
   ResourceId,
   StepFunctionsConstruct,
   transformIdToKey,
+  StepFunctionsSupportedStep,
 } from '../../../../../../dist/local/@curioushuman/cdk-utils/src';
 // Long term we'll put them into packages
 // import { CoApiConstruct } from '@curioushuman/cdk-utils';
@@ -65,8 +66,9 @@ export class UpsertParticipantConstruct extends Construct {
   private externalFunctions: Record<string, lambda.IFunction> = {};
 
   private stepFunctionsId: ResourceId;
-  private stepFunctions?: StepFunctionsConstruct;
-  private tasks: Record<string, sfn.Chain> = {};
+  private stepFunctions: StepFunctionsConstruct;
+  private steps: Record<string, StepFunctionsSupportedStep> = {};
+  private firstStepKey!: string;
   public stateMachine: sfn.StateMachine;
 
   constructor(
@@ -99,14 +101,14 @@ export class UpsertParticipantConstruct extends Construct {
     this.prepareExternalFunctions();
 
     // prepare our tasks
-    this.prepareTasks();
+    this.prepareSteps();
 
     // add the tasks to the step function
-    this.stepFunctions.addTasks(this.tasks);
+    this.stepFunctions.addSteps(this.steps);
 
     // prepare the state machine
     this.stateMachine = this.stepFunctions.prepareStateMachine(
-      transformIdToKey('find-participant')
+      this.firstStepKey
     );
   }
 
@@ -125,10 +127,35 @@ export class UpsertParticipantConstruct extends Construct {
     }
   }
 
-  private prepareTasks(): void {
-    if (!this.stepFunctions) {
-      throw new Error('Step functions construct not initialized');
-    }
+  /**
+   * For input we might receive either:
+   * - $.detail
+   * - $
+   *
+   * For consistency, we'll put everything on the root ($).
+   */
+  private prepareCheckInput(firstTask: sfn.Chain): void {
+    const convertDetail = new sfn.Pass(
+      this,
+      this.stepFunctions.preparePassTitle('convert-detail'),
+      {
+        outputPath: '$.detail',
+      }
+    ).next(firstTask);
+    const firstStepId = 'check-input';
+    this.firstStepKey = transformIdToKey(firstStepId);
+    this.steps[this.firstStepKey] = new sfn.Choice(
+      this,
+      this.stepFunctions.prepareChoiceTitle(firstStepId)
+    )
+      .when(sfn.Condition.isPresent('$.detail'), convertDetail)
+      .otherwise(firstTask);
+  }
+
+  /**
+   * Puts together the steps for the state machine
+   */
+  private prepareSteps(): void {
     /**
      * Task: Announce participant update
      *
@@ -139,7 +166,7 @@ export class UpsertParticipantConstruct extends Construct {
      * NEXT: success
      * CATCH: fail
      */
-    this.tasks.putEventParticipantUpserted = new tasks.EventBridgePutEvents(
+    this.steps.putEventParticipantUpserted = new tasks.EventBridgePutEvents(
       this,
       this.stepFunctions.prepareTaskTitle('participant-upsert-put-event'),
       {
@@ -174,13 +201,12 @@ export class UpsertParticipantConstruct extends Construct {
      * NEXT: putEventParticipantUpserted
      * CATCH: fail
      */
-    this.tasks.updateParticipant = new tasks.LambdaInvoke(
+    this.steps.updateParticipant = new tasks.LambdaInvoke(
       this,
       this.stepFunctions.prepareTaskTitle('participant-update'),
       {
         lambdaFunction: this.lambdas.updateParticipant.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
-        inputPath: '$.detail',
         payload: sfn.TaskInput.fromObject({
           idSourceValue: sfn.JsonPath.stringAt('$.participantIdSourceValue'),
         }),
@@ -191,7 +217,7 @@ export class UpsertParticipantConstruct extends Construct {
       }
     )
       .addCatch(this.stepFunctions.endStates.fail)
-      .next(this.tasks.putEventParticipantUpserted);
+      .next(this.steps.putEventParticipantUpserted);
 
     /**
      * Task: create participant
@@ -199,7 +225,7 @@ export class UpsertParticipantConstruct extends Construct {
      * NEXT: putEventParticipantUpserted
      * CATCH: fail
      */
-    this.tasks.createParticipant = new tasks.LambdaInvoke(
+    this.steps.createParticipant = new tasks.LambdaInvoke(
       this,
       this.stepFunctions.prepareTaskTitle('participant-create'),
       {
@@ -212,7 +238,7 @@ export class UpsertParticipantConstruct extends Construct {
       }
     )
       .addCatch(this.stepFunctions.endStates.fail)
-      .next(this.tasks.putEventParticipantUpserted);
+      .next(this.steps.putEventParticipantUpserted);
 
     /**
      * Task: PAUSE after member creation
@@ -221,14 +247,17 @@ export class UpsertParticipantConstruct extends Construct {
      * Ref: https://github.com/curioushuman/curious-communities/issues/9
      *
      * NEXT: createParticipant
+     *
+     * TODO:
+     * - [ ] include upsertMemberSource in the state machine
      */
-    this.tasks.postMemberCreatePause = new sfn.Wait(
-      this,
-      this.stepFunctions.prepareTaskTitle('member-create-pause'),
-      {
-        time: sfn.WaitTime.duration(cdk.Duration.seconds(10)),
-      }
-    ).next(this.tasks.createParticipant);
+    // this.steps.postMemberCreatePause = new sfn.Wait(
+    //   this,
+    //   this.stepFunctions.prepareTaskTitle('member-create-pause'),
+    //   {
+    //     time: sfn.WaitTime.duration(cdk.Duration.seconds(10)),
+    //   }
+    // ).next(this.steps.createParticipant);
 
     /**
      * Task: Announce member creation
@@ -238,7 +267,7 @@ export class UpsertParticipantConstruct extends Construct {
      * NEXT: createParticipant
      * CATCH: fail
      */
-    this.tasks.putEventMemberCreated = new tasks.EventBridgePutEvents(
+    this.steps.putEventMemberCreated = new tasks.EventBridgePutEvents(
       this,
       this.stepFunctions.prepareTaskTitle('member-create-put-event'),
       {
@@ -263,7 +292,8 @@ export class UpsertParticipantConstruct extends Construct {
       }
     )
       .addCatch(this.stepFunctions.endStates.fail)
-      .next(this.tasks.postMemberCreatePause);
+      // .next(this.steps.postMemberCreatePause);
+      .next(this.steps.createParticipant);
 
     /**
      * Task: create member
@@ -273,7 +303,7 @@ export class UpsertParticipantConstruct extends Construct {
      * NEXT: putEventMemberCreated
      * CATCH: fail
      */
-    this.tasks.createMember = new tasks.LambdaInvoke(
+    this.steps.createMember = new tasks.LambdaInvoke(
       this,
       this.stepFunctions.prepareTaskTitle('member-create'),
       {
@@ -289,7 +319,7 @@ export class UpsertParticipantConstruct extends Construct {
       }
     )
       .addCatch(this.stepFunctions.endStates.fail)
-      .next(this.tasks.putEventMemberCreated);
+      .next(this.steps.putEventMemberCreated);
 
     /**
      * Task: find member
@@ -297,7 +327,7 @@ export class UpsertParticipantConstruct extends Construct {
      * NEXT: createParticipant
      * CATCH: createMember
      */
-    this.tasks.findMember = new tasks.LambdaInvoke(
+    this.steps.findMember = new tasks.LambdaInvoke(
       this,
       this.stepFunctions.prepareTaskTitle('member-find'),
       {
@@ -317,7 +347,7 @@ export class UpsertParticipantConstruct extends Construct {
         new sfn.Pass(
           this,
           this.stepFunctions.preparePassTitle('member-find')
-        ).next(this.tasks.createMember),
+        ).next(this.steps.createMember),
         {
           errors: ['RepositoryItemNotFoundError'],
           // must include this, otherwise error result overrides full result
@@ -326,7 +356,7 @@ export class UpsertParticipantConstruct extends Construct {
       )
       // will hand off any other error to the fail state
       .addCatch(this.stepFunctions.endStates.fail)
-      .next(this.tasks.createParticipant);
+      .next(this.steps.createParticipant);
 
     /**
      * Task: find course
@@ -334,7 +364,7 @@ export class UpsertParticipantConstruct extends Construct {
      * NEXT: findMember
      * CATCH: fail
      */
-    this.tasks.findCourse = new tasks.LambdaInvoke(
+    this.steps.findCourse = new tasks.LambdaInvoke(
       this,
       this.stepFunctions.prepareTaskTitle('course-find'),
       {
@@ -350,21 +380,32 @@ export class UpsertParticipantConstruct extends Construct {
       }
     )
       .addCatch(this.stepFunctions.endStates.fail)
-      .next(this.tasks.findMember);
+      .next(this.steps.findMember);
+
+    /**
+     * Choice: does course exist?
+     *
+     * NEXT: findCourse OR findMember
+     */
+    this.steps.existsCourse = new sfn.Choice(
+      this,
+      this.stepFunctions.prepareChoiceTitle('course-exists')
+    )
+      .when(sfn.Condition.isPresent('$.course'), this.steps.findMember)
+      .otherwise(this.steps.findCourse);
 
     /**
      * Task: find participant source
      *
-     * NEXT: findCourse
+     * NEXT: existsCourse
      * CATCH: fail
      */
-    this.tasks.findParticipantSource = new tasks.LambdaInvoke(
+    this.steps.findParticipantSource = new tasks.LambdaInvoke(
       this,
       this.stepFunctions.prepareTaskTitle('participant-source-find'),
       {
         lambdaFunction: this.lambdas.findParticipantSource.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
-        inputPath: '$.detail',
         payload: sfn.TaskInput.fromObject({
           idSourceValue: sfn.JsonPath.stringAt('$.participantIdSourceValue'),
         }),
@@ -376,21 +417,35 @@ export class UpsertParticipantConstruct extends Construct {
     )
       .addRetry(this.stepFunctions.retryProps)
       .addCatch(this.stepFunctions.endStates.fail)
-      .next(this.tasks.findCourse);
+      .next(this.steps.existsCourse);
+
+    /**
+     * Choice: does participant source exist?
+     *
+     * NEXT: findParticipantSource OR existsCourse
+     */
+    this.steps.existsParticipantSource = new sfn.Choice(
+      this,
+      this.stepFunctions.prepareChoiceTitle('participant-source-exists')
+    )
+      .when(
+        sfn.Condition.isPresent('$.participantSource'),
+        this.steps.existsCourse
+      )
+      .otherwise(this.steps.findParticipantSource);
 
     /**
      * Task: find participant
      *
      * NEXT: updateParticipant
-     * CATCH: findParticipantSource
+     * CATCH: existsParticipantSource
      */
-    this.tasks.findParticipant = new tasks.LambdaInvoke(
+    this.steps.findParticipant = new tasks.LambdaInvoke(
       this,
       this.stepFunctions.prepareTaskTitle('participant-find'),
       {
         lambdaFunction: this.lambdas.findParticipant.lambdaFunction,
         integrationPattern: sfn.IntegrationPattern.REQUEST_RESPONSE,
-        inputPath: '$.detail',
         payload: sfn.TaskInput.fromObject({
           idSourceValue: sfn.JsonPath.stringAt('$.participantIdSourceValue'),
         }),
@@ -405,7 +460,7 @@ export class UpsertParticipantConstruct extends Construct {
         new sfn.Pass(
           this,
           this.stepFunctions.preparePassTitle('participant-find')
-        ).next(this.tasks.findParticipantSource),
+        ).next(this.steps.existsParticipantSource),
         {
           errors: ['RepositoryItemNotFoundError'],
           // must include this, otherwise error result overrides full result
@@ -414,6 +469,9 @@ export class UpsertParticipantConstruct extends Construct {
       )
       // will hand off any other error to the fail state
       .addCatch(this.stepFunctions.endStates.fail)
-      .next(this.tasks.updateParticipant);
+      .next(this.steps.updateParticipant);
+
+    // prepare check input
+    this.prepareCheckInput(this.steps.findParticipant);
   }
 }

@@ -17,6 +17,7 @@ import { ParticipantSource } from '../../domain/entities/participant-source';
 import { FindParticipantSourcesMapper } from '../../application/queries/find-participant-sources/find-participant-sources.mapper';
 import { FindParticipantSourcesQuery } from '../../application/queries/find-participant-sources/find-participant-sources.query';
 import { ParticipantSourceMapper } from '../participant-source.mapper';
+import { CourseBaseResponseDto } from '../dto/course.response.dto';
 
 /**
  * Controller to handle updating multiple participants
@@ -34,19 +35,21 @@ export class UpsertParticipantMultiController {
     this.logger.setContext(UpsertParticipantMultiController.name);
   }
 
-  private prepareUpsertDto(
-    participantSource: ParticipantSource
-  ): UpsertParticipantRequestDto {
-    return {
-      participantSource:
-        ParticipantSourceMapper.toResponseDto(participantSource),
-    };
-  }
-
+  /**
+   * Construct an UpsertParticipantRequestDto for each participantSource
+   */
   private prepareMessages = (
+    course: CourseBaseResponseDto
+  ): ((
     participantSources: ParticipantSource[]
-  ): UpsertParticipantRequestDto[] =>
-    participantSources.map(this.prepareUpsertDto);
+  ) => UpsertParticipantRequestDto[]) => {
+    return (participantSources) =>
+      participantSources.map((participantSource) => ({
+        participantSource:
+          ParticipantSourceMapper.toResponseDto(participantSource),
+        course,
+      }));
+  };
 
   public async upsert(
     requestDto: UpsertParticipantMultiRequestDto
@@ -56,6 +59,7 @@ export class UpsertParticipantMultiController {
       requestDto,
       parseData(UpsertParticipantMultiRequestDto.check, this.logger)
     );
+    const { course } = validDto;
 
     // #2. find the participantSources
     const participantSources = await this.findParticipantSources(validDto);
@@ -63,7 +67,7 @@ export class UpsertParticipantMultiController {
     const task = pipe(
       participantSources,
       // #3. prepare the messages
-      this.prepareMessages,
+      this.prepareMessages(course),
       // #4. send the messages
       this.queueService.upsertParticipants
     );

@@ -32,6 +32,7 @@ export interface UpsertSourceMultiProps {
  * Step functions definition to upsert sources and save the IDs to domain
  *
  * TODO
+ * - [ ] convert to use the step functions construct
  * - [ ] use Source from the relevant service e.g. cc-groups-service
  * - [ ] see if you can run the upsertSource tasks in parallel
  *       code is commented out below

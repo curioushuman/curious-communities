@@ -32,8 +32,10 @@ export type CreateParticipantRequestDto = Static<
  *       as it could be either found, or created (within step function)
  */
 interface CreateParticipantAsSfnResult {
-  participantSource: SfnTaskResponsePayload<ParticipantSourceResponseDto>;
-  course: SfnTaskResponsePayload<CourseBaseResponseDto>;
+  participantSource:
+    | SfnTaskResponsePayload<ParticipantSourceResponseDto>
+    | ParticipantSourceResponseDto;
+  course: SfnTaskResponsePayload<CourseBaseResponseDto> | CourseBaseResponseDto;
   member: SfnTaskResponsePayload<
     MemberResponseDto | CoAwsRequestPayload<MemberResponseDto>
   >;
@@ -47,10 +49,9 @@ export function isCreateParticipantAsSfnResult(
   event: unknown
 ): event is CreateParticipantAsSfnResult {
   return (
-    (event as CreateParticipantAsSfnResult).participantSource.detail !==
-      undefined &&
-    (event as CreateParticipantAsSfnResult).course.detail !== undefined &&
-    (event as CreateParticipantAsSfnResult).member.detail !== undefined
+    'detail' in (event as CreateParticipantAsSfnResult).participantSource ||
+    'detail' in (event as CreateParticipantAsSfnResult).course ||
+    'detail' in (event as CreateParticipantAsSfnResult).member
   );
 }
 
@@ -78,10 +79,18 @@ export function locateDto(
       'detail' in incomingEvent.member.detail
         ? incomingEvent.member.detail.detail
         : incomingEvent.member.detail;
+    const participantSource =
+      'detail' in incomingEvent.participantSource
+        ? incomingEvent.participantSource.detail
+        : incomingEvent.participantSource;
+    const course =
+      'detail' in incomingEvent.course
+        ? incomingEvent.course.detail
+        : incomingEvent.course;
     return {
-      participantSource: incomingEvent.participantSource.detail,
-      course: incomingEvent.course.detail,
-      member: member,
+      participantSource,
+      course,
+      member,
     };
   }
   return incomingEvent;

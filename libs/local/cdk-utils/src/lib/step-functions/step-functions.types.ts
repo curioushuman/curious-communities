@@ -11,3 +11,5 @@ export interface StateMachineEndStates {
 export interface StateMachineProps {
   endStates?: StateMachineEndStates;
 }
+
+export type StepFunctionsSupportedStep = sfn.Chain | sfn.Choice | sfn.Parallel;

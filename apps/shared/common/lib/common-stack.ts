@@ -93,7 +93,7 @@ export class CcCommonStack extends cdk.Stack {
     // Subscribe the function, to the queue
     sqsSfnProxyLambdaConstruct.lambdaFunction.addEventSource(
       new SqsEventSource(sqsSfnQueue, {
-        batchSize: 3, // default
+        batchSize: 1, // reducing to 1, as our code only deals with a single record
         maxBatchingWindow: cdk.Duration.minutes(2),
         reportBatchItemFailures: true, // default to false
       })

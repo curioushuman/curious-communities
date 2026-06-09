@@ -1,8 +1,24 @@
-# Curious Communities Monorepo
+# Curious Communities
 
-This will be the home for all things Curious Communities.
+An event-driven, serverless integration platform that keeps membership, group, and course
+data in sync across a CRM (Salesforce), a community platform, and an auth provider. Built as
+a monorepo of independently deployable NestJS services using Domain-Driven Design and CQRS,
+deployed to AWS with infrastructure-as-code.
 
-**Please note** this README is a garbled mess. Working towards a deadline, and still experimenting with infrastructure, then I will come back and tidy this up.
+**Status:** built for a partner integration as an experiment; the engagement ended before
+delivery — the product wasn't the right fit. Kept public as an architecture reference, not a
+shipped product.
+
+## What this demonstrates
+
+- **Bounded contexts** modelled as separate domains — `core` (members, groups) and
+  `education` (courses) — each an independently deployable service.
+- **Event-driven backbone** on AWS: Lambda, API Gateway, DynamoDB, SQS, EventBridge and
+  Step Functions orchestrating multi-step upserts between source and destination systems.
+- **Infrastructure-as-code** with AWS CDK across separate local/test/prod accounts, with
+  LocalStack for local cloud emulation.
+- **Functional, type-safe domain core**: fp-ts `TaskEither` pipelines, runtime-validated
+  value objects (runtypes), and BDD-style acceptance tests (jest-cucumber).
 
 ## Required .env file
 
@@ -156,18 +172,11 @@ References:
     - When deploying local I use the --outputs-file for api-gateway based stacks
       - As adding --verbose to nx fails the layers deploy-local command
       - But we still need to know what the (new each time) API URLs are for our local testing env.
-    - TO test the local APIs you need to look into this file to get the URL
-      - Put it into Postman
-      - Blah blah blah
-      - Would be nice if we didn't have to do this
-    - LOCALSTACK_API_KEY needs to be in .env
-      - if we're using this
-    - For some reason the first request to the public API always fails
-      - OR it needs more time to settle
-      - If you get an error that indicates nest/core cannot be found, give it a minute and try again
-      - weirdly, it is intermittent
-      - even when running it with live lambda layers it was hit and miss, rather than consistent
-      - SUPER frustrating
+    - To test the local APIs, read the URL from this file and use it (e.g. in Postman)
+    - LOCALSTACK_API_KEY needs to be in .env (if using LocalStack Pro)
+    - The first request to the public API after a deploy can fail or be slow to settle
+      - If you see an error that nest/core cannot be found, wait a moment and retry
+      - This is intermittent, including when running with live Lambda layers
 
 ## Big issues
 

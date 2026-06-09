@@ -2,7 +2,7 @@ import { memberSources } from '@curioushuman/common';
 
 export default {
   defaults: {
-    accountOwner: 'apf',
+    accountOwner: 'partner',
     accountSources: memberSources,
     accountOrigins: ['CRM'],
     accountDestinations: ['AUTH', 'COMMUNITY', 'MICRO-COURSE'],

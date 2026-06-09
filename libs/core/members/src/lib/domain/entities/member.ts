@@ -27,7 +27,7 @@ export const Member = Record({
   email: MemberEmail,
   organisationName: MemberOrganisationName.Or(Null),
 
-  // e.g. APF being the account that owns this member
+  // e.g. the partner being the account that owns this member
   accountOwner: AccountSlug,
 });
 

@@ -29,7 +29,7 @@ export const ParticipantBase = Record({
 
   status: ParticipantStatus,
 
-  // e.g. APF being the account that owns this participant
+  // e.g. the partner being the account that owns this participant
   accountOwner: AccountSlug,
 });
 

@@ -20,7 +20,7 @@ export const CourseDto = Record({
   status: NotEmptyString,
   name: NotEmptyString,
 
-  // e.g. APF being the account that owns this group
+  // e.g. the partner being the account that owns this group
   accountOwner: NotEmptyString,
 });
 

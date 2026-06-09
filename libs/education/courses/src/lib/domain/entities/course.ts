@@ -37,7 +37,7 @@ export const CourseBase = Record({
   dateOpen: Optional(Timestamp),
   dateClosed: Optional(Timestamp),
   yearMonthOpen: Optional(YearMonth),
-  // e.g. APF being the account that owns this course
+  // e.g. the partner being the account that owns this course
   accountOwner: AccountSlug,
 });
 

@@ -27,7 +27,7 @@ export const StandardGroupBase = Record({
   slug: GroupSlug,
   status: GroupStatus,
   name: GroupName,
-  // e.g. APF being the account that owns this group
+  // e.g. the partner being the account that owns this group
   accountOwner: AccountSlug,
 });
 

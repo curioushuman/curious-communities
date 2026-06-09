@@ -22,7 +22,7 @@ export const StandardGroupMemberBase = Record({
 
   status: GroupMemberStatus,
 
-  // e.g. APF being the account that owns this groupMember
+  // e.g. the partner being the account that owns this groupMember
   accountOwner: AccountSlug,
 });
 

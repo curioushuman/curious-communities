@@ -1,6 +1,6 @@
 export default {
   defaults: {
-    accountOwner: 'apf',
+    accountOwner: 'partner',
     accountSources: ['COMMUNITY', 'MICRO-COURSE'],
     accountDestinations: ['COMMUNITY', 'MICRO-COURSE'],
     accountOrigins: [],

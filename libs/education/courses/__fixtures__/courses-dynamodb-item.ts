@@ -16,7 +16,7 @@ export const participantDynamoDbItem: DynamoDbItem<CoursesItem> = {
   Course_DateClosed: 1678492800000,
   Course_Name: '2023 sync test case',
   partitionKey: 'c2a30d8a-888b-43f4-b656-8d4a9cda26b0',
-  AccountOwner: 'apf',
+  AccountOwner: 'partner',
   Member_Email: 'member@partner.example',
   Member_Name: 'Mike Kelly',
   Participant_Id: 'b9ba3547-6953-4902-a4f3-903a66d4af2a',
@@ -38,7 +38,7 @@ export const courseDynamoDbItem: DynamoDbItem<CoursesItem> = {
   Course_DateClosed: 1678492800000,
   Course_Name: '2023 sync test case',
   partitionKey: 'c2a30d8a-888b-43f4-b656-8d4a9cda26b0',
-  AccountOwner: 'apf',
+  AccountOwner: 'partner',
   Course_DateOpen: 1676851200000,
   Sk_Course_SourceIdCOURSE: 'c2a30d8a-888b-43f4-b656-8d4a9cda26b0',
   sortKey: 'c2a30d8a-888b-43f4-b656-8d4a9cda26b0',
@@ -60,7 +60,7 @@ export const courseDomainItem = {
   name: '2023 sync test case',
   dateOpen: 1676851200000,
   dateClosed: 1678492800000,
-  accountOwner: 'apf',
+  accountOwner: 'partner',
 };
 
 export const memberDomainItem = {
@@ -75,7 +75,7 @@ export const memberDomainItem = {
   name: 'Mike Kelly',
   email: 'member@partner.example',
   organisationName: 'Curious Human',
-  accountOwner: 'apf',
+  accountOwner: 'partner',
 };
 
 export const participantDomainItem = {
@@ -89,7 +89,7 @@ export const participantDomainItem = {
     },
   ],
   status: 'pending',
-  accountOwner: 'apf',
+  accountOwner: 'partner',
   course: courseDomainItem,
   member: memberDomainItem,
 };

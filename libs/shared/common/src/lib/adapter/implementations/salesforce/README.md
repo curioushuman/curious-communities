@@ -35,7 +35,7 @@ openssl x509 -req -sha256 -days 365 -in server.csr -signkey jwtRS256.key -out se
     - Refresh token never expires
 - Pre-approve / authorize the app
   - https://<your instance>.salesforce.com/services/oauth2/authorize?response_type=token&client_id=<consumer key>&redirect_uri=sfdc://oauth/jwt/success
-    - https://partner.lightning.force.com/services/oauth2/authorize?response_type=token&client_id=REDACTED_CONSUMER_KEY&redirect_uri=sfdc://oauth/jwt/success
+    - https://partner.lightning.force.com/services/oauth2/authorize?response_type=token&client_id=<consumer key>&redirect_uri=sfdc://oauth/jwt/success
 - If you make any changes, you have to re-authorize the app
 
 ### To use the key within the code
